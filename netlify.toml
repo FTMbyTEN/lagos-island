@@ -1,0 +1,3 @@
+# Netlify: the game is the web folder
+[build]
+  publish = "web"
