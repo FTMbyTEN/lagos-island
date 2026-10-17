@@ -251,6 +251,36 @@
   .peeks .peek .cap b { font-size: 10.5px; }
   .rsec { font: 800 11px 'Orbitron', sans-serif; letter-spacing: 3px; color: var(--m); margin: 14px 0 6px; }
   #phoneBtn::before { background: linear-gradient(160deg, #FCEE0A, #FF003C 60%, #00F0FF); }
+  /* one phone shape everywhere: a fixed 372 x 780 handset, scaled as a whole (--ps, set in fitPhone) so it never stretches or squashes */
+  #phone, .touch #phone { left: auto; top: auto; right: 16px; bottom: 16px; width: 372px !important; height: 780px !important; scale: var(--ps, 1); transform-origin: 100% 100% !important; }
+  @media (max-width: 560px) { #phone, .touch #phone { right: auto; left: 50%; margin-left: -186px; bottom: calc(8px + env(safe-area-inset-bottom)); transform-origin: 50% 100% !important; } }
+  /* WYRD OS, polished */
+  #phone { border-radius: 52px !important; padding: 11px !important; background: linear-gradient(145deg, #3A3D46, #15161B 22%, #0B0B10 50%, #15161B 78%, #3A3D46) !important; box-shadow: 0 0 0 1px rgba(255,255,255,.14) inset, 0 0 0 1.5px #000, 0 0 0 2.5px rgba(252,238,10,.28), 0 0 44px rgba(0,240,255,.16), 0 40px 90px rgba(0,0,0,.55) !important; }
+  #phone > i { background: linear-gradient(90deg, #2A2C33, #6B6F78, #2A2C33); }
+  #phone .btnL1 { top: 150px; height: 30px; } #phone .btnL2 { top: 196px; height: 58px; } #phone .btnR { top: 180px; height: 86px; }
+  #screen { border-radius: 42px !important; box-shadow: 0 0 0 2px #000, inset 0 0 0 1px rgba(0,240,255,.12); }
+  #pbar { padding: 15px 28px 6px !important; font: 700 14px 'Rajdhani', sans-serif !important; letter-spacing: .5px; border-bottom: none !important; }
+  #pbar .cam { top: 9px; width: 92px; height: 26px; margin-left: -46px; border-radius: 14px; background: #000; box-shadow: none; }
+  #pbar .cam::after { content: ''; position: absolute; right: 9px; top: 8px; width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #2A3A55, #000 65%); }
+  #pbody { padding: 6px 16px 12px !important; scroll-behavior: smooth; }
+  .ptitle { position: sticky; top: -6px; z-index: 2; margin: 0 -16px 10px !important; padding: 10px 16px 8px; background: linear-gradient(180deg, rgba(7,7,13,.96) 70%, rgba(7,7,13,0)); }
+  .widget { margin: 10px 0 6px !important; padding: 18px 18px 16px !important; }
+  .apps { gap: 18px 6px !important; padding: 18px 2px 4px !important; }
+  .app { gap: 7px !important; font-size: 10.5px !important; letter-spacing: 1.2px; transition: transform .15s; }
+  .app i { width: 60px !important; height: 60px !important; font-size: 28px !important; transition: transform .15s, filter .15s; }
+  .app:hover i { transform: translateY(-2px); }
+  .dock { margin-top: 20px !important; padding: 12px 8px !important; }
+  #pbody:has(> .dock) { display: flex; flex-direction: column; } #pbody > .dock { margin-top: auto !important; }
+  /* the nav: three keys over a home bar */
+  #pnav { position: relative; display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 4px 16px 22px !important; padding: 4px !important; }
+  #pnav button { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 0 !important; font-size: 12px !important; transition: background .15s, color .15s; }
+  #pnav button:hover { background: rgba(252,238,10,.12); }
+  #pnav button:active { background: var(--y); color: #07070D; }
+  #pnav button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  #screen > .hbar { position: absolute; left: 50%; bottom: 8px; width: 120px; height: 4px; margin-left: -60px; border-radius: 3px; background: rgba(230,249,255,.55); z-index: 5; pointer-events: none; }
+  .pcard.err { background: rgba(255,0,60,.14); border-color: rgba(255,0,60,.6); box-shadow: inset 3px 0 0 var(--m); color: #FFD6DE; }
+  #lockscr { padding: 90px 24px 64px !important; }
+  #lockscr .lt { font-size: 72px !important; }
 </style>
 </head>
 <body>
@@ -273,7 +303,7 @@
 <div id="joins" aria-live="polite"></div>
 <button id="act"></button>
 <div id="leave" class="btn" role="button" aria-label="Leave the building">🚪<small>Leave</small></div>
-<div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lu">Tap to unlock</div></div><div id="pbody"></div><div id="pnav"><button id="pback">‹ Back</button><button id="phome">Home</button><button id="pclose">Close</button></div></div></div>
+<div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lu">Tap to unlock</div></div><div id="pbody"></div><div id="pnav"><button id="pback"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button><button id="phome"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-4v-3h-3v3h-4z"/></svg>Home</button><button id="pclose"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</button></div><span class="hbar"></span></div></div>
 <div id="hello">
   <div class="box">
     <h1>🌴 Lagos Island</h1>
@@ -2714,13 +2744,19 @@
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
     ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
+  // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
+  function fitPhone() {
+    const m = innerWidth <= 560 ? 8 : 16, vh = (window.visualViewport && visualViewport.height) || innerHeight;
+    phone.style.setProperty('--ps', Math.min(1, (innerWidth - 2 * m) / 372, (vh - 2 * m) / 780).toFixed(4));
+  }
+  addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
   function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
   function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); render(app, arg); }
   function back() { clearInterval(chatTimer); stack.pop(); const [a, g] = stack[stack.length - 1] || ['home']; if (!stack.length) stack.push(['home']); render(a, g); }
   const $ = (id) => document.getElementById(id);
   function fail(e) {
     if (e.message === 'signin') { me$ = null; return render('signin'); }
-    const n = document.createElement('div'); n.className = 'pcard'; n.style.background = '#FEE2E2'; n.textContent = e.message; pbody.prepend(n); setTimeout(() => n.remove(), 4000);
+    const n = document.createElement('div'); n.className = 'pcard err'; n.textContent = e.message; pbody.prepend(n); setTimeout(() => n.remove(), 4000);
   }
   async function loadMe() { me$ = await my('me'); pnaira.textContent = naira(me$.naira); myName = me$.handle; return me$; }
   async function ensureKey() {
