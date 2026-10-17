@@ -1061,18 +1061,40 @@
       palm(a + 4, b + 4, 10); palm(c - 4, b + 4, 10); palm(a + 4, cz, 9); palm(c - 4, cz, 9);
       for (const [lx, lz] of [[cx - 15, d - 3], [cx + 15, d - 3]]) lamp(lx, lz, 8);
     },
-    // ---- WYRD Tower: the tallest glass on the island, an atom turning on its crown
+    // ---- WYRD Tower: the tallest glass on the island, twisting as it rises (each floor band turned a little more and a
+    // little narrower), LED edges spiralling up its corners, an open crown and a spire, the atom turning above
     wyrdtower(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      const cx = (a + c) / 2, cz = (b + d) / 2;
-      box(a + 4, 0, b + 3, c - 4, 6, d - 3, '#E0E7FF', '#6366F1', 1); // the podium
-      box(cx - 9, 6, cz - 6, cx + 9, 96, cz + 6, '#4F46E5', '#A5B4FC');
-      box(cx - 7, 96, cz - 5, cx + 7, 112, cz + 5, '#6366F1', '#C7D2FE');
-      box(cx - 4, 112, cz - 3, cx + 4, 118, cz + 3, '#818CF8');
-      box(cx - 0.4, 118, cz - 0.4, cx + 0.4, 124, cz + 0.4, '#E0E7FF');
-      const atomDraw = () => atom(cx, 134, cz);
+      const cx = (a + c) / 2, cz = (b + d) / 2, t = performance.now() / 1000;
+      // the podium: a glass lobby with a lit canopy
+      box(a + 3, 0, b + 3, c - 3, 6, d - 3, '#C7D2FE', '#EEF2FF', 1); box(a + 2.6, 6, b + 2.6, c - 2.6, 6.6, d - 2.6, '#312E81');
+      box(cx - 7, 4.4, d - 3, cx + 7, 5, d - 0.6, '#E0E7FF');
+      const N = 24, seg = (k) => ({ y0: 6.6 + k * 4.4, y1: 6.6 + (k + 1) * 4.4, hw: 8.6 - k * 0.13, hd: 6.2 - k * 0.09, an: k * 0.045 });
+      const corners = [];
+      for (let k = 0; k < N; k++) {
+        const s = seg(k), col = mixHex('#3730A3', '#7C3AED', k / N);
+        rbox(cx, cz, s.hw, s.hd, s.an, s.y0, s.y1, col, '#C7D2FE');
+        corners.push(s);
+      }
+      // the crown: an open ring of fins round a spire
+      const top = seg(N).y0, ts = seg(N);
+      for (let k = 0; k < 8; k++) { const an = k / 8 * Math.PI * 2 + ts.an, p0 = P(cx + Math.cos(an) * 5.5, top, cz + Math.sin(an) * 4), p1 = P(cx + Math.cos(an) * 1.2, top + 14, cz + Math.sin(an) * 1); x.strokeStyle = '#C7D2FE'; x.lineWidth = Math.max(1, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+      box(cx - 0.35, top, cz - 0.35, cx + 0.35, top + 22, cz + 0.35, '#E0E7FF');
+      // the LED edges: each corner traced up the twist, pulsing upward
+      const edges = (bright) => {
+        for (const [sx, sz] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
+          if (viewDot(sx * Math.cos(0.5) - sz * Math.sin(0.5), 0, sx * Math.sin(0.5) + sz * Math.cos(0.5)) < -0.3) continue; // the corner round the back
+          x.beginPath();
+          corners.forEach((s, k) => { const lx = sx * s.hw, lz = sz * s.hd, wx = cx + lx * Math.cos(s.an) - lz * Math.sin(s.an), wz = cz + lx * Math.sin(s.an) + lz * Math.cos(s.an); for (const y of [s.y0, s.y1]) { const p = P(wx, y, wz); k || y !== s.y0 ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); } });
+          const p0 = P(cx, 6, cz), p1 = P(cx, top, cz), g = x.createLinearGradient(0, p0[1], 0, p1[1]), u = (t * 0.35) % 1;
+          g.addColorStop(0, 'rgba(34,211,238,0.35)'); g.addColorStop(Math.max(0, u - 0.08), 'rgba(167,139,250,0.5)'); g.addColorStop(u, '#FFFFFF'); g.addColorStop(Math.min(1, u + 0.08), 'rgba(167,139,250,0.5)'); g.addColorStop(1, 'rgba(34,211,238,0.35)');
+          x.save(); if (bright) { x.shadowColor = '#A78BFA'; x.shadowBlur = 10; } x.strokeStyle = g; x.lineWidth = Math.max(1, K * 0.3); x.stroke(); x.restore();
+        }
+      };
+      edges(false); glow.push(() => edges(true));
+      const atomDraw = () => atom(cx, top + 32, cz);
       atomDraw(); glow.push(atomDraw);
-      const sg = () => { const p = P(cx, 3, d - 3); x.save(); x.font = `800 ${Math.max(9, K * 2.2)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#A78BFA'; x.shadowBlur = 10; x.fillStyle = '#fff'; x.fillText('WYRD', p[0], p[1]); x.restore(); };
+      const sg = () => faceText('W Y R D', cx, 5.2, d - 0.55, '#FFFFFF', 1.8, 10);
       sg(); glow.push(sg);
     },
     // ---- the airport: a runway with lights, a glass terminal, a control tower, planes at the gates, one taking off now and then
@@ -1632,6 +1654,19 @@
     x.fillStyle = shadeHex(col, 0.82); x.beginPath(); x.moveTo(b0[0] - rr, b0[1]); x.lineTo(t0[0] - rr, t0[1]); x.lineTo(t0[0] + rr, t0[1]); x.lineTo(b0[0] + rr, b0[1]); x.fill();
     x.beginPath(); x.ellipse(b0[0], b0[1], rr, rr * sp, 0, 0, Math.PI); x.fill();
     x.fillStyle = shadeHex(col, 1.05); x.beginPath(); x.ellipse(t0[0], t0[1], rr, rr * sp, 0, 0, Math.PI * 2); x.fill();
+  }
+  const mixHex = (p, q, u) => { const a = parseInt(p.slice(1), 16), b = parseInt(q.slice(1), 16), m = (s) => Math.round(((a >> s) & 255) * (1 - u) + ((b >> s) & 255) * u); return '#' + ((1 << 24) | (m(16) << 16) | (m(8) << 8) | m(0)).toString(16).slice(1); };
+  // a box turned by [an] about its centre (cx, cz), half sizes hw x hd, from y0 to y1; [band]: a bright floor line along its top edge
+  function rbox(cx, cz, hw, hd, an, y0, y1, col, band) {
+    const co2 = Math.cos(an), si2 = Math.sin(an), w = (lx, lz) => [cx + lx * co2 - lz * si2, cz + lx * si2 + lz * co2];
+    const cs = [w(-hw, -hd), w(hw, -hd), w(hw, hd), w(-hw, hd)], ns = [[si2, -co2], [co2, si2], [-si2, co2], [-co2, -si2]]; // the sides' outward normals: -z, +x, +z, -x turned
+    for (let k = 0; k < 4; k++) {
+      const [nx, nz] = ns[k]; if (viewDot(nx, 0, nz) <= 0) continue;
+      const p = cs[k], q = cs[(k + 1) % 4], pts = [P(p[0], y0, p[1]), P(q[0], y0, q[1]), P(q[0], y1, q[1]), P(p[0], y1, p[1])];
+      quad(pts, lit(col, nx, 0, nz));
+      if (band) { x.strokeStyle = band; x.lineWidth = Math.max(1, K * 0.15); x.beginPath(); x.moveTo(pts[3][0], pts[3][1]); x.lineTo(pts[2][0], pts[2][1]); x.stroke(); }
+    }
+    quad(cs.map(([px, pz]) => P(px, y1, pz)), lit(col, 0, 1, 0));
   }
   // text painted on a wall that faces +z, at (px, py, pz), [size] in world units
   function faceText(txt, px, py, pz, col, size, blur, weight = 900) {
@@ -2318,10 +2353,13 @@
       { k: 'plant', x: 93, z: 63 }, { k: 'plant', x: 3, z: 63 },
     ],
     tower: [
-      // the lobby: reception, a lounge, WYRD at the centre on its plinth
-      { k: 'reception', x: 20, z: 10 }, { k: 'couch2', x: 54, z: 38, c: '#4F46E5' }, { k: 'couch2', x: 54, z: 24, c: '#4F46E5' }, { k: 'coffee', x: 50, z: 31, c: '#111827' },
-      { k: 'desk', x: 14, z: 36 }, { k: 'desk', x: 24, z: 36 }, { k: 'chair', x: 14, z: 39 }, { k: 'chair', x: 24, z: 39 },
-      { k: 'plant', x: 4, z: 48 }, { k: 'plant', x: 68, z: 48 }, { k: 'plant', x: 68, z: 4 }, { k: 'plant', x: 34, z: 48 }, { k: 'plant', x: 42, z: 48 },
+      // the lobby: reception, a designer lounge, a workspace, a café bar, WYRD at the centre on its plinth (store pieces, in 3D)
+      { k: 'reception', x: 20, z: 10 },
+      { k: 'k:loungeDesignSofa', x: 58, z: 40 }, { k: 'k:loungeDesignChair', x: 50, z: 34 }, { k: 'k:loungeDesignChair', x: 66, z: 34 }, { k: 'k:tableCoffeeGlass', x: 58, z: 34 }, { k: 'k:rugRounded', x: 58, z: 36 },
+      { k: 'k:deskCorner', x: 12, z: 38 }, { k: 'k:desk', x: 25, z: 38 }, { k: 'k:chairDesk', x: 12, z: 43 }, { k: 'k:chairDesk', x: 25, z: 42 },
+      { k: 'k:kitchenBar', x: 56, z: 9 }, { k: 'k:kitchenBar', x: 60, z: 9 }, { k: 'k:kitchenBar', x: 64, z: 9 }, { k: 'k:stoolBarSquare', x: 56, z: 13 }, { k: 'k:stoolBarSquare', x: 60, z: 13 }, { k: 'k:stoolBarSquare', x: 64, z: 13 },
+      { k: 'k:pottedPlant', x: 4, z: 48 }, { k: 'k:pottedPlant', x: 68, z: 48 }, { k: 'k:pottedPlant', x: 69, z: 20 }, { k: 'k:pottedPlant', x: 32, z: 48 }, { k: 'k:pottedPlant', x: 40, z: 48 },
+      { k: 'k:lampSquareFloor', x: 46, z: 44 }, { k: 'k:lampSquareFloor', x: 32, z: 40 },
     ],
     arena: [],
     office: [
@@ -2518,8 +2556,20 @@
   // WYRD Tower's lobby: polished stone, glass walls onto the city, a ring of light round WYRD, live screens
   function drawTowerShell(R, now) {
     const t = now / 1000, cx = R.w / 2, cz = R.d / 2 - 2;
-    x.strokeStyle = 'rgba(99,102,241,0.12)'; x.lineWidth = 1;
-    for (let k = 4; k < R.w; k += 4) { const p = P(k, 0.02, 0), q = P(k, 0.02, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+    // the floor: dark polished stone, circuit traces running in to WYRD with pulses travelling along them
+    flat(0, 0, R.w, R.d, 0.01, '#141433');
+    const traces = [[[2, 6], [14, 6], [14, cz], [cx - 9, cz]], [[2, R.d - 6], [20, R.d - 6], [20, cz + 4], [cx - 8, cz + 4]], [[R.w - 2, 20], [R.w - 16, 20], [R.w - 16, cz - 3], [cx + 9, cz - 3]], [[R.w - 2, R.d - 10], [R.w - 22, R.d - 10], [R.w - 22, cz + 5], [cx + 8, cz + 5]], [[cx - 3, 2], [cx - 3, cz - 9]], [[cx + 3, R.d - 2], [cx + 3, cz + 9]]];
+    x.strokeStyle = 'rgba(129,140,248,0.35)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath();
+    for (const tr of traces) tr.forEach(([px, pz], k) => { const p = P(px, 0.03, pz); k ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); });
+    x.stroke();
+    x.save(); x.globalCompositeOperation = 'lighter';
+    traces.forEach((tr, k) => { // a pulse along each trace, in toward the centre
+      const segs = tr.slice(1).map((q, i) => [tr[i], q, Math.hypot(q[0] - tr[i][0], q[1] - tr[i][1])]), L = segs.reduce((s, v) => s + v[2], 0); let u = ((t * 9 + k * 7) % L);
+      for (const [p0, p1, l] of segs) { if (u > l) { u -= l; continue; } const px = p0[0] + (p1[0] - p0[0]) * u / l, pz = p0[1] + (p1[1] - p0[1]) * u / l, p = P(px, 0.04, pz), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 2); g.addColorStop(0, 'rgba(34,211,238,0.9)'); g.addColorStop(1, 'rgba(34,211,238,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 2, 0, Math.PI * 2); x.fill(); break; }
+    });
+    x.restore();
+    // a garden in planters along the glass
+    for (let k = 0; k < 7; k++) { const px = 30 + k * 3.4; box(px - 1.5, 0, 1, px + 1.5, 1.4, 3.4, '#1E1B4B'); tree(px, 2.2, 1.3, k % 2 ? '#15803D' : '#16A34A'); }
     // glass walls with the city beyond: tall panes, a skyline glimpse
     for (let k = 0; k < 8; k++) { const x0 = 2 + k * 8.6; const p0 = P(x0, 1, 0.1), p1 = P(x0 + 8, 1, 0.1), p2 = P(x0 + 8, 17, 0.1), p3 = P(x0, 17, 0.1); const g = x.createLinearGradient(p0[0], p3[1], p0[0], p0[1]); g.addColorStop(0, night > 0.5 ? '#1E1B4B' : '#BAE6FD'); g.addColorStop(1, night > 0.5 ? '#312E81' : '#E0F2FE'); quad([p0, p1, p2, p3], g, '#C7D2FE');
       for (let b = 0; b < 3; b++) { const bh = 4 + ((k * 7 + b * 3) % 7), bx = x0 + 1 + b * 2.4; const q0 = P(bx, 1, 0.12), q1 = P(bx + 1.8, 1, 0.12), q2 = P(bx + 1.8, 1 + bh, 0.12), q3 = P(bx, 1 + bh, 0.12); quad([q0, q1, q2, q3], night > 0.5 ? 'rgba(129,140,248,0.6)' : 'rgba(100,116,139,0.35)'); } }
@@ -2527,14 +2577,22 @@
     x.save(); x.globalCompositeOperation = 'lighter';
     for (let k = 0; k < 3; k++) { const p = P(cx, 0.05, cz), r = K * (9 + k * 3 + Math.sin(t * 2 + k) * 0.6); x.strokeStyle = `rgba(129,140,248,${0.5 - k * 0.12})`; x.lineWidth = Math.max(1.5, K * 0.3); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
     x.restore();
-    cyl(cx, cz, 4, 1.2, '#1E1B4B');
+    cylLit(cx, cz, 4.2, 0, 1.2, '#312E81'); { const p = P(cx, 1.22, cz), r = 4.2 * K; x.strokeStyle = '#A78BFA'; x.lineWidth = Math.max(1, K * 0.3); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
+    // holographic rings turning round WYRD, and motes of light rising
+    afterCars.push(() => {
+      const c0 = P(cx, 7, cz); x.save(); x.globalCompositeOperation = 'lighter';
+      for (let k = 0; k < 3; k++) { x.strokeStyle = ['rgba(167,139,250,0.55)', 'rgba(34,211,238,0.5)', 'rgba(244,114,182,0.45)'][k]; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.ellipse(c0[0], c0[1], K * (7 + k * 1.5), K * (2 + k * 0.6), t * (0.5 + k * 0.3) + k, 0, Math.PI * 2); x.stroke(); }
+      for (let k = 0; k < 14; k++) { const ph = (t * 0.4 + k / 14) % 1, an = k * 2.4, p = P(cx + Math.cos(an) * 4.5, 1.5 + ph * 16, cz + Math.sin(an) * 4.5); x.fillStyle = `rgba(199,210,254,${0.9 * (1 - ph)})`; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.25), 0, Math.PI * 2); x.fill(); }
+      x.restore();
+    });
     // live screens on the left wall: WYRD's mind, the city's pulse
     for (let k = 0; k < 2; k++) { const z0 = 8 + k * 16, p0 = P(0.15, 4, z0), p1 = P(0.15, 4, z0 + 12), p2 = P(0.15, 12, z0 + 12), p3 = P(0.15, 12, z0); quad([p0, p1, p2, p3], '#0B1020');
       const bars = 10; for (let b = 0; b < bars; b++) { const hgt = 1 + (Math.sin(t * 2 + b + k * 3) * 0.5 + 0.5) * 6, zb = z0 + 1 + b * 1.05; const q0 = P(0.18, 5, zb), q1 = P(0.18, 5, zb + 0.7), q2 = P(0.18, 5 + hgt, zb + 0.7), q3 = P(0.18, 5 + hgt, zb); quad([q0, q1, q2, q3], k ? '#22D3EE' : '#A78BFA'); } }
     const sign = (txt, x0, y0, z0, col, size) => { const o = P(x0, y0, z0), e = P(x0 + 1, y0, z0), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `900 ${size}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 8; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
     sign('W Y R D', 20, 15, 0.15, '#6366F1', 3.6);
     // the lifts on the right wall
-    for (let k = 0; k < 2; k++) { const z0 = 10 + k * 10; box(R.w - 0.6, 0, z0, R.w, 10, z0 + 6, '#CBD5E1'); box(R.w - 0.7, 0, z0 + 2.9, R.w - 0.5, 10, z0 + 3.1, '#94A3B8'); }
+    for (let k = 0; k < 2; k++) { const z0 = 10 + k * 10; box(R.w - 0.6, 0, z0, R.w, 10, z0 + 6, '#CBD5E1'); box(R.w - 0.7, 0, z0 + 2.9, R.w - 0.5, 10, z0 + 3.1, '#94A3B8'); box(R.w - 0.8, 10.4, z0 + 1.5, R.w - 0.6, 11.4, z0 + 4.5, '#0B1020');
+      const fl = Math.floor(t / 3 + k * 5) % 48 + 1, p = P(R.w - 0.85, 10.9, z0 + 3); x.save(); x.fillStyle = '#22D3EE'; x.shadowColor = '#22D3EE'; x.shadowBlur = 6; x.font = `800 ${Math.max(7, K * 0.9)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(String(fl), p[0], p[1]); x.restore(); } // which floor the lift is on
   }
   // a showroom: polished floor, cars turning on lit platforms, price boards, the dealer's colours
   function showroomCars(R) {
