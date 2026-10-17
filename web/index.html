@@ -2423,11 +2423,12 @@
       x.save(); x.globalCompositeOperation = 'lighter'; const lp = P(c.x, 20, c.z); const cone = x.createLinearGradient(lp[0], lp[1], p[0], p[1]); cone.addColorStop(0, 'rgba(255,250,235,0.18)'); cone.addColorStop(1, 'rgba(255,250,235,0)'); x.fillStyle = cone; x.beginPath(); x.moveTo(lp[0] - K * 0.6, lp[1]); x.lineTo(lp[0] + K * 0.6, lp[1]); x.lineTo(p[0] + r * 0.9, p[1]); x.lineTo(p[0] - r * 0.9, p[1]); x.fill(); x.restore();
       // the price board on a stand (over the cars)
       afterCars.push(() => {
-      const st = P(c.x + 9, 0, c.z + 9), sb = P(c.x + 9, 5, c.z + 9); x.strokeStyle = lux ? gold : '#94A3B8'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(st[0], st[1]); x.lineTo(sb[0], sb[1]); x.stroke();
-      x.save(); x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '800 11px "Plus Jakarta Sans", sans-serif';
-      const name = c.v[0], price = naira(c.v[2]), w = Math.max(x.measureText(name).width, x.measureText(price).width) + 18;
-      x.fillStyle = lux ? 'rgba(12,10,9,0.92)' : 'rgba(255,255,255,0.97)'; x.beginPath(); x.roundRect(sb[0] - w / 2, sb[1] - 30, w, 32, 8); x.fill(); x.strokeStyle = acc; x.lineWidth = 1; x.stroke();
-      x.fillStyle = lux ? '#F8FAFC' : '#0F172A'; x.fillText(name, sb[0], sb[1] - 21); x.fillStyle = lux ? '#FDE68A' : blue; x.font = '900 11px "Plus Jakarta Sans", sans-serif'; x.fillText(price, sb[0], sb[1] - 7); x.restore();
+      // a small name plate only; the price shows when you tap the car (the showcase)
+      const st = P(c.x + 8, 0, c.z + 8), sb = P(c.x + 8, 3, c.z + 8); x.strokeStyle = lux ? gold : '#94A3B8'; x.lineWidth = Math.max(1, K * 0.15); x.beginPath(); x.moveTo(st[0], st[1]); x.lineTo(sb[0], sb[1]); x.stroke();
+      x.save(); x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '700 9px "Plus Jakarta Sans", sans-serif';
+      const name = c.v[0], w = x.measureText(name).width + 12;
+      x.fillStyle = lux ? 'rgba(12,10,9,0.85)' : 'rgba(255,255,255,0.92)'; x.beginPath(); x.roundRect(sb[0] - w / 2, sb[1] - 16, w, 16, 8); x.fill(); x.strokeStyle = acc; x.lineWidth = 1; x.stroke();
+      x.fillStyle = lux ? '#FDE68A' : '#0F172A'; x.fillText(name, sb[0], sb[1] - 7.5); x.restore();
       });
     }
   }
@@ -3442,7 +3443,7 @@
       for (const it of inside.layout) { const k = SEAT[it.k] || (it.k === 'roulette' || it.k === 'slot' ? 'play' : null); if (!k) continue; const d = Math.hypot(it.x - me.x, it.z - me.z); if (d < nd) { nd = d; near = [it, k]; } }
       if (inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
-      if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 ${c.v[0]} · ${naira(c.v[2])}`, run: () => openShowcase(c.id) }; }
+      if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 See the ${c.v[0]}`, run: () => openShowcase(c.id) }; }
       if (next) { /* a car to buy comes first */ } else if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
       else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y }; me.x = pose.x; me.z = pose.z; } };
