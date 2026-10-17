@@ -279,6 +279,35 @@
   #pnav button:active { background: var(--y); color: #07070D; }
   #pnav button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   #screen > .hbar { position: absolute; left: 50%; bottom: 8px; width: 120px; height: 4px; margin-left: -60px; border-radius: 3px; background: rgba(230,249,255,.55); z-index: 5; pointer-events: none; }
+  /* WYRD OS: home widgets, the control centre, the lock screen, apps zooming open */
+  .hhead { display: flex; align-items: flex-end; justify-content: space-between; margin: 6px 2px 2px; }
+  .hgreet { font: 600 13px 'Rajdhani', sans-serif; letter-spacing: 1px; color: #8FB6C2; text-transform: uppercase; } .hgreet b { display: block; font: 900 18px 'Orbitron', sans-serif; letter-spacing: 1px; color: #fff; text-transform: none; }
+  .hwx { font-size: 22px; } .hwx b { font: 800 16px 'Orbitron', sans-serif; color: var(--y); margin-left: 4px; }
+  .widget { padding: 14px 16px 12px !important; } .widget .wt { font-size: 36px !important; }
+  .wrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 2px 0 2px; }
+  .wmini { text-align: left; padding: 10px 12px; border: 1px solid rgba(0,240,255,.28); background: rgba(0,0,0,.5); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; cursor: pointer; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%); transition: border-color .15s; }
+  .wmini:hover { border-color: var(--y); }
+  .wmini .wd { font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: var(--c); } .wmini .wn { font: 800 15px 'Orbitron', sans-serif; color: #fff; margin: 3px 0 5px; } .wmini small { font-size: 11.5px; color: #8FB6C2; }
+  .wbar { height: 4px; margin-bottom: 5px; background: rgba(0,240,255,.15); } .wbar i { display: block; height: 100%; background: linear-gradient(90deg, var(--c), var(--y)); }
+  .apps { padding-top: 12px !important; gap: 14px 6px !important; }
+  #shade { padding-top: 44px !important; }
+  .cc { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .cct { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border: 1px solid rgba(0,240,255,.25); background: rgba(255,255,255,.05); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; text-align: left; cursor: pointer; }
+  .cct b { font-size: 20px; } .cct span { font: 700 14px 'Rajdhani', sans-serif; } .cct small { font-size: 11px; color: #8FB6C2; letter-spacing: 1px; text-transform: uppercase; }
+  .cct.on { background: var(--y); border-color: var(--y); color: #07070D; } .cct.on small { color: #07070D; }
+  .cct.wide { grid-column: span 2; flex-direction: row; align-items: center; gap: 10px; cursor: default; } .cct.wide small { margin-left: auto; }
+  .ccth { grid-column: span 2; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid rgba(0,240,255,.25); }
+  .ccth span { font: 700 12px 'Rajdhani', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: var(--c); margin-right: auto; }
+  .ccth button { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; } .ccth button.on { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,.5); }
+  #lockscr { padding: 70px 18px 34px !important; }
+  #lockscr .ltop { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #lockscr .lwx { font: 700 13px 'Rajdhani', sans-serif; letter-spacing: 1.5px; color: #E6F9FF; opacity: .85; }
+  #lockscr .lnotes { width: 100%; display: flex; flex-direction: column; gap: 6px; } #lockscr .lnotes .n { padding: 9px 11px; border-left: 2px solid var(--c); background: rgba(0,240,255,.08); backdrop-filter: blur(6px); font: 600 14px 'Rajdhani', sans-serif; color: #E6F9FF; } #lockscr .lnotes small { display: block; color: #8FB6C2; font-size: 11px; letter-spacing: 1px; }
+  #lockscr .lmore { text-align: center; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 2px; color: #8FB6C2; }
+  #lockscr .lbot { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+  #lockscr .lq { width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); backdrop-filter: blur(8px); font-size: 20px; cursor: pointer; transition: transform .12s, background .12s; } #lockscr .lq:hover { background: rgba(255,255,255,.18); } #lockscr .lq:active { transform: scale(.9); }
+  #pbody.zoomin { animation: appZoom .3s cubic-bezier(.2,.9,.3,1.1); }
+  @keyframes appZoom { from { transform: scale(.9); opacity: .2; filter: blur(3px); } to { transform: none; opacity: 1; filter: none; } }
   /* the Home Store */
   .stabs { display: flex; gap: 6px; overflow-x: auto; margin: 0 -16px 6px; padding: 2px 16px 8px; }
   .stabs button { flex: none; padding: 7px 11px; border: 1px solid rgba(0,240,255,.3); background: rgba(0,0,0,.45); color: #E6F9FF; font: 700 13px 'Rajdhani', sans-serif; letter-spacing: .5px; cursor: pointer; }
@@ -315,7 +344,7 @@
 <div id="joins" aria-live="polite"></div>
 <button id="act"></button>
 <div id="leave" class="btn" role="button" aria-label="Leave the building">🚪<small>Leave</small></div>
-<div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lu">Tap to unlock</div></div><div id="pbody"></div><div id="pnav"><button id="pback"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button><button id="phome"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-4v-3h-3v3h-4z"/></svg>Home</button><button id="pclose"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</button></div><span class="hbar"></span></div></div>
+<div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ltop"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lwx" id="lockw"></div></div><div class="lnotes" id="lockn"></div><div class="lbot"><button class="lq" data-lq="ride" aria-label="Ride">🛵</button><div class="lu">Tap to unlock</div><button class="lq" data-lq="wyrd" aria-label="Ask WYRD">✨</button></div></div><div id="pbody"></div><div id="pnav"><button id="pback"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button><button id="phome"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-4v-3h-3v3h-4z"/></svg>Home</button><button id="pclose"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</button></div><span class="hbar"></span></div></div>
 <div id="hello">
   <div class="box">
     <h1>🌴 Lagos Island</h1>
@@ -1909,7 +1938,9 @@
   { let k = 0; for (const l of lots) if (l.kind === 'hq') hqIndex.set(l.i + ',' + l.j, k++); }
   // the Lagos clock: night from 7.30 pm to 5.30 am, with an hour's dusk and dawn
   const forcedNight = new URLSearchParams(location.search).get('night');
+  let nightPref = null; // the phone's Sky toggle: null (Lagos time), 1 (night), 0 (day)
   function nightNow() {
+    if (nightPref != null) return nightPref;
     if (forcedNight) return Number(forcedNight);
     const d = new Date(Date.now() + 3600e3), h = d.getUTCHours() + d.getUTCMinutes() / 60;
     if (h >= 19.5 || h < 5.5) return 1;
@@ -3430,7 +3461,7 @@
   }
   addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
   function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
-  function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); render(app, arg); }
+  function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); pbody.classList.remove('zoomin'); void pbody.offsetWidth; pbody.classList.add('zoomin'); render(app, arg); } // apps zoom open
   function back() { clearInterval(chatTimer); stack.pop(); const [a, g] = stack[stack.length - 1] || ['home']; if (!stack.length) stack.push(['home']); render(a, g); }
   const $ = (id) => document.getElementById(id);
   function fail(e) {
@@ -3443,22 +3474,47 @@
     if (me$ && me$.pubKey !== k.pubJwk) { await my('setProfile', { handle: '', skills: me$.skills, openToWork: me$.openToWork, pubKey: k.pubJwk }); me$.pubKey = k.pubJwk; }
   }
   let keyed = false;
+  // Lagos weather, the same for everyone in the same hour: hot afternoons, warm nights, storms some evenings
+  function lagosWeather() {
+    const d = new Date(Date.now() + 3600e3), h = d.getUTCHours(), R = rnd(d.getUTCDate() * 24 + h)(), nightTime = h < 6 || h >= 19;
+    const temp = Math.round(25 + 6 * Math.max(0, Math.sin((h - 7) / 12 * Math.PI)) + (R < 0.5 ? 0 : 1));
+    const [icon, text] = nightTime ? (R < 0.25 ? ['🌧️', 'Rain'] : ['🌙', 'Clear night']) : R < 0.2 ? ['⛈️', 'Storms'] : R < 0.55 ? ['⛅', 'Partly cloudy'] : ['☀️', 'Sunny'];
+    return { temp, icon, text };
+  }
+  // WYRD OS themes: the accent colours, chosen in the control centre and remembered on this device
+  const OS_THEMES = { neon: ['#FCEE0A', '#00F0FF', '#FF003C'], gold: ['#F5C542', '#FDE68A', '#B45309'], ocean: ['#5EEAD4', '#38BDF8', '#6366F1'], rose: ['#F9A8D4', '#C084FC', '#FB7185'] };
+  let osTheme = store.get('li.os') || 'neon';
+  function applyTheme() { const t = OS_THEMES[osTheme] || OS_THEMES.neon; phone.style.setProperty('--y', t[0]); phone.style.setProperty('--c', t[1]); phone.style.setProperty('--m', t[2]); }
+  applyTheme();
   // WYRD OS: it boots once, then each time you pick it up it's on the lock screen until you tap
-  let booted = false;
+  let booted = false, lockGo = null;
   const notes = []; // the notification shade
   function notify(text, kind = 'island') { notes.unshift({ text, kind, at: new Date() }); notes.length = Math.min(notes.length, 30); }
   const shadeEl = document.getElementById('shade');
-  document.getElementById('pbar').onclick = () => {
-    shadeEl.innerHTML = '<div class="ptitle" style="font-size:14px">Notifications</div>' + (notes.map((n) => '<div class="n">' + esc(n.text) + '<small>' + n.kind.toUpperCase() + ' · ' + n.at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</small></div>').join('') || '<div class="n">All quiet on the island.</div>');
-    shadeEl.classList.toggle('on');
-  };
+  // the control centre: pull it down from the status bar. Toggles for the 3D models and the sky, the OS theme, then notifications
+  const noteHtml = (n) => '<div class="n">' + esc(n.text) + '<small>' + n.kind.toUpperCase() + ' · ' + n.at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</small></div>';
+  function buildShade() {
+    const sky = nightPref === 1 ? ['🌙', 'Night'] : nightPref === 0 ? ['☀️', 'Day'] : ['🕒', 'Lagos time'], wx = lagosWeather();
+    shadeEl.innerHTML = `<div class="cc"><button class="cct${G3.on ? ' on' : ''}" data-cc="3d"><b>🧊</b><span>3D models</span><small>${G3.on ? 'On' : 'Off'}</small></button>
+      <button class="cct${nightPref != null ? ' on' : ''}" data-cc="sky"><b>${sky[0]}</b><span>Sky</span><small>${sky[1]}</small></button>
+      <div class="cct wide"><b>${wx.icon}</b><span>${wx.temp}°C · ${wx.text}</span><small>Lagos</small></div>
+      <div class="ccth"><span>Theme</span>${Object.entries(OS_THEMES).map(([k, c]) => `<button data-th="${k}" class="${k === osTheme ? 'on' : ''}" style="background:linear-gradient(135deg,${c[0]},${c[1]} 55%,${c[2]})" aria-label="${k}"></button>`).join('')}</div></div>
+      <div class="ptitle" style="font-size:14px">Notifications</div>${notes.map(noteHtml).join('') || '<div class="n">All quiet on the island.</div>'}`;
+    shadeEl.querySelector('[data-cc="3d"]').onclick = (e) => { e.stopPropagation(); G3.on = !G3.on; buildShade(); };
+    shadeEl.querySelector('[data-cc="sky"]').onclick = (e) => { e.stopPropagation(); nightPref = nightPref == null ? 1 : nightPref === 1 ? 0 : null; buildShade(); };
+    shadeEl.querySelectorAll('[data-th]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); osTheme = b.dataset.th; store.set('li.os', osTheme); applyTheme(); buildShade(); }));
+  }
+  document.getElementById('pbar').onclick = () => { buildShade(); shadeEl.classList.toggle('on'); };
   shadeEl.onclick = () => shadeEl.classList.remove('on');
   function lockScreen() {
     return new Promise((done) => {
-      const L = document.getElementById('lockscr'), d = new Date(Date.now() + 3600e3);
+      const L = document.getElementById('lockscr'), d = new Date(Date.now() + 3600e3), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
-      document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }) + (notes.length ? ' · ' + notes.length + ' new' : '');
+      document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+      document.getElementById('lockw').textContent = `${wx.icon} ${wx.temp}°C · ${wx.text} · Lagos`;
+      document.getElementById('lockn').innerHTML = notes.slice(0, 3).map(noteHtml).join('') + (notes.length > 3 ? `<div class="lmore">+${notes.length - 3} more</div>` : '');
       L.style.display = 'flex'; L.onclick = () => { L.style.display = 'none'; done(); };
+      L.querySelectorAll('[data-lq]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); lockGo = b.dataset.lq; L.style.display = 'none'; done(); })); // straight into an app
     });
   }
   function boot() {
@@ -3474,7 +3530,8 @@
     phone.style.display = 'block'; phoneBtnEl.style.display = 'none'; stack = [['home']]; shadeEl.classList.remove('on');
     if (!booted) await boot();
     await lockScreen();
-    if (!signedIn()) return render('signin');
+    if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
+    if (!signedIn()) return app === 'ride' ? go('ride') : render('signin');
     try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
     if (app) go(app, arg); else render('home');
   }
@@ -3484,7 +3541,12 @@
       if (app === 'home') {
         const d = new Date(Date.now() + 3600e3), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
-        show(`<div class="widget"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">Signed in</div><div class="wn">${esc(me$.handle)}</div></div></div>
+        const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+        const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
+        show(`<div class="hhead"><div class="hgreet">${hi},<b>${esc(me$.handle)}</b></div><div class="hwx">${wx.icon}<b>${wx.temp}°</b></div></div>
+          <div class="widget"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">${wx.text}</div><div class="wn">${wx.temp}°C</div></div></div>
+          <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>${naira(me$.earnedToday || 0)} of ${naira(cap)} today</small></button>
+            <button class="wmini" data-app="homes"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${notes.length ? notes.length + ' new on your phone' : 'All quiet'}</small></button></div>
           <div class="apps">${APPS.filter((a) => !DOCK.includes(a[0])).map(tile).join('')}</div>
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
