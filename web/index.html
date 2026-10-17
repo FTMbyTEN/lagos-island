@@ -363,7 +363,8 @@
     { id: 'lekki', name: 'Lekki', rect: [30, 8, 41, 21], rows: [9, 15, 19], cols: [33, 37], cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
     { id: 'ajah', name: 'Ajah', rect: [44, 10, 49, 18], rows: [15], cols: [46], cam: { yaw: 0.55, pitch: 0.9, zoom: 1.05 } },
     { id: 'ilashe', name: 'Ilashe', rect: [3, 22, 10, 26], rows: [24], cols: [4], sand: true, cam: { yaw: -0.6, pitch: 0.85, zoom: 1.05 } },
-    { id: 'ads', name: 'Ad Island', rect: [29, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
+    { id: 'banana', name: 'Banana Island', rect: [27, 1, 29, 7], rows: [6], cols: [], fill: 'palm', cam: { yaw: 0.4, pitch: 0.9, zoom: 1.15 } }, // its own island off Ikoyi, gated
+    { id: 'ads', name: 'Ad Island', rect: [31, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
     { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
     { id: 'arena', name: 'The Arena', rect: [26, 23, 36, 28], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
     { id: 'station', name: 'Blue Line Station', rect: [38, 23, 42, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 1.0 } },
@@ -390,6 +391,7 @@
   // bridges and the ferry: [i0, j0, i1, j1, name]
   const BRIDGES = [
     [14, 6, 15, 6, 'Bridge to Ikoyi'],
+    [26, 6, 26, 6, 'Banana Island Bridge'],
     [19, 12, 19, 13, 'Falomo Bridge'],
     [26, 9, 29, 9, 'Lekki-Ikoyi Link Bridge'],
     [28, 19, 29, 19, 'Lekki Toll Road'],
@@ -428,7 +430,11 @@
     ['jetty', 2, 15, 2, 1, 'Marina Jetty', '⛴️'],
     // Ikoyi
     ['golf', 24, 7, 2, 2, 'Ikoyi Club 1938', '⛳'],
-    ['villas', 24, 3, 2, 3, 'Banana Island', '🏡'],
+    ['park', 24, 3, 2, 3, 'Ikoyi waterfront', '🌳'],
+    // Banana Island: its own island across the bridge, gated, villas on the water and a marina
+    ['villas', 27, 1, 3, 2, 'Banana Island', '🏡'],
+    ['marina', 27, 3, 3, 2, 'Banana Island Marina', '⛵'],
+    ['bigate', 27, 5, 1, 1, 'Banana Island gate', '🛂'],
     ['arcade', 20, 10, 3, 2, 'Falomo Shopping Centre', '🛍️'],
     ['motorpark', 16, 7, 3, 2, 'Obalende Motor Park', '🚌'],
     ['houses', 20, 7, 3, 2, 'Ikoyi homes', '🏠'],
@@ -488,7 +494,7 @@
     // the arena: shows with tickets, and the biggest screens on the island
     ['arena', 27, 23, 10, 6, 'The Arena (live shows)', '🎤'],
     // Ad Island and HQ Row
-    ['screens', 29, 1, 4, 2, 'Ad Island (digital billboards)', '📺'],
+    ['screens', 31, 1, 4, 2, 'Ad Island (digital billboards)', '📺'],
     ['hqgate', 47, 21, 2, 2, "HQ Row: everyone's own HQ", '🏠'],
   ];
   const BILLBOARDS = [
@@ -815,6 +821,24 @@
       for (const [px, pz] of [[a + 2, b + 2], [c - 2, d - 2], [a + 2, d - 2]]) tree(px, pz, 2.6);
     },
     villas(a, b, c, d) { estate(a, b, c, d); },
+    // ---- Banana Island Marina: a boardwalk out over the water, yachts at the pontoons, a clubhouse
+    marina(a, b, c, d) {
+      flat(a, b, c, d, 0.05, '#E7E5E4', C.plotEdge);
+      box(a + 2, 0, b + 2, a + 12, 5, b + 9, '#FFFFFF', '#38BDF8', 1); box(a + 1.6, 5, b + 1.6, a + 12.4, 5.5, b + 9.4, '#0F766E'); // the clubhouse
+      const t = performance.now() / 1000;
+      flat(c - 0.5, b + 3, c + 9, b + 5, 0.3, '#A16207'); flat(c - 0.5, b + 12, c + 9, b + 14, 0.3, '#A16207'); // pontoons out over the water
+      for (const [yz, col, k] of [[b + 7.5, '#F8FAFC', 0], [b + 16.5, '#E2E8F0', 1]]) { const yx = c + 4 + Math.sin(t * 0.8 + k) * 0.2, bob = Math.sin(t * 1.3 + k) * 0.15; box(yx - 4.5, bob, yz - 1.4, yx + 4.5, 1.6 + bob, yz + 1.4, col); box(yx - 2.5, 1.6 + bob, yz - 1, yx + 2, 3 + bob, yz + 1, '#1E293B'); box(yx - 0.1, 3 + bob, yz - 0.1, yx + 0.1, 9 + bob, yz + 0.1, '#CBD5E1'); } // yachts
+      for (let k = 0; k < 4; k++) palm(a + 15 + k * 4, d - 2, 8 + (k % 2));
+      lamp(a + 14, b + 3, 6);
+    },
+    // ---- the gate onto Banana Island: a gatehouse, a barrier that lifts now and then
+    bigate(a, b, c, d) {
+      flat(a, b, c, d, 0.05, C.paving);
+      box(a + 1.5, 0, b + 1.5, a + 6, 4, b + 6, '#F5F5F4', '#1E293B', 1); box(a + 1.2, 4, b + 1.2, a + 6.3, 4.5, b + 6.3, '#0F766E');
+      const up = (performance.now() / 1000) % 9 < 2.5, p0 = P(a + 6.5, 1.6, d - 0.5), p1 = up ? P(a + 7, 7, d - 0.5) : P(c + 3, 1.6, d - 0.5);
+      x.strokeStyle = '#DC2626'; x.lineWidth = Math.max(1.5, K * 0.4); x.setLineDash([K * 0.8, K * 0.8]); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); x.setLineDash([]);
+      box(a + 6.2, 0, d - 0.8, a + 6.8, 1.8, d - 0.2, '#334155');
+    },
     arcade(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
       box(a + 2, 0, b + 3, c - 2, 5, d - 2, '#E5E7EB', '#334155', 1);
@@ -1877,7 +1901,7 @@
   // the footprints you walk round
   for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station', 'dealer'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -3134,6 +3158,8 @@
     hqgate: ['🏠 Go to your HQ?', 'Your own place on HQ Row.', () => openPhone('hq')],
     screens: ['📺 Advertise here?', 'Your ad on Ad Island\'s digital billboards.', null],
     welcome: null, soon: ['🚧 Reclaimed land', 'Something new is coming here.', null],
+    marina: ['⛵ Take a yacht out?', 'Banana Island Marina: charters round the lagoon.', null],
+    bigate: ['🛂 Banana Island', 'Gated. Residents and their guests: tap a villa to go in or knock.', () => openPhone('homes')],
   };
   function placeCard(p) {
     if (ENTERABLE.has(p[0])) return enterPlace(p);
