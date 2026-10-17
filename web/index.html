@@ -849,10 +849,26 @@
       box(a + 4, 0, b + 3, c - 4, 14, d - 3, '#7FB3D9', '#DCEBF7', 4);
       box(a + 6, 14, b + 5, c - 6, 16, d - 5, '#E2E8F0');
     },
+    // ---- a beach: wet sand and foam along whichever side meets the sea, loungers in pairs under umbrellas,
+    // a thatched bar, a volleyball net, palms; tap it to spend the day there
     beach(a, b, c, d) {
-      const cols = ['#EF4444', '#F59E0B', '#3B82F6', '#EC4899', '#22C55E'];
-      for (let k = 0; k < Math.round((c - a) / 5); k++) umbrella(a + 3 + k * 5, b + 5 + (k % 2) * 6, cols[k % cols.length]);
-      palm(a + 2, b + 2, 10); palm(c - 3, b + 3, 9);
+      const cols = ['#EF4444', '#F59E0B', '#3B82F6', '#EC4899', '#22C55E'], t = performance.now() / 1000;
+      const i0 = a / T, j0 = b / T, i1 = c / T, j1 = d / T, wet = (i, j) => { const v = at(i, j); return v !== LAND && v !== SAND && v !== ROAD && v !== BRIDGE; };
+      const sides = [[wet(i0, j0 - 1) && wet(i1 - 1, j0 - 1), a, b, c, b + 3, 'h'], [wet(i0, j1) && wet(i1 - 1, j1), a, d - 3, c, d, 'h'], [wet(i0 - 1, j0) && wet(i0 - 1, j1 - 1), a, b, a + 3, d, 'v'], [wet(i1, j0) && wet(i1, j1 - 1), c - 3, b, c, d, 'v']];
+      for (const [isWet, x0, z0, x1, z1, o] of sides) {
+        if (!isWet) continue;
+        flat(x0, z0, x1, z1, 0.055, '#D9C27E'); // wet sand
+        x.strokeStyle = 'rgba(255,255,255,0.9)'; x.lineWidth = Math.max(1, K * 0.35); x.beginPath(); // the foam, moving
+        for (let k = 0; k <= 16; k++) { const u = k / 16, wob = Math.sin(k * 1.7 + t * 2) * 0.5, p = o === 'h' ? P(x0 + (x1 - x0) * u, 0.07, (z0 === b ? z0 : z1) + wob) : P((x0 === a ? x0 : x1) + wob, 0.07, z0 + (z1 - z0) * u); k ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }
+        x.stroke();
+      }
+      const n = Math.max(2, Math.floor((c - a) / 9));
+      for (let k = 0; k < n; k++) { const ux = a + 5 + k * (c - a - 10) / Math.max(1, n - 1), uz = b + 9; for (const ox of [-1.4, 1.4]) { box(ux + ox - 0.7, 0, uz - 1.6, ux + ox + 0.7, 0.6, uz + 1.6, '#F8FAFC'); box(ux + ox - 0.6, 0.6, uz - 1.5, ux + ox + 0.6, 1.4, uz - 0.6, cols[(k + 2) % cols.length]); } umbrella(ux, uz - 0.6, cols[k % cols.length]); }
+      if (d - b >= 20) { // a bar and a net when there's room
+        box(c - 10, 0, d - 8, c - 3, 3, d - 6, '#78350F'); pyramid(c - 11, d - 10, c - 2, d - 4.5, 4.5, 3, '#CA8A04'); for (const px of [c - 10, c - 3]) box(px - 0.2, 0, d - 10, px + 0.2, 4.5, d - 9.6, '#78350F');
+        for (const px of [a + 6, a + 16]) box(px - 0.15, 0, d - 7, px + 0.15, 4, d - 6.7, '#F8FAFC'); { const p0 = P(a + 6, 3.8, d - 6.85), p1 = P(a + 16, 3.8, d - 6.85); x.strokeStyle = '#F8FAFC'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+      }
+      palm(a + 2, b + 2, 10); palm(c - 3, b + 3, 9); palm((a + c) / 2, d - 2, 9);
     },
     skyline(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
@@ -2273,6 +2289,7 @@
     fridge: ['Fridge', '🧊', 3, 3], kitchen: ['Kitchen', '🍳', 9, 3], desk: ['Desk', '🖥️', 6, 3], wardrobe: ['Wardrobe', '🚪', 5, 2.6],
     speaker: ['Speaker', '🔊', 3, 3], djbooth: ['DJ booth', '🎧', 10, 4], bar: ['Bar', '🍸', 14, 3.4], stool: ['Stool', '🟤', 1.8, 1.8],
     dance: ['Dance floor', '🪩', 16, 12], cards: ['Blackjack', '🃏', 8, 5], reception: ['Reception', '🛎️', 14, 4], podium: ['Podium', '💃', 4, 4], booth: ['VIP booth', '🛋️', 9, 9], bottles: ['Bottle service', '🍾', 3.6, 3.6], nightstand: ['Nightstand', '🗄️', 2.6, 2.4], coffee: ['Coffee table', '☕', 6, 3.2], island: ['Kitchen island', '🔪', 10, 3.4], bath: ['Bathtub', '🛁', 9, 4.4], sink: ['Basin', '🚰', 4, 2], art: ['Wall art', '🖼️', 9, 0.6], tv: ['TV', '📺', 6, 1.6], mirror: ['Mirror', '🪞', 3, 0.5], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
+    lounger: ['Sun lounger', '🏖️', 3, 7], beachbar: ['Beach bar', '🍹', 14, 6], volley: ['Volleyball net', '🏐', 20, 1], fire: ['Bonfire', '🔥', 4, 4], suya: ['Suya stand', '🍢', 6, 3],
   };
   // ---- the Home Store: real 3D furniture (Kenney's Furniture Kit, CC0), from cheap to luxury, so everyone can build a home
   // [model file, name, room, behaves like (for sitting, sleeping and the drawn fallback), width, depth, price in naira]
@@ -2314,6 +2331,7 @@
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
     office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
     dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
+    beach: { w: 110, d: 72, floor: '#F3DE9C', wall: '#F3DE9C', trim: '#F3DE9C', cam: { yaw: -0.4, pitch: 0.85, zoom: 1.0 } }, // no walls: the sea at the back
     home: { w: 56, d: 40, floor: '#D6C3A5', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } }, // sized by its style on the way in
     store: { w: 124, d: 112, floor: '#E7E5E4', wall: '#FAFAF9', trim: '#0F766E', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.8 } },
     arena: { w: 120, d: 88, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.95 } },
@@ -2325,6 +2343,13 @@
     store: storeSorted().map((s, k) => ({ k: s.id, x: 9 + (k % 10) * 11.4, z: 18 + Math.floor(k / 10) * 11.2 })),
     hq: [], // a new home comes empty: you furnish it from the Eko Home Store
     home: [],
+    // a day at the beach: loungers under umbrellas along the sand, a bar, volleyball, suya, a bonfire for the evening
+    beach: [
+      ...[0, 1, 2, 3, 4, 5, 6, 7].map((k) => ({ k: 'lounger', x: 9 + k * 12.5, z: 36, c: ['#38BDF8', '#F472B6', '#FACC15', '#22C55E'][k % 4] })),
+      { k: 'beachbar', x: 90, z: 60 }, { k: 'stool', x: 85, z: 65 }, { k: 'stool', x: 90, z: 65 }, { k: 'stool', x: 95, z: 65 },
+      { k: 'volley', x: 40, z: 54 }, { k: 'suya', x: 14, z: 62 },
+      { k: 'fire', x: 76, z: 46 }, { k: 'stool', x: 72, z: 44 }, { k: 'stool', x: 80, z: 44 }, { k: 'stool', x: 76, z: 50.5 },
+    ],
     club: [
       // the dance floor, two halves, with speakers either side of the stage
       { k: 'dance', x: 40, z: 30 }, { k: 'dance', x: 56, z: 30 }, { k: 'speaker', x: 26, z: 7 }, { k: 'speaker', x: 70, z: 7 }, { k: 'speaker', x: 26, z: 12 }, { k: 'speaker', x: 70, z: 12 },
@@ -2379,6 +2404,18 @@
     if (STORE[it.k] && kindOf(it) !== 'rug') flat(a + 0.2, b + 0.2, c + 0.4, e + 0.5, 0.015, 'rgba(15,23,42,0.16)'); // a soft contact shadow
     if (furn3d(it)) return;
     switch (kindOf(it)) {
+      case 'lounger': box(a + 0.2, 0, b, c - 0.2, 1.2, e, '#F8FAFC'); box(a + 0.4, 1.2, b + 0.3, c - 0.4, 1.6, e - 0.3, col || '#38BDF8'); box(a + 0.4, 1.6, b + 0.2, c - 0.4, 3.4, b + 1.4, col || '#38BDF8'); break;
+      case 'beachbar': { // a thatched shack with a counter, bottles behind it
+        box(a, 0, b, c, 6, b + 2, '#A16207'); box(a, 0, e - 2, c, 3.6, e, '#78350F'); box(a - 0.3, 3.6, e - 2.3, c + 0.3, 4, e + 0.3, '#D6B98C');
+        for (let k = 0; k < 6; k++) cyl(a + 2 + k * (w - 4) / 5, b + 1.2, 0.3, 1.4, ['#22C55E', '#F59E0B', '#EF4444', '#38BDF8'][k % 4]);
+        for (const px of [a + 0.5, c - 0.5]) box(px - 0.3, 0, e - 0.6, px + 0.3, 7, e, '#78350F');
+        pyramid(a - 1.5, b - 1.5, c + 1.5, e + 1.5, 7, 3.5, '#CA8A04');
+        { const p = P(it.x, 8.2, e + 1.5), t = now / 1000; x.save(); x.font = `900 ${Math.max(8, K * 1.6)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#F472B6'; x.shadowBlur = night > 0.3 ? 12 : 0; x.fillStyle = '#FFFFFF'; x.fillText('BEACH BAR', p[0], p[1] - Math.sin(t * 2) * 0.5); x.restore(); }
+        break;
+      }
+      case 'volley': for (const px of [a, c]) box(px - 0.2, 0, it.z - 0.2, px + 0.2, 6, it.z + 0.2, '#F8FAFC'); { const p0 = P(a, 5.8, it.z), p1 = P(c, 5.8, it.z), q0 = P(a, 3.8, it.z), q1 = P(c, 3.8, it.z); x.fillStyle = 'rgba(255,255,255,0.35)'; x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.lineTo(q1[0], q1[1]); x.lineTo(q0[0], q0[1]); x.fill(); x.strokeStyle = '#F8FAFC'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); } { const t = now / 1000, u = (Math.sin(t * 1.4) + 1) / 2, p = P(a + w * u, 7 + Math.abs(Math.sin(t * 2.8)) * 6, it.z + Math.sin(t * 1.4) * 4); x.fillStyle = '#FDE047'; x.beginPath(); x.arc(p[0], p[1], Math.max(2, K * 0.6), 0, Math.PI * 2); x.fill(); } break;
+      case 'fire': { for (let k = 0; k < 4; k++) { const an = k * Math.PI / 4; const p = P(it.x - Math.cos(an) * 1.6, 0.3, it.z - Math.sin(an) * 1.6), q = P(it.x + Math.cos(an) * 1.6, 0.3, it.z + Math.sin(an) * 1.6); x.strokeStyle = '#5C3A1E'; x.lineWidth = Math.max(2, K * 0.5); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } flame(it.x, 0.4, it.z); if (night > 0.2) glow.push(() => flame(it.x, 0.4, it.z)); break; }
+      case 'suya': { box(a, 0, b, c, 3, e, '#57534E'); box(a + 0.3, 3, b + 0.3, c - 0.3, 3.3, e - 0.3, '#1C1917'); for (let k = 0; k < 5; k++) box(a + 0.8 + k * 1, 3.3, it.z - 0.5, a + 1.3 + k * 1, 3.6, it.z + 0.5, '#9A3412'); smoke(it.x, 4, it.z); box(a, 0, e, c, 5.5, e + 0.2, '#F59E0B'); { const p = P(it.x, 6.4, e); x.save(); x.font = `900 ${Math.max(7, K * 1.2)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.fillStyle = '#FFFFFF'; x.fillText('SUYA', p[0], p[1]); x.restore(); } break; }
       case 'bed': box(a, 0, b, c, 1.6, e, col || '#8B5E3C'); box(a + 0.3, 1.6, b + 0.3, c - 0.3, 2.6, e - 0.3, '#F8FAFC'); if (rot) box(a, 0, b, a + 0.6, 4.5, e, col || '#8B5E3C'); else box(a, 0, b, c, 4.5, b + 0.6, col || '#8B5E3C'); box(a + 1, 2.6, b + 1, c - 1, 3.2, b + 2.4, '#E2E8F0'); break;
       case 'sofa': case 'couch2': box(a, 0, b, c, 2, e, col || '#3B82F6'); if (rot) box(a, 2, b, a + 1, 4, e, col || '#3B82F6'); else box(a, 2, b, c, 4, b + 1, col || '#3B82F6'); break;
       case 'armchair': box(a, 0, b, c, 2, e, col || '#F59E0B'); box(a, 2, b, c, 4, b + 0.9, col || '#F59E0B'); break;
@@ -2416,15 +2453,18 @@
   }
   function drawInterior(now) {
     const R = inside;
-    x.fillStyle = '#0F172A'; x.fillRect(0, 0, W, H);
-    // floor, tiles, walls
-    flat(0, 0, R.w, R.d, 0, R.floor);
-    x.strokeStyle = 'rgba(0,0,0,0.08)'; x.lineWidth = 1;
-    for (let i = 5; i < R.w; i += 5) { const p = P(i, 0.01, 0), q = P(i, 0.01, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
-    for (let j = 5; j < R.d; j += 5) { const p = P(0, 0.01, j), q = P(R.w, 0.01, j); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
-    box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
-    box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim);
-    flat(R.w / 2 - 4, R.d - 1.2, R.w / 2 + 4, R.d, 0.04, '#94A3B8'); // the door mat
+    x.fillStyle = R.kind === 'beach' ? (night > 0.5 ? '#0B1E3A' : '#3A86C8') : '#0F172A'; x.fillRect(0, 0, W, H);
+    if (R.kind === 'beach') drawBeachShell(R, now);
+    else {
+      // floor, tiles, walls
+      flat(0, 0, R.w, R.d, 0, R.floor);
+      x.strokeStyle = 'rgba(0,0,0,0.08)'; x.lineWidth = 1;
+      for (let i = 5; i < R.w; i += 5) { const p = P(i, 0.01, 0), q = P(i, 0.01, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      for (let j = 5; j < R.d; j += 5) { const p = P(0, 0.01, j), q = P(R.w, 0.01, j); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
+      box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim);
+      flat(R.w / 2 - 4, R.d - 1.2, R.w / 2 + 4, R.d, 0.04, '#94A3B8'); // the door mat
+    }
     if (R.kind === 'hq') drawApartment(R);
     if (R.kind === 'club') drawClubShell(R, now);
     if (R.kind === 'casino') drawCasinoShell(R, now);
@@ -2437,6 +2477,7 @@
     const items = [];
     for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
     for (const [pid, o] of others) items.push({ who: 1, d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
+    if (R.kind === 'beach') for (const o of [...others.values(), me]) if (o.z < SHORE) items.push({ d: P(o.x, 0, o.z)[2] + 0.015, f: () => wade(o.x, o.z, now) }); // the sea over whoever's in it
     items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind + ',' + pose.y : '')) });
     if (R.kind === 'tower') items.push({ d: P(R.w / 2, 0, R.d / 2 - 2)[2], f: () => drawWyrd(now, R.w / 2, R.d / 2 - 2) });
     if (R.kind === 'arena') drawStands(R, now);
@@ -2689,6 +2730,26 @@
       x.fillStyle = lux ? '#FDE68A' : '#0F172A'; x.fillText(name, sb[0], sb[1] - 7.5); x.restore();
       });
     }
+  }
+  // the beach: the sea at the back with waves rolling in, wet sand, dry sand, a boat out on the water; you can walk into the sea
+  const SHORE = 24; // the water's edge (z): in front of it is sand
+  function drawBeachShell(R, now) {
+    const t = now / 1000, edge = SHORE + Math.sin(t * 0.9) * 1.2;
+    flat(-40, -60, R.w + 40, edge, 0, night > 0.5 ? '#0E3A5F' : '#2E8BC0'); // the sea, out to the horizon
+    for (let k = 0; k < 6; k++) { const z = -10 + k * 6 + ((t * 2) % 6); x.strokeStyle = `rgba(255,255,255,${0.12 + k * 0.04})`; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); for (let i = 0; i <= 24; i++) { const wx = -10 + i * (R.w + 20) / 24, p = P(wx, 0.02, z + Math.sin(i * 0.8 + t + k) * 0.6); i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); } x.stroke(); } // swells coming in
+    flat(-40, edge, R.w + 40, edge + 5, 0.01, '#D9C27E'); flat(-40, edge + 5, R.w + 40, R.d + 30, 0.01, R.floor); // wet sand, dry sand, running on out of sight
+    x.strokeStyle = 'rgba(255,255,255,0.9)'; x.lineWidth = Math.max(1.5, K * 0.5); x.beginPath(); for (let i = 0; i <= 40; i++) { const wx = -40 + i * (R.w + 80) / 40, p = P(wx, 0.03, edge + Math.sin(i * 1.3 + t * 2) * 0.4); i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); } x.stroke(); // the foam
+    const Rs = rnd(5); x.fillStyle = 'rgba(160,120,60,0.25)'; for (let k = 0; k < 60; k++) { const p = P(Rs() * R.w, 0.02, edge + 6 + Rs() * (R.d - edge - 8)); x.fillRect(p[0], p[1], 2, 1); } // footprints in the sand
+    { const bx = 70 + Math.sin(t * 0.1) * 20, bz = -14, p = P(bx, 0.3, bz); box(bx - 4, 0, bz - 1.2, bx + 4, 1.6, bz + 1.2, '#F8FAFC'); box(bx - 1, 1.6, bz - 0.8, bx + 1.5, 3, bz + 0.8, '#1E3A8A'); x.strokeStyle = 'rgba(255,255,255,0.5)'; x.beginPath(); x.moveTo(p[0] - K * 4, p[1]); x.lineTo(p[0] - K * 9, p[1] + K); x.stroke(); } // a boat
+    for (const it of R.layout) if (it.k === 'lounger') umbrella(it.x - 2.6, it.z - 2.2, ['#EF4444', '#F59E0B', '#3B82F6', '#EC4899'][Math.round(it.x) % 4]);
+    for (const [px, pz] of [[3, 50], [106, 46], [104, 68], [28, 70]]) palm(px, pz, 11);
+    groundText(R.title.toUpperCase(), R.w / 2, R.d - 5, 3, 'rgba(160,120,60,0.55)');
+  }
+  // the sea over someone standing in it: up to the knees at the edge, to the chest further out (swimming)
+  function wade(px, pz, now) {
+    const b = P(px, 0, pz), s = Math.max(0.75, K / 4.6) * 1.12 * 0.92, deep = Math.min(1, Math.max(0, (SHORE - pz) / 14)), top = b[1] - (6 + deep * 18) * s, t = now / 1000;
+    x.fillStyle = night > 0.5 ? 'rgba(14,58,95,0.92)' : 'rgba(46,139,192,0.9)'; x.fillRect(b[0] - 12 * s, top, 24 * s, b[1] - top + 1 * s);
+    x.strokeStyle = 'rgba(255,255,255,0.85)'; x.lineWidth = 1.5; x.beginPath(); x.ellipse(b[0], top, (8 + Math.sin(t * 3) * 1.5) * s, 2.4 * s, 0, 0, Math.PI * 2); x.stroke(); // ripples round you
   }
   // inside a home you bought: [floor, walls, trim] by style, then its finish: tiles, planks, marble, brick and steel
   const HOME_FINISH = { flat: ['#D9CBB5', '#F3EEE6', '#94A3B8'], bungalow: ['#D6C3A5', '#F7F3EC', '#B08A43'], terrace: ['#B7895C', '#F5F5F4', '#475569'], duplex: ['#C19A6B', '#FAFAF9', '#1E293B'], townhouse: ['#A47551', '#EDE9E3', '#0F172A'], loft: ['#A3A3A3', '#9A3412', '#1F2937'], mansion: ['#F5F5F4', '#FFFDF8', '#D4AF37'], villa: ['#ECEAE4', '#FFFFFF', '#38BDF8'] };
@@ -3058,7 +3119,7 @@
     hotel: ['🏨 Book a room?', 'A night on the island, a pool, room service.', null],
     mall: ['🛍️ Go shopping?', 'Fashion, phones, food court.', null], arcade: ['🛍️ Go shopping?', 'Shops and cafés.', null], shops: ['🛍️ Go shopping?', 'Idumota: everything, cheaper.', null],
     hospital: ['🏥 See a doctor?', 'Check-ups and the pharmacy.', null],
-    beach: ['🏖️ Spend the day here?', 'Sun, suya, and a horse ride on the sand.', null],
+    beach: ['🏖️ Spend the day here?', 'Swim, lie on a lounger, a drink at the bar, suya, volleyball, the bonfire at night.', (p) => { at$(p); enterRoom('beach', 'place:beach:' + p[1] + ',' + p[2], p[5]); }],
     mosque: ['🕌 Visit?', 'Lagos Central Mosque, open for prayers.', null], cathedral: ['⛪ Visit?', 'The Cathedral Church of Christ.', null],
     palace: ["👑 Visit the Oba's palace?", 'Tours of Iga Idunganran.', null],
     gallery: ['🎨 See the art?', 'Nike Art Gallery, five floors of it.', null],
@@ -3870,7 +3931,7 @@
     if (inside) {
       if (me.z > inside.d - 2.2 && !deco && inside.entered) { leaveRoom(); return; }
       if (me.z < inside.d - 4) inside.entered = true;
-      const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep' };
+      const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep', lounger: 'sleep' };
       let near = null, nd = 5;
       for (const it of inside.layout) { const k = SEAT[kindOf(it)] || (it.k === 'roulette' || it.k === 'slot' ? 'play' : null); if (!k) continue; const d = Math.hypot(it.x - me.x, it.z - me.z); if (d < nd) { nd = d; near = [it, k]; } }
       if (inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
@@ -3917,6 +3978,7 @@
       case 'booth': // the bench (the back of the U), not the table in the middle
         return { x: a + 2.4, z: clamp(me.z, b + 2.6, e - 2.6), y: 1.8 };
       case 'bed': return { x: it.x, z: it.z, y: 2.6 };
+      case 'lounger': return { x: it.x, z: it.z, y: 1.7 };
       default: return { x: it.x, z: it.z, y: 2 };
     }
   }
