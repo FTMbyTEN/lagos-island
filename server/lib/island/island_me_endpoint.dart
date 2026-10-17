@@ -826,6 +826,57 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'plot': plot, 'style': style, 'name': h.name, 'naira': after.naira});
   });
 
+  // ---------------- house parties ----------------
+  /// Parties going on now, by room key (hq:<slot> or home:<plot>). Kept in memory: a party lasts a few hours at most.
+  static final _parties = <String, ({UuidValue host, String hostHandle, String theme, bool open, List<String> guests, DateTime until, String place})>{};
+  static const partyThemes = {'afro', 'piano', 'owambe'};
+
+  static ({UuidValue host, String hostHandle, String theme, bool open, List<String> guests, DateTime until, String place})? _liveParty(String key) {
+    final p = _parties[key];
+    if (p == null) return null;
+    if (DateTime.now().toUtc().isAfter(p.until)) {
+      _parties.remove(key);
+      return null;
+    }
+    return p;
+  }
+
+  /// Throw a party in one of my homes for [minutes] (30 to 180). [open]: anyone may walk in; otherwise the people on my
+  /// invite list (my HQ settings) and [guests] (handles, JSON list). Those invited see it on their phones.
+  Future<String> startParty(Session session, String key, String theme, int minutes, bool open, String guests) async {
+    final u = _user(session);
+    if (!await _mayArrange(session, u, key)) return _err('You can only throw a party in your own home.');
+    if (!partyThemes.contains(theme)) return _err('Pick a vibe.');
+    final me = await _profile(session, u);
+    final list = {...(jsonDecode(me.hqInvites) as List).map((e) => '$e'), ...(jsonDecode(guests) as List).map((e) => '$e'.trim())}.where((e) => e.isNotEmpty).take(60).toList();
+    final until = DateTime.now().toUtc().add(Duration(minutes: minutes.clamp(30, 180)));
+    _parties[key] = (host: u, hostHandle: me.handle, theme: theme, open: open, guests: list, until: until, place: me.hqName ?? "${me.handle}'s place");
+    return jsonEncode({'key': key, 'until': until.toIso8601String(), 'guests': list.length});
+  }
+
+  /// End my party early.
+  Future<String> endParty(Session session, String key) async {
+    final p = _liveParty(key);
+    if (p == null || p.host != _user(session)) return _err('No party of yours there.');
+    _parties.remove(key);
+    return jsonEncode({'ended': key});
+  }
+
+  /// The parties I can go to right now: open ones, ones I'm invited to, and my own.
+  Future<String> parties(Session session) async {
+    final u = _user(session);
+    final me = await _profile(session, u);
+    final out = [];
+    for (final k in _parties.keys.toList()) {
+      final p = _liveParty(k);
+      if (p == null) continue;
+      final mine = p.host == u, invited = p.guests.contains(me.handle);
+      if (!mine && !invited && !p.open) continue;
+      out.add({'key': k, 'host': p.hostHandle, 'theme': p.theme, 'open': p.open, 'until': p.until.toIso8601String(), 'place': p.place, 'mine': mine, 'invited': invited, 'guests': p.guests.length});
+    }
+    return jsonEncode(out);
+  }
+
   // ---------------- Banana Island Marina: yacht charters ----------------
   /// kind -> (name, price in naira). The same list as CHARTERS in web/index.html (the harbour tour is free and needs no call).
   static const charters = {
@@ -864,11 +915,14 @@ class IslandMeEndpoint extends Endpoint {
   /// owner and the people they've let in.
   Future<String> room(Session session, String key) async {
     final u = _user(session);
+    // a party that's on lets in its guests (everyone, for an open party)
+    final party = _liveParty(key);
+    bool partyLetsIn(String handle) => party != null && (party.open || party.guests.contains(handle));
     if (key.startsWith('hq:')) {
       final p = await IslandProfile.db.findById(session, int.tryParse(key.substring(3)) ?? -1);
       if (p == null) return _err('No HQ there.');
       final me = await _profile(session, u);
-      final may = p.authUserId == u || !p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle);
+      final may = p.authUserId == u || !p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle) || partyLetsIn(me.handle);
       if (!may) return _err('Knock first: the owner lets people in.');
     }
     if (key.startsWith('home:')) {
@@ -876,7 +930,7 @@ class IslandMeEndpoint extends Endpoint {
       if (h == null) return _err('Nobody lives there yet.');
       final p = await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(h.authUserId));
       final me = await _profile(session, u);
-      final may = h.authUserId == u || (p != null && (!p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle)));
+      final may = h.authUserId == u || (p != null && (!p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle))) || partyLetsIn(me.handle);
       if (!may) return _err('Knock first: the owner lets people in.');
     }
     final r = await IslandRoom.db.findFirstRow(session, where: (t) => t.key.equals(key));

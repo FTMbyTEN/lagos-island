@@ -1884,6 +1884,19 @@
       box(a + 1.6, 2.9, d - 3.6, c - 1.6, 3.15, d - 2.4, '#78716C'); // the little porch roof
     });
     if (hq && hq.mine) ownerFlag(c - 1.6, b + 1.6, col);
+    if (hq) partyHouse(a, b, c, d, partyAt('hq:' + hq.slot));
+  }
+  // a house with a party on: lights pulsing round it, searchlights at night, a 🎉 bobbing over the roof
+  function partyHouse(a, b, c, d, p) {
+    if (!p) return;
+    const t = performance.now() / 1000, cols = PARTY_THEMES[p.theme][1], cx = (a + c) / 2, cz = (b + d) / 2;
+    const fx = () => {
+      const g0 = P(cx, 3, cz), r = K * 9; x.save(); x.globalCompositeOperation = 'lighter';
+      const g = x.createRadialGradient(g0[0], g0[1], 0, g0[0], g0[1], r); g.addColorStop(0, cols[Math.floor(t * 2) % 3] + '77'); g.addColorStop(1, cols[0] + '00'); x.fillStyle = g; x.beginPath(); x.ellipse(g0[0], g0[1], r, r * 0.6, 0, 0, Math.PI * 2); x.fill(); x.restore();
+      if (night > 0.3) beams(cx, 9, cz, { afro: 30, piano: 270, owambe: 45 }[p.theme], t);
+      const q = P(cx, 16 + Math.sin(t * 2) * 1.2, cz); x.font = `${Math.max(14, K * 3)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('🎉', q[0], q[1]);
+    };
+    fx(); glow.push(fx);
   }
   // ---- homes you can buy: six estates of plots, each plot one home in its estate's style (the server has the same lists)
   // style: [name, price, room width, room depth]
@@ -1941,7 +1954,7 @@
           flat(a + 1.6, b + 7.2, c - 1.6, d - 3.6, 0.1, '#38BDF8'); palm(a + 1.6, d - 2, 7); break;
       }
     });
-    if (h) ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573');
+    if (h) { ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573'); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); }
     else { box(c - 2.4, 0, d - 1.8, c - 2.2, 2.6, d - 1.6, '#78350F'); quad([P(c - 3.6, 1.6, d - 1.55), P(c - 1, 1.6, d - 1.55), P(c - 1, 2.8, d - 1.55), P(c - 3.6, 2.8, d - 1.55)], '#DC2626'); if (K > 3) faceText('FOR SALE', c - 2.3, 2.2, d - 1.5, '#FFFFFF', 0.55, 0); }
   }
   // an estate: its plots far to near, each in its style
@@ -2571,6 +2584,7 @@
     if (R.kind === 'dealer') { drawShowroom(R, now); if (R.dealer === 'polanco') drawMezzanine(R); }
     if (R.kind === 'store') drawStoreShell(R);
     if (R.kind === 'home') drawHomeShell(R);
+    if ((R.kind === 'hq' || R.kind === 'home') && partyAt(R.key)) drawParty(R, partyAt(R.key), now);
     if (R.kind === 'office') drawOffice(R, now);
     if (R.kind === 'arena') drawStage(now);
     const items = [];
@@ -2829,6 +2843,37 @@
       x.fillStyle = lux ? '#FDE68A' : '#0F172A'; x.fillText(name, sb[0], sb[1] - 7.5); x.restore();
       });
     }
+  }
+  // a house party: light pools sweeping the floor in the vibe's colours, beams from the corners, a disco ball turning,
+  // confetti (naira notes at an owambe) and a banner with the vibe and the host
+  function drawParty(R, p, now) {
+    const t = now / 1000, cols = PARTY_THEMES[p.theme][1], beat = Math.max(0, Math.sin(t * Math.PI * 2.1)) ** 2;
+    x.save(); x.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 4; k++) { const px = R.w / 2 + Math.sin(t * 0.7 + k * 1.7) * R.w * 0.35, pz = R.d / 2 + Math.cos(t * 0.55 + k * 2.3) * R.d * 0.35, c = P(px, 0.05, pz), r = K * (7 + beat * 2); const g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], r); g.addColorStop(0, cols[k % 3] + 'AA'); g.addColorStop(1, cols[k % 3] + '00'); x.fillStyle = g; x.beginPath(); x.ellipse(c[0], c[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); }
+    x.restore();
+    afterCars.push(() => {
+      const ball = P(R.w / 2, 15, R.d / 2);
+      x.save(); x.globalCompositeOperation = 'lighter';
+      for (let k = 0; k < 6; k++) { const q = P(R.w / 2 + Math.sin(t * 1.1 + k) * R.w * 0.45, 0, R.d / 2 + Math.cos(t * 0.9 + k * 1.3) * R.d * 0.45); const g = x.createLinearGradient(ball[0], ball[1], q[0], q[1]); g.addColorStop(0, cols[k % 3] + '88'); g.addColorStop(1, cols[k % 3] + '00'); x.fillStyle = g; x.beginPath(); x.moveTo(ball[0], ball[1]); x.lineTo(q[0] - K * 4, q[1]); x.lineTo(q[0] + K * 4, q[1]); x.fill(); }
+      x.restore();
+      x.strokeStyle = '#94A3B8'; x.lineWidth = 1; x.beginPath(); x.moveTo(ball[0], ball[1] - K * 6); x.lineTo(ball[0], ball[1] - K * 1.4); x.stroke(); // the disco ball on its wire
+      const br = K * 1.5, g = x.createRadialGradient(ball[0] - br * 0.4, ball[1] - br * 0.4, br * 0.1, ball[0], ball[1], br); g.addColorStop(0, '#FFFFFF'); g.addColorStop(1, '#64748B'); x.fillStyle = g; x.beginPath(); x.arc(ball[0], ball[1], br, 0, Math.PI * 2); x.fill();
+      for (let k = 0; k < 6; k++) { const a = t * 2 + k; x.fillStyle = cols[k % 3]; x.fillRect(ball[0] + Math.cos(a) * br * 0.7 - 1, ball[1] + Math.sin(a * 1.3) * br * 0.6 - 1, 2.5, 2.5); }
+      // confetti falling (naira notes at an owambe)
+      const Rc = rnd(11);
+      for (let k = 0; k < 50; k++) {
+        const cx = Rc() * R.w, cz = Rc() * R.d, sp2 = 2 + Rc() * 2, ph = (t * sp2 / 14 + Rc()) % 1, y = 15 * (1 - ph), q = P(cx + Math.sin(t + k) * 1.5, y, cz), rot = t * 3 + k;
+        x.save(); x.translate(q[0], q[1]); x.rotate(rot);
+        if (p.theme === 'owambe') { x.fillStyle = '#86EFAC'; x.fillRect(-K * 0.7, -K * 0.35, K * 1.4, K * 0.7); x.fillStyle = '#15803D'; x.fillRect(-K * 0.2, -K * 0.2, K * 0.4, K * 0.4); }
+        else { x.fillStyle = cols[k % 3]; x.fillRect(-K * 0.3, -K * 0.15, K * 0.6, K * 0.3); }
+        x.restore();
+      }
+      // the banner
+      const left = Math.max(0, Math.round((p.until - Date.now()) / 60000)), txt = `${PARTY_THEMES[p.theme][2]} ${PARTY_THEMES[p.theme][0]} · ${p.mine ? 'your party' : p.host + '\'s party'} · ${left} min left`;
+      x.save(); x.font = '800 13px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; const w = x.measureText(txt).width + 28;
+      const bg = x.createLinearGradient(W / 2 - w / 2, 0, W / 2 + w / 2, 0); bg.addColorStop(0, cols[0]); bg.addColorStop(0.5, cols[2]); bg.addColorStop(1, cols[1]);
+      x.fillStyle = bg; x.beginPath(); x.roundRect(W / 2 - w / 2, 96, w, 30, 15); x.fill(); x.fillStyle = '#FFFFFF'; x.shadowColor = 'rgba(0,0,0,0.5)'; x.shadowBlur = 4; x.fillText(txt, W / 2, 111.5); x.restore();
+    });
   }
   // the beach: the sea at the back with waves rolling in, wet sand, dry sand, a boat out on the water; you can walk into the sea
   const SHORE = 24; // the water's edge (z): in front of it is sand
@@ -3115,7 +3160,12 @@
     askEl.style.display = inside && inside.kind === 'tower' ? 'flex' : 'none';
     if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
     decoEl.style.display = 'flex';
-    if (!deco) { decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>'; document.getElementById('dOn').onclick = () => { deco = { sel: isHome() ? null : 'sofa', colour: null, pick: null }; setDeco(); }; return; }
+    if (!deco) {
+      decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>' + (isHome() ? `<button class="dbtn" id="dParty">🎉 ${partyAt(inside.key) ? 'Your party' : 'Throw a party'}</button>` : '');
+      document.getElementById('dOn').onclick = () => { deco = { sel: isHome() ? null : 'sofa', colour: null, pick: null }; setDeco(); };
+      if (isHome()) document.getElementById('dParty').onclick = () => { partyDraft.key = inside.key; openPhone('parties', { key: inside.key }); };
+      return;
+    }
     if (deco.pick) {
       decoEl.innerHTML = `<span class="dl">${FURN[deco.pick.k][1]} ${FURN[deco.pick.k][0]}</span><button class="dbtn" id="dRot">↻ Turn</button>${STORE[deco.pick.k] ? '' : PALETTE.map((c) => `<button class="dsw" data-c="${c}" style="background:${c}"></button>`).join('')}<button class="dbtn" id="dDel">${isHome() && STORE[deco.pick.k] ? '📦 Put away' : '🗑 Remove'}</button><button class="dbtn" id="dDone">Done</button>`;
       document.getElementById('dRot').onclick = () => { deco.pick.r = ((deco.pick.r || 0) + 1) % 4; };
@@ -3544,13 +3594,13 @@
 
   // ---- the phone's screens
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
-  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', jobsTab = 'all', rideFind = '', casinoStake = 500;
+  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', jobsTab = 'all', rideFind = '', casinoStake = 500, partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
@@ -3879,6 +3929,41 @@
         pbody.querySelectorAll('[data-drive]').forEach((b) => (b.onclick = async () => { try { await my('driveCar', { carId: Number(b.dataset.drive) }); const c2 = list.find((v) => v.id === Number(b.dataset.drive)); myCar = c2.model + ':' + c2.color; render('garage'); } catch (e) { fail(e); } }));
         return;
       }
+      if (app === 'parties') {
+        // your party (if one's on), the parties you can go to now, and throwing one: where, the vibe, how long, who
+        if (!hqSlots.some((s) => s.mine)) await loadHqRow(); // your homes and the parties on, fresh
+        const mine = hqSlots.find((s) => s.mine);
+        const myKeys = [...(mine ? [['hq:' + mine.slot, '🏠 Your BQ']] : []), ...Object.values(homesLive).filter((h) => h.mine).map((h) => ['home:' + h.plot, '🏡 ' + HOME_STYLES[h.style][0]])];
+        const live = Object.entries(partiesLive).filter(([, p]) => p.until > Date.now()), mineLive = live.filter(([, p]) => p.mine), others = live.filter(([, p]) => !p.mine);
+        const sel = partyDraft; if (!sel.key || !myKeys.some(([k]) => k === sel.key)) sel.key = (arg && arg.key) || (myKeys[0] || [])[0];
+        const mins = (p) => Math.max(1, Math.round((p.until - Date.now()) / 60000));
+        show(`${ahead('parties', 'Parties', 'Throw one, or go to one')}
+          ${mineLive.map(([k, p]) => `<div class="hero" style="--ac:${PARTY_THEMES[p.theme][1][0]}"><div class="hl"><span class="live">● YOUR PARTY IS ON</span></div><div class="hv" style="font-size:20px">${PARTY_THEMES[p.theme][2]} ${PARTY_THEMES[p.theme][0]}</div><small>${p.open ? 'Open to everyone' : 'Invite only'} · ends in ${mins(p)} min${p.local ? ' · guests can come once the server update is live' : ''}</small><div style="margin-top:10px"><button class="pbtn" data-go="${k}">🚪 Go</button><button class="pbtn alt" data-end="${k}">End it</button></div></div>`).join('')}
+          <div class="rsec">GOING ON NOW</div>
+          <div class="lst">${others.map(([k, p]) => `<div class="li">${avatar(p.host)}<span class="lt"><b>${PARTY_THEMES[p.theme][2]} ${PARTY_THEMES[p.theme][0]} · ${esc(p.host)}</b><small>${esc(p.place)} · ${p.invited ? 'you\'re invited' : 'open to all'} · ${mins(p)} min left</small></span><button class="pbtn" data-go="${k}" style="margin:0">Go</button></div>`).join('') || '<div class="li"><span class="lt"><small>No parties on right now. Throw the first one.</small></span></div>'}</div>
+          <div class="rsec">THROW A PARTY</div>
+          ${myKeys.length ? `<div class="pcard"><label class="dim">Where</label><div class="chips" style="--ac:#F472B6;margin:4px 0 10px;padding:0">${myKeys.map(([k, n]) => `<button data-pk="${k}" class="${k === sel.key ? 'on' : ''}">${n}</button>`).join('')}</div>
+            <label class="dim">The vibe</label><div class="chips" style="--ac:#F472B6;margin:4px 0 10px;padding:0">${Object.entries(PARTY_THEMES).map(([k, t]) => `<button data-pt="${k}" class="${k === sel.theme ? 'on' : ''}">${t[2]} ${t[0]}</button>`).join('')}</div>
+            <label class="dim">How long</label><div class="chips" style="--ac:#F472B6;margin:4px 0 10px;padding:0">${[30, 60, 120].map((m) => `<button data-pm="${m}" class="${m === sel.mins ? 'on' : ''}">${m < 60 ? m + ' min' : m / 60 + ' hour' + (m > 60 ? 's' : '')}</button>`).join('')}</div>
+            <label class="dim">Who</label><div class="chips" style="--ac:#F472B6;margin:4px 0 6px;padding:0"><button data-po="0" class="${sel.open ? '' : 'on'}">🔒 Invites only</button><button data-po="1" class="${sel.open ? 'on' : ''}">🔓 Open to all</button></div>
+            <input id="pGuests" placeholder="Also invite (island names, comma separated)" value="${esc(sel.guests || '')}"><div class="dim">Your HQ invite list is always invited. They'll see it on their phones.</div>
+            <button class="pbtn big2" id="pStart" style="margin-top:10px">🎉 Start the party</button></div>`
+          : '<div class="pcard dim">Sign in, and your BQ on HQ Row is ready for a party.</div>'}`);
+        const re = () => { sel.guests = $('pGuests') ? $('pGuests').value : sel.guests; render('parties'); };
+        pbody.querySelectorAll('[data-pk]').forEach((b) => (b.onclick = () => { sel.key = b.dataset.pk; re(); }));
+        pbody.querySelectorAll('[data-pt]').forEach((b) => (b.onclick = () => { sel.theme = b.dataset.pt; re(); }));
+        pbody.querySelectorAll('[data-pm]').forEach((b) => (b.onclick = () => { sel.mins = Number(b.dataset.pm); re(); }));
+        pbody.querySelectorAll('[data-po]').forEach((b) => (b.onclick = () => { sel.open = b.dataset.po === '1'; re(); }));
+        pbody.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => { const k = b.dataset.go, p = partiesLive[k]; closePhone(); if (inside) leaveRoom(); goToRoom(k, `${PARTY_THEMES[p.theme][2]} ${p.mine ? 'Your' : p.host + '\'s'} ${PARTY_THEMES[p.theme][0]}`); }));
+        pbody.querySelectorAll('[data-end]').forEach((b) => (b.onclick = async () => { const k = b.dataset.end; await my('endParty', { key: k }).catch(() => {}); delete partiesLive[k]; render('parties'); }));
+        if ($('pStart')) $('pStart').onclick = async () => {
+          const guests = $('pGuests').value.split(',').map((s) => s.trim()).filter(Boolean), base = { host: me$ ? me$.handle : 'you', theme: sel.theme, open: sel.open, place: 'your place', mine: true, invited: false, until: Date.now() + sel.mins * 60000 };
+          try { await my('startParty', { key: sel.key, theme: sel.theme, minutes: sel.mins, open: sel.open, guests: JSON.stringify(guests) }); partiesLive[sel.key] = base; }
+          catch (e) { if (!/\((404|500)\)/.test(e.message)) return fail(e); partiesLive[sel.key] = { ...base, local: true }; } // the server hasn't got parties yet: it's on for you to see
+          notify(`Your ${PARTY_THEMES[sel.theme][0]} has started`, 'party'); render('parties');
+        };
+        return;
+      }
       if (app === 'yacht') {
         // charters out of Banana Island Marina: pick one, pay (the tour is free), and you're on deck
         show(`${ahead('ride', 'Banana Island Marina', 'Yacht charters round the lagoon')}
@@ -4203,6 +4288,32 @@
     if (!signedIn()) return;
     try { hqSlots = await my('hqRow'); } catch {}
     try { homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); } catch {} // who owns which plot (until the server has homes, everything's for sale)
+    try { // the parties going on that I can go to; a new invite pings my phone
+      const list = await my('parties'), seen = new Set(Object.keys(partiesLive));
+      partiesLive = Object.fromEntries(list.map((p) => [p.key, { ...p, until: Date.parse(p.until) }]));
+      for (const p of list) if (!seen.has(p.key) && !p.mine && p.invited) partyAlert(`🎉 ${p.host} invited you to their ${PARTY_THEMES[p.theme] ? PARTY_THEMES[p.theme][0] : 'party'}`);
+    } catch {}
+  }
+  // ---- house parties: a vibe (its name, its colours), lights and confetti inside, the house lit up outside
+  const PARTY_THEMES = { afro: ['Afrobeats night', ['#F97316', '#22C55E', '#FACC15'], '🔥'], piano: ['Amapiano', ['#8B5CF6', '#38BDF8', '#EC4899'], '🎹'], owambe: ['Owambe', ['#D4AF37', '#7C3AED', '#DC2626'], '💃'] };
+  let partiesLive = {}; // room key -> { host, theme, open, until (ms), place, mine, invited }
+  const partyAt = (key) => { const p = partiesLive[key]; return p && p.until > Date.now() ? p : null; };
+  function partyAlert(text) {
+    const d = document.createElement('div'), dot = document.createElement('i');
+    d.className = 'j'; dot.style.background = '#F472B6'; d.append(dot, document.createTextNode(text));
+    joinsEl.append(d); while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove(); setTimeout(() => d.remove(), 6200);
+    notify(text, 'party');
+  }
+  // go to a party (or any home) by its room key
+  function goToRoom(key, title) {
+    if (key.startsWith('hq:')) {
+      const k = hqSlots.findIndex((s) => String(s.slot) === key.slice(3)), lot = [...hqIndex].find(([, v]) => v === k);
+      if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 1; cam.x = me.x; cam.z = me.z; } // when you come out, you're at its door
+      return enterRoom('hq', key, title);
+    }
+    const plot = key.slice(5), [est, n] = plot.split(':'), p = PLACES.find((v) => ESTATE_OF[v[5]] === est);
+    if (p) { me.x = (p[1] + (n % p[3]) + 0.5) * T; me.z = (p[2] + Math.floor(n / p[3]) + 1) * T - 1; cam.x = me.x; cam.z = me.z; }
+    return enterRoom('home', key, title, { style: (ESTATES[est] || [])[n] });
   }
 
   // ---- work and play where you stand: a button appears near a workplace or the casino
