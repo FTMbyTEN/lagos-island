@@ -3076,6 +3076,7 @@
   // ---- the phone's screens
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
   let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living';
+  const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
   const APP_AC = { store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
@@ -3130,7 +3131,7 @@
     });
   }
   async function openPhone(app, arg) {
-    phone.style.display = 'block'; stack = [['home']]; shadeEl.classList.remove('on');
+    phone.style.display = 'block'; phoneBtnEl.style.display = 'none'; stack = [['home']]; shadeEl.classList.remove('on');
     if (!booted) await boot();
     await lockScreen();
     if (!signedIn()) return render('signin');
@@ -3443,7 +3444,7 @@
       }
     } catch (e) { fail(e); }
   }
-  function closePhone() { clearInterval(chatTimer); phone.style.display = 'none'; }
+  function closePhone() { clearInterval(chatTimer); phone.style.display = 'none'; phoneBtnEl.style.display = ''; } // the phone's icon comes back once it's put away
   document.getElementById('phoneBtn').onclick = () => (phone.style.display === 'block' ? closePhone() : openPhone());
   document.getElementById('pclose').onclick = closePhone;
   document.getElementById('phome').onclick = () => { stack = [['home']]; clearInterval(chatTimer); render(signedIn() && me$ ? 'home' : 'signin'); };
