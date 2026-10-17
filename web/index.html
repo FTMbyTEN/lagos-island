@@ -2414,6 +2414,7 @@
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
     office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
     dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
+    yacht: { w: 96, d: 34, floor: '#B7895C', wall: '#B7895C', trim: '#B7895C', cam: { yaw: -0.45, pitch: 0.82, zoom: 1.25 } }, // a deck at sea: no walls
     beach: { w: 110, d: 72, floor: '#F3DE9C', wall: '#F3DE9C', trim: '#F3DE9C', cam: { yaw: -0.4, pitch: 0.85, zoom: 1.0 } }, // no walls: the sea at the back
     home: { w: 56, d: 40, floor: '#D6C3A5', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } }, // sized by its style on the way in
     store: { w: 124, d: 112, floor: '#E7E5E4', wall: '#FAFAF9', trim: '#0F766E', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.8 } },
@@ -2426,6 +2427,12 @@
     store: storeSorted().map((s, k) => ({ k: s.id, x: 9 + (k % 10) * 11.4, z: 18 + Math.floor(k / 10) * 11.2 })),
     hq: [], // a new home comes empty: you furnish it from the Eko Home Store
     home: [],
+    // a yacht: loungers on the foredeck, a bar along the side, seats at the stern (the party boat swaps the loungers for a DJ and a dance floor on the way in)
+    yacht: [
+      ...[0, 1, 2, 3].map((k) => ({ k: 'lounger', x: 46 + k * 5.5, z: 10, c: '#F8FAFC' })), ...[0, 1, 2, 3].map((k) => ({ k: 'lounger', x: 46 + k * 5.5, z: 24, c: '#F8FAFC' })),
+      { k: 'bar', x: 40, z: 31, c: '#1E3A8A' }, { k: 'stool', x: 36, z: 28 }, { k: 'stool', x: 40, z: 28 }, { k: 'stool', x: 44, z: 28 },
+      { k: 'couch2', x: 3, z: 17, r: 1, c: '#1E3A8A' },
+    ],
     // a day at the beach: loungers under umbrellas along the sand, a bar, volleyball, suya, a bonfire for the evening
     beach: [
       ...[0, 1, 2, 3, 4, 5, 6, 7].map((k) => ({ k: 'lounger', x: 9 + k * 12.5, z: 36, c: ['#38BDF8', '#F472B6', '#FACC15', '#22C55E'][k % 4] })),
@@ -2536,8 +2543,9 @@
   }
   function drawInterior(now) {
     const R = inside;
-    x.fillStyle = R.kind === 'beach' ? (night > 0.5 ? '#0B1E3A' : '#3A86C8') : '#0F172A'; x.fillRect(0, 0, W, H);
+    x.fillStyle = R.kind === 'beach' || R.kind === 'yacht' ? (night > 0.5 ? '#0B1E3A' : '#2E7FB8') : '#0F172A'; x.fillRect(0, 0, W, H);
     if (R.kind === 'beach') drawBeachShell(R, now);
+    else if (R.kind === 'yacht') drawYachtShell(R, now);
     else {
       // floor, tiles, walls
       flat(0, 0, R.w, R.d, 0, R.floor);
@@ -2828,6 +2836,46 @@
     for (const [px, pz] of [[3, 50], [106, 46], [104, 68], [28, 70]]) palm(px, pz, 11);
     groundText(R.title.toUpperCase(), R.w / 2, R.d - 5, 3, 'rgba(160,120,60,0.55)');
   }
+  // ---- a yacht charter out of Banana Island Marina: [name, price, seconds, what it is]
+  const CHARTERS = { tour: ['Harbour tour', 0, 90, 'A quick spin round Banana Island and back. Free.'], cruise: ['Lagoon cruise', 15000, 180, 'Out across the lagoon past Ikoyi and the Eko skyline, a drink at the bar.'], sunset: ['Sunset party', 30000, 180, 'A DJ on the foredeck, a dance floor, the city lights coming on.'], private: ['Private charter', 250000, 300, 'The whole yacht to yourself, and whoever you bring along.'] };
+  // the deck: a stern you can stand at, the cabin in the way, the bow narrowing to a point
+  function onDeck(px, pz) {
+    const R = inside; if (px < 1.5 || pz < 1.5 || pz > R.d - 1.5) return false;
+    if (px > 5.5 && px < 30.5 && pz > 6.5 && pz < 27.5) return false; // the cabin
+    if (px > 70) { const half = (R.w - px) / (R.w - 70) * (R.d / 2); return Math.abs(pz - R.d / 2) < half - 1.5; }
+    return true;
+  }
+  function drawYachtShell(R, now) {
+    const t = now / 1000, cz = R.d / 2;
+    // the lagoon going by: swells sliding back, the skyline far off, the wake behind
+    x.lineWidth = Math.max(1, K * 0.2);
+    for (let z = -70; z < 110; z += 7) { x.strokeStyle = `rgba(255,255,255,${0.1 + ((z + 70) % 21) / 120})`; x.beginPath(); for (let k = 0; k < 9; k++) { const wx = ((k * 30 - t * 14 + z * 3) % 270 + 270) % 270 - 100, p = P(wx, -2, z), q = P(wx + 8, -2, z + Math.sin(k + z) * 0.6); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); }
+    for (let i = 0; i < 16; i++) { const bx = ((i * 41 - t * 4) % 520 + 520) % 520 - 200, h = 18 + ((i * 7) % 5) * 9; box(bx, -2, -78, bx + 9, h, -72, night > 0.5 ? '#1E1B4B' : '#94A3B8', night > 0.5 ? '#FDE68A' : '#CBD5E1'); } // the Eko skyline
+    x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = Math.max(1.5, K * 0.5); x.beginPath(); for (const s of [-1, 1]) { const p = P(0, -1.5, cz + s * 13), q = P(-45, -2, cz + s * 26); x.moveTo(p[0], p[1]); x.quadraticCurveTo((p[0] + q[0]) / 2, (p[1] + q[1]) / 2 + Math.sin(t * 3 + s) * K, q[0], q[1]); } x.stroke(); // the wake
+    // the hull: white, a navy stripe, sides you can see
+    const out = [[0, 0], [70, 0], [R.w, cz], [70, R.d], [0, R.d]];
+    for (let k = 0; k < out.length; k++) {
+      const [ax, az] = out[k], [bx, bz] = out[(k + 1) % out.length], nx = bz - az, nz = -(bx - ax), l = Math.hypot(nx, nz) || 1;
+      if (viewDot(nx / l, 0, nz / l) <= 0) continue;
+      quad([P(ax, 0.05, az), P(bx, 0.05, bz), P(bx, -5, bz), P(ax, -5, az)], lit('#F8FAFC', nx / l, 0, nz / l));
+      quad([P(ax, -1.4, az), P(bx, -1.4, bz), P(bx, -2.2, bz), P(ax, -2.2, az)], '#1E3A8A');
+    }
+    // the deck: teak planks, a rail round the edge
+    quad(out.map(([px, pz]) => P(px, 0.05, pz)), '#B7895C');
+    x.strokeStyle = 'rgba(70,40,15,0.25)'; x.lineWidth = 1; x.beginPath(); for (let z = 2; z < R.d; z += 2) { const xe = 70 + (1 - Math.abs(z - cz) / cz) * (R.w - 70), p = P(0, 0.07, z), q = P(xe, 0.07, z); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
+    x.strokeStyle = '#E5E7EB'; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); out.forEach(([px, pz], k) => { const p = P(px, 3.2, pz); k ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }); x.closePath(); x.stroke();
+    // the cabin, the flybridge with the helm, the radar turning, the flag at the stern
+    box(6, 0, 7, 30, 7, 27, '#F8FAFC', '#1E293B', 2); box(5.5, 7, 6.5, 30.5, 7.5, 27.5, '#E5E7EB');
+    box(9, 7.5, 10, 24, 8.6, 24, '#F1F5F9'); box(12, 8.6, 15.5, 12.6, 13, 18.5, '#CBD5E1');
+    { const p = P(12.3, 13.3, 17), a = t * 3; x.strokeStyle = '#1E293B'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p[0] - Math.cos(a) * K * 2, p[1] - Math.sin(a) * K * 0.5); x.lineTo(p[0] + Math.cos(a) * K * 2, p[1] + Math.sin(a) * K * 0.5); x.stroke(); }
+    box(1, 0, 2, 1.3, 9, 2.3, '#9CA3AF'); { const f = [[0, 0], [1, 0.2], [2, 0], [3, 0.2], [4, 0]].map(([u, w2], k) => P(1.3 + u, 8.6 - Math.sin(t * 4 + k) * 0.25, 2.15)); const g = f.map((p) => [p[0], p[1] + K * 2.2]); for (let s = 0; s < 3; s++) { const a = Math.floor(s * 4 / 3), b = Math.floor((s + 1) * 4 / 3); x.fillStyle = s === 1 ? '#FFFFFF' : '#008751'; x.beginPath(); x.moveTo(f[a][0], f[a][1]); for (let k = a; k <= b; k++) x.lineTo(f[k][0], f[k][1]); for (let k = b; k >= a; k--) x.lineTo(g[k][0], g[k][1]); x.fill(); } } // the flag: green, white, green
+    person(33, 9, '#F8FAFC', 'Captain Femi', bubbles.get('captain'), now, false, 'm,3,1,0,1');
+    if (R.charter === 'sunset' || night > 0.4) glow.push(() => { for (let k = 0; k < 14; k++) { const u = k / 13, px = 34 + u * 58, pz = u > 0.62 ? cz + (k % 2 ? 1 : -1) * (1 - (u - 0.62) / 0.38) * cz * 0.9 : (k % 2 ? 1.2 : R.d - 1.2), p = P(px, 3.4, pz); x.fillStyle = `hsl(${(k * 40 + t * 90) % 360},95%,65%)`; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill(); } }); // deck lights
+    // the trip: time left up top; back at the marina when it's up
+    const left = Math.max(0, Math.ceil(((R.until || 0) - Date.now()) / 1000));
+    afterCars.push(() => { const txt = `⛵ ${CHARTERS[R.charter] ? CHARTERS[R.charter][0] : 'Charter'} · back at the marina in ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; x.save(); x.font = '800 13px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; const w = x.measureText(txt).width + 28; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(W / 2 - w / 2, 96, w, 30, 15); x.fill(); x.fillStyle = '#FFFFFF'; x.fillText(txt, W / 2, 111.5); x.restore(); });
+    if (!left && !R.ending) { R.ending = true; bubbles.set('captain', { text: 'We\'re back at Banana Island. Come again!', until: performance.now() + 4000 }); setTimeout(() => { if (inside === R) { leaveRoom(); bubbles.set('me', { text: 'Back at Banana Island Marina.', until: performance.now() + 4000 }); } }, 2500); }
+  }
   // the sea over someone standing in it: up to the knees at the edge, to the chest further out (swimming)
   function wade(px, pz, now) {
     const b = P(px, 0, pz), s = Math.max(0.75, K / 4.6) * 1.12 * 0.92, deep = Math.min(1, Math.max(0, (SHORE - pz) / 14)), top = b[1] - (6 + deep * 18) * s, t = now / 1000;
@@ -3006,6 +3054,10 @@
     const keepOutside = !!extra.stairs && outside; if (extra.stairs) { inside = null; deco = null; }
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
     if (kind === 'dealer' && extra.dealer === 'lekkiluxury') { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
+    if (kind === 'yacht') { // the party boat: a DJ and a dance floor where the loungers were; the captain says hello
+      if (extra.charter === 'sunset') R.layout = R.layout.filter((it) => it.k !== 'lounger').concat([{ k: 'djbooth', x: 64, z: 17, r: 1 }, { k: 'dance', x: 52, z: 17 }, { k: 'speaker', x: 66, z: 9 }, { k: 'speaker', x: 66, z: 25 }]);
+      bubbles.set('captain', { text: `Welcome aboard! ${CHARTERS[extra.charter] ? CHARTERS[extra.charter][0] : 'Charter'}: sit back, the bar is open.`, until: performance.now() + 6000 });
+    }
     if (kind === 'home') { // each style its own size and finish
       const st = HOME_STYLES[extra.style] || HOME_STYLES.bungalow, fin = HOME_FINISH[extra.style] || HOME_FINISH.bungalow;
       R.w = st[2]; R.d = st[3]; R.floor = fin[0]; R.wall = fin[1]; R.trim = fin[2];
@@ -3125,6 +3177,7 @@
   // ================= moving =================
   const onFerry = (px, pz) => at(Math.floor(px / T), Math.floor(pz / T)) === FERRYLANE;
   function walkable(px, pz) {
+    if (inside && inside.kind === 'yacht') return onDeck(px, pz);
     if (inside) return px > 1.5 && pz > 1.5 && px < inside.w - 1.5 && pz < inside.d - 1.5 && !(inside.kind === 'arena' && pz < 23);
     const t = at(Math.floor(px / T), Math.floor(pz / T));
     if (t === W0) return false;
@@ -3189,8 +3242,7 @@
   function tapAt(sx, sy) {
     if (inside) return tapInside(sx, sy);
     let best = null, bd = 34;
-    for (const p of PLACES) { const s = P((p[1] + p[3] / 2) * T, PIN_H[p[0]] ?? 16, (p[2] + p[4] / 2) * T); const d = Math.hypot(s[0] - sx, s[1] - 21 - sy); if (d < bd) { bd = d; best = p; } }
-    // a building you can go into opens straight away (no camera move): public places for anyone,
+    for (const p of PLACES) { const s = P((p[1] + p[3] / 2) * T, PIN_H[p[0]] ?? 16, (p[2] + p[4] / 2) * T); const d = Math.hypot(s[0] - sx, s[1] - 21 - sy); if (d < bd) { bd = d; best = p; } }    // a building you can go into opens straight away (no camera move): public places for anyone,
     // an HQ for its owner and the people they've let in; anyone else knocks
     const [fx, fz] = floorAt(sx, sy), i = Math.floor(fx / T), j = Math.floor(fz / T);
     const under = PLACES.find((p) => i >= p[1] && i < p[1] + p[3] && j >= p[2] && j < p[2] + p[4]);
@@ -3199,7 +3251,7 @@
     const lot = hqIndex.get(i + ',' + j);
     if (!best && lot != null) { card.style.display = 'none'; return enterHq(lot, i, j); }
     const pl = plotAt(i, j);
-    if (pl) return homeCard(pl, i, j);
+    if (pl && !(best && !ESTATE_OF[best[5]])) return homeCard(pl, i, j); // a house, unless you tapped another place's tag in front of it
     if (best) { placeCard(best); return; }
     card.style.display = 'none';
   }
@@ -3227,7 +3279,7 @@
     hqgate: ['🏠 Go to your HQ?', 'Your own place on HQ Row.', () => openPhone('hq')],
     screens: ['📺 Advertise here?', 'Your ad on Ad Island\'s digital billboards.', null],
     welcome: null, soon: ['🚧 Reclaimed land', 'Something new is coming here.', null],
-    marina: ['⛵ Take a yacht out?', 'Banana Island Marina: charters round the lagoon.', null],
+    marina: ['⛵ Charter a yacht?', 'A free harbour tour, a lagoon cruise, a sunset party or the whole yacht to yourself.', (p) => { at$(p); openPhone('yacht'); }],
     bigate: ['🛂 Banana Island', 'Gated. Residents and their guests: tap a villa to go in or knock.', () => openPhone('homes')],
   };
   function placeCard(p) {
@@ -3575,7 +3627,7 @@
     if (!booted) await boot();
     if (!app) await lockScreen(); // you picked the phone up yourself; something in the world (a piece in the store, a car, a ride) opens straight to it
     if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
-    if (!signedIn()) return app === 'ride' ? go('ride') : render('signin');
+    if (!signedIn()) return app === 'ride' || app === 'yacht' ? go(app) : render('signin'); // a ride or the free harbour tour need no account
     try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
     if (app) go(app, arg); else render('home');
   }
@@ -3800,6 +3852,23 @@
         const list = await my('myCars');
         show(`<div class="ptitle">Garage</div><div class="lock">Your cars. The one you drive parks outside the clubs and the casino when you go in.</div>${list.map((c2) => `<div class="pcard" style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:26px;border-radius:50%;background:${esc(c2.color)};flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.3)"></span><span style="flex:1"><h3 style="margin:0">${esc(c2.name)}</h3><span class="dim">${naira(c2.price)}</span></span>${c2.active ? '<b style="color:#FCEE0A">DRIVING</b>' : `<button class="pbtn alt" data-drive="${c2.id}">Drive</button>`}</div>`).join('') || '<div class="pcard"><h3>No car yet</h3><p>Visit Polanco or Lekki Luxury Cars on the east side of the island. Tap them to walk in.</p></div>'}`);
         pbody.querySelectorAll('[data-drive]').forEach((b) => (b.onclick = async () => { try { await my('driveCar', { carId: Number(b.dataset.drive) }); const c2 = list.find((v) => v.id === Number(b.dataset.drive)); myCar = c2.model + ':' + c2.color; render('garage'); } catch (e) { fail(e); } }));
+        return;
+      }
+      if (app === 'yacht') {
+        // charters out of Banana Island Marina: pick one, pay (the tour is free), and you're on deck
+        show(`${ahead('ride', 'Banana Island Marina', 'Yacht charters round the lagoon')}
+          <div class="hero" style="--ac:#38BDF8"><div class="hl">Today</div><div class="hv" style="font-size:22px">⛵ ${lagosWeather().icon} ${lagosWeather().temp}°C</div><small>Calm water on the lagoon. Captain Femi at the helm.</small></div>
+          <div class="lst">${Object.entries(CHARTERS).map(([k, c]) => `<button class="li" data-ch="${k}"><span class="ic">${{ tour: '🛥️', cruise: '⛵', sunset: '🪩', private: '🛳️' }[k]}</span><span class="lt"><b>${c[0]}</b><small>${c[3]} · ${Math.round(c[2] / 60 * 10) / 10} min</small></span><span class="lr ${c[1] ? '' : 'pos'}">${c[1] ? naira(c[1]) : 'Free'}</span></button>`).join('')}</div>
+          <div class="lock">Paid from your wallet. Shared trips: everyone on the same charter is on the same deck.</div>`);
+        pbody.querySelectorAll('[data-ch]').forEach((b) => (b.onclick = async () => {
+          const k = b.dataset.ch, c = CHARTERS[k];
+          try {
+            if (c[1]) { const v = await my('charterYacht', { kind: k }); if (v.naira != null) pnaira.textContent = naira(v.naira); }
+            closePhone(); const mp = PLACES.find((p) => p[0] === 'marina'); if (mp && !inside) at$(mp);
+            notify(`${c[0]} from Banana Island Marina`, 'marina');
+            enterRoom('yacht', k === 'private' ? 'place:yacht:private:' + (me$ ? me$.handle : id) : 'place:yacht:' + k, '⛵ ' + c[0], { charter: k, until: Date.now() + c[2] * 1000 });
+          } catch (e) { fail(/\((404|500)\)/.test(e.message) ? new Error('Paid charters open when the server update goes live. The harbour tour is free.') : e); }
+        }));
         return;
       }
       if (app === 'homes') {

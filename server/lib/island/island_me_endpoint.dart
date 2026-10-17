@@ -826,6 +826,26 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'plot': plot, 'style': style, 'name': h.name, 'naira': after.naira});
   });
 
+  // ---------------- Banana Island Marina: yacht charters ----------------
+  /// kind -> (name, price in naira). The same list as CHARTERS in web/index.html (the harbour tour is free and needs no call).
+  static const charters = {
+    'cruise': (name: 'Lagoon cruise', price: 15000),
+    'sunset': (name: 'Sunset party', price: 30000),
+    'private': (name: 'Private charter', price: 250000),
+  };
+
+  /// Pay for a charter; the trip itself runs in the game.
+  Future<String> charterYacht(Session session, String kind) => _money(session, (u) async {
+    final c = charters[kind];
+    if (c == null) return _err('That charter isn\'t running.');
+    final w = await WorldAuthority.citizen(session, u);
+    if (w.naira < c.price) return _err('The ${c.name} costs N${_n(c.price)}. You have N${_n(w.naira)}.');
+    final r = await Bank.post(session, u, key: 'island:yacht:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -c.price, kind: 'fee', counter: 'city:services', memo: 'Banana Island Marina: ${c.name}');
+    if (r.short != null) return _err('Not enough naira.');
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'kind': kind, 'name': c.name, 'naira': after.naira});
+  });
+
   // ---------------- insides ----------------
   /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.
   static Future<bool> _mayArrange(Session s, UuidValue u, String key) async {

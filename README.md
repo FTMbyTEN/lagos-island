@@ -13,6 +13,7 @@ A multiplayer game of Lagos Island, Ikoyi, Victoria Island, Eko Atlantic, Lekki,
 - **One account with WYRD:** sign up at the door with an email, a username and a password. The same account works in the WYRD app.
 - **Inside buildings:** apartments (HQs), clubs, the casino, WYRD Tower, the arena, the car dealers and the Eko Home Store have rooms you walk around in. Owners arrange their home's furniture.
 - **Homes:** everyone gets a free BQ on HQ Row. Six estates have plots to buy: mini flats and bungalows in Ajah, terraces and duplexes in Lekki, townhouses, lofts and mansions in Ikoyi, villas on Banana Island. A loft keeps your cars inside.
+- **Banana Island Marina:** yacht charters. A free harbour tour, a lagoon cruise, a sunset party with a DJ, or a private charter: you're on deck while the lagoon and the skyline go by, and back at the marina when it's over.
 - **Eko Home Store:** 76 real 3D pieces of furniture (Kenney's Furniture Kit, CC0) from ₦2,000 to ₦1.5M. Homes come empty; you place what you buy.
   - Your own HQ is always open to you. Anyone else knocks, and the owner lets them in from their phone.
 - **The phone (WYRD OS):**
