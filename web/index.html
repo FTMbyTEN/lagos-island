@@ -623,18 +623,26 @@
     x.fillStyle = g; x.beginPath(); x.ellipse(c[0], c[1], rr, rr * sp, 0, 0, Math.PI);
     x.ellipse(c[0], c[1], rr, Math.max(rr * 0.4, c[1] - t[1]), 0, Math.PI, Math.PI * 2); x.fill();
   }
+  // a tree: each one its own shape (seeded by where it stands): a tapering trunk that forks, and a lumpy crown of
+  // leaf clusters in three tones (shade underneath, leaf, sun on top). Wide umbrella trees (almond, flame tree) or taller ovals (neem).
   function tree(tx, tz, r, col) {
-    const base = P(tx, 0, tz), top = P(tx, r * 1.5, tz), rr = r * K, c0 = col || C.tree;
-    x.fillStyle = 'rgba(25,55,30,0.28)'; x.beginPath(); x.ellipse(base[0] + rr * 0.45, base[1] + rr * 0.1, rr * 1.15, rr * sp, 0, 0, Math.PI * 2); x.fill();
-    x.fillStyle = '#7A4E2D'; x.beginPath(); x.moveTo(base[0] - rr * 0.18, base[1]); x.lineTo(top[0] - rr * 0.08, top[1]); x.lineTo(top[0] + rr * 0.08, top[1]); x.lineTo(base[0] + rr * 0.18, base[1]); x.fill();
-    if (rr < 3) { x.fillStyle = c0; x.beginPath(); x.arc(top[0], top[1] - rr * 0.4, rr, 0, Math.PI * 2); x.fill(); return; }
-    const blobs = [[-0.45, -0.15, 0.72], [0.45, -0.1, 0.7], [0, -0.7, 0.8]];
-    for (const [ox, oy, k] of blobs) {
-      const cx0 = top[0] + ox * rr, cy0 = top[1] - rr * 0.35 + oy * rr, r0 = rr * k;
-      const g = x.createRadialGradient(cx0 - r0 * 0.4, cy0 - r0 * 0.45, r0 * 0.1, cx0, cy0, r0);
-      g.addColorStop(0, shadeHex(c0, 1.35)); g.addColorStop(0.65, c0); g.addColorStop(1, shadeHex(c0, 0.7));
-      x.fillStyle = g; x.beginPath(); x.arc(cx0, cy0, r0, 0, Math.PI * 2); x.fill();
-    }
+    const R = rnd(Math.round(tx * 31 + tz * 17)), c0 = col || C.tree, base = P(tx, 0, tz), rr = r * K;
+    const broad = R() < 0.5, h = r * (broad ? 1.25 : 1.45) + R() * r * 0.3, lean = (R() - 0.5) * 0.35 * rr, top = P(tx, h, tz);
+    const tx0 = top[0] + lean, cw = broad ? 1.35 : 0.95, ch = broad ? 0.72 : 1.05, cy = top[1] - rr * ch * 0.5;
+    // the shadow, a little ragged
+    x.fillStyle = 'rgba(25,55,30,0.24)'; x.beginPath(); x.ellipse(base[0] + rr * 0.5, base[1] + rr * 0.1, rr * cw, rr * sp * 0.9, 0, 0, Math.PI * 2); x.ellipse(base[0] + rr * 0.9, base[1] + rr * 0.05, rr * cw * 0.6, rr * sp * 0.6, 0, 0, Math.PI * 2); x.fill();
+    // the trunk, tapering, with two branches up into the crown
+    x.fillStyle = '#6B4226'; x.beginPath(); x.moveTo(base[0] - rr * 0.15, base[1]); x.quadraticCurveTo(base[0] - rr * 0.1, (base[1] + top[1]) / 2, tx0 - rr * 0.06, top[1]); x.lineTo(tx0 + rr * 0.06, top[1]); x.quadraticCurveTo(base[0] + rr * 0.1, (base[1] + top[1]) / 2, base[0] + rr * 0.15, base[1]); x.fill();
+    if (rr < 3) { x.fillStyle = shadeHex(c0, 0.8); x.beginPath(); x.arc(tx0, cy + rr * 0.15, rr * 0.9, 0, Math.PI * 2); x.fill(); x.fillStyle = c0; x.beginPath(); x.arc(tx0 - rr * 0.2, cy - rr * 0.1, rr * 0.7, 0, Math.PI * 2); x.fill(); return; }
+    x.strokeStyle = '#6B4226'; x.lineCap = 'round'; x.lineWidth = Math.max(1, rr * 0.07);
+    const fy = top[1] + (base[1] - top[1]) * 0.25; x.beginPath(); x.moveTo(tx0, fy); x.lineTo(tx0 - rr * cw * 0.45, cy + rr * 0.05); x.moveTo(tx0, fy); x.lineTo(tx0 + rr * cw * 0.4, cy - rr * 0.05); x.stroke(); x.lineCap = 'butt';
+    // the crown: clusters scattered through an ellipse, drawn dark, then leaf, then the sunlit tops
+    const cl = [];
+    for (let k = 0; k < 9; k++) { const a = R() * Math.PI * 2, dd = Math.sqrt(R()); cl.push([tx0 + Math.cos(a) * dd * rr * cw * 0.62, cy + Math.sin(a) * dd * rr * ch * 0.55, rr * (0.3 + R() * 0.17), Math.sin(a) * dd]); }
+    cl.sort((p, q) => p[3] - q[3]);
+    x.fillStyle = shadeHex(c0, 0.68); x.beginPath(); for (const [px, py, pr] of cl) { x.moveTo(px + rr * 0.08 + pr * 1.05, py + rr * 0.12); x.arc(px + rr * 0.08, py + rr * 0.12, pr * 1.05, 0, Math.PI * 2); } x.fill();
+    x.fillStyle = c0; x.beginPath(); for (const [px, py, pr] of cl) { x.moveTo(px + pr, py); x.arc(px, py, pr, 0, Math.PI * 2); } x.fill();
+    x.fillStyle = shadeHex(c0, 1.28); x.beginPath(); for (const [px, py, pr, s] of cl) if (s < 0.25) { const hx = px - pr * 0.3, hy = py - pr * 0.35; x.moveTo(hx + pr * 0.45, hy); x.arc(hx, hy, pr * 0.45, 0, Math.PI * 2); } x.fill();
   }
   function palm(tx, tz, h) {
     const base = P(tx, 0, tz), top = P(tx + 0.6, h, tz), s = K, t = performance.now() / 1400 + tx;
@@ -2169,10 +2177,7 @@
     const orb = x.createRadialGradient(c[0] - 3 * s, c[1] - 3 * s, 1, c[0], c[1], 9 * s); orb.addColorStop(0, '#FFFFFF'); orb.addColorStop(0.4, '#A78BFA'); orb.addColorStop(1, '#0EA5E9');
     x.fillStyle = orb; x.beginPath(); x.arc(c[0], c[1], 9 * s, 0, Math.PI * 2); x.fill();
     x.strokeStyle = 'rgba(255,255,255,0.8)'; x.lineWidth = 1.5; x.beginPath(); x.ellipse(c[0], c[1], 14 * s, 4 * s, Math.sin(t) * 0.3, 0, Math.PI * 2); x.stroke(); // the ring
-    x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '800 12px "Plus Jakarta Sans", sans-serif';
-    const ny = base[1] + 8 * s, nw = x.measureText('✨ WYRD').width + 16;
-    x.fillStyle = '#6366F1'; x.beginPath(); x.roundRect(base[0] - nw / 2, ny, nw, 19, 9.5); x.fill();
-    x.fillStyle = '#fff'; x.fillText('✨ WYRD', base[0], ny + 10);
+    x.textAlign = 'center'; x.textBaseline = 'middle';
     const b = bubbles.get('wyrd');
     if (b && b.until > now) {
       x.font = '600 14px "Plus Jakarta Sans", sans-serif';
