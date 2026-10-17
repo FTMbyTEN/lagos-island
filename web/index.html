@@ -806,15 +806,7 @@
       x.fillStyle = '#EF4444'; x.beginPath(); x.moveTo(f1[0], f1[1]); x.lineTo(f1[0] + K * 3, f1[1] + K); x.lineTo(f1[0], f1[1] + K * 2); x.fill();
       for (const [px, pz] of [[a + 2, b + 2], [c - 2, d - 2], [a + 2, d - 2]]) tree(px, pz, 2.6);
     },
-    villas(a, b, c, d) {
-      flat(a, b, c, d, 0.05, C.grassLot);
-      for (let k = 0; k < 2; k++) {
-        const z0 = b + 2 + k * ((d - b) / 2);
-        box(a + 2, 0, z0, a + 11, 6, z0 + 7, '#FFFFFF', '#93C5FD', 1);
-        flat(a + 12, z0 + 1, c - 2, z0 + 6, 0.1, '#38BDF8'); // the pool
-        palm(c - 2, z0 + 7, 9);
-      }
-    },
+    villas(a, b, c, d) { estate(a, b, c, d); },
     arcade(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
       box(a + 2, 0, b + 3, c - 2, 5, d - 2, '#E5E7EB', '#334155', 1);
@@ -827,6 +819,7 @@
       for (let k = 0; k < 4; k++) danfo(a + 4 + k * 6, d - 4, false);
     },
     houses(a, b, c, d) {
+      if (estateAt(a / T, b / T)) return estate(a, b, c, d);
       flat(a, b, c, d, 0.05, C.grassLot);
       const R = rnd(a * 7 + b * 13), n = Math.max(2, Math.round((c - a) * (d - b) / 130));
       for (let k = 0; k < n; k++) {
@@ -1695,15 +1688,84 @@
     };
     draw1(); glow.push(draw1);
   }
-  // HQ Row: who owns which lot (filled in from the server for signed-in players)
+  // HQ Row: everyone's free starter home, a BQ (boys' quarters): a single-storey block behind a compound wall
+  // (filled in from the server for signed-in players)
   let hqSlots = [];
   function hqHouse(a, b, c, d, k) {
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
-    flat(a + 0.6, b + 0.6, c - 0.6, d - 0.6, 0.04, hq && hq.mine ? '#FDE68A' : C.grassLot);
-    box(a + 2, 0, b + 2, c - 2, 6.5, d - 3, '#F8FAFC', '#94A3B8', 1);
-    gable(a + 1.7, b + 1.7, c - 1.7, d - 2.7, 6.5, 3, col);
-    box(a + 4, 0, d - 3, a + 6, 3.4, d - 2.8, hq && !hq.may ? '#475569' : col); // the door
-    if (hq && hq.mine) { const p = P(c - 2, 0, b + 2), tp = P(c - 2, 11, b + 2); x.strokeStyle = '#6B7280'; x.lineWidth = 1; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(tp[0], tp[1]); x.stroke(); x.fillStyle = col; x.fillRect(tp[0], tp[1], K * 2.6, K * 1.6); }
+    compound(a, b, c, d, hq && hq.mine, () => {
+      box(a + 1.8, 0, b + 2, c - 1.8, 4, d - 3.6, '#F1E9DA', '#475569', 1);
+      gable(a + 1.4, b + 1.6, c - 1.4, d - 3.2, 4, 1.4, '#9CA3AF'); // a corrugated roof
+      box(a + 3.4, 0, d - 3.6, a + 5, 2.9, d - 3.4, hq && !hq.may ? '#475569' : col); // the door
+      box(a + 1.6, 2.9, d - 3.6, c - 1.6, 3.15, d - 2.4, '#78716C'); // the little porch roof
+    });
+    if (hq && hq.mine) ownerFlag(c - 1.6, b + 1.6, col);
+  }
+  // ---- homes you can buy: six estates of plots, each plot one home in its estate's style (the server has the same lists)
+  // style: [name, price, room width, room depth]
+  const HOME_STYLES = { flat: ['Mini flat', 800000, 40, 28], bungalow: ['Bungalow', 2500000, 52, 36], terrace: ['Terrace house', 6000000, 56, 38], duplex: ['Duplex', 15000000, 70, 46], townhouse: ['Townhouse', 18000000, 64, 44], loft: ['Loft', 25000000, 84, 56], mansion: ['Mansion with BQ', 40000000, 96, 64], villa: ['Waterfront villa', 120000000, 110, 72] };
+  const ESTATES = {
+    vgc: ['bungalow', 'flat', 'duplex', 'flat', 'bungalow', 'flat', 'bungalow', 'duplex', 'flat'],
+    lekki1: ['duplex', 'terrace', 'duplex', 'terrace', 'duplex', 'terrace', 'loft', 'duplex', 'terrace'],
+    lekkiest: ['terrace', 'terrace', 'duplex', 'terrace', 'bungalow', 'terrace', 'duplex', 'terrace', 'terrace'],
+    ikoyihomes: ['loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse'],
+    oldikoyi: ['mansion', 'mansion', 'loft', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion'],
+    banana: ['villa', 'villa', 'loft', 'villa', 'villa', 'villa'],
+  };
+  const ESTATE_OF = { 'Victoria Garden City': 'vgc', 'Lekki Phase 1': 'lekki1', 'Lekki estates': 'lekkiest', 'Ikoyi homes': 'ikoyihomes', 'Old Ikoyi': 'oldikoyi', 'Banana Island': 'banana' };
+  let homesLive = {}; // plot -> { style, mine, may, slot, color, owner } for plots someone owns
+  const estateAt = (i, j) => PLACES.find((p) => ESTATE_OF[p[5]] && i >= p[1] && i < p[1] + p[3] && j >= p[2] && j < p[2] + p[4]);
+  function plotAt(i, j) {
+    const p = estateAt(i, j); if (!p) return null;
+    const est = ESTATE_OF[p[5]], n = (j - p[2]) * p[3] + (i - p[1]);
+    return { plot: est + ':' + n, style: ESTATES[est][n], est, name: p[5] };
+  }
+  function ownerFlag(fx, fz, col) { const p = P(fx, 0, fz), tp = P(fx, 11, fz); x.strokeStyle = '#6B7280'; x.lineWidth = 1; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(tp[0], tp[1]); x.stroke(); x.fillStyle = col; x.fillRect(tp[0], tp[1], K * 2.6, K * 1.6); }
+  // a Lagos compound: a low wall round the plot, a gate in the front, the house inside
+  function compound(a, b, c, d, mine, house) {
+    const wc = mine ? '#FDE68A' : '#E7E5E4', w = (x0, z0, x1, z1) => box(x0, 0, z0, x1, 1.5, z1, wc);
+    flat(a + 0.4, b + 0.4, c - 0.4, d - 0.4, 0.04, C.grassLot);
+    w(a + 0.4, b + 0.4, c - 0.4, b + 0.8); w(a + 0.4, b + 0.4, a + 0.8, d - 0.4); w(c - 0.8, b + 0.4, c - 0.4, d - 0.4);
+    flat(a + 3.6, d - 3.4, a + 6.4, d - 0.4, 0.05, '#A8A29E'); // the drive
+    house();
+    w(a + 0.4, d - 0.8, a + 3.5, d - 0.4); w(a + 6.5, d - 0.8, c - 0.4, d - 0.4); box(a + 3.5, 0, d - 0.75, a + 6.5, 1.7, d - 0.45, '#1F2937'); // the gate
+  }
+  function homeModel(style, a, b, c, d, h) {
+    compound(a, b, c, d, h && h.mine, () => {
+      switch (style) {
+        case 'flat': box(a + 2, 0, b + 1.6, c - 2, 8, d - 3.6, '#F5E6C8', '#64748B', 2); box(a + 1.8, 8, b + 1.4, c - 1.8, 8.6, d - 3.4, '#D6C7A8'); for (const y of [3.6, 7.2]) box(a + 2.4, y - 0.3, d - 3.6, c - 2.4, y, d - 2.9, '#94A3B8'); break;
+        case 'bungalow': box(a + 2, 0, b + 2, c - 2, 4, d - 3.6, '#FFF7E6', '#475569', 1); pyramid(a + 1.5, b + 1.5, c - 1.5, d - 3.1, 4, 2.6, '#9A3412'); break;
+        case 'terrace': box(a + 1, 0, b + 1.8, c - 1, 7.5, d - 3.6, '#E2E8F0', '#334155', 2); gable(a + 0.9, b + 1.6, c - 0.9, d - 3.4, 7.5, 2.4, '#475569'); break;
+        case 'duplex': box(a + 1.6, 0, b + 2, c - 1.6, 4.2, d - 3.6, '#F8FAFC', '#1E293B', 1); box(a + 1.6, 4.2, b + 2, c - 3.4, 8.2, d - 4.6, '#E5E7EB', '#1E293B', 1); box(a + 1.3, 8.2, b + 1.7, c - 3.1, 8.6, d - 4.3, '#374151'); box(c - 3.4, 4.2, d - 4.6, c - 1.6, 4.5, d - 3.6, '#374151'); break;
+        case 'townhouse': box(a + 2.4, 0, b + 2, c - 2.4, 11, d - 3.6, '#D6D3D1', '#0F172A', 3); box(a + 2.2, 11, b + 1.8, c - 2.2, 11.5, d - 3.4, '#1F2937'); box(a + 2.4, 11.5, d - 3.8, c - 2.4, 12.4, d - 3.6, '#94A3B8'); break;
+        case 'loft': { // old brick, a wall of black-framed glass, a sawtooth roof, a garage door: the car lives inside
+          box(a + 1.4, 0, b + 1.8, c - 1.4, 9, d - 3.4, '#9A3412');
+          quad([P(a + 2, 1, d - 3.35), P(c - 4.6, 1, d - 3.35), P(c - 4.6, 8.2, d - 3.35), P(a + 2, 8.2, d - 3.35)], 'rgba(15,23,42,0.85)');
+          x.strokeStyle = '#0B0F19'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); for (let k = 1; k < 4; k++) { const px = a + 2 + k * (c - a - 6.6) / 4, p = P(px, 1, d - 3.33), q = P(px, 8.2, d - 3.33); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } { const p = P(a + 2, 4.6, d - 3.33), q = P(c - 4.6, 4.6, d - 3.33); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
+          box(c - 4.2, 0, d - 3.4, c - 1.8, 3.6, d - 3.25, '#57534E');
+          for (let k = 0; k < 2; k++) gable(a + 1.4, b + 1.8 + k * ((d - b - 5.2) / 2), c - 1.4, b + 1.8 + (k + 1) * ((d - b - 5.2) / 2), 9, 1.4, '#1F2937');
+          if (night > 0.3) glow.push(() => { const p = P((a + c) / 2 - 1, 4.5, d - 3.3), r = K * 6; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,200,120,0.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
+          break;
+        }
+        case 'mansion': // a white house with a columned porch, and its BQ at the back
+          box(c - 3.2, 0, b + 1.4, c - 1.2, 3, b + 4.6, '#F5F5F4', '#475569', 1); gable(c - 3.4, b + 1.2, c - 1, b + 4.8, 3, 1, '#9CA3AF');
+          box(a + 1.4, 0, b + 1.6, c - 3.8, 8, d - 4.2, '#FAFAF9', '#1E293B', 2); pyramid(a + 1.1, b + 1.3, c - 3.5, d - 3.9, 8, 2.6, '#334155');
+          for (let k = 0; k < 4; k++) { const px = a + 2.4 + k * ((c - a - 6.8) / 3); box(px - 0.25, 0, d - 3.8, px + 0.25, 6, d - 3.3, '#FFFFFF'); }
+          box(a + 1.8, 6, d - 4.2, c - 4.2, 6.6, d - 3.1, '#F5F5F4'); break;
+        case 'villa': // white stacked boxes on the water, a pool, a palm
+          box(a + 1.4, 0, b + 1.4, c - 1.4, 4.4, b + 6, '#FFFFFF', '#38BDF8', 1); box(a + 3, 4.4, b + 1.4, c - 1.4, 8.4, b + 6.8, '#F5F5F4', '#38BDF8', 1); box(a + 2.8, 8.4, b + 1.2, c - 1.2, 8.8, b + 7, '#E7E5E4');
+          flat(a + 1.6, b + 7.2, c - 1.6, d - 3.6, 0.1, '#38BDF8'); palm(a + 1.6, d - 2, 7); break;
+      }
+    });
+    if (h) ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573');
+    else { box(c - 2.4, 0, d - 1.8, c - 2.2, 2.6, d - 1.6, '#78350F'); quad([P(c - 3.6, 1.6, d - 1.55), P(c - 1, 1.6, d - 1.55), P(c - 1, 2.8, d - 1.55), P(c - 3.6, 2.8, d - 1.55)], '#DC2626'); if (K > 3) faceText('FOR SALE', c - 2.3, 2.2, d - 1.5, '#FFFFFF', 0.55, 0); }
+  }
+  // an estate: its plots far to near, each in its style
+  function estate(a, b, c, d) {
+    const tiles = [];
+    for (let j = b / T; j < d / T; j++) for (let i = a / T; i < c / T; i++) { const pl = plotAt(i, j); if (pl) tiles.push([P(i * T + T / 2, 0, j * T + T / 2)[2], i, j, pl]); }
+    tiles.sort((p, q) => p[0] - q[0]);
+    for (const [, i, j, pl] of tiles) homeModel(pl.style, i * T, j * T, (i + 1) * T, (j + 1) * T, homesLive[pl.plot]);
   }
 
   // ---- the lots: each landmark takes its tiles; the rest of a sector's lots get a plot, a house or trees
@@ -2176,6 +2238,7 @@
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
     office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
     dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
+    home: { w: 56, d: 40, floor: '#D6C3A5', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } }, // sized by its style on the way in
     store: { w: 124, d: 112, floor: '#E7E5E4', wall: '#FAFAF9', trim: '#0F766E', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.8 } },
     arena: { w: 120, d: 88, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.95 } },
   };
@@ -2185,6 +2248,7 @@
   const DEFAULTS = {
     store: storeSorted().map((s, k) => ({ k: s.id, x: 9 + (k % 10) * 11.4, z: 18 + Math.floor(k / 10) * 11.2 })),
     hq: [], // a new home comes empty: you furnish it from the Eko Home Store
+    home: [],
     club: [
       // the dance floor, two halves, with speakers either side of the stage
       { k: 'dance', x: 40, z: 30 }, { k: 'dance', x: 56, z: 30 }, { k: 'speaker', x: 26, z: 7 }, { k: 'speaker', x: 70, z: 7 }, { k: 'speaker', x: 26, z: 12 }, { k: 'speaker', x: 70, z: 12 },
@@ -2288,6 +2352,7 @@
     if (R.kind === 'tower') drawTowerShell(R, now);
     if (R.kind === 'dealer') { drawShowroom(R, now); if (R.dealer === 'polanco') drawMezzanine(R); }
     if (R.kind === 'store') drawStoreShell(R);
+    if (R.kind === 'home') drawHomeShell(R);
     if (R.kind === 'office') drawOffice(R, now);
     if (R.kind === 'arena') drawStage(now);
     const items = [];
@@ -2526,6 +2591,32 @@
       });
     }
   }
+  // inside a home you bought: [floor, walls, trim] by style, then its finish: tiles, planks, marble, brick and steel
+  const HOME_FINISH = { flat: ['#D9CBB5', '#F3EEE6', '#94A3B8'], bungalow: ['#D6C3A5', '#F7F3EC', '#B08A43'], terrace: ['#B7895C', '#F5F5F4', '#475569'], duplex: ['#C19A6B', '#FAFAF9', '#1E293B'], townhouse: ['#A47551', '#EDE9E3', '#0F172A'], loft: ['#A3A3A3', '#9A3412', '#1F2937'], mansion: ['#F5F5F4', '#FFFDF8', '#D4AF37'], villa: ['#ECEAE4', '#FFFFFF', '#38BDF8'] };
+  function drawHomeShell(R) {
+    const s = R.style, line = (x0, z0, x1, z1) => { const p = P(x0, 0.02, z0), q = P(x1, 0.02, z1); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); };
+    x.lineWidth = 1; x.beginPath();
+    if (['terrace', 'duplex', 'townhouse'].includes(s)) { x.strokeStyle = 'rgba(70,40,15,0.2)'; for (let z = 2; z < R.d; z += 2) line(0, z, R.w, z); } // planks
+    else if (s === 'mansion' || s === 'villa') { x.strokeStyle = 'rgba(148,163,184,0.45)'; for (let k = 10; k < R.w; k += 10) line(k, 0, k, R.d); for (let k = 10; k < R.d; k += 10) line(0, k, R.w, k); } // marble slabs
+    else if (s === 'loft') { x.strokeStyle = 'rgba(64,64,64,0.25)'; for (let k = 21; k < R.w; k += 21) line(k, 0, k, R.d); for (let k = 14; k < R.d; k += 14) line(0, k, R.w, k); } // polished concrete
+    x.stroke();
+    // windows along the back wall; the villa's is all glass onto the water
+    const sky = (g0, g3) => { const g = x.createLinearGradient(g3[0], g3[1], g0[0], g0[1]); g.addColorStop(0, night > 0.5 ? '#0F172A' : '#7DD3FC'); g.addColorStop(0.6, night > 0.5 ? '#1E1B4B' : '#BAE6FD'); g.addColorStop(0.61, night > 0.5 ? '#0B3B5E' : '#3A86C8'); g.addColorStop(1, night > 0.5 ? '#082F49' : '#1E6FAF'); return g; };
+    if (s === 'villa') { const g0 = P(4, 1, 0.1), g1 = P(R.w - 4, 1, 0.1), g2 = P(R.w - 4, 16, 0.1), g3 = P(4, 16, 0.1); quad([g0, g1, g2, g3], sky(g0, g3), '#E5E7EB'); }
+    else { const n = Math.max(2, Math.round(R.w / 18)); for (let k = 0; k < n; k++) { const wx = (k + 0.5) * R.w / n, hw = s === 'loft' ? 6 : 3, wy = s === 'loft' ? 3 : 4, g0 = P(wx - hw, wy, 0.1), g1 = P(wx + hw, wy, 0.1), g2 = P(wx + hw, 15, 0.1), g3 = P(wx - hw, 15, 0.1); quad([g0, g1, g2, g3], sky(g0, g3), s === 'loft' ? '#111827' : '#E5E7EB'); if (s === 'loft') { x.strokeStyle = '#111827'; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); for (let m = 1; m < 4; m++) { const p = P(wx - hw + m * hw / 2, 3, 0.12), q = P(wx - hw + m * hw / 2, 15, 0.12); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } for (const y of [7, 11]) { const p = P(wx - hw, y, 0.12), q = P(wx + hw, y, 0.12); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); } } }
+    if (s === 'loft') {
+      // brick courses on the walls, steel beams overhead, and the garage bay with your cars
+      x.strokeStyle = 'rgba(60,20,10,0.35)'; x.lineWidth = 1; x.beginPath();
+      for (let y = 1.2; y < 17; y += 1.2) { const p = P(0, y, 0.09), q = P(R.w, y, 0.09); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); const p2 = P(0.09, y, 0), q2 = P(0.09, y, R.d); x.moveTo(p2[0], p2[1]); x.lineTo(q2[0], q2[1]); }
+      x.stroke();
+      const bx = R.w - 34; flat(bx, R.d - 26, R.w - 2, R.d - 2, 0.03, '#6B7280', '#FACC15');
+      x.strokeStyle = 'rgba(250,204,21,0.8)'; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); for (let k = 1; k < 3; k++) { const p = P(bx + k * 32 / 3, 0.04, R.d - 26), q = P(bx + k * 32 / 3, 0.04, R.d - 2); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
+      groundText('GARAGE', bx + 16, R.d - 4, 2.2, 'rgba(250,204,21,0.9)');
+      (R.cars || []).slice(0, 3).forEach((c2, k) => drawCar(bx + 32 / 6 + k * 32 / 3, R.d - 14, c2.model, c2.color, Math.PI / 2, 2.4));
+      afterCars.push(() => { for (let k = 1; k < 4; k++) box(k * R.w / 4 - 0.6, 17, 0, k * R.w / 4 + 0.6, 18, R.d, '#1F2937'); });
+    }
+    if (s === 'mansion' || s === 'villa') { const p = P(R.w / 2, 16, R.d / 2), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,236,190,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }
+  }
   // the Home Store: a plinth under each piece in its tier's colour, the rooms' names on the floor, a name plate (the price is on your phone)
   const TIER_COL = { Basic: '#A8A29E', Comfort: '#14B8A6', Premium: '#8B5CF6', Luxury: '#D4AF37' };
   function drawStoreShell(R) {
@@ -2641,6 +2732,11 @@
     const keepOutside = !!extra.stairs && outside; if (extra.stairs) { inside = null; deco = null; }
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
     if (kind === 'dealer' && extra.dealer === 'lekkiluxury') { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
+    if (kind === 'home') { // each style its own size and finish
+      const st = HOME_STYLES[extra.style] || HOME_STYLES.bungalow, fin = HOME_FINISH[extra.style] || HOME_FINISH.bungalow;
+      R.w = st[2]; R.d = st[3]; R.floor = fin[0]; R.wall = fin[1]; R.trim = fin[2];
+      R.cam = { ...R.cam, zoom: Math.min(2.2, 1.85 * 56 / R.w) };
+    }
     if (kind === 'dealer') { // keep the furniture off the turntables: the lounge in each showroom's free corner
       const moves = extra.dealer === 'polanco' ? { couch2: [72, 64], coffee: [80, 64], plant: [94, 62] } : { plant: [94, 46] };
       for (const it of R.layout) if (moves[it.k] && !(it.k === 'plant' && it.x < 50)) [it.x, it.z] = moves[it.k];
@@ -2654,7 +2750,8 @@
     if (signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
       try {
         const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine;
-        if (R.mine) { const f = await my('myFurniture', { room: key }).catch(() => ({})); R.owned = f.items || {}; R.elsewhere = f.elsewhere || {}; } // what you can place: what you've bought, less what stands in your other homes
+        if (R.mine) { const f = await my('myFurniture', { room: key }).catch(() => ({})); R.owned = f.items || {}; R.elsewhere = f.elsewhere || {}; }
+        if (R.mine && extra.style === 'loft') R.cars = await my('myCars').catch(() => []); // a loft keeps your cars inside // what you can place: what you've bought, less what stands in your other homes
       }
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
     }
@@ -2684,9 +2781,9 @@
     askEl.style.display = inside && inside.kind === 'tower' ? 'flex' : 'none';
     if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
     decoEl.style.display = 'flex';
-    if (!deco) { decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>'; document.getElementById('dOn').onclick = () => { deco = { sel: inside.kind === 'hq' ? null : 'sofa', colour: null, pick: null }; setDeco(); }; return; }
+    if (!deco) { decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>'; document.getElementById('dOn').onclick = () => { deco = { sel: isHome() ? null : 'sofa', colour: null, pick: null }; setDeco(); }; return; }
     if (deco.pick) {
-      decoEl.innerHTML = `<span class="dl">${FURN[deco.pick.k][1]} ${FURN[deco.pick.k][0]}</span><button class="dbtn" id="dRot">↻ Turn</button>${STORE[deco.pick.k] ? '' : PALETTE.map((c) => `<button class="dsw" data-c="${c}" style="background:${c}"></button>`).join('')}<button class="dbtn" id="dDel">${inside.kind === 'hq' && STORE[deco.pick.k] ? '📦 Put away' : '🗑 Remove'}</button><button class="dbtn" id="dDone">Done</button>`;
+      decoEl.innerHTML = `<span class="dl">${FURN[deco.pick.k][1]} ${FURN[deco.pick.k][0]}</span><button class="dbtn" id="dRot">↻ Turn</button>${STORE[deco.pick.k] ? '' : PALETTE.map((c) => `<button class="dsw" data-c="${c}" style="background:${c}"></button>`).join('')}<button class="dbtn" id="dDel">${isHome() && STORE[deco.pick.k] ? '📦 Put away' : '🗑 Remove'}</button><button class="dbtn" id="dDone">Done</button>`;
       document.getElementById('dRot').onclick = () => { deco.pick.r = ((deco.pick.r || 0) + 1) % 4; };
       document.getElementById('dDel').onclick = () => { inside.layout = inside.layout.filter((v) => v !== deco.pick); deco.pick = null; setDeco(); };
       document.getElementById('dDone').onclick = () => { deco.pick = null; setDeco(); };
@@ -2694,7 +2791,7 @@
       return;
     }
     // in your HQ you place what you've bought (what's left of each); elsewhere the staff have everything
-    const left = inside.kind === 'hq' ? spareFurniture() : null;
+    const left = isHome() ? spareFurniture() : null;
     if (left && deco.sel && !left[deco.sel]) deco.sel = Object.keys(left)[0] || null;
     const pieces = left ? Object.keys(left).map((k) => [k, FURN[k]]) : Object.entries(FURN);
     decoEl.innerHTML = `<div class="dscroll">${pieces.length ? pieces.map(([k, f]) => `<button class="ditem${deco.sel === k ? ' on' : ''}" data-k="${k}">${STORE[k] ? `<img src="${FURN_BASE}thumbs/${STORE[k].m}.png" alt="">` : `<span>${f[1]}</span>`}${f[0]}${left ? ` ×${left[k]}` : ''}</button>`).join('') : '<span class="dl">Your home is empty. Buy furniture at the Eko Home Store.</span>'}</div>${left ? '<button class="dbtn" id="dShop">🛒 Store</button>' : ''}<button class="dbtn main" id="dSave">Save</button><button class="dbtn" id="dOff">Close</button>`;
@@ -2703,6 +2800,7 @@
     document.getElementById('dSave').onclick = async () => { try { await my('saveRoom', { key: inside.key, layout: JSON.stringify(inside.layout) }); bubbles.set('me', { text: 'Saved. Looking good.', until: performance.now() + 3000 }); } catch (e) { bubbles.set('me', { text: e.message, until: performance.now() + 4000 }); } };
     document.getElementById('dOff').onclick = () => { deco = null; setDeco(); };
   }
+  const isHome = () => !!inside && (inside.kind === 'hq' || inside.kind === 'home'); // your BQ or a home you bought
   // the pieces you own that aren't out yet: { id: how many }
   function spareFurniture() {
     const left = { ...(inside.owned || {}) };
@@ -2725,10 +2823,10 @@
     if (deco.pick) { deco.pick = null; setDeco(); return; }
     if (fx < 1 || fz < 1 || fx > inside.w - 1 || fz > inside.d - 1) return;
     if (inside.layout.length >= 200 || !deco.sel) return;
-    if (inside.kind === 'hq' && !spareFurniture()[deco.sel]) return;
+    if (isHome() && !spareFurniture()[deco.sel]) return;
     const it = { k: deco.sel, x: Math.round(fx * 2) / 2, z: Math.round(fz * 2) / 2 };
     inside.layout.push(it);
-    if (inside.kind === 'hq') setDeco(); // the count goes down
+    if (isHome()) setDeco(); // the count goes down
   }
   document.getElementById('ask').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -2816,6 +2914,8 @@
     if (target) { card.style.display = 'none'; return enterPlace(target); }
     const lot = hqIndex.get(i + ',' + j);
     if (!best && lot != null) { card.style.display = 'none'; return enterHq(lot, i, j); }
+    const pl = plotAt(i, j);
+    if (pl) return homeCard(pl, i, j);
     if (best) { placeCard(best); return; }
     card.style.display = 'none';
   }
@@ -2875,6 +2975,28 @@
     if (p[0] === 'homestore') return enterRoom('store', 'place:homestore', p[5]);
     const n = p[5].replace(' (open every night)', '');
     return enterRoom('club', 'place:club:' + p[1], n);
+  }
+  // a plot in an estate: for sale (see it on your phone), or someone's home (go in, or knock)
+  function homeCard(pl, i, j) {
+    const h = homesLive[pl.plot], st = HOME_STYLES[pl.style];
+    card.innerHTML = '';
+    const b = document.createElement('b'); b.textContent = (h ? '🏡 ' : '🪧 ') + st[0], s = document.createElement('span'); s.textContent = pl.name + (h && h.owner ? ' · ' + h.owner + "'s home" : h ? ' · private' : ' · for sale');
+    card.append(b, s);
+    const q = document.createElement('div'); q.className = 'offer'; q.innerHTML = '<strong></strong><small></small>';
+    q.firstChild.textContent = h ? (h.mine ? 'Your home' : h.may ? 'Go in?' : 'Knock?') : naira(st[1]);
+    q.lastChild.textContent = h ? (h.mine ? 'Furnish it from the Eko Home Store.' : h.may ? 'The owner has let you in.' : 'The owner sees it on their phone.') : pl.style === 'loft' ? 'Open plan, and room to park your cars inside.' : 'Yours to furnish however you like.';
+    const yes = document.createElement('button'); yes.className = 'drivebtn';
+    yes.textContent = h ? (h.mine || h.may ? '🚪 Go in' : '🔔 Knock') : '🏡 See it';
+    yes.onclick = () => {
+      card.style.display = 'none';
+      if (!h) return openPhone('homes', pl.plot);
+      if (!signedIn()) return openPhone();
+      me.x = i * T + T / 2; me.z = j * T + T - 1;
+      if (h.mine || h.may) return enterRoom('home', 'home:' + pl.plot, h.mine ? 'Your ' + st[0].toLowerCase() : (h.owner || 'Someone') + "'s " + st[0].toLowerCase(), { style: pl.style });
+      askHq(h);
+    };
+    card.append(q, yes);
+    card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 8000);
   }
   function enterHq(k, i, j) {
     const say = (t) => { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = t; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 3500); };
@@ -3079,10 +3201,10 @@
   let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living';
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
@@ -3314,7 +3436,7 @@
         return;
       }
       if (app === 'credits') {
-        return show(`<div class="ptitle">Credits</div><div class="pcard"><h3>3D car models</h3>
+        return show(`<div class="ptitle">Credits</div><div class="pcard"><h3>3D furniture</h3><div class="row"><span>Furniture Kit (Eko Home Store)</span><b>Kenney · CC0</b></div></div><div class="pcard"><h3>3D car models</h3>
           <div class="row"><span>Range Rover</span><b>IvOfficial</b></div>
           <div class="row"><span>Rolls-Royce</span><b>David Sirera</b></div>
           <div class="row"><span>Tesla Cybertruck</span><b>Mobolaji</b></div>
@@ -3333,6 +3455,29 @@
         const list = await my('myCars');
         show(`<div class="ptitle">Garage</div><div class="lock">Your cars. The one you drive parks outside the clubs and the casino when you go in.</div>${list.map((c2) => `<div class="pcard" style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:26px;border-radius:50%;background:${esc(c2.color)};flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.3)"></span><span style="flex:1"><h3 style="margin:0">${esc(c2.name)}</h3><span class="dim">${naira(c2.price)}</span></span>${c2.active ? '<b style="color:#FCEE0A">DRIVING</b>' : `<button class="pbtn alt" data-drive="${c2.id}">Drive</button>`}</div>`).join('') || '<div class="pcard"><h3>No car yet</h3><p>Visit Polanco or Lekki Luxury Cars on the east side of the island. Tap them to walk in.</p></div>'}`);
         pbody.querySelectorAll('[data-drive]').forEach((b) => (b.onclick = async () => { try { await my('driveCar', { carId: Number(b.dataset.drive) }); const c2 = list.find((v) => v.id === Number(b.dataset.drive)); myCar = c2.model + ':' + c2.color; render('garage'); } catch (e) { fail(e); } }));
+        return;
+      }
+      if (app === 'homes') {
+        // homes: your free BQ, the homes you've bought, and every plot for sale from Ajah to Banana Island
+        const AREA = { vgc: 'Ajah', lekki1: 'Lekki', lekkiest: 'Lekki', ikoyihomes: 'Ikoyi', oldikoyi: 'Ikoyi', banana: 'Banana Island' };
+        const BLURB = { flat: 'A self-contained mini flat. A start.', bungalow: 'One floor, a compound, a gate.', terrace: 'Two floors in a row of neighbours.', duplex: 'Two floors, a carport, a balcony.', townhouse: 'Three slim floors and a roof terrace.', loft: 'An old brick warehouse, open plan. Your cars park inside.', mansion: 'Columns, a porch, and a BQ at the back.', villa: 'On the water, with a pool.' };
+        const placeOf = (est) => PLACES.find((p) => ESTATE_OF[p[5]] === est);
+        const showOnMap = (plot) => { const [est, n] = plot.split(':'), p = placeOf(est); closePhone(); cam.x = (p[1] + (n % p[3]) + 0.5) * T; cam.z = (p[2] + Math.floor(n / p[3]) + 0.5) * T; cam.follow = false; };
+        if (arg) {
+          const [est, n] = arg.split(':'), style = (ESTATES[est] || [])[n]; if (!style) return render('homes');
+          const st = HOME_STYLES[style], h = homesLive[arg];
+          show(`<div class="ptitle">Homes</div><div class="pcard"><h3>${st[0]}</h3><div class="dim">${esc(placeOf(est)[5])} · ${AREA[est]}</div><p>${BLURB[style]}</p><div class="big">${naira(st[1])}</div>
+            ${h ? `<div class="dim">${h.mine ? 'This one is yours.' : 'Someone lives here.'}</div>` : `<button class="pbtn big2" id="hBuy">Buy · ${naira(st[1])}</button><div class="dim">Paid from your wallet. It comes empty: furnish it from the Eko Home Store.</div>`}</div>
+            <button class="pbtn alt" id="hMap">📍 Show me</button><button class="pbtn alt" id="hAll">All homes</button>`);
+          $('hMap').onclick = () => showOnMap(arg); $('hAll').onclick = () => go('homes');
+          if ($('hBuy')) $('hBuy').onclick = async () => { try { const v = await my('buyHome', { plot: arg }); pnaira.textContent = naira(v.naira); homesLive[arg] = { plot: arg, style, mine: true, may: true, color: (me$ && me$.hq && me$.hq.color) || '#22B573' }; notify('You bought a ' + st[0].toLowerCase() + ' in ' + AREA[est], 'homes'); render('homes', arg); } catch (e) { fail(/\((404|500)\)/.test(e.message) ? new Error('Homes go on sale when the server update goes live.') : e); } };
+          return;
+        }
+        const mine = Object.values(homesLive).filter((h) => h.mine);
+        show(`<div class="ptitle">Homes</div><div class="lock">Everyone has a free BQ on HQ Row. Buy up: Ajah, Lekki, Ikoyi, Banana Island.</div>
+          <div class="rsec">YOUR HOMES</div><div class="pcard"><div class="row"><span>🏠 Your BQ · HQ Row</span><b>Free</b></div>${mine.map((h) => `<div class="row"><span>🏡 ${HOME_STYLES[h.style][0]} · ${AREA[h.plot.split(':')[0]]}</span><button class="pbtn alt" data-plot="${h.plot}">Open</button></div>`).join('')}</div>
+          ${Object.keys(ESTATES).map((est) => `<div class="rsec">${esc(placeOf(est)[5]).toUpperCase()} · ${AREA[est].toUpperCase()}</div><div class="pcard">${ESTATES[est].map((style, n) => { const plot = est + ':' + n, h = homesLive[plot]; return `<div class="row"><span>${h ? (h.mine ? '🏡' : '🔒') : '🪧'} ${HOME_STYLES[style][0]} <span class="dim">#${n + 1}</span></span>${h ? `<span class="dim">${h.mine ? 'Yours' : 'Sold'}</span>` : `<button class="pbtn alt" data-plot="${plot}">${naira(HOME_STYLES[style][1])}</button>`}</div>`; }).join('')}</div>`).join('')}`);
+        pbody.querySelectorAll('[data-plot]').forEach((b) => (b.onclick = () => go('homes', b.dataset.plot)));
         return;
       }
       if (app === 'store') {
@@ -3579,7 +3724,11 @@
     const nm = myName || 'You', nw = x.measureText(nm).width + 14; x.fillStyle = '#22B573'; x.beginPath(); x.roundRect(tag[0] - nw / 2, tag[1] - 10, nw, 19, 9.5); x.fill(); x.fillStyle = '#fff'; x.fillText(nm, tag[0], tag[1]); x.textBaseline = 'alphabetic';
   }
   function near(type, pad) { return PLACES.some((p) => p[0] === type && me.x > p[1] * T - pad && me.x < (p[1] + p[3]) * T + pad && me.z > p[2] * T - pad && me.z < (p[2] + p[4]) * T + pad); }
-  async function loadHqRow() { if (!signedIn()) return; try { hqSlots = await my('hqRow'); } catch {} }
+  async function loadHqRow() {
+    if (!signedIn()) return;
+    try { hqSlots = await my('hqRow'); } catch {}
+    try { homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); } catch {} // who owns which plot (until the server has homes, everything's for sale)
+  }
 
   // ---- work and play where you stand: a button appears near a workplace or the casino
   const actBtn = document.getElementById('act');

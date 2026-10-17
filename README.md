@@ -11,7 +11,9 @@ A multiplayer game of Lagos Island, Ikoyi, Victoria Island, Eko Atlantic, Lekki,
   - There's also a refinery, two clubs, a casino, the arena, WYRD Tower, an airport, the Blue Line station, Ad Island's digital billboards, HQ Row and reclaimed land.
   - Each district has its own camera angle, and the island follows Lagos time, with night lighting.
 - **One account with WYRD:** sign up at the door with an email, a username and a password. The same account works in the WYRD app.
-- **Inside buildings:** apartments (HQs), clubs, the casino, WYRD Tower and the arena have rooms you walk around in. Owners arrange their HQ's furniture.
+- **Inside buildings:** apartments (HQs), clubs, the casino, WYRD Tower, the arena, the car dealers and the Eko Home Store have rooms you walk around in. Owners arrange their home's furniture.
+- **Homes:** everyone gets a free BQ on HQ Row. Six estates have plots to buy: mini flats and bungalows in Ajah, terraces and duplexes in Lekki, townhouses, lofts and mansions in Ikoyi, villas on Banana Island. A loft keeps your cars inside.
+- **Eko Home Store:** 76 real 3D pieces of furniture (Kenney's Furniture Kit, CC0) from ₦2,000 to ₦1.5M. Homes come empty; you place what you buy.
   - Your own HQ is always open to you. Anyone else knocks, and the owner lets them in from their phone.
 - **The phone (WYRD OS):**
   - **Wallet:** naira earned from shifts, paid at Lagos rates.
@@ -46,6 +48,8 @@ The game is served by the WYRD Serverpod server and shares its database, account
   ```dart
   pod.webServer.addRoute(StaticRoute.file(File('web/pages/lagos-island.html')), '/lagos-island');
   ```
+
+  The Eko Home Store and buyable homes add two tables (`island_furniture`, `island_home`), so after copying run `serverpod generate` and `serverpod create-migration`, apply the migration, and redeploy. Until then the store and the homes show in the game, and buying says they open when the server update goes live.
 
   It relies on parts of WYRD that this repo doesn't include:
   - the email sign-in provider (`serverpod_auth_idp_server`);
