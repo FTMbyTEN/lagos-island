@@ -1176,8 +1176,8 @@
     const m = { sedan: 'camry', suv: 'highlander', bigsuv: 'landcruiser', gwagon: 'gwagon', supersuv: 'urus', super: 'ferrari' }[body] || 'camry';
     drawCar(cx, cz, m, col, along ? 0 : Math.PI / 2, sc * 0.45);
   }
-  // ---- real 3D car models (CC BY 3.0, credited in the phone's Credits)
-  const GLB_FOR = { rangerover: 'range-rover', cullinan: 'rolls-royce', cybertruck: 'cybertruck' };
+  // ---- real 3D car models (CC BY, credited in the phone's Credits)
+  const GLB_FOR = { rangerover: 'range-rover', cullinan: 'rolls-royce', cybertruck: 'cybertruck', corolla: 'corolla', camry: 'camry', highlander: 'highlander', landcruiser: 'landcruiser', gwagon: 'gwagon', urus: 'urus', ferrari: 'roma', porsche911: 'porsche911' };
   const CAR_BASE = location.pathname.startsWith('/lagos-island') ? '/lagos-island/cars/' : 'cars/';
   const G3 = { ok: false, queue: [], protos: {}, pool: {}, on: true };
   function initThree() {
@@ -2801,7 +2801,15 @@
           <div class="row"><span>Range Rover</span><b>IvOfficial</b></div>
           <div class="row"><span>Rolls-Royce</span><b>David Sirera</b></div>
           <div class="row"><span>Tesla Cybertruck</span><b>Mobolaji</b></div>
-          <p class="dim">From Poly Pizza (poly.pizza), licensed under Creative Commons Attribution 3.0 (creativecommons.org/licenses/by/3.0). Car names and designs belong to their makers; this game is not affiliated with them.</p></div>
+          <div class="row"><span>Toyota Corolla</span><b>danieljorge435</b></div>
+          <div class="row"><span>Toyota Camry</span><b>Ford mondeo</b></div>
+          <div class="row"><span>Toyota Highlander</span><b>luisandradeandrade762</b></div>
+          <div class="row"><span>Toyota Land Cruiser</span><b>mavogen1</b></div>
+          <div class="row"><span>Mercedes G-Class</span><b>Lexyc16</b></div>
+          <div class="row"><span>Lamborghini Urus</span><b>SharkyStudios</b></div>
+          <div class="row"><span>Ferrari Roma</span><b>kulonee</b></div>
+          <div class="row"><span>Porsche 911</span><b>Philipp Busse</b></div>
+          <p class="dim">Range Rover, Rolls-Royce and Cybertruck from Poly Pizza (poly.pizza), CC Attribution 3.0. The rest from Sketchfab (sketchfab.com), CC Attribution 4.0 (creativecommons.org/licenses/by/4.0). Car names and designs belong to their makers; this game is not affiliated with them.</p></div>
           <div class="pcard"><h3>Lagos Island</h3><p class="dim">A WYRD game. Made with three.js and a lot of Lagos love.</p></div>`);
       }
       if (app === 'garage') {
