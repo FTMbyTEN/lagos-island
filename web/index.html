@@ -1541,7 +1541,7 @@
           const THREE = G3.T, inner = gltf.scene, box = new THREE.Box3().setFromObject(inner), size = new THREE.Vector3(), ctr = new THREE.Vector3(); box.getSize(size); box.getCenter(ctr);
           inner.position.set(-ctr.x, -box.min.y, -ctr.z);
           const norm = new THREE.Group(), k = s.w / Math.max(0.001, size.x); norm.add(inner); norm.scale.setScalar(k);
-          s.d = Math.max(0.6, size.z * k); FURN[it.k][3] = s.d;
+          s.d = Math.max(0.6, size.z * k); s.h = size.y * k; FURN[it.k][3] = s.d;
           G3.protos[it.k] = norm; G3.pool[it.k] = [];
         }, undefined, () => {});
       }
@@ -3088,7 +3088,17 @@
     return [cam.x + rx * co + rz * si, cam.z - rx * si + rz * co];
   }
   function tapInside(sx, sy) {
-    if (inside.kind === 'store') { const [fx, fz] = floorAt(sx, sy); const it = inside.layout.find((v) => Math.abs(v.x - fx) < 5.5 && Math.abs(v.z - fz) < 5.5); if (it) openPhone('store', it.k); return; }
+    if (inside.kind === 'store') { // the piece you see under your finger: its real 3D size on screen, the nearest one in front
+      let it = null, best = -Infinity;
+      for (const v of inside.layout) {
+        const s = STORE[v.k]; if (!s) continue;
+        const hw = s.w / 2, hd = (s.d || s.w) / 2, h = s.h || 3; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+        for (const [dx, dz] of [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]]) for (const y of [0, h]) { const p = P(v.x + dx, y, v.z + dz); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
+        if (sx >= x0 && sx <= x1 && sy >= y0 && sy <= y1) { const dep = P(v.x, 0, v.z)[2]; if (dep > best) { best = dep; it = v; } }
+      }
+      if (!it) { const [fx, fz] = floorAt(sx, sy); it = inside.layout.find((v) => Math.abs(v.x - fx) < 5.5 && Math.abs(v.z - fz) < 5.5); } // the plinth, if not the piece
+      if (it) openPhone('store', it.k); return;
+    }
     if (inside.kind === 'dealer') { const [fx, fz] = floorAt(sx, sy); const c = showroomCars(inside).find((v) => Math.abs(v.x - fx) < 8 && Math.abs(v.z - fz) < 5); if (c) openShowcase(c.id); return; }
     if (!deco) return;
     const [fx, fz] = floorAt(sx, sy);
@@ -3559,9 +3569,11 @@
     });
   }
   async function openPhone(app, arg) {
+    // already open (tapping piece after piece in the Home Store, say): just show the next thing, no lock screen
+    if (phone.style.display === 'block' && app && signedIn() && me$ && keyed) { shadeEl.classList.remove('on'); if (stack.length > 1 && stack[stack.length - 1][0] === app) stack.pop(); return go(app, arg); } // the next piece replaces the last, so Back stays short
     phone.style.display = 'block'; phoneBtnEl.style.display = 'none'; stack = [['home']]; shadeEl.classList.remove('on');
     if (!booted) await boot();
-    await lockScreen();
+    if (!app) await lockScreen(); // you picked the phone up yourself; something in the world (a piece in the store, a car, a ride) opens straight to it
     if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
     if (!signedIn()) return app === 'ride' ? go('ride') : render('signin');
     try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
