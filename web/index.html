@@ -308,6 +308,34 @@
   #lockscr .lq { width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); backdrop-filter: blur(8px); font-size: 20px; cursor: pointer; transition: transform .12s, background .12s; } #lockscr .lq:hover { background: rgba(255,255,255,.18); } #lockscr .lq:active { transform: scale(.9); }
   #pbody.zoomin { animation: appZoom .3s cubic-bezier(.2,.9,.3,1.1); }
   @keyframes appZoom { from { transform: scale(.9); opacity: .2; filter: blur(3px); } to { transform: none; opacity: 1; filter: none; } }
+  /* WYRD OS apps: a shared look. The header (icon tile in the app's colour), a hero card, lists with round icons, chips, avatars */
+  .ahead { position: sticky; top: -6px; z-index: 2; display: flex; align-items: center; gap: 12px; margin: 0 -16px 10px; padding: 10px 16px 10px; background: linear-gradient(180deg, rgba(7,7,13,.97) 75%, rgba(7,7,13,0)); }
+  .ahead > i { flex: none; width: 40px; height: 40px; display: grid; place-items: center; font-style: normal; font-size: 21px; background: rgba(0,0,0,.6); border: 1px solid var(--ac); box-shadow: 0 0 14px color-mix(in srgb, var(--ac) 45%, transparent), inset 0 0 12px color-mix(in srgb, var(--ac) 25%, transparent); clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+  .ahead h2 { margin: 0; font: 900 18px 'Orbitron', sans-serif; letter-spacing: 1.5px; color: #fff; text-transform: uppercase; } .ahead span { display: block; font: 600 12.5px 'Rajdhani', sans-serif; color: #8FB6C2; letter-spacing: .5px; }
+  .hero { position: relative; margin-bottom: 12px; padding: 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--ac) 28%, #07070D), #0B0B14 70%); border: 1px solid color-mix(in srgb, var(--ac) 55%, transparent); clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px)); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; }
+  .hero .hl { font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ac); } .hero .hv { margin: 4px 0 8px; font: 900 30px 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 18px color-mix(in srgb, var(--ac) 50%, transparent); } .hero small { color: #8FB6C2; font-size: 12.5px; }
+  .qa { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
+  .qa button { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 2px; border: none; background: none; color: #E6F9FF; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
+  .qa button i { width: 44px; height: 44px; display: grid; place-items: center; font-style: normal; font-size: 19px; border-radius: 50%; background: rgba(255,255,255,.06); border: 1px solid color-mix(in srgb, var(--ac) 50%, transparent); transition: background .15s, transform .12s; }
+  .qa button:hover i { background: color-mix(in srgb, var(--ac) 22%, transparent); } .qa button:active i { transform: scale(.9); } .qa button.on i { background: var(--ac); color: #07070D; }
+  .lst { margin-bottom: 12px; border: 1px solid rgba(0,240,255,.16); background: var(--panel); }
+  .li { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: none; border-bottom: 1px solid rgba(0,240,255,.08); background: none; color: #E6F9FF; font-family: 'Rajdhani', sans-serif; text-align: left; } .li:last-child { border-bottom: none; } button.li { cursor: pointer; } button.li:hover { background: rgba(255,255,255,.04); }
+  .li .ic { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; font-size: 15px; font-weight: 800; background: rgba(255,255,255,.06); }
+  .li .lt { flex: 1; min-width: 0; } .li .lt b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .li .lt small { display: block; color: #8FB6C2; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .li .lr { flex: none; font: 800 13px 'Orbitron', sans-serif; } .li .lr.pos { color: #4ADE80; } .li .lr.neg { color: #FF6B81; }
+  .av2 { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; font: 900 14px 'Orbitron', sans-serif; color: #07070D; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; margin: 0 -16px 10px; padding: 0 16px 2px; } .chips button { flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(0,240,255,.3); background: rgba(0,0,0,.4); color: #E6F9FF; font: 700 12.5px 'Rajdhani', sans-serif; cursor: pointer; } .chips button.on { background: var(--ac, var(--y)); border-color: var(--ac, var(--y)); color: #07070D; }
+  .tag { display: inline-block; margin: 2px 4px 2px 0; padding: 2px 8px; border-radius: 999px; background: rgba(0,240,255,.1); color: #BFF4FF; font: 600 11.5px 'Rajdhani', sans-serif; }
+  .jc { margin-bottom: 10px; padding: 12px; background: var(--panel); border: 1px solid rgba(0,240,255,.2); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%); }
+  .jc .jh { display: flex; gap: 10px; align-items: center; } .jc .jh b { display: block; font: 800 14px 'Orbitron', sans-serif; letter-spacing: .5px; color: #fff; } .jc .jh small { color: #8FB6C2; font-size: 12.5px; }
+  .jc .jm { margin-left: auto; flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font: 900 11px 'Orbitron', sans-serif; color: #fff; background: conic-gradient(#4ADE80 calc(var(--m) * 1%), rgba(255,255,255,.08) 0); position: relative; } .jc .jm::before { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: #0B0B14; } .jc .jm span { position: relative; }
+  .jc p { margin: 8px 0; font-size: 14px; color: #CFE9F2; }
+  .jc textarea, .comp input { width: 100%; margin: 8px 0 6px; padding: 9px 11px; background: rgba(0,0,0,.5); color: #E6F9FF; border: 1px solid rgba(0,240,255,.35); font: 600 15px 'Rajdhani', sans-serif; outline: none; resize: vertical; } .jc textarea:focus, .comp input:focus { border-color: var(--y); } .jc .ja { display: none; } .jc.open .ja { display: block; }
+  .ppl { display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px 12px; padding: 2px 16px 4px; } .ppl button { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 58px; border: none; background: none; color: #E6F9FF; font: 600 11px 'Rajdhani', sans-serif; cursor: pointer; } .ppl button span { max-width: 58px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ppl .av2 { width: 46px; height: 46px; box-shadow: 0 0 0 2px #07070D, 0 0 0 3px #4ADE80; }
+  .comp { position: sticky; bottom: -12px; display: flex; gap: 6px; margin: 10px -16px -12px; padding: 10px 16px 12px; background: linear-gradient(0deg, rgba(7,7,13,.98) 80%, rgba(7,7,13,0)); } .comp input { flex: 1; margin: 0 !important; } .comp button { flex: none; margin: 0 !important; }
+  .msg { max-width: 82% !important; padding: 8px 12px !important; } .msg.me { border-left: none !important; border-right: 2px solid var(--y); }
+  .search { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding: 0 12px; border: 1px solid var(--ac); background: rgba(0,0,0,.55); } .search input { flex: 1; padding: 11px 0; border: none; background: none; color: #E6F9FF; font: 600 15px 'Rajdhani', sans-serif; outline: none; }
   /* the Home Store */
   .stabs { display: flex; gap: 6px; overflow-x: auto; margin: 0 -16px 6px; padding: 2px 16px 8px; }
   .stabs button { flex: none; padding: 7px 11px; border: 1px solid rgba(0,240,255,.3); background: rgba(0,0,0,.45); color: #E6F9FF; font: 700 13px 'Rajdhani', sans-serif; letter-spacing: .5px; cursor: pointer; }
@@ -3446,7 +3474,7 @@
 
   // ---- the phone's screens
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
-  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living';
+  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', jobsTab = 'all', rideFind = '';
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
   const APP_AC = { homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
@@ -3461,6 +3489,10 @@
   }
   addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
   function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
+  // the shared app header: the app's icon in its colour, a title, a line under it
+  const ahead = (k, title, sub) => { const a = APPS.find((v) => v[0] === k); return `<div class="ahead" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${a ? a[1] : '✨'}</i><div><h2>${esc(title)}</h2>${sub ? `<span>${sub}</span>` : ''}</div></div>`; };
+  // a round avatar with someone's initials, in a colour that's always theirs
+  const avatar = (name) => { let h = 0; for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) % 360; return `<span class="av2" style="background:hsl(${h},75%,62%)">${esc(String(name).replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '?')}</span>`; };
   function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); pbody.classList.remove('zoomin'); void pbody.offsetWidth; pbody.classList.add('zoomin'); render(app, arg); } // apps zoom open
   function back() { clearInterval(chatTimer); stack.pop(); const [a, g] = stack[stack.length - 1] || ['home']; if (!stack.length) stack.push(['home']); render(a, g); }
   const $ = (id) => document.getElementById(id);
@@ -3554,18 +3586,35 @@
       }
       if (app === 'wallet') {
         await loadMe(); const r = await my('receipts');
-        show(`<div class="ptitle">Wallet</div><div class="pcard"><div class="dim">Your naira</div><div class="big">${naira(me$.naira)}</div><div class="dim">Earned from shifts today: ${naira(me$.earnedToday)} of ${naira(me$.dailyCap)}. Work at the refinery, the clubs (nights), the markets and the motor park.</div></div>
-          <div class="pcard"><h3>Send naira</h3><input id="sTo" placeholder="Their name on the island"><input id="sAmt" type="number" min="50" max="50000" placeholder="Amount (₦50 to ₦50,000)"><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">Send</button></div>
-          <div class="pcard"><h3>Receipts</h3>${r.map((e) => `<div class="row"><span>${esc(e.memo)}</span><b style="color:${e.amount < 0 ? '#DC2626' : '#16A34A'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</b></div>`).join('') || '<div class="dim">Nothing yet.</div>'}</div>`);
+        // the balance up top, quick actions, a send panel that opens when you want it, where to earn, then receipts with icons
+        const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap));
+        const icon = (m, a) => /ride|okada/i.test(m) ? '🛵' : /casino/i.test(m) ? '🎰' : /home store/i.test(m) ? '🛋️' : /bought a/i.test(m) ? '🔑' : /ticket/i.test(m) ? '🎟️' : /^to |^from /i.test(m) ? '↔️' : a > 0 ? '💼' : '🧾';
+        const EARN = [['refinery', '🛢️', 'Refinery shift', '₦6,500'], ['market', '🧺', 'Market stall', '₦2,500'], ['motorpark', '🛵', 'Okada rounds', '₦1,800'], ['club', '🪩', 'Club night shift', 'nights']];
+        show(`${ahead('wallet', 'Wallet', 'Naira on the island\'s books')}
+          <div class="hero" style="--ac:#FCEE0A"><div class="hl">Balance</div><div class="hv">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>Earned today ${naira(me$.earnedToday || 0)} of ${naira(cap)}</small></div>
+          <div class="qa" style="--ac:#FCEE0A"><button id="wSend"><i>↗️</i>Send</button><button id="wEarn"><i>💼</i>Earn</button><button id="wShop"><i>🛋️</i>Store</button><button id="wCars"><i>🚗</i>Cars</button></div>
+          <div class="pcard" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their name on the island"><input id="sAmt" type="number" min="50" max="50000" placeholder="Amount (₦50 to ₦50,000)"><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">Send</button></div>
+          <div id="earnBox" style="display:none"><div class="rsec">WHERE TO EARN</div><div class="lst">${EARN.map(([k, ic, n, pay]) => `<button class="li" data-earn="${k}"><span class="ic">${ic}</span><span class="lt"><b>${n}</b><small>${pay} a shift · ride there</small></span><span class="lr">›</span></button>`).join('')}</div></div>
+          <div class="rsec">RECEIPTS</div><div class="lst">${r.map((e) => `<div class="li"><span class="ic">${icon(e.memo, e.amount)}</span><span class="lt"><b>${esc(e.memo)}</b>${e.at ? `<small>${new Date(e.at).toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small>` : ''}</span><span class="lr ${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</span></div>`).join('') || '<div class="li"><span class="lt"><small>Nothing yet. Work a shift to get paid.</small></span></div>'}</div>`);
+        const toggle = (id, btn) => { const el = $(id), on = el.style.display === 'none'; el.style.display = on ? 'block' : 'none'; $(btn).classList.toggle('on', on); };
+        $('wSend').onclick = () => toggle('sendBox', 'wSend'); $('wEarn').onclick = () => toggle('earnBox', 'wEarn'); $('wShop').onclick = () => go('store'); $('wCars').onclick = () => go('garage');
+        pbody.querySelectorAll('[data-earn]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[0] === b.dataset.earn); if (!p) return; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
         $('sGo').onclick = async () => { try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); render('wallet'); } catch (e) { fail(e); } };
         return;
       }
       if (app === 'jobs') {
         const list = await my('jobs');
-        show(`<div class="ptitle">Jobs</div><div class="lock">Real jobs from real employers, checked before they show. ${me$.openToWork ? 'WYRD ranks them by your skills, privately.' : 'Turn on “open to work” in Profile and WYRD will rank them by your skills (only you see the ranking).'}</div>
-          <button class="pbtn" id="jPost">Post a job</button><button class="pbtn alt" id="jMine">My posts</button>${me$.operator ? '<button class="pbtn alt" id="jQueue">Check posts</button>' : ''}
-          ${list.map((j) => `<div class="pcard"><h3>${esc(j.title)}</h3><div class="dim">${esc(j.company)} · ${esc(j.location)} · ${esc(j.pay)}${j.match != null ? ` · <b style="color:#16A34A">${j.match}% match</b>` : ''}</div><p>${esc(j.about)}</p><div class="dim">Skills: ${esc(j.skills)}</div>${j.applied ? `<p><b>Applied.</b> Contact: ${esc(j.contact)}</p>` : `<textarea data-note="${j.id}" rows="2" placeholder="A short note to the employer (they'll see your name, your skills and this)"></textarea><button class="pbtn" data-apply="${j.id}">Apply</button>`}</div>`).join('') || '<div class="pcard dim">No jobs open yet. Employers: post one.</div>'}`);
-        $('jPost').onclick = () => go('postjob'); $('jMine').onclick = () => go('myjobs'); if ($('jQueue')) $('jQueue').onclick = () => go('queue');
+        // filters (all, your matches, applied), cards with the company's avatar, a match ring, skill tags; Apply opens a note
+        const shown = list.filter((j) => jobsTab === 'applied' ? j.applied : jobsTab === 'match' ? j.match != null && j.match >= 50 : true);
+        show(`${ahead('jobs', 'Jobs', 'Real employers, checked before they show')}
+          <div class="qa" style="--ac:#00F0FF"><button id="jPost"><i>➕</i>Post</button><button id="jMine"><i>📋</i>My posts</button><button id="jProf"><i>🪪</i>Skills</button>${me$.operator ? '<button id="jQueue"><i>✅</i>Check</button>' : '<button id="jHelp"><i>✨</i>Ask WYRD</button>'}</div>
+          <div class="chips" style="--ac:#00F0FF">${[['all', `All · ${list.length}`], ['match', me$.openToWork ? 'Matches' : 'Matches (turn on in Skills)'], ['applied', 'Applied']].map(([k, n]) => `<button data-jt="${k}" class="${jobsTab === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+          ${shown.map((j) => `<div class="jc" data-job="${j.id}"><div class="jh">${avatar(j.company)}<div><b>${esc(j.title)}</b><small>${esc(j.company)} · ${esc(j.location)}</small></div>${j.match != null ? `<div class="jm" style="--m:${j.match}"><span>${j.match}%</span></div>` : ''}</div>
+            <p>${esc(j.about)}</p><div><span class="tag" style="background:rgba(252,238,10,.14);color:#FDE68A">💰 ${esc(j.pay)}</span>${String(j.skills).split(',').map((s) => s.trim()).filter(Boolean).slice(0, 6).map((s) => `<span class="tag">${esc(s)}</span>`).join('')}</div>
+            ${j.applied ? `<div class="dim" style="margin-top:8px">✅ Applied · contact: ${esc(j.contact)}</div>` : `<button class="pbtn" data-open="${j.id}" style="margin-top:8px">Apply</button><div class="ja"><textarea data-note="${j.id}" rows="2" placeholder="A short note to the employer (they'll see your name, your skills and this)"></textarea><button class="pbtn" data-apply="${j.id}">Send application</button></div>`}</div>`).join('') || `<div class="pcard dim">${jobsTab === 'all' ? 'No jobs open yet. Employers: post one.' : 'Nothing here yet.'}</div>`}`);
+        $('jPost').onclick = () => go('postjob'); $('jMine').onclick = () => go('myjobs'); $('jProf').onclick = () => go('me'); if ($('jQueue')) $('jQueue').onclick = () => go('queue'); if ($('jHelp')) $('jHelp').onclick = () => go('wyrd');
+        pbody.querySelectorAll('[data-jt]').forEach((b) => (b.onclick = () => { jobsTab = b.dataset.jt; render('jobs'); }));
+        pbody.querySelectorAll('[data-open]').forEach((b) => (b.onclick = () => { b.closest('.jc').classList.add('open'); b.style.display = 'none'; }));
         pbody.querySelectorAll('[data-apply]').forEach((b) => (b.onclick = async () => { try { await my('apply', { jobId: Number(b.dataset.apply), note: pbody.querySelector(`[data-note="${b.dataset.apply}"]`).value }); render('jobs'); } catch (e) { fail(e); } }));
         return;
       }
@@ -3591,12 +3640,14 @@
         const gs = await my('groups');
         const names = await Promise.all(gs.map(async (g) => { try { return dec.decode(await open(await groupKey(g), g.nameCt)); } catch { return '🔒 (can\'t open on this device)'; } }));
         const people = [...new Map([...others.values()].filter((o) => o.name && o.name !== me$.handle && !/^(Guest|Lagosian)$/.test(o.name)).map((o) => [o.name, o])).values()];
-        show(`<div class="ptitle">Link</div><div class="lock">Person to person, over the cloud. Private conversations and group discussions, end-to-end encrypted on your device: the server only ever holds scrambled text, and WYRD can't read it.</div>
-          <button class="pbtn" id="cDm">New private conversation</button><button class="pbtn alt" id="cGroup">New group</button>
-          <div class="rsec">// Conversations</div>
-          ${gs.map((g, i) => `<div class="pcard" data-g="${i}" style="cursor:pointer"><h3>${g.members.length > 2 ? '👥' : '👤'} ${esc(names[i])}</h3><div class="dim">${g.members.map(esc).join(', ')}</div></div>`).join('') || '<div class="pcard dim">No conversations yet.</div>'}
-          <div class="rsec">// On the island now</div>
-          ${people.map((o) => `<div class="pcard" style="display:flex;align-items:center;justify-content:space-between"><span><b>${esc(o.name)}</b></span><button class="pbtn" data-dm="${esc(o.name)}">Link</button></div>`).join('') || '<div class="pcard dim">Nobody else signed in nearby right now.</div>'}`);
+        // who's on the island now (tap to talk), then your conversations, each with an avatar; everything locked on your device
+        show(`${ahead('chats', 'Link', '🔒 End-to-end encrypted on your device')}
+          <div class="rsec">ON THE ISLAND NOW</div>
+          ${people.length ? `<div class="ppl">${people.map((o) => `<button data-dm="${esc(o.name)}">${avatar(o.name)}<span>${esc(o.name)}</span></button>`).join('')}</div>` : '<div class="dim" style="margin:0 2px 12px">Nobody else signed in nearby right now.</div>'}
+          <div class="qa" style="--ac:#FF003C;grid-template-columns:1fr 1fr"><button id="cDm"><i>✉️</i>Private</button><button id="cGroup"><i>👥</i>New group</button></div>
+          <div class="rsec">CONVERSATIONS</div>
+          <div class="lst">${gs.map((g, i) => `<button class="li" data-g="${i}">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#FF003C,#00F0FF)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || names[i])}<span class="lt"><b>${esc(names[i])}</b><small>${g.members.length > 2 ? g.members.length + ' people · ' : ''}${g.members.filter((m) => m !== me$.handle).map(esc).join(', ')}</small></span><span class="lr">🔒</span></button>`).join('') || '<div class="li"><span class="lt"><small>No conversations yet. Say hello to someone on the island.</small></span></div>'}</div>
+          <div class="lock" style="margin-top:4px">The server only ever holds scrambled text. WYRD can't read your chats.</div>`);
         $('cDm').onclick = () => go('newchat', { dm: true });
         $('cGroup').onclick = () => go('newchat', { dm: false });
         pbody.querySelectorAll('[data-dm]').forEach((b) => (b.onclick = () => {
@@ -3626,7 +3677,10 @@
       }
       if (app === 'thread') {
         const g = arg, key = await groupKey(g);
-        show(`<div class="ptitle">${esc(g.name)}</div><div class="lock">🔒 ${g.members.map(esc).join(', ')}</div><div class="msgs" id="tMsgs"></div><div class="pcard" style="margin-top:10px"><input id="tText" maxlength="2000" placeholder="Message"><button class="pbtn" id="tGo">Send</button><button class="pbtn alt" id="tAdd">Add someone</button><button class="pbtn alt" id="tLeave">Leave</button></div>`);
+        show(`<div class="ahead" style="--ac:#FF003C">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#FF003C,#00F0FF)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div><h2 style="font-size:15px">${esc(g.name)}</h2><span>🔒 ${g.members.map(esc).join(', ')}</span></div></div>
+          <div class="chips" style="--ac:#FF003C"><button id="tAdd">➕ Add someone</button><button id="tLeave">🚪 Leave</button></div>
+          <div class="msgs" id="tMsgs"></div>
+          <div class="comp"><input id="tText" maxlength="2000" placeholder="Message (encrypted)"><button class="pbtn" id="tGo">Send</button></div>`);
         let since = 0;
         const pull = async () => {
           const ms = await my('messages', { groupId: g.id, since });
@@ -3809,7 +3863,7 @@
         const d = arg, from = nearestRoad(me.x / T, me.z / T);
         if (from[0] === d.i && from[1] === d.j) return show('<div class="ptitle">Ride</div><div class="pcard">You\'re already there.</div>');
         const q = await my('rideQuote', { fi: from[0], fj: from[1], ti: d.i, tj: d.j });
-        show(`<div class="ptitle">Where to</div>
+        show(`${ahead('ride', 'Your trip', 'Choose how you go')}
           <div class="trip"><img alt="" src="${peek(d.peek)}"><div class="tl"><span class="dot a"></span><span>Your location · ${esc(inside ? inside.title : sector.name)}</span></div><div class="tl"><span class="dot b"></span><b>${esc((d.emoji ? d.emoji + ' ' : '') + d.name)}</b></div><div class="dim">About ${Math.max(1, Math.round(q.tiles * 0.25))} min · ${q.tiles * 100} m</div></div>
           <button class="opt on" data-k="okada"><span class="oi">🛵</span><span class="on2"><b>Okada</b><small>${q.okadaEta} min away · fastest in traffic</small></span><span class="of">${naira(q.okada)}</span></button>
           <button class="opt" data-k="car"><span class="oi">🚗</span><span class="on2"><b>Car</b><small>${q.carEta} min away · air-conditioned</small></span><span class="of">${naira(q.car)}</span></button>
@@ -3842,7 +3896,19 @@
       }
       if (app === 'ride') {
         const spots = (k) => PLACES.filter((p) => sectorAt[p[2] * BOARD.w + p[1]] === k && p[0] !== 'soon');
-        show(`<div class="ptitle">Ride</div><div class="lock">Where to? Pick a place, see the fare, and a rider comes to you. Paid from your wallet.</div>${SECTORS.map((s, k) => s.id.startsWith('fill') ? '' : `<div class="rsec">// ${esc(s.name)}</div><button class="peek" data-s="${k}"><div class="ph" data-peek="s${k}"></div><div class="cap"><b>${esc(s.name)}</b><span>${spots(k).length} places</span></div></button><div class="peeks">${spots(k).map((p) => `<button class="peek" data-p="${PLACES.indexOf(p)}"><div class="ph" data-peek="p${PLACES.indexOf(p)}"></div><div class="cap"><b>${p[6]} ${esc(p[5])}</b></div></button>`).join('')}</div>`).join('')}`);
+        // a search that narrows the places as you type, popular spots, then every district with a picture of each place
+        const POP = ['WYRD Tower', 'Eko Hotel', 'Elegushi Beach', 'The Arena (live shows)', 'Eko Home Store', 'Lekki Luxury Cars', 'Banana Island Marina'].map((n) => PLACES.find((p) => p[5] === n)).filter(Boolean);
+        show(`${ahead('ride', 'Ride', 'Okada or car · paid when you arrive')}
+          <div class="search" style="--ac:#FF8A00"><span>🔎</span><input id="rFind" placeholder="Where to?" value="${esc(rideFind)}" autocomplete="off"></div>
+          <div class="chips" style="--ac:#FF8A00">${POP.map((p) => `<button data-p="${PLACES.indexOf(p)}">${p[6]} ${esc(p[5].replace(' (live shows)', ''))}</button>`).join('')}</div>
+          <div id="rNone" class="pcard dim" style="display:none">No place by that name. Try a district: Ikoyi, Lekki, Ajah…</div>
+          ${SECTORS.map((s, k) => s.id.startsWith('fill') ? '' : `<div class="rs" data-n="${esc(s.name.toLowerCase())}"><div class="rsec">${esc(s.name).toUpperCase()}</div><button class="peek" data-s="${k}"><div class="ph" data-peek="s${k}"></div><div class="cap"><b>${esc(s.name)}</b><span>${spots(k).length} places</span></div></button><div class="peeks">${spots(k).map((p) => `<button class="peek" data-n="${esc(p[5].toLowerCase())}" data-p="${PLACES.indexOf(p)}"><div class="ph" data-peek="p${PLACES.indexOf(p)}"></div><div class="cap"><b>${p[6]} ${esc(p[5])}</b></div></button>`).join('')}</div></div>`).join('')}`);
+        const filter = () => {
+          const q = rideFind.trim().toLowerCase(); let any = false;
+          pbody.querySelectorAll('.rs').forEach((sec) => { const whole = !q || sec.dataset.n.includes(q); let hits = 0; sec.querySelectorAll('.peeks .peek').forEach((b) => { const on = whole || b.dataset.n.includes(q); b.style.display = on ? '' : 'none'; if (on) hits++; }); const show2 = whole || hits > 0; sec.style.display = show2 ? '' : 'none'; if (show2) any = true; });
+          $('rNone').style.display = any ? 'none' : 'block';
+        };
+        $('rFind').oninput = (e) => { rideFind = e.target.value; filter(); }; filter();
         pbody.querySelectorAll('[data-s]').forEach((b) => (b.onclick = () => { const s = SECTORS[b.dataset.s]; const j = s.rows[0] ?? s.rect[1], i = s.cols[0] ?? Math.round((s.rect[0] + s.rect[2]) / 2); const t = nearestRoad(i + 0.5, j + 0.5); go('rideq', { i: t[0], j: t[1], name: s.name, peek: 's' + b.dataset.s }); }));
         pbody.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { const p = PLACES[b.dataset.p]; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + b.dataset.p }); }));
         // the pictures fill in one by one, nearest the top first
