@@ -879,21 +879,67 @@
     // ---- the refinery: tanks, columns, pipes, a flare that never goes out
     refinery(a, b, c, d) {
       flat(a, b, c, d, 0.05, '#C9CED6', C.plotEdge);
-      const big = d - b > 40;
-      const tanks = big ? [[a + 10, b + 12, 6], [a + 24, b + 12, 6], [a + 10, b + 28, 5], [a + 24, b + 28, 5]] : [];
-      if (!big) for (let k = 0; k < 6; k++) tanks.push([a + 8 + k * 14, (b + d) / 2, 5]);
-      for (const [tx, tz, r] of tanks) cyl(tx, tz, r, 7, '#F1F5F9');
-      if (big) {
-        for (const [px, h] of [[a + 40, 34], [a + 47, 44], [a + 54, 30]]) { cyl(px, b + 20, 2.2, h, '#B0B8C4'); for (let y = 6; y < h; y += 7) cyl(px, b + 20, 2.7, 0.6, '#64748B'); }
-        box(a + 36, 0, b + 34, c - 6, 9, d - 6, '#94A3B8', '#E2E8F0', 2); // the processing hall
-        for (let k = 0; k < 4; k++) box(a + 31, 2 + k * 1.6, b + 6 + k * 3, c - 4, 2.6 + k * 1.6, b + 6.8 + k * 3, ['#F59E0B', '#94A3B8', '#22B573', '#94A3B8'][k]); // pipe rack
-        const fx = c - 8, fz = b + 8;
-        box(fx - 0.6, 0, fz - 0.6, fx + 0.6, 46, fz + 0.6, '#E5E7EB');
-        for (let y = 8; y < 46; y += 9) box(fx - 1, y, fz - 1, fx + 1, y + 0.6, fz + 1, '#EF4444');
-        const f = () => flame(fx, 47, fz);
-        f(); glow.push(f);
-        smoke(a + 47, 45, b + 20);
+      const parts = [], at = (wx, wz, f) => parts.push({ d: P(wx, 0, wz)[2], f }); // drawn far to near, whichever way the camera turns
+      const bund = (x0, z0, x1, z1) => { flat(x0, z0, x1, z1, 0.07, '#B4BBC5'); for (const [p, q, r, s] of [[x0, z0, x1, z0 + 0.6], [x0, z1 - 0.6, x1, z1], [x0, z0, x0 + 0.6, z1], [x1 - 0.6, z0, x1, z1]]) box(p, 0, q, r, 0.9, s, '#A3ABB6'); };
+      if (d - b <= 40) {
+        // the tank farm: crude tanks and LPG spheres in a bund, one header pipe feeding them all
+        const mz = (b + d) / 2;
+        bund(a + 2, b + 3, c - 2, d - 3);
+        pipe([[a + 4, mz + 8], [c - 4, mz + 8]], 1.2, 1.1, '#F59E0B');
+        for (let k = 0; k < 6; k++) {
+          const tx = a + 8 + k * 14.8;
+          if (k === 2 || k === 3) at(tx, mz, () => sphere(tx, mz, 4.6, '#F8FAFC'));
+          else at(tx, mz, () => tank(tx, mz, 5.2, 7.5, '#F1F5F9', k % 2 ? '#22B573' : '#F59E0B'));
+        }
+        at(a + 3, d - 4, () => lamp(a + 3, d - 4)); at(c - 3, d - 4, () => lamp(c - 3, d - 4));
+      } else {
+        // the plant: a bunded tank yard, the columns and their furnace, a pipe rack, the control room, the loading bay and the flare
+        bund(a + 3, b + 3, a + 31, b + 31);
+        flat(a + 3, b + 33, c - 3, b + 36, 0.07, '#7B8490'); // the plant road
+        for (const [tx, tz, r, h, band] of [[a + 10, b + 10, 5.6, 8.5, '#22B573'], [a + 24, b + 10, 5.6, 8.5, '#22B573'], [a + 10, b + 24, 5, 7.5, '#F59E0B'], [a + 24, b + 24, 5, 7.5, '#F59E0B']]) at(tx, tz, () => tank(tx, tz, r, h, '#F1F5F9', band));
+        // the pipe rack along the north side, on its posts, with feeds down to the columns
+        at(a + 50, b + 7, () => {
+          for (let px = a + 32; px <= c - 14; px += 6) for (const pz of [b + 5.5, b + 9]) box(px - 0.25, 0, pz - 0.25, px + 0.25, 5.2, pz + 0.25, '#64748B');
+          for (let px = a + 32; px <= c - 14; px += 6) box(px - 0.3, 5.2, b + 5.2, px + 0.3, 5.6, b + 9.3, '#475569');
+          [['#F59E0B', b + 5.9], ['#94A3B8', b + 6.9], ['#22B573', b + 7.9], ['#E2E8F0', b + 8.8]].forEach(([col, pz]) => pipe([[a + 30, pz], [c - 13, pz]], 6.1, 0.8, col));
+          pipe([[a + 30, b + 6.9], [a + 30, b + 16], [a + 17, b + 16]], 1.1, 0.9, '#94A3B8'); // down to the tank yard
+        });
+        for (const [px, h] of [[a + 40, 36], [a + 48, 46], [a + 56, 30]]) at(px, b + 20, () => {
+          pipe([[px, b + 9], [px, b + 18]], 6, 0.9, '#94A3B8');
+          cylLit(px, b + 20, 2.4, 0, h, '#D7DEE7');
+          for (let y = 8; y < h - 2; y += 8) cylLit(px, b + 20, 2.7, y, 0.7, '#64748B', false); // the platforms
+          const top = P(px, h, b + 20); x.fillStyle = '#94A3B8'; x.beginPath(); x.ellipse(top[0], top[1], 2.4 * K, 1.4 * K, 0, Math.PI, 0); x.fill();
+          glow.push(() => { const p = P(px, h + 1.2, b + 20); x.fillStyle = performance.now() % 1600 < 800 ? '#FF3B3B' : '#7F1D1D'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.5), 0, Math.PI * 2); x.fill(); });
+        });
+        at(a + 66, b + 22, () => { // the furnace and its stack
+          box(a + 61, 0, b + 15, a + 71, 8, b + 27, '#9A3412');
+          box(a + 61, 8, b + 15, a + 71, 8.6, b + 27, '#57534E');
+          cylLit(a + 68, b + 18, 1.4, 8.6, 18, '#78716C');
+          for (const y of [20, 24]) cylLit(a + 68, b + 18, 1.45, y, 1, '#EF4444', false);
+          smoke(a + 68, 27, b + 18);
+        });
+        at((a + c) / 2 + 5, d - 15, () => { // the processing hall: a light roof, vents and a green trim
+          box(a + 36, 0, b + 40, c - 6, 9, d - 6, '#CBD5E1', '#93C5FD', 2);
+          box(a + 36, 9, b + 40, c - 6, 9.6, d - 6, '#22B573');
+          for (let k = 0; k < 4; k++) box(a + 41 + k * 10, 9.6, b + 46, a + 45 + k * 10, 11.2, b + 50, '#94A3B8');
+          for (let k = 0; k < 3; k++) cylLit(a + 46 + k * 12, d - 14, 1.5, 9.6, 1.2, '#64748B');
+        });
+        at(a + 13, b + 45, () => { // the control room
+          box(a + 5, 0, b + 39, a + 21, 6, b + 51, '#F8FAFC', '#1E3A8A', 1);
+          box(a + 5, 6, b + 39, a + 21, 6.5, b + 51, '#22B573');
+          box(a + 15, 6.5, b + 42, a + 19, 7.8, b + 45, '#94A3B8');
+        });
+        flat(a + 5, d - 15, a + 32, d - 3, 0.07, '#9AA3AE'); // the loading bay, with tankers waiting
+        for (const [tx, col] of [[a + 9, '#F8FAFC'], [a + 17, '#FACC15'], [a + 25, '#F8FAFC']]) at(tx, d - 9, () => tanker(tx, d - 9, col));
+        const fx = c - 7, fz = b + 7; // the flare: red and white, and a flame that never goes out
+        at(fx, fz, () => {
+          for (let y = 0; y < 46; y += 6) cylLit(fx, fz, 0.8, y, 6, (y / 6) % 2 ? '#F8FAFC' : '#EF4444', y + 6 >= 46);
+          const f = () => flame(fx, 46.5, fz); f(); glow.push(f);
+        });
+        for (const [lx, lz] of [[a + 33, b + 32], [c - 3, b + 32], [a + 3, b + 37], [a + 33, d - 4], [c - 3, d - 4]]) at(lx, lz, () => lamp(lx, lz));
       }
+      parts.sort((p, q) => p.d - q.d);
+      for (const p of parts) p.f();
     },
     // ---- a club: dark walls, a neon roof line, and the light show at night
     club(a, b, c, d) {
@@ -1016,21 +1062,72 @@
       if (tx != null) for (let k = 0; k < 3; k++) { const x0 = tx - L + k * 11.5, x1 = x0 + 10.8; if (x1 < a - 2 || x0 > c + 2) continue; box(Math.max(a, x0), 0.4, tz[0] - 1.3, Math.min(c, x1), 4.4, tz[0] + 1.3, '#F8FAFC', '#1E3A8A', 1); box(Math.max(a, x0), 4.4, tz[0] - 1.1, Math.min(c, x1), 4.7, tz[0] + 1.1, '#1D4ED8'); }
     },
     dealer(a, b, c, d) {
+      // a two-floor office block at the back, a glass showroom in front of it, an entrance canopy, a brand pylon at the road, the lot
       const lux = b > 140, list = Object.entries(CARS).filter(([, v]) => v[3] === (lux ? 'lekkiluxury' : 'polanco'));
+      const acc = lux ? '#D4AF37' : '#1D4ED8', mid = (a + c) / 2, t = performance.now() / 1000, glassH = 13, zf = b + 33;
+      const face = (txt, px, py, pz, col, size, blur) => { const o = P(px, py, pz), e = P(px + 1, py, pz), u = P(px, py + 1, pz); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `900 ${size}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; if (blur) { x.shadowColor = col; x.shadowBlur = blur; } x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
       flat(a, b, c, d, 0.05, lux ? '#1C1917' : '#E5E7EB');
-      flat(a + 2, b + 2, c - 2, b + 34, 0.07, lux ? '#0C0A09' : '#F8FAFC');
-      box(a + 3, 0, b + 3, c - 3, 1, b + 33, lux ? '#D4AF37' : '#1D4ED8');
-      const glassH = 14, gc = lux ? 'rgba(212,175,55,0.18)' : 'rgba(125,211,252,0.28)';
-      list.slice(0, 3).forEach(([id], k) => drawCar(a + 22 + k * ((c - a - 44) / 2), b + 18, id, null, 0.35, 2.4));
-      for (const [x0, z0, x1, z1] of [[a + 3, b + 33, c - 3, b + 33.3], [c - 3.3, b + 3, c - 3, b + 33]]) { const p0 = P(x0, 1, z0), p1 = P(x1, 1, z1), p2 = P(x1, glassH, z1), p3 = P(x0, glassH, z0); quad([p0, p1, p2, p3], gc, lux ? 'rgba(212,175,55,0.6)' : 'rgba(255,255,255,0.7)'); }
-      { const r0 = P(a + 3, glassH, b + 3), r1 = P(c - 3, glassH, b + 3), r2 = P(c - 3, glassH, b + 33.3), r3 = P(a + 3, glassH, b + 33.3); quad([r0, r1, r2, r3], lux ? 'rgba(12,10,9,0.25)' : 'rgba(224,242,254,0.3)', lux ? '#D4AF37' : '#E5E7EB'); }
-      box(a + 3, glassH, b + 32.6, c - 3, glassH + 1.4, b + 33.3, lux ? '#0C0A09' : '#F8FAFC'); // the fascia with the name
-      const sign = () => { const sg = P((a + c) / 2, glassH + 3.6, b + 33.3); x.save(); x.font = `900 ${Math.max(9, K * 3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = lux ? '#FDE68A' : '#60A5FA'; x.shadowBlur = 12; x.fillStyle = lux ? '#FDE68A' : '#1D4ED8'; x.fillText(lux ? 'LEKKI LUXURY CARS' : 'POLANCO', sg[0], sg[1]); x.restore(); };
+      flat(a + 2, zf, c - 2, b + 40, 0.06, lux ? '#292524' : '#F8FAFC'); // the forecourt
+      for (let px = a + 6; px < c - 4; px += 8) flat(px, zf + 0.5, px + 4, b + 39.5, 0.065, lux ? '#3F3A36' : '#E2E8F0');
+      // the office block
+      box(a + 3, 0, b + 3, c - 3, 17, b + 10, lux ? '#1C1917' : '#F8FAFC', lux ? '#FDE68A' : '#93C5FD', 2);
+      box(a + 3, 17, b + 3, c - 3, 17.8, b + 10, lux ? '#292524' : '#E2E8F0');
+      box(a + 3, 15.8, b + 9.9, c - 3, 17.8, b + 10.3, acc); // a band of the dealer's colour along the top
+      for (let k = 0; k < 3; k++) box(a + 12 + k * 14, 17.8, b + 4.5, a + 18 + k * 14, 19.4, b + 8.5, '#94A3B8'); // the roof plant
+      // the showroom floor and the three cars in the window
+      flat(a + 3, b + 10, c - 3, zf, 1, lux ? '#3A3430' : '#F1F5F9');
+      for (let k = 0; k < 3; k++) { const p = P(a + 22 + k * ((c - a - 44) / 2), 1.02, b + 22), r = K * 9; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, lux ? 'rgba(255,220,150,0.3)' : 'rgba(255,255,255,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.restore(); } // the spotlights on the floor
+      box(a + 3, 0, zf - 0.6, c - 3, 1, zf, acc);
+      list.slice(0, 3).forEach(([id], k) => drawCar(a + 22 + k * ((c - a - 44) / 2), b + 22, id, null, 0.35, 2.4));
+      // glass on three sides, with mullions
+      const gc = lux ? 'rgba(212,175,55,0.16)' : 'rgba(125,211,252,0.26)', gl = lux ? 'rgba(253,230,138,0.75)' : 'rgba(255,255,255,0.85)';
+      for (const [x0, z0, x1, z1, n] of [[a + 3, b + 10, a + 3, zf, 4], [c - 3, b + 10, c - 3, zf, 4], [a + 3, zf, c - 3, zf, 12]]) {
+        quad([P(x0, 1, z0), P(x1, 1, z1), P(x1, glassH, z1), P(x0, glassH, z0)], gc, gl);
+        x.strokeStyle = gl; x.lineWidth = Math.max(1, K * 0.18); x.beginPath();
+        for (let k = 1; k < n; k++) { const u = k / n, p = P(x0 + (x1 - x0) * u, 1, z0 + (z1 - z0) * u), q = P(x0 + (x1 - x0) * u, glassH, z0 + (z1 - z0) * u); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); }
+        x.stroke();
+      }
+      const doors = [P(mid - 4, 1, zf + 0.05), P(mid + 4, 1, zf + 0.05), P(mid + 4, 8, zf + 0.05), P(mid - 4, 8, zf + 0.05)]; quad(doors, lux ? 'rgba(12,10,9,0.55)' : 'rgba(30,58,138,0.35)', acc);
+      // the roof: glass in a frame, a fascia with the name on it
+      quad([P(a + 3, glassH, b + 10), P(c - 3, glassH, b + 10), P(c - 3, glassH, zf), P(a + 3, glassH, zf)], lux ? 'rgba(41,37,36,0.14)' : 'rgba(224,242,254,0.3)');
+      for (const [x0, z0, x1, z1] of [[a + 3, b + 10, a + 3.8, zf], [c - 3.8, b + 10, c - 3, zf], [a + 3, b + 21, c - 3, b + 21.6]]) box(x0, glassH, z0, x1, glassH + 0.6, z1, lux ? '#292524' : '#E2E8F0');
+      box(a + 2.5, glassH, zf - 0.8, c - 2.5, glassH + 3, zf + 0.4, lux ? '#0C0A09' : acc);
+      const sign = () => face(lux ? 'LEKKI LUXURY CARS' : 'POLANCO', mid, glassH + 1.5, zf + 0.45, lux ? '#FDE68A' : '#FFFFFF', 2.4, lux ? 10 : 6);
       sign(); glow.push(sign);
-      flat(a + 2, b + 38, c - 2, d - 2, 0.07, '#4B5563');
-      list.forEach(([id], k) => { const cx = a + 16 + (k % 3) * ((c - a - 32) / 2), cz = b + 50 + Math.floor(k / 3) * 26; flat(cx - 9, cz - 5, cx + 9, cz + 5, 0.09, lux ? '#57534E' : '#6B7280'); drawCar(cx, cz, id, null, 0.5, 2.1); });
-      for (let k = 0; k <= 10; k++) { const fx = a + 2 + k * (c - a - 4) / 10; box(fx - 0.12, 0, b + 37 - 0.12, fx + 0.12, 7, b + 37 + 0.12, '#D1D5DB'); }
-      for (let k = 0; k < 30; k++) { const u = k / 30, fx = a + 2 + u * (c - a - 4), p = P(fx, 6.6 - Math.sin(u * Math.PI * 10) * 0.6, b + 37); x.fillStyle = ['#EF4444', '#FACC15', '#3B82F6', '#22C55E'][k % 4]; x.beginPath(); x.moveTo(p[0] - K * 0.5, p[1]); x.lineTo(p[0] + K * 0.5, p[1]); x.lineTo(p[0], p[1] + K * 1.2); x.fill(); }
+      // the entrance canopy on two posts
+      for (const px of [mid - 7, mid + 7]) box(px - 0.35, 0, zf + 5.2, px + 0.35, 8, zf + 5.9, lux ? '#D4AF37' : '#CBD5E1');
+      box(mid - 8.5, 8, zf, mid + 8.5, 8.7, zf + 6.4, lux ? '#0C0A09' : '#F8FAFC'); box(mid - 8.5, 8.7, zf, mid + 8.5, 9, zf + 6.4, acc);
+      // the pylon at the road, lit
+      const px0 = c - 10;
+      box(px0, 0, zf + 3, px0 + 4, 22, zf + 4.4, lux ? '#0C0A09' : acc);
+      box(px0 - 0.2, 22, zf + 2.8, px0 + 4.2, 22.5, zf + 4.6, lux ? acc : '#F8FAFC');
+      const logo = () => { face(lux ? 'LLC' : 'P', px0 + 2, 18.5, zf + 4.45, lux ? '#FDE68A' : '#FFFFFF', lux ? 1.9 : 3.4, 8); face(lux ? 'LEKKI' : 'CARS', px0 + 2, 14.6, zf + 4.45, lux ? '#D4AF37' : '#BFDBFE', 0.9, 0); };
+      logo(); glow.push(logo);
+      if (lux) { palm(a + 5, zf + 4, 12); palm(a + 14, zf + 4.5, 10); for (let px = a + 22; px < mid - 10; px += 5) { box(px - 0.3, 0, zf + 6, px + 0.3, 1.6, zf + 6.6, '#D4AF37'); } }
+      else for (let k = 0; k < 4; k++) { // flags on poles, waving
+        const fx = a + 6 + k * 6, fz = zf + 5; box(fx - 0.15, 0, fz - 0.15, fx + 0.15, 14, fz + 0.15, '#CBD5E1');
+        const pts = []; for (let s = 0; s <= 4; s++) pts.push([fx + s * 1.3, 13.6 - Math.sin(t * 3 + s * 0.9 + k) * 0.35]);
+        const top = pts.map(([px, py]) => P(px, py, fz)), bot = pts.slice().reverse().map(([px, py]) => P(px, py - 3, fz));
+        quad(top.concat(bot), k % 2 ? '#F8FAFC' : '#1D4ED8', 'rgba(15,23,42,0.25)');
+      }
+      // the lot: painted bays, wheel stops, a low wall with the old bunting, lamps
+      flat(a + 2, b + 41, c - 2, d - 2, 0.07, '#3F4651');
+      const cols = 3, bw = (c - a - 32) / 2;
+      list.forEach(([id], k) => {
+        const cx = a + 16 + (k % cols) * bw, cz = b + 52 + Math.floor(k / cols) * 23;
+        x.strokeStyle = 'rgba(248,250,252,0.85)'; x.lineWidth = Math.max(1, K * 0.25);
+        for (const ox of [-10, 10]) { const p = P(cx + ox, 0.08, cz - 7), q = P(cx + ox, 0.08, cz + 7); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+        box(cx - 3, 0, cz - 6.4, cx + 3, 0.5, cz - 5.8, '#FACC15');
+        drawCar(cx, cz, id, null, Math.PI / 2, 2.1);
+      });
+      box(a + 2, 0, b + 40.6, c - 2, 1.2, b + 41.2, lux ? '#44403C' : '#CBD5E1');
+      if (!lux) {
+        for (let k = 0; k <= 10; k++) { const fx = a + 2 + k * (c - a - 4) / 10; box(fx - 0.12, 0, b + 40.9 - 0.12, fx + 0.12, 7, b + 40.9 + 0.12, '#D1D5DB'); }
+        for (let k = 0; k < 30; k++) { const u = k / 30, fx = a + 2 + u * (c - a - 4), p = P(fx, 6.6 - Math.sin(u * Math.PI * 10) * 0.6, b + 40.9); x.fillStyle = ['#EF4444', '#FACC15', '#3B82F6', '#22C55E'][k % 4]; x.beginPath(); x.moveTo(p[0] - K * 0.5, p[1]); x.lineTo(p[0] + K * 0.5, p[1]); x.lineTo(p[0], p[1] + K * 1.2); x.fill(); }
+      }
+      for (const [lx, lz] of [[a + 4, d - 4], [c - 4, d - 4], [a + 4, b + 44], [c - 4, b + 44]]) lamp(lx, lz, 8);
+      // at night the showroom glows from inside
+      glow.push(() => { const p = P(mid, 6, b + 22), r = K * (c - a) * 0.45; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, lux ? 'rgba(255,214,140,0.35)' : 'rgba(200,230,255,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.45, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     welcome(a, b, c, d) {
       const cx = (a + c) / 2, cz = (b + d) / 2;
@@ -1441,6 +1538,62 @@
     x.fillStyle = shadeHex(col, 0.82); x.beginPath(); x.moveTo(b0[0] - rr, b0[1]); x.lineTo(t0[0] - rr, t0[1]); x.lineTo(t0[0] + rr, t0[1]); x.lineTo(b0[0] + rr, b0[1]); x.fill();
     x.beginPath(); x.ellipse(b0[0], b0[1], rr, rr * sp, 0, 0, Math.PI); x.fill();
     x.fillStyle = shadeHex(col, 1.05); x.beginPath(); x.ellipse(t0[0], t0[1], rr, rr * sp, 0, 0, Math.PI * 2); x.fill();
+  }
+  // the world direction that faces screen-right (rx) and toward you (rz), for shading round things
+  const camN = (rx, rz) => [rx * co + rz * si, -rx * si + rz * co];
+  // a cylinder lit like the boxes: its side shaded left to right, its top a lit disc with a rim (cap false: a band, no top)
+  function cylLit(cx, cz, r, y0, h, col, cap = true) {
+    const b0 = P(cx, y0, cz), t0 = P(cx, y0 + h, cz), rr = r * K, ry = rr * sp;
+    const g = x.createLinearGradient(b0[0] - rr, 0, b0[0] + rr, 0);
+    for (const [s, rx, rz] of [[0, -1, 0], [0.3, -0.7, 0.7], [0.55, 0, 1], [0.8, 0.7, 0.7], [1, 1, 0]]) { const [nx, nz] = camN(rx, rz); g.addColorStop(s, lit(col, nx, 0, nz)); }
+    x.fillStyle = g; x.beginPath(); x.moveTo(t0[0] - rr, t0[1]); x.ellipse(t0[0], t0[1], rr, ry, 0, Math.PI, 0, true); x.lineTo(b0[0] + rr, b0[1]); x.ellipse(b0[0], b0[1], rr, ry, 0, 0, Math.PI); x.closePath(); x.fill();
+    if (!cap) return;
+    x.fillStyle = lit(col, 0, 1, 0); x.beginPath(); x.ellipse(t0[0], t0[1], rr, ry, 0, 0, Math.PI * 2); x.fill();
+    if (rr > 4) { x.strokeStyle = shadeHex(col, 0.78); x.lineWidth = 1; x.stroke(); }
+  }
+  // a storage tank: a coloured band, a floating roof, a stair winding up the side
+  function tank(cx, cz, r, h, col, band) {
+    const sh = P(cx + 1.2, 0.05, cz + 1.2); x.fillStyle = 'rgba(20,30,45,0.18)'; x.beginPath(); x.ellipse(sh[0], sh[1], r * K * 1.05, r * K * sp * 1.05, 0, 0, Math.PI * 2); x.fill();
+    cylLit(cx, cz, r, 0, h, col);
+    if (band) cylLit(cx, cz, r, h * 0.58, h * 0.18, band, false);
+    const t0 = P(cx, h, cz), rr = r * K;
+    x.fillStyle = shadeHex(col, 0.9); x.beginPath(); x.ellipse(t0[0], t0[1] + rr * sp * 0.08, rr * 0.82, rr * sp * 0.82, 0, 0, Math.PI * 2); x.fill();
+    if (rr < 6) return;
+    x.strokeStyle = 'rgba(40,50,65,0.55)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath();
+    for (let k = 0; k <= 10; k++) { const u = k / 10, a = Math.PI * (1 - 0.65 * u), [nx, nz] = camN(Math.cos(a), Math.sin(a)), p = P(cx + nx * r * 1.02, h * u, cz + nz * r * 1.02); k ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }
+    x.stroke();
+  }
+  // an LPG sphere on legs
+  function sphere(cx, cz, r, col) {
+    const y = r * 1.3, c = P(cx, y, cz), rr = r * K;
+    const sh = P(cx + 1.5, 0.05, cz + 1.5); x.fillStyle = 'rgba(20,30,45,0.18)'; x.beginPath(); x.ellipse(sh[0], sh[1], rr, rr * sp, 0, 0, Math.PI * 2); x.fill();
+    x.strokeStyle = '#64748B'; x.lineWidth = Math.max(1.2, K * 0.35);
+    for (const [rx, rz] of [[-0.75, -0.6], [0.75, -0.6], [-0.75, 0.6], [0.75, 0.6]]) { const [nx, nz] = camN(rx, rz), b = P(cx + nx * r, 0, cz + nz * r), t = P(cx + nx * r * 0.8, y, cz + nz * r * 0.8); x.beginPath(); x.moveTo(b[0], b[1]); x.lineTo(t[0], t[1]); x.stroke(); }
+    const g = x.createRadialGradient(c[0] - rr * 0.35, c[1] - rr * 0.4, rr * 0.08, c[0], c[1], rr);
+    g.addColorStop(0, shadeHex(col, 1.12)); g.addColorStop(0.6, col); g.addColorStop(1, shadeHex(col, 0.72));
+    x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], rr, 0, Math.PI * 2); x.fill();
+    if (rr > 5) { x.strokeStyle = 'rgba(40,50,65,0.25)'; x.lineWidth = 1; x.beginPath(); x.ellipse(c[0], c[1], rr, rr * sp * 0.9, 0, 0, Math.PI); x.stroke(); }
+  }
+  // a pipe through world points [x, z] at height y, with a shine along its top
+  function pipe(pts, y, w, col) {
+    const s = pts.map(([px, pz]) => P(px, y, pz));
+    x.lineCap = 'round'; x.lineJoin = 'round';
+    for (const [lw, c, dy] of [[w * K, shadeHex(col, 0.8), 0], [w * K * 0.35, shadeHex(col, 1.25), -w * K * 0.2]]) {
+      x.strokeStyle = c; x.lineWidth = Math.max(1, lw); x.beginPath(); s.forEach((p, k) => (k ? x.lineTo(p[0], p[1] + dy) : x.moveTo(p[0], p[1] + dy))); x.stroke();
+    }
+    x.lineCap = 'butt';
+  }
+  // a fuel tanker, the kind on every Lagos expressway, facing +z
+  function tanker(tx, tz, col) {
+    box(tx - 1.3, 0.4, tz - 5, tx + 1.3, 3.4, tz + 2, col);
+    box(tx - 1.3, 2.6, tz - 5, tx + 1.3, 2.9, tz + 2, '#EF4444');
+    box(tx - 1.2, 0.4, tz + 2.3, tx + 1.2, 3, tz + 4.6, '#F8FAFC', '#1E293B', 1);
+  }
+  // a sodium lamp on a pole; it glows at night
+  function lamp(lx, lz, h = 7) {
+    box(lx - 0.15, 0, lz - 0.15, lx + 0.15, h, lz + 0.15, '#64748B');
+    box(lx - 0.5, h, lz - 0.3, lx + 0.5, h + 0.35, lz + 0.3, '#334155');
+    glow.push(() => { const p = P(lx, h, lz), r = K * 5; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,190,90,0.7)'); g.addColorStop(1, 'rgba(255,150,40,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
   }
   function flame(fx, fy, fz) {
     const p = P(fx, fy, fz), t = performance.now() / 120, f = 1 + Math.sin(t) * 0.15 + Math.sin(t * 2.7) * 0.1, s = K * f;
@@ -2192,7 +2345,15 @@
   function drawShowroom(R, now) {
     const lux = R.dealer === 'lekkiluxury', t = now / 1000, gold = '#D4AF37', blue = '#1D4ED8', acc = lux ? gold : blue;
     // the floor: black marble with gold veins (Lekki Luxury), white porcelain with a blue runner (Polanco)
-    if (lux) { x.strokeStyle = 'rgba(212,175,55,0.2)'; x.lineWidth = 1; for (let k = 0; k < 22; k++) { const R2 = rnd(k * 17 + 9); let px = R2() * R.w, pz = R2() * R.d; const p = P(px, 0.02, pz); x.beginPath(); x.moveTo(p[0], p[1]); for (let q = 0; q < 4; q++) { px += (R2() - 0.5) * 14; pz += (R2() - 0.5) * 9; const pp = P(px, 0.02, pz); x.lineTo(pp[0], pp[1]); } x.stroke(); } }
+    if (lux) { // big polished slabs with fine gold seams, and a sheen across them
+      for (let i = 0; i < R.w; i += 12) for (let j = 0; j < R.d; j += 12) flat(i, j, Math.min(R.w, i + 12), Math.min(R.d, j + 12), 0.015, (i / 12 + j / 12) % 2 ? '#0F0D0C' : '#141110');
+      x.strokeStyle = 'rgba(212,175,55,0.28)'; x.lineWidth = 1;
+      for (let k = 12; k < R.w; k += 12) { const p = P(k, 0.02, 0), q = P(k, 0.02, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      for (let k = 12; k < R.d; k += 12) { const p = P(0, 0.02, k), q = P(R.w, 0.02, k); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      const s0 = P(0, 0.02, 0), s1 = P(R.w, 0.02, R.d), sh = x.createLinearGradient(s0[0], s0[1], s1[0], s1[1]);
+      sh.addColorStop(0.3, 'rgba(255,255,255,0)'); sh.addColorStop(0.45, 'rgba(255,240,210,0.07)'); sh.addColorStop(0.6, 'rgba(255,255,255,0)');
+      quad([P(0, 0.02, 0), P(R.w, 0.02, 0), P(R.w, 0.02, R.d), P(0, 0.02, R.d)], sh);
+    }
     else { x.strokeStyle = 'rgba(148,163,184,0.35)'; x.lineWidth = 1; for (let k = 6; k < R.w; k += 6) { const p = P(k, 0.02, 0), q = P(k, 0.02, R.d); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } for (let k = 6; k < R.d; k += 6) { const p = P(0, 0.02, k), q = P(R.w, 0.02, k); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } flat(R.w / 2 - 4, 30, R.w / 2 + 4, R.d, 0.03, 'rgba(29,78,216,0.18)'); }
     // the back wall: floor-to-ceiling glass onto the lagoon and the skyline, the dealer's name across it
     const g0 = P(26, 1.5, 0.1), g1 = P(R.w - 2, 1.5, 0.1), g2 = P(R.w - 2, 16, 0.1), g3 = P(26, 16, 0.1);
@@ -2206,8 +2367,51 @@
     // the left wall: a brand banner, and a sales consultant's desk with a screen
     const b0 = P(0.15, 4, 30), b1 = P(0.15, 4, 50), b2 = P(0.15, 14, 50), b3 = P(0.15, 14, 30); quad([b0, b1, b2, b3], lux ? '#111827' : '#DBEAFE', acc);
     { const o = P(0.15, 9, 40), e = P(0.15, 9, 41), u = P(0.15, 10, 40); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = '900 2.2px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = acc; x.fillText(lux ? 'BESPOKE' : 'TEST DRIVE', 0, -0.8); x.font = '700 1.2px "Plus Jakarta Sans", sans-serif'; x.fillStyle = lux ? '#FDE68A' : '#1E3A8A'; x.fillText(lux ? 'Your colour, your interior' : 'Book yours today', 0, 1.4); x.restore(); }
+    // a light sweeping across the brand wall
+    { const u = (t * 0.22) % 1.4 - 0.2, zc = 30 + u * 20, g0 = P(0.15, 9, zc - 4), g1 = P(0.15, 9, zc + 4);
+      x.save(); x.beginPath(); x.moveTo(b0[0], b0[1]); x.lineTo(b1[0], b1[1]); x.lineTo(b2[0], b2[1]); x.lineTo(b3[0], b3[1]); x.closePath(); x.clip();
+      const sw = x.createLinearGradient(g0[0], g0[1], g1[0], g1[1]); sw.addColorStop(0, 'rgba(255,255,255,0)'); sw.addColorStop(0.5, lux ? 'rgba(253,230,138,0.3)' : 'rgba(255,255,255,0.55)'); sw.addColorStop(1, 'rgba(255,255,255,0)');
+      x.globalCompositeOperation = 'lighter'; x.fillStyle = sw; x.fill(); x.restore(); }
+    // LED strips where the walls meet the floor
+    x.save(); x.shadowColor = acc; x.shadowBlur = 8;
+    quad([P(0, 0, 0.15), P(R.w, 0, 0.15), P(R.w, 0.35, 0.15), P(0, 0.35, 0.15)], acc); quad([P(0.15, 0, 0), P(0.15, 0, R.d), P(0.15, 0.35, R.d), P(0.15, 0.35, 0)], acc);
+    x.restore();
+    // the wheel wall: three rims on a backboard, the tyres stacked below
+    { const wx = lux ? 0 : 62, wy = lux ? 3 : 8; // Polanco's sits above the mezzanine
+      const wq = [P(wx + 2, wy + 2, 0.15), P(wx + 24, wy + 2, 0.15), P(wx + 24, wy + 11.5, 0.15), P(wx + 2, wy + 11.5, 0.15)]; quad(wq, lux ? '#1C1917' : '#F8FAFC', acc);
+      const o = P(wx, wy, 0.2), e = P(wx + 1, wy, 0.2), u = P(wx, wy + 1, 0.2); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]);
+      for (const zc of [6, 13, 20]) {
+        x.fillStyle = '#111827'; x.beginPath(); x.arc(zc, -6, 2.5, 0, Math.PI * 2); x.fill();
+        const rg = x.createRadialGradient(zc - 0.5, -6.5, 0.2, zc, -6, 1.8); rg.addColorStop(0, '#F1F5F9'); rg.addColorStop(1, lux ? '#B08A43' : '#94A3B8'); x.fillStyle = rg; x.beginPath(); x.arc(zc, -6, 1.75, 0, Math.PI * 2); x.fill();
+        x.strokeStyle = '#334155'; x.lineWidth = 0.25; x.beginPath(); for (let s = 0; s < 5; s++) { const an = s / 5 * Math.PI * 2 + t * 0.4; x.moveTo(zc + Math.cos(an) * 0.4, -6 + Math.sin(an) * 0.4); x.lineTo(zc + Math.cos(an) * 1.6, -6 + Math.sin(an) * 1.6); } x.stroke();
+        x.fillStyle = '#334155'; x.beginPath(); x.arc(zc, -6, 0.35, 0, Math.PI * 2); x.fill();
+      }
+      x.font = '900 1.1px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = acc; x.fillText(lux ? 'FORGED WHEELS' : 'WHEELS & TYRES', 13, -9.8); x.restore();
+      for (let k = 0; k < 4; k++) cylLit(lux ? 23 : 4, lux ? 4 : 63, 1.8, k * 0.9, 0.9, '#1F2937'); }
+    if (lux) {
+      // the lounge: a rug under the sofa, and an espresso bar by the door
+      flat(4, 46, 32, 62, 0.03, '#3B2A20', '#D4AF37');
+      box(34, 0, 64, 46, 3.8, 68, '#1C1917'); box(33.8, 3.8, 63.8, 46.2, 4.2, 68.2, '#D4AF37'); box(36, 4.2, 64.8, 39, 6.2, 66.8, '#A8A29E');
+      for (const sx of [37, 43]) cyl(sx, 70, 0.8, 2.6, '#D4AF37');
+      // the handover stage: a car under a silk cover, waiting for its owner
+      const hx = 76, hz = 60, hp = P(hx, 1, hz), hr = K * 10;
+      x.fillStyle = '#0C0A09'; x.beginPath(); x.ellipse(hp[0], hp[1], hr, hr * sp, 0, 0, Math.PI * 2); x.fill();
+      x.save(); x.shadowColor = '#FDE68A'; x.shadowBlur = 10 + Math.sin(t * 2) * 4; x.strokeStyle = '#D4AF37'; x.lineWidth = Math.max(1.5, K * 0.35); x.stroke(); x.restore();
+      const w = K * 7, cg = x.createLinearGradient(hp[0] - w, 0, hp[0] + w, 0); cg.addColorStop(0, '#78716C'); cg.addColorStop(0.35, '#F5F5F4'); cg.addColorStop(0.6, '#D6D3D1'); cg.addColorStop(1, '#A8A29E');
+      x.fillStyle = 'rgba(0,0,0,0.35)'; x.beginPath(); x.ellipse(hp[0], hp[1], w * 1.05, K * 2.4 * sp + K, 0, 0, Math.PI * 2); x.fill();
+      x.fillStyle = cg; x.beginPath(); x.moveTo(hp[0] - w, hp[1]); x.quadraticCurveTo(hp[0] - w, hp[1] - K * 2.2, hp[0] - w * 0.55, hp[1] - K * 2.4); x.quadraticCurveTo(hp[0] - w * 0.3, hp[1] - K * 4.6, hp[0] + w * 0.05, hp[1] - K * 4.6); x.quadraticCurveTo(hp[0] + w * 0.4, hp[1] - K * 4.4, hp[0] + w * 0.6, hp[1] - K * 2.3); x.quadraticCurveTo(hp[0] + w, hp[1] - K * 2, hp[0] + w, hp[1]); x.closePath(); x.fill();
+      x.strokeStyle = 'rgba(120,113,108,0.5)'; x.lineWidth = 1; for (const f of [-0.6, -0.2, 0.3, 0.7]) { x.beginPath(); x.moveTo(hp[0] + w * f, hp[1]); x.quadraticCurveTo(hp[0] + w * (f + 0.1), hp[1] - K * 1.5, hp[0] + w * f * 0.7, hp[1] - K * 3); x.stroke(); }
+      x.fillStyle = '#B91C1C'; x.fillRect(hp[0] - K * 0.35, hp[1] - K * 4.6, K * 0.7, K * 4.6);
+      x.beginPath(); x.ellipse(hp[0] - K * 0.9, hp[1] - K * 4.9, K * 0.9, K * 0.5, -0.4, 0, Math.PI * 2); x.ellipse(hp[0] + K * 0.9, hp[1] - K * 4.9, K * 0.9, K * 0.5, 0.4, 0, Math.PI * 2); x.fill();
+      groundText('HANDOVER', hx, hz + 12, 2.4, '#D4AF37', 'rgba(0,0,0,0.5)');
+    } else {
+      // the customer lounge in the free corner
+      flat(64, 59, 96, 74, 0.03, '#DBEAFE', '#1D4ED8');
+      groundText('WELCOME TO POLANCO', 49, R.d - 4, 2, 'rgba(29,78,216,0.55)');
+    }
     // the cars, each on a lit turntable with a spotlight from above and a reflection in the floor
     for (const c of showroomCars(R)) {
+      { const p = P(c.x, 0.04, c.z), r = K * 8; const rg = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); rg.addColorStop(0, c.col + '55'); rg.addColorStop(1, c.col + '00'); x.fillStyle = rg; x.beginPath(); x.ellipse(p[0], p[1], r * 1.3, r * sp * 1.3, 0, 0, Math.PI * 2); x.fill(); }
       const top = c.k === showroomCars(R).length - 1; // the dearest car gets the raised, roped platform
       const p = P(c.x, 0.05, c.z), r = K * 10.5;
       if (top) { const pr = P(c.x, 1.2, c.z); x.fillStyle = lux ? '#0C0A09' : '#F1F5F9'; x.beginPath(); x.ellipse(pr[0], pr[1], r * 1.05, r * 1.05 * sp, 0, 0, Math.PI * 2); x.fill(); for (let q = 0; q < 8; q++) { const a2 = q / 8 * Math.PI * 2, px = c.x + Math.cos(a2) * 12.5, pz = c.z + Math.sin(a2) * 12.5; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, gold); } }
@@ -2326,6 +2530,10 @@
     const keepOutside = !!extra.stairs && outside; if (extra.stairs) { inside = null; deco = null; }
     const R = { ...ROOMS[kind], kind, key, room: key, title, layout: DEFAULTS[kind].map((v) => ({ ...v })), mine: false, ...extra };
     if (kind === 'dealer' && extra.dealer === 'lekkiluxury') { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
+    if (kind === 'dealer') { // keep the furniture off the turntables: the lounge in each showroom's free corner
+      const moves = extra.dealer === 'polanco' ? { couch2: [72, 64], coffee: [80, 64], plant: [94, 62] } : { plant: [94, 46] };
+      for (const it of R.layout) if (moves[it.k] && !(it.k === 'plant' && it.x < 50)) [it.x, it.z] = moves[it.k];
+    }
     if (kind === 'club') {
       R.theme = /lekki/i.test(title) ? 'lekki' : 'ozumba';
       const pal = R.theme === 'lekki' ? ['#0E7490', '#F43F5E', '#14B8A6', '#F59E0B'] : ['#111827', '#7F1D1D', '#1C1917', '#78350F'];
