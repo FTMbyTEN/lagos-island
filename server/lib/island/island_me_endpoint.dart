@@ -630,6 +630,202 @@ class IslandMeEndpoint extends Endpoint {
     return jsonEncode({'active': carId});
   }
 
+  // ---------------- the Eko Home Store: furniture, cheap to luxury ----------------
+  /// store id -> (name, price in naira). The same list as STORE_ITEMS in web/index.html.
+  static const furnitureCatalog = {
+    'k:rugDoormat': (name: 'Doormat', price: 2000),
+    'k:trashcan': (name: 'Bin', price: 2500),
+    'k:plantSmall1': (name: 'Small plant', price: 3500),
+    'k:plantSmall3': (name: 'Cactus', price: 4000),
+    'k:pottedPlant': (name: 'Potted palm', price: 9000),
+    'k:rugRectangle': (name: 'Rug', price: 10000),
+    'k:rugSquare': (name: 'Square rug', price: 18000),
+    'k:rugRound': (name: 'Round rug', price: 30000),
+    'k:rugRounded': (name: 'Wool rug', price: 55000),
+    'k:coatRackStanding': (name: 'Coat stand', price: 9000),
+    'k:bench': (name: 'Bench', price: 15000),
+    'k:benchCushion': (name: 'Cushioned bench', price: 32000),
+    'k:lampRoundFloor': (name: 'Floor lamp', price: 14000),
+    'k:lampSquareFloor': (name: 'Designer floor lamp', price: 72000),
+    'k:loungeChair': (name: 'Armchair', price: 18000),
+    'k:loungeSofa': (name: 'Two-seater sofa', price: 45000),
+    'k:loungeChairRelax': (name: 'Recliner', price: 65000),
+    'k:loungeSofaLong': (name: 'Three-seater sofa', price: 120000),
+    'k:loungeDesignChair': (name: 'Designer armchair', price: 240000),
+    'k:loungeSofaOttoman': (name: 'Sofa and ottoman', price: 280000),
+    'k:loungeSofaCorner': (name: 'Corner sofa', price: 420000),
+    'k:loungeDesignSofa': (name: 'Designer sofa', price: 750000),
+    'k:loungeDesignSofaCorner': (name: 'Designer corner suite', price: 1500000),
+    'k:tableCoffee': (name: 'Coffee table', price: 12000),
+    'k:tableCoffeeSquare': (name: 'Square coffee table', price: 20000),
+    'k:tableCoffeeGlass': (name: 'Glass coffee table', price: 85000),
+    'k:tableCoffeeGlassSquare': (name: 'Glass cube table', price: 110000),
+    'k:televisionVintage': (name: 'Old TV', price: 15000),
+    'k:cabinetTelevision': (name: 'TV stand', price: 35000),
+    'k:cabinetTelevisionDoors': (name: 'TV cabinet', price: 60000),
+    'k:televisionModern': (name: 'Flat-screen TV', price: 350000),
+    'k:speakerSmall': (name: 'Bookshelf speaker', price: 25000),
+    'k:speaker': (name: 'Tower speaker', price: 180000),
+    'k:bookcaseOpenLow': (name: 'Low bookcase', price: 15000),
+    'k:bookcaseOpen': (name: 'Bookcase', price: 28000),
+    'k:bookcaseClosedWide': (name: 'Wide cabinet', price: 90000),
+    'k:bedSingle': (name: 'Single bed', price: 30000),
+    'k:bedBunk': (name: 'Bunk bed', price: 55000),
+    'k:bedDouble': (name: 'Double bed', price: 180000),
+    'k:cabinetBed': (name: 'Bedside table', price: 12000),
+    'k:cabinetBedDrawerTable': (name: 'Bedside drawers', price: 40000),
+    'k:bookcaseClosedDoors': (name: 'Wardrobe', price: 95000),
+    'k:kitchenCabinet': (name: 'Kitchen cabinet', price: 25000),
+    'k:kitchenCabinetDrawer': (name: 'Drawer unit', price: 32000),
+    'k:kitchenSink': (name: 'Kitchen sink', price: 40000),
+    'k:kitchenStove': (name: 'Gas cooker', price: 60000),
+    'k:kitchenStoveElectric': (name: 'Electric cooker', price: 150000),
+    'k:kitchenFridgeSmall': (name: 'Small fridge', price: 70000),
+    'k:kitchenFridge': (name: 'Fridge', price: 220000),
+    'k:kitchenFridgeLarge': (name: 'American fridge', price: 650000),
+    'k:kitchenBar': (name: 'Kitchen bar', price: 90000),
+    'k:stoolBar': (name: 'Bar stool', price: 12000),
+    'k:stoolBarSquare': (name: 'Square bar stool', price: 20000),
+    'k:chair': (name: 'Wooden chair', price: 6000),
+    'k:chairCushion': (name: 'Cushioned chair', price: 12000),
+    'k:chairRounded': (name: 'Rounded chair', price: 25000),
+    'k:chairModernCushion': (name: 'Modern chair', price: 45000),
+    'k:chairModernFrameCushion': (name: 'Designer chair', price: 95000),
+    'k:table': (name: 'Dining table', price: 35000),
+    'k:tableRound': (name: 'Round table', price: 45000),
+    'k:tableCloth': (name: 'Table with cloth', price: 55000),
+    'k:tableCross': (name: 'Farmhouse table', price: 140000),
+    'k:tableGlass': (name: 'Glass dining table', price: 260000),
+    'k:toilet': (name: 'Toilet', price: 30000),
+    'k:bathroomSink': (name: 'Basin', price: 25000),
+    'k:bathroomCabinetDrawer': (name: 'Vanity unit', price: 35000),
+    'k:shower': (name: 'Shower', price: 60000),
+    'k:toiletSquare': (name: 'Designer toilet', price: 85000),
+    'k:bathroomSinkSquare': (name: 'Designer basin', price: 70000),
+    'k:showerRound': (name: 'Rain shower', price: 150000),
+    'k:bathtub': (name: 'Bathtub', price: 240000),
+    'k:washer': (name: 'Washing machine', price: 190000),
+    'k:washerDryerStacked': (name: 'Washer-dryer tower', price: 420000),
+    'k:desk': (name: 'Desk', price: 30000),
+    'k:chairDesk': (name: 'Office chair', price: 28000),
+    'k:deskCorner': (name: 'Corner desk', price: 110000),
+  };
+
+  /// Buy one piece: the price comes out of my wallet; I place it from my home's "Arrange furniture".
+  Future<String> buyFurniture(Session session, String item) => _money(session, (u) async {
+    final f = furnitureCatalog[item];
+    if (f == null) return _err('That piece is not for sale.');
+    if (await IslandFurniture.db.count(session, where: (t) => t.authUserId.equals(u)) >= 400) return _err('Your homes are full: 400 pieces at most.');
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < f.price) return _err('You need N${_n(f.price)} for the ${f.name}. You have N${_n(c.naira)}.');
+    final r = await Bank.post(session, u, key: 'island:furn:${u.uuid}:${DateTime.now().microsecondsSinceEpoch}', amount: -f.price, kind: 'fee', counter: 'city:market', memo: 'Eko Home Store: ${f.name}');
+    if (r.short != null) return _err('Not enough naira.');
+    await IslandFurniture.db.insertRow(session, IslandFurniture(authUserId: u, item: item, price: f.price, boughtAt: DateTime.now().toUtc()));
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'item': item, 'name': f.name, 'naira': after.naira});
+  });
+
+  /// What I own: {items: {id: count}}, and how many of each already stand in my homes other than [room] ('' for all).
+  Future<String> myFurniture(Session session, String room) async {
+    final u = _user(session);
+    final elsewhere = <String, int>{};
+    for (final k in await _myRoomKeys(session, u)) {
+      if (k == room) continue;
+      _countInto(elsewhere, await _layoutOf(session, k));
+    }
+    return jsonEncode({'items': await _owned(session, u), 'elsewhere': elsewhere});
+  }
+
+  static Future<Map<String, int>> _owned(Session s, UuidValue u) async {
+    final out = <String, int>{};
+    for (final f in await IslandFurniture.db.find(s, where: (t) => t.authUserId.equals(u))) {
+      out[f.item] = (out[f.item] ?? 0) + 1;
+    }
+    return out;
+  }
+
+  static void _countInto(Map<String, int> into, List layout, {bool storeOnly = true}) {
+    for (final it in layout) {
+      final k = it is Map ? it['k'] : null;
+      if (k is String && (!storeOnly || k.startsWith('k:'))) into[k] = (into[k] ?? 0) + 1;
+    }
+  }
+
+  static Future<List> _layoutOf(Session s, String key) async {
+    final r = await IslandRoom.db.findFirstRow(s, where: (t) => t.key.equals(key));
+    if (r == null) return const [];
+    final v = jsonDecode(r.layout);
+    return v is List ? v : const [];
+  }
+
+  /// The rooms I furnish: my free BQ on HQ Row and every home I've bought.
+  static Future<List<String>> _myRoomKeys(Session s, UuidValue u) async {
+    final p = await _profile(s, u);
+    return ['hq:${p.id}', for (final h in await IslandHome.db.find(s, where: (t) => t.authUserId.equals(u))) 'home:${h.plot}'];
+  }
+
+  // ---------------- homes: a free BQ for everyone, and plots to buy, Ajah to Banana Island ----------------
+  /// style -> (name, price in naira). The same list as HOME_STYLES in web/index.html.
+  static const homeStyles = {
+    'flat': (name: 'Mini flat', price: 800000),
+    'bungalow': (name: 'Bungalow', price: 2500000),
+    'terrace': (name: 'Terrace house', price: 6000000),
+    'duplex': (name: 'Duplex', price: 15000000),
+    'townhouse': (name: 'Townhouse', price: 18000000),
+    'loft': (name: 'Loft', price: 25000000),
+    'mansion': (name: 'Mansion with BQ', price: 40000000),
+    'villa': (name: 'Waterfront villa', price: 120000000),
+  };
+
+  /// estate -> the style of each plot, in order (plot <estate>:<n>). The same list as ESTATES in web/index.html.
+  static const estates = {
+    'vgc': ['bungalow', 'flat', 'duplex', 'flat', 'bungalow', 'flat', 'bungalow', 'duplex', 'flat'],
+    'lekki1': ['duplex', 'terrace', 'duplex', 'terrace', 'duplex', 'terrace', 'loft', 'duplex', 'terrace'],
+    'lekkiest': ['terrace', 'terrace', 'duplex', 'terrace', 'bungalow', 'terrace', 'duplex', 'terrace', 'terrace'],
+    'ikoyihomes': ['loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse'],
+    'oldikoyi': ['mansion', 'mansion', 'loft', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion'],
+    'banana': ['villa', 'villa', 'loft', 'villa', 'villa', 'villa'],
+  };
+
+  static String? _styleOf(String plot) {
+    final m = RegExp(r'^([a-z0-9]+):(\d+)$').firstMatch(plot);
+    final list = m == null ? null : estates[m.group(1)];
+    final n = m == null ? -1 : int.parse(m.group(2)!);
+    return list != null && n >= 0 && n < list.length ? list[n] : null;
+  }
+
+  /// Every bought plot: who owns it (when I may know), and whether I may go in.
+  Future<String> homes(Session session) async {
+    final u = _user(session);
+    final me = await _profile(session, u);
+    final rows = await IslandHome.db.find(session, limit: 500);
+    final out = [];
+    for (final h in rows) {
+      final owner = await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(h.authUserId));
+      if (owner == null) continue;
+      final mine = h.authUserId == u;
+      final may = mine || !owner.hqLocked || (jsonDecode(owner.hqInvites) as List).contains(me.handle);
+      out.add({'plot': h.plot, 'style': h.style, 'mine': mine, 'may': may, 'slot': owner.id, 'color': owner.hqColor, if (may) 'owner': owner.handle});
+    }
+    return jsonEncode(out);
+  }
+
+  /// Buy the home on [plot]: it's mine to furnish, and it's where my HQ settings (name, colour, who may enter) apply too.
+  Future<String> buyHome(Session session, String plot) => _money(session, (u) async {
+    final style = _styleOf(plot);
+    if (style == null) return _err('There is no home there.');
+    final h = homeStyles[style]!;
+    if (await IslandHome.db.findFirstRow(session, where: (t) => t.plot.equals(plot)) != null) return _err('Someone already lives there.');
+    if (await IslandHome.db.count(session, where: (t) => t.authUserId.equals(u)) >= 3) return _err('Three homes is the limit.');
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < h.price) return _err('This ${h.name} costs N${_n(h.price)}. You have N${_n(c.naira)}.');
+    final r = await Bank.post(session, u, key: 'island:home:$plot', amount: -h.price, kind: 'fee', counter: 'city:market', memo: 'Bought a ${h.name} ($plot)');
+    if (r.short != null) return _err('Not enough naira.');
+    await IslandHome.db.insertRow(session, IslandHome(authUserId: u, plot: plot, style: style, price: h.price, boughtAt: DateTime.now().toUtc()));
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'plot': plot, 'style': style, 'name': h.name, 'naira': after.naira});
+  });
+
   // ---------------- insides ----------------
   /// May I arrange the room [key]? My own HQ, or (operators) the public buildings.
   static Future<bool> _mayArrange(Session s, UuidValue u, String key) async {
@@ -637,7 +833,11 @@ class IslandMeEndpoint extends Endpoint {
       final p = await IslandProfile.db.findById(s, int.tryParse(key.substring(3)) ?? -1);
       return p != null && p.authUserId == u;
     }
-    return false; // only HQs are arranged by players; every other building keeps its design
+    if (key.startsWith('home:')) {
+      final h = await IslandHome.db.findFirstRow(s, where: (t) => t.plot.equals(key.substring(5)));
+      return h != null && h.authUserId == u;
+    }
+    return false; // only homes are arranged by players; every other building keeps its design
   }
 
   /// A room's furniture (JSON list), and whether I may arrange it. An HQ's inside shows only to its
@@ -649,6 +849,14 @@ class IslandMeEndpoint extends Endpoint {
       if (p == null) return _err('No HQ there.');
       final me = await _profile(session, u);
       final may = p.authUserId == u || !p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle);
+      if (!may) return _err('Knock first: the owner lets people in.');
+    }
+    if (key.startsWith('home:')) {
+      final h = await IslandHome.db.findFirstRow(session, where: (t) => t.plot.equals(key.substring(5)));
+      if (h == null) return _err('Nobody lives there yet.');
+      final p = await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(h.authUserId));
+      final me = await _profile(session, u);
+      final may = h.authUserId == u || (p != null && (!p.hqLocked || (jsonDecode(p.hqInvites) as List).contains(me.handle)));
       if (!may) return _err('Knock first: the owner lets people in.');
     }
     final r = await IslandRoom.db.findFirstRow(session, where: (t) => t.key.equals(key));
@@ -666,6 +874,22 @@ class IslandMeEndpoint extends Endpoint {
       if (it is! Map || it['k'] is! String || it['x'] is! num || it['z'] is! num) return _err('Bad furniture.');
     }
     final had = await IslandRoom.db.findFirstRow(session, where: (t) => t.key.equals(key));
+    // a home holds only what its owner bought (counting what stands in their other homes), plus the
+    // old built-in pieces it already had (those can be moved or removed, not added)
+    final placed = <String, int>{}, old = <String, int>{}, elsewhere = <String, int>{};
+    _countInto(placed, list, storeOnly: false);
+    if (had != null) _countInto(old, jsonDecode(had.layout) as List, storeOnly: false);
+    for (final k in await _myRoomKeys(session, u)) {
+      if (k != key) _countInto(elsewhere, await _layoutOf(session, k));
+    }
+    final owned = await _owned(session, u);
+    for (final e in placed.entries) {
+      if (e.key.startsWith('k:')) {
+        if (e.value + (elsewhere[e.key] ?? 0) > (owned[e.key] ?? 0)) return _err('Buy that piece at the Eko Home Store first.');
+      } else if (e.value > (old[e.key] ?? 0)) {
+        return _err('New furniture comes from the Eko Home Store.');
+      }
+    }
     final now = DateTime.now().toUtc();
     if (had == null) {
       await IslandRoom.db.insertRow(session, IslandRoom(key: key, layout: layout, updatedAt: now));

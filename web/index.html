@@ -2651,10 +2651,10 @@
       let k = 0; for (const it of R.layout) if (it.k === 'booth') it.c = pal[k++ % pal.length]; else if (it.k === 'couch2') it.c = R.theme === 'lekki' ? '#0F766E' : '#1C1917';
       if (R.theme === 'lekki') { R.floor = '#D6B98C'; R.wall = '#134E4A'; R.trim = '#22D3EE'; } else { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
     }
-    if (signedIn() && kind === 'hq') {
+    if (signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
       try {
         const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine;
-        if (R.mine) R.owned = await my('myFurniture').then((f) => f.items || {}).catch(() => ({})); // what you can place: the furniture you've bought
+        if (R.mine) { const f = await my('myFurniture', { room: key }).catch(() => ({})); R.owned = f.items || {}; R.elsewhere = f.elsewhere || {}; } // what you can place: what you've bought, less what stands in your other homes
       }
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
     }
@@ -2706,6 +2706,7 @@
   // the pieces you own that aren't out yet: { id: how many }
   function spareFurniture() {
     const left = { ...(inside.owned || {}) };
+    for (const [k, n] of Object.entries(inside.elsewhere || {})) if (left[k]) left[k] -= n;
     for (const it of inside.layout) if (left[it.k]) left[it.k]--;
     for (const k of Object.keys(left)) if (left[k] <= 0 || !STORE[k]) delete left[k];
     return left;
@@ -3337,7 +3338,7 @@
       if (app === 'store') {
         // the Home Store: browse by room, cheapest first, grouped by tier; a piece's page shows its price and buys it
         let owned = {}, live = true;
-        try { owned = (await my('myFurniture')).items || {}; } catch (e) { if (e.message === 'signin') throw e; live = false; }
+        try { owned = (await my('myFurniture', { room: '' })).items || {}; } catch (e) { if (e.message === 'signin') throw e; live = false; }
         const thumb = (s) => `<img src="${FURN_BASE}thumbs/${s.m}.png" alt="" loading="lazy">`;
         if (arg && STORE[arg]) {
           const s = STORE[arg];
