@@ -92,6 +92,7 @@
   #deco .dscroll { display: flex; gap: 6px; overflow-x: auto; max-width: min(640px, calc(100vw - 200px)); scrollbar-width: none; }
   #deco .ditem { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 64px; padding: 6px 2px; border: 2px solid transparent; border-radius: 14px; background: #F3F6FA; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; color: var(--ink); cursor: pointer; }
   #deco .ditem span { font-size: 22px; }
+  #deco .ditem img { width: 34px; height: 34px; object-fit: contain; }
   #deco .ditem.on { border-color: var(--green); background: #E8FBF2; }
   #deco .dbtn { flex: none; padding: 10px 14px; border: none; border-radius: 999px; background: #EEF2F6; font: 800 13px 'Plus Jakarta Sans', sans-serif; color: var(--ink); cursor: pointer; }
   #deco .dbtn.main { background: var(--green); color: #fff; }
@@ -278,6 +279,17 @@
   #pnav button:active { background: var(--y); color: #07070D; }
   #pnav button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   #screen > .hbar { position: absolute; left: 50%; bottom: 8px; width: 120px; height: 4px; margin-left: -60px; border-radius: 3px; background: rgba(230,249,255,.55); z-index: 5; pointer-events: none; }
+  /* the Home Store */
+  .stabs { display: flex; gap: 6px; overflow-x: auto; margin: 0 -16px 6px; padding: 2px 16px 8px; }
+  .stabs button { flex: none; padding: 7px 11px; border: 1px solid rgba(0,240,255,.3); background: rgba(0,0,0,.45); color: #E6F9FF; font: 700 13px 'Rajdhani', sans-serif; letter-spacing: .5px; cursor: pointer; }
+  .stabs button.on { background: #FB923C; border-color: #FB923C; color: #07070D; }
+  .sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sitem { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 6px 10px; border: 1px solid rgba(0,240,255,.2); background: var(--panel); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; cursor: pointer; }
+  .sitem:hover { border-color: #FB923C; }
+  .sitem img { width: 84px; height: 84px; object-fit: contain; }
+  .sitem b { font-size: 14px; line-height: 1.1; text-align: center; } .sitem span { font: 800 12px 'Orbitron', sans-serif; color: var(--y); }
+  .sitem i { position: absolute; top: 6px; right: 6px; font: 800 11px 'Orbitron', sans-serif; font-style: normal; color: #07070D; background: #FB923C; padding: 1px 5px; }
+  .sdet { text-align: center; } .sdet img { display: block; width: 150px; height: 150px; margin: 4px auto 6px; object-fit: contain; } .sdet .big { margin: 8px 0; }
   .pcard.err { background: rgba(255,0,60,.14); border-color: rgba(255,0,60,.6); box-shadow: inset 3px 0 0 var(--m); color: #FFD6DE; }
   #lockscr { padding: 90px 24px 64px !important; }
   #lockscr .lt { font-size: 72px !important; }
@@ -366,7 +378,7 @@
     { id: 'fill9', name: 'Reclaimed land', rect: [1, 31, 13, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill10', name: 'Reclaimed land', rect: [18, 31, 33, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill11', name: 'Reclaimed land', rect: [40, 31, 58, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
-    { id: 'fill12', name: 'Reclaimed land', rect: [63, 31, 77, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
+    { id: 'homestore', name: 'Eko Home Store', rect: [63, 31, 77, 38], rows: [], cols: [], fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill13', name: 'Reclaimed land', rect: [81, 2, 93, 14], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill14', name: 'Reclaimed land', rect: [81, 18, 94, 30], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill15', name: 'Reclaimed land', rect: [81, 34, 94, 45], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
@@ -465,7 +477,7 @@
     ['soon', 5, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 24, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 47, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 68, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['homestore', 63, 31, 7, 7, 'Eko Home Store', '🛋️'],
     ['soon', 85, 7, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 86, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 86, 39, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -1129,6 +1141,31 @@
       // at night the showroom glows from inside
       glow.push(() => { const p = P(mid, 6, b + 22), r = K * (c - a) * 0.45; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, lux ? 'rgba(255,214,140,0.35)' : 'rgba(200,230,255,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.45, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
+    // ---- Eko Home Store: a big-box furniture store, teal and orange, a glass entrance, a car park with trolleys
+    homestore(a, b, c, d) {
+      const mid = (a + c) / 2, zf = b + 40, teal = '#0F766E', orange = '#EA580C';
+      flat(a, b, c, d, 0.05, '#D6D3D1', C.plotEdge);
+      box(a + 4, 0, b + 4, c - 4, 15, zf, '#F5F5F4');
+      box(a + 4, 12, zf - 0.4, c - 4, 15, zf + 0.2, teal); // the band across the front
+      box(a + 4, 15, b + 4, c - 4, 15.6, zf, '#E7E5E4');
+      for (let k = 0; k < 4; k++) box(a + 10 + k * 14, 15.6, b + 10, a + 16 + k * 14, 17, b + 16, '#A8A29E'); // the roof plant
+      for (let k = 0; k < 5; k++) { const sx = a + 8 + k * 12; quad([P(sx, 15.61, b + 22), P(sx + 7, 15.61, b + 22), P(sx + 7, 15.61, b + 32), P(sx, 15.61, b + 32)], 'rgba(186,230,253,0.85)', '#94A3B8'); } // skylights
+      quad([P(mid - 10, 0.5, zf + 0.25), P(mid + 10, 0.5, zf + 0.25), P(mid + 10, 9, zf + 0.25), P(mid - 10, 9, zf + 0.25)], 'rgba(125,211,252,0.55)', '#F8FAFC'); // the glass entrance
+      for (const sx of [mid - 5, mid, mid + 5]) { const p = P(sx, 0.5, zf + 0.26), q = P(sx, 9, zf + 0.26); x.strokeStyle = '#F8FAFC'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      box(mid - 12, 9, zf, mid + 12, 9.8, zf + 6, orange); for (const px of [mid - 11, mid + 11]) box(px - 0.3, 0, zf + 5.3, px + 0.3, 9, zf + 5.9, '#F5F5F4');
+      const sign = () => { faceText('EKO HOME', mid, 13.6, zf + 0.25, '#FFFFFF', 2.6, 6); faceText('furniture for every budget', mid, 11, zf + 0.25, orange, 1.1, 0, 800); };
+      sign(); glow.push(sign);
+      for (let k = 0; k < 3; k++) quad([P(a + 6 + k * 5, 0.5, zf + 0.25), P(a + 10 + k * 5, 0.5, zf + 0.25), P(a + 10 + k * 5, 7, zf + 0.25), P(a + 6 + k * 5, 7, zf + 0.25)], ['#FDE68A', '#99F6E4', '#FED7AA'][k], '#E7E5E4'); // window displays
+      // the car park
+      flat(a + 3, zf + 7, c - 3, d - 3, 0.07, '#57534E');
+      x.strokeStyle = 'rgba(248,250,252,0.8)'; x.lineWidth = Math.max(1, K * 0.2);
+      for (let k = 0; k <= 8; k++) { const px = a + 6 + k * 7; const p = P(px, 0.08, zf + 12), q = P(px, 0.08, zf + 20); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      const R = rnd(a + b), parked = ['camry', 'corolla', 'highlander', 'landcruiser', 'rangerover'];
+      for (let k = 0; k < 8; k++) if (R() < 0.55) drawCar(a + 9.5 + k * 7, zf + 16, parked[Math.floor(R() * parked.length)], CAR_COLORS[Math.floor(R() * CAR_COLORS.length)], Math.PI / 2, 1.6);
+      box(c - 12, 0, zf + 8, c - 6, 2.4, zf + 10, orange); box(c - 12, 2.4, zf + 8, c - 6, 2.6, zf + 10, '#F5F5F4'); // the trolley bay
+      for (const [lx, lz] of [[a + 4, zf + 9], [c - 4, d - 4], [a + 4, d - 4]]) lamp(lx, lz, 8);
+      glow.push(() => { const p = P(mid, 5, zf), r = K * 26; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,230,180,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.4, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
+    },
     welcome(a, b, c, d) {
       const cx = (a + c) / 2, cz = (b + d) / 2;
       groundText('WELCOME TO', cx, cz - 9, 5.5, '#B08A43', 'rgba(60,40,10,0.35)');
@@ -1317,7 +1354,7 @@
     G3.scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.6));
     const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(-0.5, 1, -0.35); G3.scene.add(sun);
     G3.cam = new THREE.Camera(); G3.cam.matrixAutoUpdate = false;
-    const loader = new GLTFLoader();
+    const loader = new GLTFLoader(); G3.loader = loader; G3.loading = {};
     for (const [model, file] of Object.entries(GLB_FOR)) {
       loader.load(CAR_BASE + file + '.glb', (gltf) => {
         // stand it on the ground, centred, its length along x, scaled to the real car's length in metres
@@ -1336,7 +1373,27 @@
     if (!G3.on || !G3.ok || !G3.protos[model]) return false;
     G3.queue.push({ cx, cz, model, ang, sc }); return true;
   }
-  // render the queued cars with the game's camera and lay them into the picture
+  // queue a store piece of furniture; its model loads the first time it's needed (false until then: draw the shape instead)
+  const FURN_BASE = location.pathname.startsWith('/lagos-island') ? '/lagos-island/furniture/' : 'furniture/';
+  function furn3d(it) {
+    const s = STORE[it.k]; if (!s || !G3.on || !G3.ok) return false;
+    if (!G3.protos[it.k]) {
+      if (!G3.loading[it.k]) {
+        G3.loading[it.k] = 1;
+        G3.loader.load(FURN_BASE + s.m + '.glb', (gltf) => {
+          // stand it on the floor, centred, scaled so its width is the catalogue's; its depth then comes from the model
+          const THREE = G3.T, inner = gltf.scene, box = new THREE.Box3().setFromObject(inner), size = new THREE.Vector3(), ctr = new THREE.Vector3(); box.getSize(size); box.getCenter(ctr);
+          inner.position.set(-ctr.x, -box.min.y, -ctr.z);
+          const norm = new THREE.Group(), k = s.w / Math.max(0.001, size.x); norm.add(inner); norm.scale.setScalar(k);
+          s.d = Math.max(0.6, size.z * k); FURN[it.k][3] = s.d;
+          G3.protos[it.k] = norm; G3.pool[it.k] = [];
+        }, undefined, () => {});
+      }
+      return false;
+    }
+    G3.queue.push({ cx: it.x, cz: it.z, model: it.k, ang: (it.r || 0) * Math.PI / 2, sc: 1 }); return true;
+  }
+  // render the queued models with the game's camera and lay them into the picture (called between people, so they stay in front)
   function flush3d() {
     if (!G3.ok || !G3.queue.length) { G3.queue.length = 0; return; }
     const THREE = G3.T, r = G3.renderer;
@@ -1539,6 +1596,13 @@
     x.beginPath(); x.ellipse(b0[0], b0[1], rr, rr * sp, 0, 0, Math.PI); x.fill();
     x.fillStyle = shadeHex(col, 1.05); x.beginPath(); x.ellipse(t0[0], t0[1], rr, rr * sp, 0, 0, Math.PI * 2); x.fill();
   }
+  // text painted on a wall that faces +z, at (px, py, pz), [size] in world units
+  function faceText(txt, px, py, pz, col, size, blur, weight = 900) {
+    const o = P(px, py, pz), e = P(px + 1, py, pz), u = P(px, py + 1, pz);
+    x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]);
+    x.font = `${weight} ${size}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+    if (blur) { x.shadowColor = col; x.shadowBlur = blur; } x.fillStyle = col; x.fillText(txt, 0, 0); x.restore();
+  }
   // the world direction that faces screen-right (rx) and toward you (rz), for shading round things
   const camN = (rx, rz) => [rx * co + rz * si, -rx * si + rz * co];
   // a cylinder lit like the boxes: its side shaded left to right, its top a lit disc with a rim (cap false: a band, no top)
@@ -1656,7 +1720,7 @@
   // the footprints you walk round
   for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station', 'dealer'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -2072,6 +2136,38 @@
     speaker: ['Speaker', '🔊', 3, 3], djbooth: ['DJ booth', '🎧', 10, 4], bar: ['Bar', '🍸', 14, 3.4], stool: ['Stool', '🟤', 1.8, 1.8],
     dance: ['Dance floor', '🪩', 16, 12], cards: ['Blackjack', '🃏', 8, 5], reception: ['Reception', '🛎️', 14, 4], podium: ['Podium', '💃', 4, 4], booth: ['VIP booth', '🛋️', 9, 9], bottles: ['Bottle service', '🍾', 3.6, 3.6], nightstand: ['Nightstand', '🗄️', 2.6, 2.4], coffee: ['Coffee table', '☕', 6, 3.2], island: ['Kitchen island', '🔪', 10, 3.4], bath: ['Bathtub', '🛁', 9, 4.4], sink: ['Basin', '🚰', 4, 2], art: ['Wall art', '🖼️', 9, 0.6], tv: ['TV', '📺', 6, 1.6], mirror: ['Mirror', '🪞', 3, 0.5], slot: ['Slot machine', '🎰', 3, 3], roulette: ['Roulette', '🎡', 9, 6], couch2: ['Lounge', '🛋️', 10, 6],
   };
+  // ---- the Home Store: real 3D furniture (Kenney's Furniture Kit, CC0), from cheap to luxury, so everyone can build a home
+  // [model file, name, room, behaves like (for sitting, sleeping and the drawn fallback), width, depth, price in naira]
+  const STORE_ITEMS = [
+    ['rugDoormat', 'Doormat', 'Decor', 'rug', 3, 2, 2000], ['trashcan', 'Bin', 'Decor', 'plant', 1.6, 1.6, 2500], ['plantSmall1', 'Small plant', 'Decor', 'plant', 1.4, 1.4, 3500], ['plantSmall3', 'Cactus', 'Decor', 'plant', 1.4, 1.4, 4000],
+    ['pottedPlant', 'Potted palm', 'Decor', 'plant', 2.6, 2.6, 9000], ['rugRectangle', 'Rug', 'Decor', 'rug', 9, 6, 10000], ['rugSquare', 'Square rug', 'Decor', 'rug', 6, 6, 18000], ['rugRound', 'Round rug', 'Decor', 'rug', 7, 7, 30000], ['rugRounded', 'Wool rug', 'Decor', 'rug', 10, 7, 55000],
+    ['coatRackStanding', 'Coat stand', 'Decor', 'lamp', 1.8, 1.8, 9000], ['bench', 'Bench', 'Decor', 'chair', 6, 2.4, 15000], ['benchCushion', 'Cushioned bench', 'Decor', 'chair', 6, 2.4, 32000],
+    ['lampRoundFloor', 'Floor lamp', 'Decor', 'lamp', 2, 2, 14000], ['lampSquareFloor', 'Designer floor lamp', 'Decor', 'lamp', 2, 2, 72000],
+    ['loungeChair', 'Armchair', 'Living', 'armchair', 4, 4, 18000], ['loungeSofa', 'Two-seater sofa', 'Living', 'sofa', 7, 3.6, 45000], ['loungeChairRelax', 'Recliner', 'Living', 'armchair', 4.4, 5, 65000],
+    ['loungeSofaLong', 'Three-seater sofa', 'Living', 'sofa', 9, 3.6, 120000], ['loungeDesignChair', 'Designer armchair', 'Living', 'armchair', 4, 4, 240000], ['loungeSofaOttoman', 'Sofa and ottoman', 'Living', 'sofa', 9, 6, 280000],
+    ['loungeSofaCorner', 'Corner sofa', 'Living', 'sofa', 9, 9, 420000], ['loungeDesignSofa', 'Designer sofa', 'Living', 'sofa', 9, 4, 750000], ['loungeDesignSofaCorner', 'Designer corner suite', 'Living', 'sofa', 10, 10, 1500000],
+    ['tableCoffee', 'Coffee table', 'Living', 'coffee', 5, 3, 12000], ['tableCoffeeSquare', 'Square coffee table', 'Living', 'coffee', 4, 4, 20000], ['tableCoffeeGlass', 'Glass coffee table', 'Living', 'coffee', 5.5, 3, 85000], ['tableCoffeeGlassSquare', 'Glass cube table', 'Living', 'coffee', 4.5, 4.5, 110000],
+    ['televisionVintage', 'Old TV', 'Living', 'tv', 3, 2.4, 15000], ['cabinetTelevision', 'TV stand', 'Living', 'shelf', 6, 2, 35000], ['cabinetTelevisionDoors', 'TV cabinet', 'Living', 'shelf', 6, 2, 60000], ['televisionModern', 'Flat-screen TV', 'Living', 'tv', 6, 1.4, 350000],
+    ['speakerSmall', 'Bookshelf speaker', 'Living', 'speaker', 1.4, 1.4, 25000], ['speaker', 'Tower speaker', 'Living', 'speaker', 2, 2, 180000],
+    ['bookcaseOpenLow', 'Low bookcase', 'Living', 'shelf', 4, 1.6, 15000], ['bookcaseOpen', 'Bookcase', 'Living', 'shelf', 4, 1.6, 28000], ['bookcaseClosedWide', 'Wide cabinet', 'Living', 'shelf', 7, 2, 90000],
+    ['bedSingle', 'Single bed', 'Bedroom', 'bed', 5, 8, 30000], ['bedBunk', 'Bunk bed', 'Bedroom', 'bed', 5, 8, 55000], ['bedDouble', 'Double bed', 'Bedroom', 'bed', 8, 8.5, 180000],
+    ['cabinetBed', 'Bedside table', 'Bedroom', 'nightstand', 2.4, 2.4, 12000], ['cabinetBedDrawerTable', 'Bedside drawers', 'Bedroom', 'nightstand', 2.6, 2.4, 40000], ['bookcaseClosedDoors', 'Wardrobe', 'Bedroom', 'wardrobe', 5, 2.4, 95000],
+    ['kitchenCabinet', 'Kitchen cabinet', 'Kitchen', 'kitchen', 3, 3, 25000], ['kitchenCabinetDrawer', 'Drawer unit', 'Kitchen', 'kitchen', 3, 3, 32000], ['kitchenSink', 'Kitchen sink', 'Kitchen', 'kitchen', 3, 3, 40000],
+    ['kitchenStove', 'Gas cooker', 'Kitchen', 'kitchen', 3, 3, 60000], ['kitchenStoveElectric', 'Electric cooker', 'Kitchen', 'kitchen', 3, 3, 150000], ['kitchenFridgeSmall', 'Small fridge', 'Kitchen', 'fridge', 2.4, 2.4, 70000],
+    ['kitchenFridge', 'Fridge', 'Kitchen', 'fridge', 3, 3, 220000], ['kitchenFridgeLarge', 'American fridge', 'Kitchen', 'fridge', 4, 3, 650000], ['kitchenBar', 'Kitchen bar', 'Kitchen', 'island', 4, 3, 90000],
+    ['stoolBar', 'Bar stool', 'Kitchen', 'stool', 1.8, 1.8, 12000], ['stoolBarSquare', 'Square bar stool', 'Kitchen', 'stool', 1.8, 1.8, 20000],
+    ['chair', 'Wooden chair', 'Dining', 'chair', 2.4, 2.4, 6000], ['chairCushion', 'Cushioned chair', 'Dining', 'chair', 2.4, 2.4, 12000], ['chairRounded', 'Rounded chair', 'Dining', 'chair', 2.4, 2.4, 25000],
+    ['chairModernCushion', 'Modern chair', 'Dining', 'chair', 2.4, 2.4, 45000], ['chairModernFrameCushion', 'Designer chair', 'Dining', 'chair', 2.4, 2.4, 95000],
+    ['table', 'Dining table', 'Dining', 'table', 6, 4, 35000], ['tableRound', 'Round table', 'Dining', 'table', 5, 5, 45000], ['tableCloth', 'Table with cloth', 'Dining', 'table', 6, 4, 55000], ['tableCross', 'Farmhouse table', 'Dining', 'table', 7, 4, 140000], ['tableGlass', 'Glass dining table', 'Dining', 'table', 7, 4, 260000],
+    ['toilet', 'Toilet', 'Bathroom', 'sink', 2.4, 3, 30000], ['bathroomSink', 'Basin', 'Bathroom', 'sink', 2.4, 2, 25000], ['bathroomCabinetDrawer', 'Vanity unit', 'Bathroom', 'sink', 3, 2, 35000], ['shower', 'Shower', 'Bathroom', 'sink', 4, 4, 60000],
+    ['toiletSquare', 'Designer toilet', 'Bathroom', 'sink', 2.4, 3, 85000], ['bathroomSinkSquare', 'Designer basin', 'Bathroom', 'sink', 2.6, 2, 70000], ['showerRound', 'Rain shower', 'Bathroom', 'sink', 4, 4, 150000], ['bathtub', 'Bathtub', 'Bathroom', 'bath', 8, 4, 240000],
+    ['washer', 'Washing machine', 'Bathroom', 'fridge', 3, 3, 190000], ['washerDryerStacked', 'Washer-dryer tower', 'Bathroom', 'fridge', 3, 3, 420000],
+    ['desk', 'Desk', 'Office', 'desk', 6, 3, 30000], ['chairDesk', 'Office chair', 'Office', 'chair', 2.4, 2.4, 28000], ['deskCorner', 'Corner desk', 'Office', 'desk', 7, 7, 110000],
+  ];
+  const STORE = {}, TIERS = [[25000, 'Basic'], [100000, 'Comfort'], [400000, 'Premium'], [Infinity, 'Luxury']];
+  const ROOM_ICON = { Living: '🛋️', Bedroom: '🛏️', Kitchen: '🍳', Dining: '🍽️', Bathroom: '🛁', Office: '🖥️', Decor: '🪴' };
+  for (const [m, name, room, kind, w, d, price] of STORE_ITEMS) { const id = 'k:' + m; STORE[id] = { id, m, name, room, kind, w, d, price, tier: TIERS.find(([p]) => price < p)[1] }; FURN[id] = [name, ROOM_ICON[room], w, d]; }
+  const kindOf = (it) => (STORE[it.k] ? STORE[it.k].kind : it.k); // how a piece behaves: store pieces act like the drawn kinds
   const PALETTE = ['#3B82F6', '#EF4444', '#22B573', '#F59E0B', '#A855F7', '#EC4899', '#111827', '#F8FAFC', '#8B5E3C'];
   const ROOMS = {
     hq: { w: 56, d: 40, floor: '#C9A27A', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } },
@@ -2080,20 +2176,15 @@
     tower: { w: 72, d: 52, floor: '#E5E7EB', wall: '#EEF2FF', trim: '#6366F1', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.45 } },
     office: { w: 64, d: 44, floor: '#3F2A18', wall: '#F5F5F4', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.88, zoom: 1.7 } },
     dealer: { w: 98, d: 76, floor: '#F1F5F9', wall: '#F8FAFC', trim: '#1D4ED8', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } },
+    store: { w: 124, d: 112, floor: '#E7E5E4', wall: '#FAFAF9', trim: '#0F766E', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.8 } },
     arena: { w: 120, d: 88, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.95 } },
   };
+  // the Home Store's floor: every piece on its own plinth, room by room, cheapest first
+  const STORE_ROOMS = ['Living', 'Bedroom', 'Dining', 'Kitchen', 'Bathroom', 'Office', 'Decor'];
+  const storeSorted = () => Object.values(STORE).sort((p, q) => STORE_ROOMS.indexOf(p.room) - STORE_ROOMS.indexOf(q.room) || p.price - q.price);
   const DEFAULTS = {
-    hq: [
-      // the bedroom (back left)
-      { k: 'bed', x: 9, z: 6, c: '#334155' }, { k: 'nightstand', x: 3, z: 3 }, { k: 'nightstand', x: 15, z: 3 }, { k: 'wardrobe', x: 2.5, z: 12, r: 1, c: '#5B3A21' }, { k: 'lamp', x: 17, z: 12 },
-      // the living room
-      { k: 'rug', x: 28, z: 26, c: '#7C2D12' }, { k: 'sofa', x: 28, z: 32, c: '#1F2937' }, { k: 'armchair', x: 20, z: 25, c: '#B08A43' }, { k: 'coffee', x: 28, z: 26 }, { k: 'tv', x: 28, z: 19.5 }, { k: 'plant', x: 21, z: 37 }, { k: 'plant', x: 35, z: 37 }, { k: 'lamp', x: 36, z: 31 }, { k: 'art', x: 28, z: 0.4 },
-      // the kitchen and dining (right)
-      { k: 'kitchen', x: 47, z: 17.5, c: '#F8FAFC' }, { k: 'fridge', x: 54, z: 17.5 }, { k: 'island', x: 47, z: 24 }, { k: 'stool', x: 44, z: 27 }, { k: 'stool', x: 47, z: 27 }, { k: 'stool', x: 50, z: 27 },
-      { k: 'table', x: 47, z: 34, c: '#3F2A18' }, { k: 'chair', x: 43.5, z: 34 }, { k: 'chair', x: 50.5, z: 34 },
-      // the bathroom (back right)
-      { k: 'bath', x: 50, z: 3.5 }, { k: 'sink', x: 43, z: 1.8 }, { k: 'plant', x: 54.5, z: 11 },
-    ],
+    store: storeSorted().map((s, k) => ({ k: s.id, x: 9 + (k % 10) * 11.4, z: 18 + Math.floor(k / 10) * 11.2 })),
+    hq: [], // a new home comes empty: you furnish it from the Eko Home Store
     club: [
       // the dance floor, two halves, with speakers either side of the stage
       { k: 'dance', x: 40, z: 30 }, { k: 'dance', x: 56, z: 30 }, { k: 'speaker', x: 26, z: 7 }, { k: 'speaker', x: 70, z: 7 }, { k: 'speaker', x: 26, z: 12 }, { k: 'speaker', x: 70, z: 12 },
@@ -2142,7 +2233,9 @@
     const rot = (it.r || 0) % 2, w = rot ? f[3] : f[2], d = rot ? f[2] : f[3], a = it.x - w / 2, b = it.z - d / 2, c = it.x + w / 2, e = it.z + d / 2, col = it.c;
     const sel = deco && deco.pick === it;
     if (sel) flat(a - 0.6, b - 0.6, c + 0.6, e + 0.6, 0.02, 'rgba(34,181,115,0.45)');
-    switch (it.k) {
+    if (STORE[it.k] && kindOf(it) !== 'rug') flat(a + 0.2, b + 0.2, c + 0.4, e + 0.5, 0.015, 'rgba(15,23,42,0.16)'); // a soft contact shadow
+    if (furn3d(it)) return;
+    switch (kindOf(it)) {
       case 'bed': box(a, 0, b, c, 1.6, e, col || '#8B5E3C'); box(a + 0.3, 1.6, b + 0.3, c - 0.3, 2.6, e - 0.3, '#F8FAFC'); if (rot) box(a, 0, b, a + 0.6, 4.5, e, col || '#8B5E3C'); else box(a, 0, b, c, 4.5, b + 0.6, col || '#8B5E3C'); box(a + 1, 2.6, b + 1, c - 1, 3.2, b + 2.4, '#E2E8F0'); break;
       case 'sofa': case 'couch2': box(a, 0, b, c, 2, e, col || '#3B82F6'); if (rot) box(a, 2, b, a + 1, 4, e, col || '#3B82F6'); else box(a, 2, b, c, 4, b + 1, col || '#3B82F6'); break;
       case 'armchair': box(a, 0, b, c, 2, e, col || '#F59E0B'); box(a, 2, b, c, 4, b + 0.9, col || '#F59E0B'); break;
@@ -2194,16 +2287,17 @@
     if (R.kind === 'casino') drawCasinoShell(R, now);
     if (R.kind === 'tower') drawTowerShell(R, now);
     if (R.kind === 'dealer') { drawShowroom(R, now); if (R.dealer === 'polanco') drawMezzanine(R); }
+    if (R.kind === 'store') drawStoreShell(R);
     if (R.kind === 'office') drawOffice(R, now);
     if (R.kind === 'arena') drawStage(now);
     const items = [];
     for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
-    for (const [pid, o] of others) items.push({ d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
-    items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind + ',' + pose.y : '')) });
+    for (const [pid, o] of others) items.push({ who: 1, d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
+    items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind + ',' + pose.y : '')) });
     if (R.kind === 'tower') items.push({ d: P(R.w / 2, 0, R.d / 2 - 2)[2], f: () => drawWyrd(now, R.w / 2, R.d / 2 - 2) });
     if (R.kind === 'arena') drawStands(R, now);
     items.sort((p, q) => p.d - q.d);
-    for (const it of items) it.f();
+    for (const it of items) { if (it.who) flush3d(); it.f(); } // the 3D behind each person goes down first
     flush3d();
     for (const f of afterCars.splice(0)) f();
     if (false) { // the old light show (the shell has its own)
@@ -2432,6 +2526,22 @@
       });
     }
   }
+  // the Home Store: a plinth under each piece in its tier's colour, the rooms' names on the floor, a name plate (the price is on your phone)
+  const TIER_COL = { Basic: '#A8A29E', Comfort: '#14B8A6', Premium: '#8B5CF6', Luxury: '#D4AF37' };
+  function drawStoreShell(R) {
+    faceText('EKO HOME STORE', R.w / 2, 14.5, 0.15, '#0F766E', 4.2, 0); faceText('Furniture for every budget · tap a piece to see its price', R.w / 2, 10.5, 0.15, '#EA580C', 1.6, 0, 800);
+    for (const [t, col] of Object.entries(TIER_COL)) { const k = Object.keys(TIER_COL).indexOf(t), px = R.w / 2 - 27 + k * 18; flat(px - 7, 4, px + 7, 8, 0.03, col); groundText(t.toUpperCase(), px, 6, 1.6, '#FFFFFF'); }
+    let room = '';
+    for (const it of R.layout) {
+      const s = STORE[it.k]; if (!s) continue;
+      flat(it.x - 5.3, it.z - 5.1, it.x + 5.3, it.z + 5.1, 0.03, '#F5F5F4', TIER_COL[s.tier]);
+      flat(it.x - 5.3, it.z + 4.3, it.x + 5.3, it.z + 5.1, 0.04, TIER_COL[s.tier]);
+      if (s.room !== room) { room = s.room; groundText(ROOM_ICON[room] + ' ' + room.toUpperCase(), it.x + 2, it.z - 6.4, 1.7, '#57534E'); }
+      if (Math.hypot(it.x - me.x, it.z - me.z) < 17) afterCars.push(() => { const p = P(it.x, 0, it.z + 5.4); x.save(); x.font = '700 9px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; const w = x.measureText(s.name).width + 14; x.fillStyle = 'rgba(255,255,255,0.92)'; x.beginPath(); x.roundRect(p[0] - w / 2, p[1] - 7, w, 14, 7); x.fill(); x.fillStyle = TIER_COL[s.tier]; x.beginPath(); x.arc(p[0] - w / 2 + 6, p[1], 2.5, 0, Math.PI * 2); x.fill(); x.fillStyle = '#1C1917'; x.fillText(s.name, p[0] + 2, p[1] + 0.5); x.restore(); });
+    }
+    box(R.w - 26, 0, R.d - 12, R.w - 8, 4, R.d - 8, '#0F766E'); box(R.w - 26.2, 4, R.d - 12.2, R.w - 7.8, 4.4, R.d - 7.8, '#F5F5F4'); // the checkout
+    faceText('CHECKOUT', R.w - 17, 2.2, R.d - 7.9, '#FFFFFF', 1.4, 0);
+  }
   // Polanco's mezzanine: a slab across the back at first-floor height, glass railings, a staircase up on the right
   function drawMezzanine(R) {
     const y = 10, z1 = 16;
@@ -2542,7 +2652,10 @@
       if (R.theme === 'lekki') { R.floor = '#D6B98C'; R.wall = '#134E4A'; R.trim = '#22D3EE'; } else { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
     }
     if (signedIn() && kind === 'hq') {
-      try { const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine; }
+      try {
+        const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine;
+        if (R.mine) R.owned = await my('myFurniture').then((f) => f.items || {}).catch(() => ({})); // what you can place: the furniture you've bought
+      }
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
     }
     if (!keepOutside) outside = { x: me.x, z: me.z, cam: { ...cam } };
@@ -2571,25 +2684,38 @@
     askEl.style.display = inside && inside.kind === 'tower' ? 'flex' : 'none';
     if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
     decoEl.style.display = 'flex';
-    if (!deco) { decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>'; document.getElementById('dOn').onclick = () => { deco = { sel: 'sofa', colour: null, pick: null }; setDeco(); }; return; }
+    if (!deco) { decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>'; document.getElementById('dOn').onclick = () => { deco = { sel: inside.kind === 'hq' ? null : 'sofa', colour: null, pick: null }; setDeco(); }; return; }
     if (deco.pick) {
-      decoEl.innerHTML = `<span class="dl">${FURN[deco.pick.k][1]} ${FURN[deco.pick.k][0]}</span><button class="dbtn" id="dRot">↻ Turn</button>${PALETTE.map((c) => `<button class="dsw" data-c="${c}" style="background:${c}"></button>`).join('')}<button class="dbtn" id="dDel">🗑 Remove</button><button class="dbtn" id="dDone">Done</button>`;
+      decoEl.innerHTML = `<span class="dl">${FURN[deco.pick.k][1]} ${FURN[deco.pick.k][0]}</span><button class="dbtn" id="dRot">↻ Turn</button>${STORE[deco.pick.k] ? '' : PALETTE.map((c) => `<button class="dsw" data-c="${c}" style="background:${c}"></button>`).join('')}<button class="dbtn" id="dDel">${inside.kind === 'hq' && STORE[deco.pick.k] ? '📦 Put away' : '🗑 Remove'}</button><button class="dbtn" id="dDone">Done</button>`;
       document.getElementById('dRot').onclick = () => { deco.pick.r = ((deco.pick.r || 0) + 1) % 4; };
       document.getElementById('dDel').onclick = () => { inside.layout = inside.layout.filter((v) => v !== deco.pick); deco.pick = null; setDeco(); };
       document.getElementById('dDone').onclick = () => { deco.pick = null; setDeco(); };
       decoEl.querySelectorAll('[data-c]').forEach((b) => (b.onclick = () => { deco.pick.c = b.dataset.c; }));
       return;
     }
-    decoEl.innerHTML = `<div class="dscroll">${Object.entries(FURN).map(([k, f]) => `<button class="ditem${deco.sel === k ? ' on' : ''}" data-k="${k}"><span>${f[1]}</span>${f[0]}</button>`).join('')}</div><button class="dbtn main" id="dSave">Save</button><button class="dbtn" id="dOff">Close</button>`;
+    // in your HQ you place what you've bought (what's left of each); elsewhere the staff have everything
+    const left = inside.kind === 'hq' ? spareFurniture() : null;
+    if (left && deco.sel && !left[deco.sel]) deco.sel = Object.keys(left)[0] || null;
+    const pieces = left ? Object.keys(left).map((k) => [k, FURN[k]]) : Object.entries(FURN);
+    decoEl.innerHTML = `<div class="dscroll">${pieces.length ? pieces.map(([k, f]) => `<button class="ditem${deco.sel === k ? ' on' : ''}" data-k="${k}">${STORE[k] ? `<img src="${FURN_BASE}thumbs/${STORE[k].m}.png" alt="">` : `<span>${f[1]}</span>`}${f[0]}${left ? ` ×${left[k]}` : ''}</button>`).join('') : '<span class="dl">Your home is empty. Buy furniture at the Eko Home Store.</span>'}</div>${left ? '<button class="dbtn" id="dShop">🛒 Store</button>' : ''}<button class="dbtn main" id="dSave">Save</button><button class="dbtn" id="dOff">Close</button>`;
     decoEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { deco.sel = b.dataset.k; setDeco(); }));
+    if (left) document.getElementById('dShop').onclick = () => openPhone('store');
     document.getElementById('dSave').onclick = async () => { try { await my('saveRoom', { key: inside.key, layout: JSON.stringify(inside.layout) }); bubbles.set('me', { text: 'Saved. Looking good.', until: performance.now() + 3000 }); } catch (e) { bubbles.set('me', { text: e.message, until: performance.now() + 4000 }); } };
     document.getElementById('dOff').onclick = () => { deco = null; setDeco(); };
+  }
+  // the pieces you own that aren't out yet: { id: how many }
+  function spareFurniture() {
+    const left = { ...(inside.owned || {}) };
+    for (const it of inside.layout) if (left[it.k]) left[it.k]--;
+    for (const k of Object.keys(left)) if (left[k] <= 0 || !STORE[k]) delete left[k];
+    return left;
   }
   function floorAt(sx, sy) { // the screen point to a spot on the floor
     const rx = (sx - W / 2) / K, rz = (sy - H * 0.55) / (K * sp);
     return [cam.x + rx * co + rz * si, cam.z - rx * si + rz * co];
   }
   function tapInside(sx, sy) {
+    if (inside.kind === 'store') { const [fx, fz] = floorAt(sx, sy); const it = inside.layout.find((v) => Math.abs(v.x - fx) < 5.5 && Math.abs(v.z - fz) < 5.5); if (it) openPhone('store', it.k); return; }
     if (inside.kind === 'dealer') { const [fx, fz] = floorAt(sx, sy); const c = showroomCars(inside).find((v) => Math.abs(v.x - fx) < 8 && Math.abs(v.z - fz) < 5); if (c) openShowcase(c.id); return; }
     if (!deco) return;
     const [fx, fz] = floorAt(sx, sy);
@@ -2597,9 +2723,11 @@
     if (hit) { deco.pick = hit; setDeco(); return; }
     if (deco.pick) { deco.pick = null; setDeco(); return; }
     if (fx < 1 || fz < 1 || fx > inside.w - 1 || fz > inside.d - 1) return;
-    if (inside.layout.length >= 200) return;
+    if (inside.layout.length >= 200 || !deco.sel) return;
+    if (inside.kind === 'hq' && !spareFurniture()[deco.sel]) return;
     const it = { k: deco.sel, x: Math.round(fx * 2) / 2, z: Math.round(fz * 2) / 2 };
     inside.layout.push(it);
+    if (inside.kind === 'hq') setDeco(); // the count goes down
   }
   document.getElementById('ask').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -2690,7 +2818,7 @@
     if (best) { placeCard(best); return; }
     card.style.display = 'none';
   }
-  const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena', 'dealer']);
+  const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena', 'dealer', 'homestore']);
   // what each place offers when you tap its tag: a question, and what happens if you say yes (null: coming soon)
   const OFFERS = {
     airport: ['✈️ Fly somewhere?', 'Abuja, Accra, Dubai, London… private jets from the hangars.', null],
@@ -2743,6 +2871,7 @@
     if (p[0] === 'wyrdtower') return enterRoom('tower', 'place:tower', 'WYRD Tower');
     if (p[0] === 'casino') return enterRoom('casino', 'place:casino', 'Island Casino');
     if (p[0] === 'dealer') { const dl = /lekki/i.test(p[5]) ? 'lekkiluxury' : 'polanco'; return enterRoom('dealer', 'place:dealer:' + dl, p[5], { dealer: dl }); }
+    if (p[0] === 'homestore') return enterRoom('store', 'place:homestore', p[5]);
     const n = p[5].replace(' (open every night)', '');
     return enterRoom('club', 'place:club:' + p[1], n);
   }
@@ -2946,12 +3075,12 @@
 
   // ---- the phone's screens
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
-  let me$ = null, stack = [], chatTimer = 0;
+  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living';
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
@@ -3204,6 +3333,28 @@
         pbody.querySelectorAll('[data-drive]').forEach((b) => (b.onclick = async () => { try { await my('driveCar', { carId: Number(b.dataset.drive) }); const c2 = list.find((v) => v.id === Number(b.dataset.drive)); myCar = c2.model + ':' + c2.color; render('garage'); } catch (e) { fail(e); } }));
         return;
       }
+      if (app === 'store') {
+        // the Home Store: browse by room, cheapest first, grouped by tier; a piece's page shows its price and buys it
+        let owned = {}, live = true;
+        try { owned = (await my('myFurniture')).items || {}; } catch (e) { if (e.message === 'signin') throw e; live = false; }
+        const thumb = (s) => `<img src="${FURN_BASE}thumbs/${s.m}.png" alt="" loading="lazy">`;
+        if (arg && STORE[arg]) {
+          const s = STORE[arg];
+          show(`<div class="ptitle">Home Store</div><div class="pcard sdet">${thumb(s)}<h3>${esc(s.name)}</h3><div class="dim">${ROOM_ICON[s.room]} ${s.room} · <b style="color:${TIER_COL[s.tier]}">${s.tier}</b>${owned[s.id] ? ` · you have ${owned[s.id]}` : ''}</div><div class="big">${naira(s.price)}</div>
+            <button class="pbtn big2" id="fBuy">Buy · ${naira(s.price)}</button><div class="dim">${live ? 'Paid from your wallet. It goes into your home; place it from your HQ.' : 'The store opens when the server update goes live.'}</div></div>
+            <button class="pbtn alt" id="fAll">See the whole store</button>`);
+          $('fAll').onclick = () => go('store');
+          $('fBuy').onclick = async () => { try { const v = await my('buyFurniture', { item: s.id }); pnaira.textContent = naira(v.naira); notify('Bought: ' + s.name, 'store'); render('store', s.id); } catch (e) { fail(/\((404|500)\)/.test(e.message) ? new Error('The Home Store opens when the server update goes live.') : e); } };
+          return;
+        }
+        const room = storeRoom;
+        show(`<div class="ptitle">Home Store</div><div class="lock">Furniture for every budget, ${naira(2000)} to ${naira(1500000)}. Tap a piece to buy it.</div>
+          <div class="stabs">${STORE_ROOMS.map((r) => `<button class="${r === room ? 'on' : ''}" data-room="${r}">${ROOM_ICON[r]} ${r}</button>`).join('')}</div>
+          ${TIERS.map(([, t]) => { const list = storeSorted().filter((s) => s.room === room && s.tier === t); return list.length ? `<div class="rsec" style="color:${TIER_COL[t]}">${t.toUpperCase()}</div><div class="sgrid">${list.map((s) => `<button class="sitem" data-item="${s.id}">${thumb(s)}<b>${esc(s.name)}</b><span>${naira(s.price)}</span>${owned[s.id] ? `<i>×${owned[s.id]}</i>` : ''}</button>`).join('')}</div>` : ''; }).join('')}`);
+        pbody.querySelectorAll('[data-room]').forEach((b) => (b.onclick = () => { storeRoom = b.dataset.room; render('store'); }));
+        pbody.querySelectorAll('[data-item]').forEach((b) => (b.onclick = () => go('store', b.dataset.item)));
+        return;
+      }
       if (app === 'casino') {
         const atTable = (inside && inside.kind === 'casino') || near('casino', 25);
         if (!atTable) return show(`<div class="ptitle">Casino</div><div class="pcard"><h3>🎰 Island Casino</h3><p>The Island Casino is in Lekki. Play money only: stakes ₦100 to ₦5,000, and you stop for the day after losing ₦10,000.</p><button class="pbtn" id="cRide">Go in</button></div>`), ($('cRide').onclick = () => { closePhone(); enterPlace(PLACES.find((p) => p[0] === 'casino')); });
@@ -3440,9 +3591,10 @@
       if (me.z < inside.d - 4) inside.entered = true;
       const SEAT = { chair: 'sit', sofa: 'sit', couch2: 'sit', armchair: 'sit', stool: 'sit', booth: 'sit', bed: 'sleep' };
       let near = null, nd = 5;
-      for (const it of inside.layout) { const k = SEAT[it.k] || (it.k === 'roulette' || it.k === 'slot' ? 'play' : null); if (!k) continue; const d = Math.hypot(it.x - me.x, it.z - me.z); if (d < nd) { nd = d; near = [it, k]; } }
+      for (const it of inside.layout) { const k = SEAT[kindOf(it)] || (it.k === 'roulette' || it.k === 'slot' ? 'play' : null); if (!k) continue; const d = Math.hypot(it.x - me.x, it.z - me.z); if (d < nd) { nd = d; near = [it, k]; } }
       if (inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
+      if (!next && inside.kind === 'store') { const it = inside.layout.find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 7); if (it && STORE[it.k]) next = { label: `🛒 ${STORE[it.k].name}`, run: () => openPhone('store', it.k) }; }
       if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 See the ${c.v[0]}`, run: () => openShowcase(c.id) }; }
       if (next) { /* a car to buy comes first */ } else if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
@@ -3475,7 +3627,7 @@
   function seatOf(it) {
     const f = FURN[it.k], rot = (it.r || 0) % 2, w = rot ? f[3] : f[2], d = rot ? f[2] : f[3], a = it.x - w / 2, b = it.z - d / 2, c = it.x + w / 2, e = it.z + d / 2;
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-    switch (it.k) {
+    switch (kindOf(it)) {
       case 'chair': return { x: it.x, z: it.z + 0.3, y: 1.8 };
       case 'stool': return { x: it.x, z: it.z, y: 2.6 };
       case 'armchair': return { x: it.x, z: it.z + 0.4, y: 2 };
