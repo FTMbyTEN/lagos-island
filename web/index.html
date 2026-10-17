@@ -1234,6 +1234,146 @@
     x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.drawImage(G3.canvas, 0, 0, W * DPR, H * DPR); x.restore();
     G3.queue.length = 0;
   }
+
+  // ---- the dealer's showcase: a car's full 3D model on a deep blue stage, its stats, its price (Need for Speed style)
+  // [maker, class, hp, 0-100 km/h s, top km/h, engine, handling 0-1, braking 0-1]
+  const CAR_STATS = {
+    corolla: ['Toyota', 'D', 169, 9.2, 180, '1.8L inline-4', 0.45, 0.45], camry: ['Toyota', 'D', 203, 8.4, 210, '2.5L inline-4', 0.5, 0.5],
+    highlander: ['Toyota', 'C', 295, 7.5, 190, '3.5L V6', 0.45, 0.5], lexusrx: ['Lexus', 'C', 295, 7.7, 200, '3.5L V6', 0.5, 0.55],
+    landcruiser: ['Toyota', 'C', 409, 6.7, 210, '3.5L twin-turbo V6', 0.4, 0.5], rangerover: ['Land Rover', 'B', 523, 4.6, 250, '4.4L twin-turbo V8', 0.55, 0.6],
+    gwagon: ['Mercedes-AMG', 'B', 577, 4.5, 240, '4.0L twin-turbo V8', 0.45, 0.6], urus: ['Lamborghini', 'A', 657, 3.6, 305, '4.0L twin-turbo V8', 0.75, 0.8],
+    cybertruck: ['Tesla', 'A', 845, 2.7, 209, 'Tri-motor electric', 0.55, 0.65], porsche911: ['Porsche', 'A', 443, 3.7, 308, '3.0L twin-turbo flat-6', 0.9, 0.9],
+    huracan: ['Lamborghini', 'S', 631, 2.9, 325, '5.2L V10', 0.88, 0.9], ferrari: ['Ferrari', 'S', 612, 3.4, 320, '3.9L twin-turbo V8', 0.85, 0.85],
+    cullinan: ['Rolls-Royce', 'B', 563, 5.2, 250, '6.75L twin-turbo V12', 0.45, 0.6],
+  };
+  const SC = { el: null };
+  function showcaseInit() {
+    if (SC.el) return;
+    const st = document.createElement('style');
+    st.textContent = '#showcase{position:fixed;inset:0;z-index:9000;display:none;font-family:inherit;color:#E0F2FE;background:radial-gradient(ellipse at 40% 62%,#1D4ED8 0%,#0B2A6B 38%,#06123A 72%,#020617 100%);overflow:hidden}'
+      + '#showcase canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}'
+      + '#showcase .scTop{position:absolute;left:24px;top:18px;right:24px;display:flex;align-items:center;gap:14px;pointer-events:none}'
+      + '#showcase .scBack{pointer-events:auto;background:rgba(2,6,23,.55);border:1px solid rgba(125,211,252,.4);color:#E0F2FE;padding:8px 14px;border-radius:4px;cursor:pointer;font:inherit;letter-spacing:.08em;white-space:nowrap}'
+      + '#showcase .scMk{font-size:13px;letter-spacing:.35em;text-transform:uppercase;color:#7DD3FC}'
+      + '#showcase .scName{position:absolute;left:28px;bottom:26px;pointer-events:none}'
+      + '#showcase .scName b{display:block;font-size:clamp(26px,5vw,54px);font-style:italic;font-weight:900;letter-spacing:.02em;text-transform:uppercase;text-shadow:0 0 24px rgba(56,189,248,.6)}'
+      + '#showcase .scName span{font-size:13px;letter-spacing:.3em;color:#7DD3FC;text-transform:uppercase}'
+      + '#showcase .scPanel{position:absolute;right:20px;top:64px;width:min(330px,calc(100vw - 40px));background:linear-gradient(180deg,rgba(2,6,23,.78),rgba(2,6,23,.55));border-left:3px solid #38BDF8;padding:16px 18px;backdrop-filter:blur(6px);max-height:calc(100vh - 90px);overflow:auto}'
+      + '#showcase .scCls{display:inline-block;font-weight:900;font-style:italic;background:#FCEE0A;color:#020617;padding:2px 10px;margin-right:8px;transform:skew(-12deg)}'
+      + '#showcase .scBar{margin:9px 0}#showcase .scBar label{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#93C5FD}'
+      + '#showcase .scBar i{display:block;height:7px;margin-top:4px;background:rgba(148,163,184,.2);position:relative;transform:skew(-20deg)}'
+      + '#showcase .scBar i u{position:absolute;inset:0;right:auto;background:linear-gradient(90deg,#0EA5E9,#67E8F9);box-shadow:0 0 10px #38BDF8;transition:width .7s cubic-bezier(.2,.8,.2,1)}'
+      + '#showcase .scSpec{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}#showcase .scSpec div{background:rgba(30,58,138,.35);padding:7px 9px}#showcase .scSpec small{display:block;font-size:10px;letter-spacing:.2em;color:#7DD3FC;text-transform:uppercase}#showcase .scSpec b{font-size:15px}'
+      + '#showcase .scPrice{font-size:28px;font-weight:900;color:#FCEE0A;margin:6px 0 2px}'
+      + '#showcase .scCols{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}#showcase .scCols button{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent}'
+      + '#showcase .scBuy{width:100%;padding:13px;font:inherit;font-weight:900;font-style:italic;letter-spacing:.15em;text-transform:uppercase;background:#FCEE0A;color:#020617;border:0;cursor:pointer;clip-path:polygon(4% 0,100% 0,96% 100%,0 100%)}'
+      + '#showcase .scMsg{margin-top:10px;font-size:13px;color:#BAE6FD}'
+      + '@media (max-width:700px){#showcase .scPanel{top:auto;bottom:12px;right:12px;left:12px;width:auto;max-height:46vh}#showcase .scName{bottom:auto;top:64px;left:20px}#showcase .scTop{left:14px;right:14px}}';
+    document.head.appendChild(st);
+    const el = document.createElement('div'); el.id = 'showcase';
+    el.innerHTML = '<canvas></canvas><div class="scTop"><button class="scBack">◀ BACK</button><span class="scMk"></span></div><div class="scName"><span></span><b></b></div><div class="scPanel"></div>';
+    document.body.appendChild(el); SC.el = el; SC.cv = el.querySelector('canvas');
+    el.querySelector('.scBack').onclick = closeShowcase;
+    addEventListener('keydown', (e) => { if (e.key === 'Escape' && el.style.display === 'block') closeShowcase(); });
+    // drag to spin the car
+    let drag = null;
+    SC.cv.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, r: SC.rot }; SC.cv.setPointerCapture(e.pointerId); SC.idle = 0; });
+    SC.cv.addEventListener('pointermove', (e) => { if (drag) SC.rot = drag.r + (e.clientX - drag.x) * 0.01; });
+    SC.cv.addEventListener('pointerup', () => { drag = null; SC.idle = performance.now(); });
+  }
+  function showcaseStage() {
+    const T = window.__three; if (!T || SC.r) return !!SC.r;
+    const THREE = T.THREE; SC.T = THREE;
+    SC.r = new THREE.WebGLRenderer({ canvas: SC.cv, alpha: true, antialias: true });
+    SC.r.toneMapping = THREE.ACESFilmicToneMapping; SC.r.toneMappingExposure = 1.15; SC.r.outputColorSpace = THREE.SRGBColorSpace;
+    SC.scene = new THREE.Scene();
+    SC.scene.add(new THREE.HemisphereLight(0xcfe8ff, 0x0b1a40, 1.4));
+    const key = new THREE.DirectionalLight(0xffffff, 2.6); key.position.set(4, 7, 5); SC.scene.add(key);
+    const rim = new THREE.DirectionalLight(0x60a5fa, 2.2); rim.position.set(-6, 3, -6); SC.scene.add(rim);
+    const fill = new THREE.PointLight(0x38bdf8, 18, 14); fill.position.set(0, 0.6, 4); SC.scene.add(fill);
+    // the turntable: a glowing disc and a ring of light under the car
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(3.6, 80), new THREE.MeshStandardMaterial({ color: 0x0b1f4d, metalness: 0.6, roughness: 0.25 }));
+    disc.rotation.x = -Math.PI / 2; SC.scene.add(disc);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(3.55, 3.68, 96), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.005; SC.scene.add(ring);
+    const glow = new THREE.Mesh(new THREE.CircleGeometry(3.4, 64), new THREE.MeshBasicMaterial({ color: 0x1d4ed8, transparent: true, opacity: 0.25 }));
+    glow.rotation.x = -Math.PI / 2; glow.position.y = 0.003; SC.scene.add(glow);
+    SC.cam = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+    SC.holder = new THREE.Group(); SC.scene.add(SC.holder);
+    SC.loader = new T.GLTFLoader(); SC.cache = {};
+    return true;
+  }
+  function showcaseLoad(id) {
+    const THREE = SC.T, file = GLB_FOR[id];
+    SC.holder.clear(); SC.paint = [];
+    if (!file) { SC.el.querySelector('.scMsg0').textContent = '3D model coming soon'; return; }
+    const place = (src) => {
+      const inner = src.clone(true), box = new THREE.Box3().setFromObject(inner), size = new THREE.Vector3(), ctr = new THREE.Vector3(); box.getSize(size); box.getCenter(ctr);
+      inner.position.set(-ctr.x, -box.min.y, -ctr.z);
+      const pivot = new THREE.Group(); pivot.add(inner); if (size.z > size.x) pivot.rotation.y = Math.PI / 2;
+      const norm = new THREE.Group(); norm.add(pivot); norm.scale.setScalar(5.6 / Math.max(size.x, size.z));
+      // the body paint: the material covering the most of the car's outside (cloned, so the island's cars keep theirs)
+      const area = new Map(), bx = new THREE.Box3(), sz = new THREE.Vector3(); norm.updateMatrixWorld(true);
+      inner.traverse((o) => { if (!o.isMesh) return;
+        o.material = Array.isArray(o.material) ? o.material.map((m) => m.clone()) : o.material.clone();
+        const ms = Array.isArray(o.material) ? o.material : [o.material]; bx.setFromObject(o).getSize(sz); const a = sz.x * sz.z + sz.x * sz.y + sz.z * sz.y;
+        ms.forEach((m) => { if (!m.color || m.transparent || m.opacity < 0.9) return; const nm = (m.name || '').toLowerCase(); if (/glass|window|tire|tyre|rubber|wheel|rim|light|lamp|chrome|interior|black/.test(nm)) return;
+          area.set(m.name || m.uuid, (area.get(m.name || m.uuid) || 0) + a / ms.length + (/paint|body|carpaint/.test(nm) ? 1e9 : 0)); }); });
+      const best = [...area.entries()].sort((a, b) => b[1] - a[1])[0], total = [...area.values()].reduce((s, v) => s + (v % 1e9), 0);
+      SC.atlas = !best || (best[1] % 1e9) > total * 0.85; // one material for the whole car: wheels and all would be painted
+      if (best && !SC.atlas) inner.traverse((o) => { if (!o.isMesh) return; (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { if ((m.name || m.uuid) === best[0]) SC.paint.push(m); }); });
+      SC.paint0 = SC.paint.map((m) => [m.color.clone(), m.map]);
+      SC.holder.add(norm);
+    };
+    if (SC.cache[file]) return place(SC.cache[file]);
+    SC.loader.load(CAR_BASE + file + '.glb', (g) => { SC.cache[file] = g.scene; if (SC.id === id) place(g.scene); });
+  }
+  function showcasePaint(hex) {
+    if (SC.atlas) { SC.el.querySelector('.scMsg0').textContent = hex ? 'This model shows its factory paint here. Your colour is saved on the car you buy.' : ''; return; }
+    if (!SC.paint) return;
+    SC.paint.forEach((m, k) => { if (hex) { m.color.set(hex); m.map = null; } else { m.color.copy(SC.paint0[k][0]); m.map = SC.paint0[k][1]; } m.needsUpdate = true; });
+  }
+  function showcaseLoop() {
+    if (SC.el.style.display !== 'block') return;
+    const w = SC.el.clientWidth, hh = SC.el.clientHeight, narrow = w < 700;
+    if (SC.w !== w || SC.h !== hh) { SC.r.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); SC.r.setSize(w, hh, false); SC.cam.aspect = w / hh; SC.cam.updateProjectionMatrix(); SC.w = w; SC.h = hh; }
+    if (!SC.idle || performance.now() - SC.idle > 2500) SC.rot += 0.005;
+    SC.holder.rotation.y = SC.rot;
+    const dist = narrow ? 26 : 15; SC.cam.position.set(0, narrow ? 7 : 4, dist); SC.cam.lookAt(0, narrow ? -2.4 : 0.8, 0);
+    if (!narrow) SC.cam.setViewOffset(w, hh, Math.min(200, w * 0.2), 0, w, hh); else SC.cam.clearViewOffset();
+    SC.r.render(SC.scene, SC.cam);
+    requestAnimationFrame(showcaseLoop);
+  }
+  function openShowcase(id) {
+    const v = CARS[id]; if (!v) return;
+    showcaseInit(); if (!showcaseStage()) { openPhone('buycar', id); return; }
+    const s = CAR_STATS[id] || ['', 'C', 0, 9, 180, '', 0.5, 0.5], el = SC.el; SC.id = id; SC.rot = -0.6; SC.idle = 0;
+    let colr = null;
+    el.querySelector('.scMk').textContent = (v[3] === 'lekkiluxury' ? 'Lekki Luxury Cars' : 'Polanco') + ' · Showroom';
+    el.querySelector('.scName span').textContent = s[0]; el.querySelector('.scName b').textContent = v[0].replace(s[0] + ' ', '').replace(/^Mercedes /, '');
+    const bar = (lab, val, txt) => '<div class="scBar"><label><span>' + lab + '</span><span>' + txt + '</span></label><i><u style="width:0" data-w="' + Math.round(Math.max(0.05, Math.min(1, val)) * 100) + '%"></u></i></div>';
+    const cls = { sedan: 'Saloon', suv: 'SUV', bigsuv: 'Full-size SUV', gwagon: 'Off-roader', supersuv: 'Super SUV', super: 'Supercar', cyber: 'Electric pickup' }[v[1]] || '';
+    el.querySelector('.scPanel').innerHTML = '<div><span class="scCls">' + s[1] + '</span><b>' + esc(cls) + '</b></div><div class="scMsg scMsg0" style="margin:6px 0 0"></div>'
+      + bar('Top speed', s[4] / 330, s[4] + ' km/h') + bar('Acceleration', (10 - s[3]) / 7.5, s[3] + ' s') + bar('Handling', s[6], Math.round(s[6] * 10) + '/10') + bar('Braking', s[7], Math.round(s[7] * 10) + '/10')
+      + '<div class="scSpec"><div><small>Power</small><b>' + s[2] + ' hp</b></div><div><small>0–100 km/h</small><b>' + s[3] + ' s</b></div><div><small>Top speed</small><b>' + s[4] + ' km/h</b></div><div><small>Engine</small><b>' + esc(s[5]) + '</b></div></div>'
+      + '<small style="letter-spacing:.2em;color:#7DD3FC">PRICE</small><div class="scPrice">' + naira(v[2]) + '</div><div class="dim" style="font-size:12px;color:#93C5FD">Paid from your wallet</div>'
+      + '<div style="margin-top:12px;font-size:11px;letter-spacing:.2em;color:#7DD3FC">PAINT</div><div class="scCols">' + ['', ...CAR_COLORS].map((c2) => '<button data-col="' + c2 + '" title="' + (c2 ? c2 : 'Factory') + '" style="background:' + (c2 || 'conic-gradient(#ef4444,#f59e0b,#22c55e,#3b82f6,#a855f7,#ef4444)') + ';border-color:' + (c2 ? 'transparent' : '#FCEE0A') + '"></button>').join('') + '</div>'
+      + '<button class="scBuy">Buy · ' + naira(v[2]) + '</button><div class="scMsg"></div>';
+    el.querySelectorAll('[data-col]').forEach((b) => (b.onclick = () => { colr = b.dataset.col || null; showcasePaint(colr); el.querySelectorAll('[data-col]').forEach((o) => (o.style.borderColor = o === b ? '#FCEE0A' : 'transparent')); }));
+    const msg = el.querySelector('.scMsg:last-child'), buy = el.querySelector('.scBuy');
+    buy.onclick = async () => {
+      buy.disabled = true; msg.textContent = 'Paying…';
+      try { const c = colr || (CAR_SPEC[id] ? CAR_SPEC[id].col : CAR_COLORS[0]); const r = await my('buyCar', { model: id, color: c }); myCar = id + ':' + c;
+        buy.textContent = '🔑 It\'s yours'; msg.innerHTML = esc(r.name) + ' is yours. It will wait outside wherever you go in. <a href="#" id="scGar" style="color:#FCEE0A">Open Garage</a>';
+        document.getElementById('scGar').onclick = (e) => { e.preventDefault(); closeShowcase(); openPhone('garage'); };
+      } catch (e) { buy.disabled = false; msg.textContent = (e && e.message) || 'Could not buy it.'; }
+    };
+    el.style.display = 'block'; SC.w = 0;
+    showcaseLoad(id);
+    requestAnimationFrame(() => el.querySelectorAll('.scBar u').forEach((u) => (u.style.width = u.dataset.w)));
+    requestAnimationFrame(showcaseLoop);
+  }
+  function closeShowcase() { if (SC.el) SC.el.style.display = 'none'; }
   let parkedNow = {}; // building -> cars parked outside it (from the island feed)
   // a car park: asphalt, white bays, a P sign, and the cars of the people inside right now
   function parking(x0, z0, x1, z1, roomKey) {
@@ -2211,6 +2351,7 @@
     return [cam.x + rx * co + rz * si, cam.z - rx * si + rz * co];
   }
   function tapInside(sx, sy) {
+    if (inside.kind === 'dealer') { const [fx, fz] = floorAt(sx, sy); const c = showroomCars(inside).find((v) => Math.abs(v.x - fx) < 8 && Math.abs(v.z - fz) < 5); if (c) openShowcase(c.id); return; }
     if (!deco) return;
     const [fx, fz] = floorAt(sx, sy);
     const hit = inside.layout.slice().reverse().find((it) => { const f = FURN[it.k]; return f && Math.abs(it.x - fx) < Math.max(f[2], f[3]) / 2 + 0.5 && Math.abs(it.z - fz) < Math.max(f[2], f[3]) / 2 + 0.5; });
@@ -3057,7 +3198,7 @@
       for (const it of inside.layout) { const k = SEAT[it.k] || (it.k === 'roulette' || it.k === 'slot' ? 'play' : null); if (!k) continue; const d = Math.hypot(it.x - me.x, it.z - me.z); if (d < nd) { nd = d; near = [it, k]; } }
       if (inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
-      if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 ${c.v[0]} · ${naira(c.v[2])}`, run: () => openPhone('buycar', c.id) }; }
+      if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 ${c.v[0]} · ${naira(c.v[2])}`, run: () => openShowcase(c.id) }; }
       if (next) { /* a car to buy comes first */ } else if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
       else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y }; me.x = pose.x; me.z = pose.z; } };
