@@ -336,6 +336,14 @@
   .comp { position: sticky; bottom: -12px; display: flex; gap: 6px; margin: 10px -16px -12px; padding: 10px 16px 12px; background: linear-gradient(0deg, rgba(7,7,13,.98) 80%, rgba(7,7,13,0)); } .comp input { flex: 1; margin: 0 !important; } .comp button { flex: none; margin: 0 !important; }
   .msg { max-width: 82% !important; padding: 8px 12px !important; } .msg.me { border-left: none !important; border-right: 2px solid var(--y); }
   .search { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding: 0 12px; border: 1px solid var(--ac); background: rgba(0,0,0,.55); } .search input { flex: 1; padding: 11px 0; border: none; background: none; color: #E6F9FF; font: 600 15px 'Rajdhani', sans-serif; outline: none; }
+  .live { font: 800 11px 'Orbitron', sans-serif; letter-spacing: 1.5px; color: #FF4D6D; animation: pulse 1.2s ease-in-out infinite; }
+  .cwheel { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .cwheel .ball { flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font: 900 20px 'Orbitron', sans-serif; color: #fff; background: radial-gradient(circle at 35% 30%, #475569, #0B0B14 70%); border: 3px solid #D4AF37; box-shadow: 0 0 16px rgba(212,175,55,.4); }
+  .cwheel .ball.spin { background: conic-gradient(#DC2626 0 45deg, #111827 0 90deg, #DC2626 0 135deg, #111827 0 180deg, #16A34A 0 200deg, #DC2626 0 245deg, #111827 0 290deg, #DC2626 0 335deg, #111827 0); animation: wheel .35s linear infinite; }
+  @keyframes wheel { to { transform: rotate(360deg); } }
+  .cbets { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; } .cbets button { padding: 10px 2px; border: 1px solid rgba(255,255,255,.2); background: var(--b); color: #fff; font: 800 13px 'Orbitron', sans-serif; cursor: pointer; } .cbets button small { display: block; font: 700 11px 'Rajdhani', sans-serif; opacity: .85; } .cbets button:disabled, #cSlots:disabled { opacity: .5; }
+  .reels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; } .reels span { display: grid; place-items: center; height: 64px; font-size: 34px; background: linear-gradient(180deg, #0B0B14, #1C1C2B 50%, #0B0B14); border: 1px solid rgba(252,238,10,.4); }
+  .pfh { display: flex; align-items: center; gap: 14px; } .pfh .av2 { width: 60px; height: 60px; font-size: 20px; }
   /* the Home Store */
   .stabs { display: flex; gap: 6px; overflow-x: auto; margin: 0 -16px 6px; padding: 2px 16px 8px; }
   .stabs button { flex: none; padding: 7px 11px; border: 1px solid rgba(0,240,255,.3); background: rgba(0,0,0,.45); color: #E6F9FF; font: 700 13px 'Rajdhani', sans-serif; letter-spacing: .5px; cursor: pointer; }
@@ -3536,7 +3544,7 @@
 
   // ---- the phone's screens
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
-  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', jobsTab = 'all', rideFind = '';
+  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', jobsTab = 'all', rideFind = '', casinoStake = 500;
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
   const APP_AC = { homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
@@ -3769,9 +3777,13 @@
       if (app === 'hq') {
         await loadMe(); const h = me$.hq;
         const reqs = await my('hqRequests');
-        show(`<div class="ptitle">My HQ</div><div class="lock">Your own place on HQ Row, for whatever you do. You can always go in; anyone else knocks and you decide. Nobody sees whose it is unless you let them in.</div>
-          ${reqs.length ? `<div class="pcard"><h3>🔔 Asking to come in</h3>${reqs.map((r) => `<div class="row"><b>${esc(r.handle)}</b><span><button class="pbtn" data-allow="${r.id}">Let in</button><button class="pbtn alt" data-deny="${r.id}">No</button></span></div>`).join('')}</div>` : ''}
-          <div class="pcard"><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour</label><input id="hCol" type="color" value="${esc(h.color)}"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button><button class="pbtn alt" id="hGo">Go to my HQ</button></div>`);
+        // your BQ in its colour up top, who's at the door, quick ways home, then its settings (they apply to every home you own)
+        show(`${ahead('hq', 'My HQ', 'Your BQ on HQ Row · and every home you buy')}
+          <div class="hero" style="--ac:${esc(h.color)}"><div class="hl">${h.locked ? '🔒 Invite only' : '🔓 Open door'}</div><div class="hv" style="font-size:20px">🏠 ${esc(h.name)}</div><small>${h.invites.length ? h.invites.length + ' invited · ' : ''}anyone else knocks, and you decide</small></div>
+          <div class="qa" style="--ac:#FF4FD8"><button id="hGo"><i>🚪</i>Go home</button><button id="hHomes"><i>🏡</i>Homes</button><button id="hShop"><i>🛋️</i>Furnish</button><button id="hEdit"><i>⚙️</i>Settings</button></div>
+          ${reqs.length ? `<div class="rsec">🔔 AT YOUR DOOR</div><div class="lst">${reqs.map((r) => `<div class="li">${avatar(r.handle)}<span class="lt"><b>${esc(r.handle)}</b><small>wants to come in</small></span><button class="pbtn" data-allow="${r.id}" style="margin:0 4px 0 0">Let in</button><button class="pbtn alt" data-deny="${r.id}" style="margin:0">No</button></div>`).join('')}</div>` : ''}
+          <div class="pcard" id="hSet" style="display:${reqs.length ? 'none' : 'block'}"><h3>Settings</h3><label class="dim">Name</label><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour (your flag and your door)</label><input id="hCol" type="color" value="${esc(h.color)}" style="height:40px;padding:2px"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button></div>`);
+        $('hHomes').onclick = () => go('homes'); $('hShop').onclick = () => go('store'); $('hEdit').onclick = () => { const s = $('hSet'); s.style.display = s.style.display === 'none' ? 'block' : 'none'; };
         pbody.querySelectorAll('[data-allow],[data-deny]').forEach((b) => (b.onclick = async () => { await my('answerHq', { id: Number(b.dataset.allow || b.dataset.deny), grant: !!b.dataset.allow }).catch(fail); poll(); render('hq'); }));
         $('hSave').onclick = async () => { try { await my('setHq', { name: $('hName').value, color: $('hCol').value, locked: $('hLock').checked, invites: JSON.stringify($('hInv').value.split(',').map((s) => s.trim()).filter(Boolean)) }); await loadHqRow(); render('hq'); } catch (e) { fail(e); } };
         $('hGo').onclick = async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; } closePhone(); };
@@ -3780,10 +3792,17 @@
       if (app === 'arena') {
         await loadMe(); const list = await my('shows');
         const when = (s) => new Date(s.startsAt).toLocaleString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-        show(`<div class="ptitle">The Arena</div><div class="lock">Live shows on Eko Atlantic. Buy a ticket with your naira; the artist gets nine tenths of it.</div>
-          <button class="pbtn" id="aHost">Host a show</button>${me$.operator ? '<button class="pbtn alt" id="aQueue">Check shows</button>' : ''}
-          ${list.map((s) => `<div class="pcard"><h3>${esc(s.artist)}</h3><div>${esc(s.title)}</div><div class="dim">${when(s)} · ${s.minutes} min · ${s.price ? naira(s.price) : 'Free'} · ${s.sold}/${s.capacity} sold${s.live ? ' · <b style="color:#DC2626">LIVE NOW</b>' : ''}${s.status !== 'on_sale' ? ' · ' + esc(s.status) : ''}</div>
-            ${s.mine ? `<button class="pbtn" data-stage="${s.id}">${s.live ? 'Take the stage' : 'Open the stage'}</button>` : s.ticket ? `<button class="pbtn" data-stage="${s.id}">🎟️ ${s.live ? 'Go in: it\'s live' : 'Your ticket: go in when it starts'}</button>` : `<button class="pbtn" data-buy="${s.id}">Buy ticket ${s.price ? naira(s.price) : ''}</button>`}</div>`).join('') || '<div class="pcard dim">No shows booked yet. Artists: host one.</div>'}`);
+        // what's live (or next) up top, then every show as a card: the artist, when, the price, how full it is
+        const lead = list.find((s) => s.live) || list[0];
+        const act = (s) => s.mine ? `<button class="pbtn" data-stage="${s.id}">${s.live ? '🎤 Take the stage' : 'Open the stage'}</button>` : s.ticket ? `<button class="pbtn" data-stage="${s.id}">🎟️ ${s.live ? 'Go in: it\'s live' : 'Your ticket: go in when it starts'}</button>` : `<button class="pbtn" data-buy="${s.id}">Buy ticket${s.price ? ' · ' + naira(s.price) : ' · free'}</button>`;
+        show(`${ahead('arena', 'The Arena', 'Live shows on Eko Atlantic · the artist gets 9/10')}
+          ${lead ? `<div class="hero" style="--ac:#B26BFF"><div class="hl">${lead.live ? '<span class="live">● LIVE NOW</span>' : 'Next up'}</div><div class="hv" style="font-size:22px">${esc(lead.artist)}</div><small>${esc(lead.title)} · ${when(lead)}</small><div style="margin-top:10px">${act(lead)}</div></div>` : ''}
+          <div class="qa" style="--ac:#B26BFF;grid-template-columns:repeat(${me$.operator ? 3 : 2},1fr)"><button id="aHost"><i>🎤</i>Host a show</button><button id="aGo"><i>🏟️</i>Go there</button>${me$.operator ? '<button id="aQueue"><i>✅</i>Check</button>' : ''}</div>
+          <div class="rsec">SHOWS</div>
+          ${list.map((s) => `<div class="jc"><div class="jh">${avatar(s.artist)}<div><b>${esc(s.artist)}</b><small>${esc(s.title)}</small></div>${s.live ? '<span class="live" style="margin-left:auto">● LIVE</span>' : ''}</div>
+            <div style="margin-top:8px"><span class="tag">📅 ${when(s)}</span><span class="tag">⏱ ${s.minutes} min</span><span class="tag" style="background:rgba(252,238,10,.14);color:#FDE68A">${s.price ? naira(s.price) : 'Free'}</span>${s.status !== 'on_sale' ? `<span class="tag">${esc(s.status)}</span>` : ''}</div>
+            <div class="wbar" style="margin:8px 0 3px"><i style="width:${Math.min(100, Math.round(100 * s.sold / Math.max(1, s.capacity)))}%"></i></div><small class="dim">${s.sold} of ${s.capacity} tickets sold</small><div style="margin-top:8px">${act(s)}</div></div>`).join('') || '<div class="pcard dim">No shows booked yet. Artists: host one.</div>'}`);
+        $('aGo').onclick = () => { const p = PLACES.find((v) => v[0] === 'arena'); const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); };
         $('aHost').onclick = () => go('hostshow'); if ($('aQueue')) $('aQueue').onclick = () => go('showqueue');
         pbody.querySelectorAll('[data-buy]').forEach((b) => (b.onclick = async () => { try { const v = await my('buyTicket', { showId: Number(b.dataset.buy) }); if (v.naira != null) pnaira.textContent = naira(v.naira); render('arena'); } catch (e) { fail(e); } }));
         pbody.querySelectorAll('[data-stage]').forEach((b) => (b.onclick = () => {
@@ -3833,7 +3852,7 @@
         return;
       }
       if (app === 'credits') {
-        return show(`<div class="ptitle">Credits</div><div class="pcard"><h3>3D furniture</h3><div class="row"><span>Furniture Kit (Eko Home Store)</span><b>Kenney · CC0</b></div></div><div class="pcard"><h3>3D car models</h3>
+        return show(`${ahead('credits', 'Credits', 'The people whose work is in the game')}<div class="pcard"><h3>3D furniture</h3><div class="row"><span>Furniture Kit (Eko Home Store)</span><b>Kenney · CC0</b></div></div><div class="pcard"><h3>3D car models</h3>
           <div class="row"><span>Range Rover</span><b>IvOfficial</b></div>
           <div class="row"><span>Rolls-Royce</span><b>David Sirera</b></div>
           <div class="row"><span>Tesla Cybertruck</span><b>Mobolaji</b></div>
@@ -3850,7 +3869,13 @@
       }
       if (app === 'garage') {
         const list = await my('myCars');
-        show(`<div class="ptitle">Garage</div><div class="lock">Your cars. The one you drive parks outside the clubs and the casino when you go in.</div>${list.map((c2) => `<div class="pcard" style="display:flex;align-items:center;gap:12px"><span style="width:26px;height:26px;border-radius:50%;background:${esc(c2.color)};flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.3)"></span><span style="flex:1"><h3 style="margin:0">${esc(c2.name)}</h3><span class="dim">${naira(c2.price)}</span></span>${c2.active ? '<b style="color:#FCEE0A">DRIVING</b>' : `<button class="pbtn alt" data-drive="${c2.id}">Drive</button>`}</div>`).join('') || '<div class="pcard"><h3>No car yet</h3><p>Visit Polanco or Lekki Luxury Cars on the east side of the island. Tap them to walk in.</p></div>'}`);
+        // the car you drive up top, the rest of your cars below, and the two dealers a ride away
+        const drv = list.find((c2) => c2.active), worth = list.reduce((s, c2) => s + (c2.price || 0), 0);
+        show(`${ahead('garage', 'Garage', 'The one you drive waits outside wherever you go in')}
+          ${drv ? `<div class="hero" style="--ac:${esc(drv.color)}"><div class="hl">Driving</div><div class="hv" style="font-size:20px">🔑 ${esc(drv.name)}</div><small>${list.length} car${list.length > 1 ? 's' : ''} · worth ${naira(worth)}</small></div>` : `<div class="hero" style="--ac:#38BDF8"><div class="hl">No car yet</div><div class="hv" style="font-size:20px">🚗 Get your first</div><small>Polanco has Toyotas from ${naira(450000)}. Lekki Luxury Cars has the rest.</small></div>`}
+          <div class="qa" style="--ac:#38BDF8;grid-template-columns:1fr 1fr"><button data-dealer="Polanco"><i>🚘</i>Polanco</button><button data-dealer="Lekki Luxury Cars"><i>🏎️</i>Lekki Luxury</button></div>
+          ${list.length ? `<div class="rsec">YOUR CARS</div><div class="lst">${list.map((c2) => `<div class="li"><span class="ic" style="background:${esc(c2.color)};box-shadow:0 0 0 2px rgba(255,255,255,.25)"></span><span class="lt"><b>${esc(c2.name)}</b><small>${naira(c2.price)}</small></span>${c2.active ? '<span class="lr" style="color:var(--y)">DRIVING</span>' : `<button class="pbtn alt" data-drive="${c2.id}" style="margin:0">Drive</button>`}</div>`).join('')}</div>` : ''}`);
+        pbody.querySelectorAll('[data-dealer]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[5] === b.dataset.dealer); const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
         pbody.querySelectorAll('[data-drive]').forEach((b) => (b.onclick = async () => { try { await my('driveCar', { carId: Number(b.dataset.drive) }); const c2 = list.find((v) => v.id === Number(b.dataset.drive)); myCar = c2.model + ':' + c2.color; render('garage'); } catch (e) { fail(e); } }));
         return;
       }
@@ -3918,20 +3943,40 @@
       }
       if (app === 'casino') {
         const atTable = (inside && inside.kind === 'casino') || near('casino', 25);
-        if (!atTable) return show(`<div class="ptitle">Casino</div><div class="pcard"><h3>🎰 Island Casino</h3><p>The Island Casino is in Lekki. Play money only: stakes ₦100 to ₦5,000, and you stop for the day after losing ₦10,000.</p><button class="pbtn" id="cRide">Go in</button></div>`), ($('cRide').onclick = () => { closePhone(); enterPlace(PLACES.find((p) => p[0] === 'casino')); });
+        if (!atTable) return show(`${ahead('casino', 'Island Casino', 'Play money only · Lekki')}<div class="hero" style="--ac:#FCEE0A"><div class="hl">Tonight</div><div class="hv" style="font-size:22px">🎰 Roulette · Slots</div><small>Stakes ₦100 to ₦5,000. You stop for the day after losing ₦10,000.</small><div style="margin-top:10px"><button class="pbtn" id="cRide">Go in</button></div></div>`), ($('cRide').onclick = () => { closePhone(); enterPlace(PLACES.find((p) => p[0] === 'casino')); });
         await loadMe();
-        show(`<div class="ptitle">Island Casino</div><div class="pcard"><div class="dim">Your naira</div><div class="big" id="cBal">${naira(me$.naira)}</div><label class="dim">Stake</label><select id="cStake">${[100, 200, 500, 1000, 2000, 5000].map((v) => `<option value="${v}">${naira(v)}</option>`).join('')}</select></div>
-          <div class="pcard"><h3>Roulette</h3><button class="pbtn" style="background:#DC2626" data-bet="red">Red ×2</button><button class="pbtn" style="background:#111827" data-bet="black">Black ×2</button><button class="pbtn" style="background:#16A34A" data-bet="green">Green ×14</button></div>
-          <div class="pcard"><h3>Slots</h3><button class="pbtn" id="cSlots">Spin</button></div><div class="pcard" id="cOut"><span class="dim">Good luck. Play money only. You stop for the day after losing ₦10,000.</span></div>`);
-        const out = (v, txt) => { $('cOut').innerHTML = `<div class="big">${txt}</div><b style="color:${v.won >= 0 ? '#16A34A' : '#DC2626'}">${v.won >= 0 ? 'Won ' + naira(v.won) : 'Lost ' + naira(-v.won)}</b>`; $('cBal').textContent = naira(v.naira); pnaira.textContent = naira(v.naira); };
-        pbody.querySelectorAll('[data-bet]').forEach((b) => (b.onclick = async () => { try { const v = await my('casino', { game: 'roulette', bet: b.dataset.bet, stake: Number($('cStake').value) }); out(v, `${v.number} ${v.colour}`); } catch (e) { fail(e); } }));
-        $('cSlots').onclick = async () => { try { const v = await my('casino', { game: 'slots', bet: '', stake: Number($('cStake').value) }); out(v, v.reels.join(' ')); } catch (e) { fail(e); } };
+        // your naira, a stake to tap, the wheel (a ball shows where it lands) and three reels that spin before they stop
+        let stake = casinoStake;
+        show(`${ahead('casino', 'Island Casino', 'Play money only · stop after losing ₦10,000 a day')}
+          <div class="hero" style="--ac:#FCEE0A"><div class="hl">Your naira</div><div class="hv" id="cBal">${naira(me$.naira)}</div><small>Stake</small><div class="chips" style="--ac:#FCEE0A;margin:6px 0 0;padding:0">${[100, 200, 500, 1000, 2000, 5000].map((v) => `<button data-stake="${v}" class="${v === stake ? 'on' : ''}">${naira(v)}</button>`).join('')}</div></div>
+          <div class="rsec">ROULETTE</div><div class="cwheel"><div class="ball" id="cBall">?</div><div class="cbets"><button style="--b:#DC2626" data-bet="red">Red<small>×2</small></button><button style="--b:#111827" data-bet="black">Black<small>×2</small></button><button style="--b:#16A34A" data-bet="green">Green<small>×14</small></button></div></div>
+          <div class="rsec">SLOTS</div><div class="reels"><span id="r0">🌴</span><span id="r1">💎</span><span id="r2">🛵</span></div><button class="pbtn big2" id="cSlots">Spin · <span id="cSt">${naira(stake)}</span></button>
+          <div class="pcard" id="cOut" style="margin-top:12px"><span class="dim">Good luck. Three 💎 pays thirty times.</span></div>`);
+        pbody.querySelectorAll('[data-stake]').forEach((b) => (b.onclick = () => { stake = casinoStake = Number(b.dataset.stake); pbody.querySelectorAll('[data-stake]').forEach((o) => o.classList.toggle('on', o === b)); $('cSt').textContent = naira(stake); }));
+        const out = (v) => { $('cOut').innerHTML = `<b style="font:900 18px Orbitron,sans-serif;color:${v.won >= 0 ? '#4ADE80' : '#FF6B81'}">${v.won > 0 ? 'Won ' + naira(v.won) : v.won === 0 ? 'Even' : 'Lost ' + naira(-v.won)}</b>`; $('cBal').textContent = naira(v.naira); pnaira.textContent = naira(v.naira); };
+        const busy = (on) => pbody.querySelectorAll('[data-bet],#cSlots').forEach((b) => (b.disabled = on));
+        pbody.querySelectorAll('[data-bet]').forEach((b) => (b.onclick = async () => {
+          busy(true); const ball = $('cBall'); ball.className = 'ball spin'; ball.textContent = '';
+          try { const v = await my('casino', { game: 'roulette', bet: b.dataset.bet, stake }); await new Promise((r) => setTimeout(r, 900)); ball.className = 'ball'; ball.style.background = { red: '#DC2626', black: '#111827', green: '#16A34A' }[v.colour] || '#334155'; ball.textContent = v.number; out(v); } catch (e) { ball.className = 'ball'; fail(e); }
+          busy(false);
+        }));
+        $('cSlots').onclick = async () => {
+          busy(true); const SYM = ['🌴', '🛵', '🥥', '⭐', '💎'], stopped = [false, false, false], spin = setInterval(() => { for (let k = 0; k < 3; k++) if (!stopped[k]) $('r' + k).textContent = SYM[Math.floor(Math.random() * SYM.length)]; }, 70);
+          try { const v = await my('casino', { game: 'slots', bet: '', stake }); for (let k = 0; k < 3; k++) await new Promise((r) => setTimeout(() => { stopped[k] = true; $('r' + k).textContent = v.reels[k]; r(); }, 350)); clearInterval(spin); out(v); } catch (e) { clearInterval(spin); fail(e); } // each reel stops in turn, left to right
+          busy(false);
+        };
         return;
       }
       if (app === 'wyrd') {
-        show(`<div class="ptitle">WYRD</div><div class="lock">WYRD hears what you type here and the district you're in. It never sees your chats, your HQ or who you talk to.</div><div class="msgs" id="wMsgs"></div><div class="pcard" style="margin-top:10px"><input id="wText" maxlength="600" placeholder="Ask WYRD anything"><button class="pbtn" id="wGo">Ask</button></div>`);
+        // a chat with WYRD: it says hello, a few things to ask to get you going, the composer pinned at the bottom
+        const IDEAS = ['Where can I earn naira today?', "What's on at the Arena?", 'Which beach should I go to?', 'How do I buy a home?'];
+        show(`<div class="ahead" style="--ac:#00F0FF"><span class="av2" style="background:radial-gradient(circle at 35% 30%,#fff,#A78BFA 45%,#0EA5E9)"></span><div><h2>WYRD</h2><span>Hears only what you type here, and your district</span></div></div>
+          <div class="msgs" id="wMsgs"><div class="msg"><b>WYRD</b>${esc(myName ? `Hello ${myName}.` : 'Hello.')} You're in ${esc(sector.name)}. Ask me anything about the island.</div></div>
+          <div class="chips" id="wIdeas" style="--ac:#00F0FF;margin-top:10px">${IDEAS.map((q) => `<button data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+          <div class="comp"><input id="wText" maxlength="600" placeholder="Ask WYRD anything"><button class="pbtn" id="wGo">Ask</button></div>`);
+        pbody.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { $('wText').value = b.dataset.q; ask(); }));
         const ask = async () => {
-          const t = $('wText').value.trim(); if (!t) return; $('wText').value = '';
+          const t = $('wText').value.trim(); if (!t) return; $('wText').value = ''; if ($('wIdeas')) $('wIdeas').remove();
           const add = (who, s, mine) => { const d = document.createElement('div'); d.className = 'msg' + (mine ? ' me' : ''); d.innerHTML = `<b>${who}</b>${esc(s)}`; $('wMsgs').append(d); pbody.scrollTop = pbody.scrollHeight; };
           add('You', t, true);
           try { const v = await my('askWyrd', { text: t, district: sector.name }); add('WYRD', v.say || v.reply || v.text || '…'); } catch (e) { fail(e); }
@@ -4000,19 +4045,23 @@
       }
       if (app === 'me') {
         await loadMe();
-        show(`<div class="ptitle">Profile</div><div class="pcard"><label class="dim">Your name on the island</label><input id="pHandle" maxlength="20" value="${esc(me$.handle)}"><label class="dim">Your skills, comma separated (shown to employers only when you apply)</label><textarea id="pSkills" rows="3">${esc(me$.skills)}</textarea><label class="dim"><input id="pOpen" type="checkbox" style="width:auto" ${me$.openToWork ? 'checked' : ''}> Open to work: let WYRD match jobs to my skills (only I see the matches)</label><button class="pbtn" id="pSave">Save</button></div>`);
+        // you: your avatar, your name, your skills as tags, whether you're open to work; then edit, and the rest of your phone
+        const skills = String(me$.skills || '').split(',').map((s) => s.trim()).filter(Boolean);
+        show(`${ahead('me', 'Profile', 'How the island sees you')}
+          <div class="hero" style="--ac:#9AE6B4"><div class="pfh">${avatar(me$.handle)}<div><div class="hv" style="font-size:20px;margin:0">${esc(me$.handle)}</div><small>${me$.openToWork ? '<b style="color:#4ADE80">● Open to work</b>' : 'Not looking for work'} · ${naira(me$.naira)}</small></div></div>
+            <div style="margin-top:10px">${skills.map((s) => `<span class="tag">${esc(s)}</span>`).join('') || '<small>Add your skills below so WYRD can match you to jobs.</small>'}</div></div>
+          <div class="qa" style="--ac:#9AE6B4"><button id="pJobs"><i>💼</i>Jobs</button><button id="pHq"><i>🏠</i>My HQ</button><button id="pPriv"><i>🛡️</i>Privacy</button><button id="pCred"><i>📜</i>Credits</button></div>
+          <div class="pcard"><h3>Edit</h3><label class="dim">Your name on the island</label><input id="pHandle" maxlength="20" value="${esc(me$.handle)}"><label class="dim">Your skills, comma separated (shown to employers only when you apply)</label><textarea id="pSkills" rows="3">${esc(me$.skills)}</textarea><label class="dim"><input id="pOpen" type="checkbox" style="width:auto" ${me$.openToWork ? 'checked' : ''}> Open to work: let WYRD match jobs to my skills (only I see the matches)</label><button class="pbtn" id="pSave">Save</button></div>`);
+        $('pJobs').onclick = () => go('jobs'); $('pHq').onclick = () => go('hq'); $('pPriv').onclick = () => go('privacy'); $('pCred').onclick = () => go('credits');
         $('pSave').onclick = async () => { try { await my('setProfile', { handle: $('pHandle').value, skills: $('pSkills').value, openToWork: $('pOpen').checked, pubKey: '' }); await loadMe(); render('me'); } catch (e) { fail(e); } };
         return;
       }
       if (app === 'privacy') {
-        return show(`<div class="ptitle">Privacy</div><div class="pcard"><h3>What stays yours</h3>
-          <div class="row"><span>Chats and groups</span><b>Encrypted on your device</b></div>
-          <div class="row"><span>Chat names</span><b>Encrypted too</b></div>
-          <div class="row"><span>Your HQ</span><b>Invite-only by default</b></div>
-          <div class="row"><span>Your skills</span><b>Only to employers you apply to</b></div>
-          <div class="row"><span>Job matches</span><b>Only you see them</b></div>
-          <div class="row"><span>WYRD</span><b>Sees only what you ask it</b></div>
-          <p class="dim">Your chat key lives in this browser. Clear the site's data or use another device and older messages can't be opened there. That's the price of nobody else being able to read them.</p></div>`);
+        const P2 = [['🔐', 'Chats and groups', 'Encrypted on your device'], ['🏷️', 'Chat names', 'Encrypted too'], ['🏠', 'Your homes', 'Invite-only by default'], ['🧰', 'Your skills', 'Only to employers you apply to'], ['🎯', 'Job matches', 'Only you see them'], ['✨', 'WYRD', 'Sees only what you ask it'], ['👛', 'Your wallet', 'Only you, and WYRD as a number when you ask']];
+        return show(`${ahead('privacy', 'Privacy', 'What stays yours')}
+          <div class="hero" style="--ac:#00FFA3"><div class="hl">End to end</div><div class="hv" style="font-size:20px">🛡️ Locked on this device</div><small>The server only ever holds scrambled text.</small></div>
+          <div class="lst">${P2.map(([ic, a, b]) => `<div class="li"><span class="ic">${ic}</span><span class="lt"><b>${a}</b><small>${b}</small></span><span class="lr pos">✓</span></div>`).join('')}</div>
+          <div class="lock">Your chat key lives in this browser. Clear the site's data or use another device and older messages can't be opened there. That's the price of nobody else being able to read them.</div>`);
       }
     } catch (e) { fail(e); }
   }
