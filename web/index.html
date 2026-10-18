@@ -32,7 +32,7 @@
   #top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; }
   #title { font-weight: 800; font-size: 17px; white-space: nowrap; }
   #online { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
-  #topR { margin-left: auto; display: flex; gap: 6px; }
+  #topR { margin-left: auto; display: flex; gap: 6px; align-items: center; } #tWx { font-size: 13px; font-weight: 800; color: #334155; white-space: nowrap; padding: 0 4px; }
   .tdj { display: none; align-items: center; gap: 7px; max-width: 210px; height: 34px; padding: 0 12px 0 9px; border-radius: 999px; background: linear-gradient(90deg, #111827, #3B0764); color: #fff; cursor: pointer; overflow: hidden; } .tdj.on { display: flex; }
   .tdj span { min-width: 0; line-height: 1.05; } .tdj small { display: block; font-size: 10px; font-weight: 800; color: #F0ABFC; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .tdj b { display: block; font-size: 11.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tdj .eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; flex: none; } .tdj .eq s { width: 3px; background: #22C55E; border-radius: 1px; animation: eqb .8s ease-in-out infinite; } .tdj .eq s:nth-child(2) { animation-delay: -.3s; } .tdj .eq s:nth-child(3) { animation-delay: -.55s; } .tdj .eq s:nth-child(4) { animation-delay: -.15s; }
@@ -437,7 +437,7 @@
 <div id="top" class="pill">
   <div id="title">🌴 Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
-  <div id="topR"><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night">🔊</button><button id="tMusic" aria-label="Island Music" title="Island Music">🎧</button></div>
+  <div id="topR"><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night">🔊</button><button id="tMusic" aria-label="Island Music" title="Island Music">🎧</button></div>
 
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
@@ -3130,6 +3130,7 @@
       x.fillStyle = 'rgba(12,20,58,' + 0.5 * night + ')'; x.fillRect(0, 0, W, H);
       for (const g of glow) g();
     }
+    drawWeather(now); // clouds, rain, lightning, fog, haze, over the town and under the pins
     // the pins, on top
     const placed = [];
     for (const p of PLACES) {
@@ -5335,12 +5336,81 @@
   }
   let keyed = false;
   // Lagos weather, the same for everyone in the same hour: hot afternoons, warm nights, storms some evenings
-  function lagosWeather() {
+  // ---- the weather: Lagos's real weather right now (Open-Meteo, every 15 minutes, the same for everyone), drawn over the
+  // island: clouds whose shadows drift across the town, rain slanting with the real wind, splashes and a wet, grey cast,
+  // thunderstorms with lightning and thunder, fog, and Harmattan haze in the dry months. Rain on the roof when you're
+  // indoors. ?weather=rain | storm | cloudy | fog | haze | clear forces one (for testing).
+  const WX = { kind: 'clear', target: { rain: 0, cloud: 0.15, fog: 0, haze: 0, storm: 0 }, cur: { rain: 0, cloud: 0.15, fog: 0, haze: 0, storm: 0 }, temp: 28, wind: 10, windDir: 210, isDay: 1, live: false, text: 'Clear', icon: '☀️' };
+  const WX_FORCE = new URLSearchParams(location.search).get('weather');
+  function wxFrom(code, cloud, rainMm, month) {
+    const k = WX_FORCE || (code >= 95 ? 'storm' : (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || rainMm > 0.1 ? 'rain' : code === 45 || code === 48 ? 'fog' : (month === 11 || month <= 1) && cloud < 50 ? 'haze' : cloud > 65 || code === 3 ? 'cloudy' : 'clear');
+    const heavy = Math.min(1, Math.max(0.35, rainMm / 6));
+    const t = { clear: { rain: 0, cloud: Math.min(0.3, cloud / 100), fog: 0, haze: 0, storm: 0 }, cloudy: { rain: 0, cloud: 0.75, fog: 0, haze: 0, storm: 0 }, rain: { rain: WX_FORCE ? 0.7 : heavy, cloud: 0.9, fog: 0.1, haze: 0, storm: 0 }, storm: { rain: 1, cloud: 1, fog: 0.15, haze: 0, storm: 1 }, fog: { rain: 0, cloud: 0.6, fog: 0.8, haze: 0, storm: 0 }, haze: { rain: 0, cloud: 0.2, fog: 0, haze: 0.85, storm: 0 } }[k];
+    const label = { clear: [WX.isDay ? '☀️' : '🌙', WX.isDay ? 'Sunny' : 'Clear night'], cloudy: ['☁️', 'Cloudy'], rain: ['🌧️', heavy > 0.7 ? 'Heavy rain' : 'Rain'], storm: ['⛈️', 'Thunderstorm'], fog: ['🌫️', 'Fog'], haze: ['🌫️', 'Harmattan haze'] }[k];
+    Object.assign(WX, { kind: k, target: t, icon: label[0], text: label[1] });
+  }
+  async function wxFetch() {
+    try {
+      const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=6.45&longitude=3.42&current=temperature_2m,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,is_day&timezone=Africa%2FLagos');
+      const c0 = (await r.json()).current; Object.assign(WX, { temp: Math.round(c0.temperature_2m), wind: c0.wind_speed_10m, windDir: c0.wind_direction_10m, isDay: c0.is_day, live: true });
+      wxFrom(c0.weather_code, c0.cloud_cover, c0.precipitation || c0.rain || 0, new Date().getMonth());
+    } catch { const w = lagosWeatherSim(); WX.temp = w.temp; wxFrom(w.text === 'Storms' ? 95 : w.text === 'Rain' ? 61 : w.text === 'Partly cloudy' ? 2 : 0, w.text === 'Partly cloudy' ? 50 : 10, 0, new Date().getMonth()); }
+  }
+  wxFetch(); setInterval(wxFetch, 15 * 60000);
+  setInterval(() => { const el = document.getElementById('tWx'); if (el) { el.textContent = `${WX.icon} ${WX.temp}°`; el.title = `Lagos now: ${WX.text}, ${WX.temp}°C, wind ${Math.round(WX.wind)} km/h${WX.live ? '' : ' (estimated)'}`; } }, 2000);
+  if (WX_FORCE) wxFrom(0, 30, 0, new Date().getMonth());
+  // the drops (in screen space) and the clouds (in the world), the lightning, the sound
+  const DROPS = Array.from({ length: 420 }, () => ({ x: Math.random(), y: Math.random(), s: 0.7 + Math.random() * 0.6 }));
+  const CLOUDS = Array.from({ length: 9 }, (_, k) => ({ x: Math.random() * 900, z: Math.random() * 480, r: 60 + Math.random() * 90, k }));
+  const BOLT = { at: 0, next: 0, pts: null };
+  function drawWeather(now) {
+    const C2 = WX.cur, T2 = WX.target, ease = 0.02; for (const k in C2) C2[k] += (T2[k] - C2[k]) * ease; // conditions change gradually
+    const t = now / 1000, wr = (WX.windDir + 180) * Math.PI / 180, wv = Math.min(1.4, WX.wind / 20);
+    const wx = Math.sin(wr) * wv * 30, wz = -Math.cos(wr) * wv * 30; // the wind, in world units per second
+    // cloud shadows drifting over the island
+    if (C2.cloud > 0.05) { x.save(); for (const cl of CLOUDS) { const px = ((cl.x + wx * t * 0.6) % 1100 + 1100) % 1100 - 100, pz = ((cl.z + wz * t * 0.6) % 600 + 600) % 600 - 60, p = P(px, 0, pz), r = cl.r * K; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, `rgba(15,23,42,${0.16 * C2.cloud})`); g.addColorStop(1, 'rgba(15,23,42,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp * 0.8, 0, 0, Math.PI * 2); x.fill(); } x.restore(); }
+    // the grey cast of an overcast or wet day; fog; harmattan dust
+    const grey = Math.max(0, C2.cloud - 0.35) * 0.28 + C2.rain * 0.12 + C2.storm * 0.12;
+    if (grey > 0.01) { x.fillStyle = `rgba(51,65,85,${grey})`; x.fillRect(0, 0, W, H); }
+    if (C2.fog > 0.02) { const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, `rgba(226,232,240,${0.55 * C2.fog})`); g.addColorStop(1, `rgba(226,232,240,${0.25 * C2.fog})`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+    if (C2.haze > 0.02) { const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, `rgba(217,164,95,${0.42 * C2.haze})`); g.addColorStop(1, `rgba(194,140,80,${0.2 * C2.haze})`); x.fillStyle = g; x.fillRect(0, 0, W, H);
+      x.fillStyle = `rgba(250,220,170,${0.35 * C2.haze})`; for (let k = 0; k < 60; k++) { const d = DROPS[k], px = ((d.x * W + t * 40 * d.s * Math.sign(wx || 1)) % W + W) % W, py = ((d.y * H + Math.sin(t + k) * 8) % H + H) % H; x.fillRect(px, py, 2, 2); } }
+    // the rain: streaks slanted by the wind, faster for the nearer ones, splashes where they land
+    if (C2.rain > 0.02) {
+      const n = Math.round(DROPS.length * C2.rain), slant = Math.max(-0.6, Math.min(0.6, (P(wx, 0, wz)[0] - P(0, 0, 0)[0]) / 40)), len = 14 + 10 * C2.rain;
+      x.save(); x.strokeStyle = night > 0.5 ? 'rgba(186,230,253,0.35)' : 'rgba(226,232,240,0.55)'; x.lineWidth = 1; x.beginPath();
+      for (let k = 0; k < n; k++) { const d = DROPS[k], fall = t * (700 * d.s), py = ((d.y * H + fall) % (H + 40)) - 20, px = ((d.x * W + fall * slant) % W + W) % W; x.moveTo(px, py); x.lineTo(px - slant * len * d.s, py - len * d.s); }
+      x.stroke();
+      x.strokeStyle = 'rgba(226,232,240,0.4)'; x.beginPath(); for (let k = 0; k < n / 4; k++) { const d = DROPS[k], ph = (t * 2.2 + d.x * 7) % 1, px = d.y * W, py = (d.x * 0.85 + 0.12) * H, r = 2 + ph * 5; x.moveTo(px + r, py); x.ellipse(px, py, r, r * 0.35, 0, 0, Math.PI * 2); } x.globalAlpha = 0.6; x.stroke(); x.restore();
+    }
+    // lightning: a jagged bolt from the clouds and the whole sky flashing, the thunder a moment later
+    if (C2.storm > 0.3) {
+      if (now > BOLT.next) { BOLT.at = now; BOLT.next = now + 5000 + Math.random() * 14000; const pts = []; let bx = W * (0.2 + Math.random() * 0.6), by = 0; while (by < H * 0.6) { pts.push([bx, by]); bx += (Math.random() - 0.5) * 50; by += 20 + Math.random() * 30; } BOLT.pts = pts; setTimeout(() => thunder(0.6 + Math.random() * 0.4), 400 + Math.random() * 1600); }
+      const age = now - BOLT.at;
+      if (age < 600) { const a = age < 80 ? 0.55 : age < 160 ? 0.15 : age < 230 ? 0.4 : Math.max(0, 0.2 - (age - 230) / 1800); x.fillStyle = `rgba(226,232,255,${a * C2.storm})`; x.fillRect(0, 0, W, H);
+        if (age < 260 && BOLT.pts) { x.save(); x.strokeStyle = 'rgba(255,255,255,0.95)'; x.shadowColor = '#C7D2FE'; x.shadowBlur = 18; x.lineWidth = 2.5; x.beginPath(); BOLT.pts.forEach(([px, py], k) => (k ? x.lineTo(px, py) : x.moveTo(px, py))); x.stroke(); x.restore(); } }
+    }
+    wxSound();
+  }
+  // the sound of it: rain as filtered noise (dull through a roof when you're inside), thunder as a low rumble
+  const WXS = { g: null, lp: null };
+  function wxSound() {
+    const c = AX.ctx; if (!c) return;
+    if (!WXS.g) { const b = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), d = b.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = Math.random() * 2 - 1; const s = c.createBufferSource(); s.buffer = b; s.loop = true; const bp = c.createBiquadFilter(); bp.type = 'highpass'; bp.frequency.value = 400; WXS.lp = c.createBiquadFilter(); WXS.lp.type = 'lowpass'; WXS.lp.frequency.value = 5000; WXS.g = c.createGain(); WXS.g.gain.value = 0; s.connect(bp); bp.connect(WXS.lp); WXS.lp.connect(WXS.g); WXS.g.connect(c.destination); s.start(); }
+    const want = CITY.on ? WX.cur.rain * (inside ? 0.06 : 0.16) : 0; WXS.g.gain.value += (want - WXS.g.gain.value) * 0.05; WXS.lp.frequency.value = inside ? 700 : 5000;
+  }
+  function thunder(v) {
+    const c = AX.ctx; if (!c || !CITY.on) return; const len = 3.5, b = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = b.getChannelData(0); let lp = 0; for (let k = 0; k < d.length; k++) { lp += 0.02 * ((Math.random() * 2 - 1) - lp); d[k] = lp * 6 * Math.pow(1 - k / d.length, 1.5) * (0.7 + 0.3 * Math.sin(k / 3000)); }
+    const s = c.createBufferSource(), g = c.createGain(); s.buffer = b; g.gain.value = v * (inside ? 0.5 : 1); s.connect(g); g.connect(c.destination); s.start();
+  }
+  function lagosWeatherSim() { // the old made-up weather, if the real one can't be reached
     const d = new Date(Date.now() + 3600e3), h = d.getUTCHours(), R = rnd(d.getUTCDate() * 24 + h)(), nightTime = h < 6 || h >= 19;
     const temp = Math.round(25 + 6 * Math.max(0, Math.sin((h - 7) / 12 * Math.PI)) + (R < 0.5 ? 0 : 1));
     const [icon, text] = nightTime ? (R < 0.25 ? ['🌧️', 'Rain'] : ['🌙', 'Clear night']) : R < 0.2 ? ['⛈️', 'Storms'] : R < 0.55 ? ['⛅', 'Partly cloudy'] : ['☀️', 'Sunny'];
     return { temp, icon, text };
   }
+  // the weather for the phone: the real one (see WX)
+  function lagosWeather() { return { temp: WX.temp, icon: WX.icon, text: WX.text }; }
   // WYRD OS themes: the accent colours, chosen in the control centre and remembered on this device
   const OS_THEMES = { neon: ['#FCEE0A', '#00F0FF', '#FF003C'], gold: ['#F5C542', '#FDE68A', '#B45309'], ocean: ['#5EEAD4', '#38BDF8', '#6366F1'], rose: ['#F9A8D4', '#C084FC', '#FB7185'] };
   let osTheme = store.get('li.os') || 'neon';
