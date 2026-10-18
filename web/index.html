@@ -2813,7 +2813,7 @@
     // the Lekki-Ikoyi Link Bridge: a cable-stayed span on piers in the lagoon, two lanes each way with walkways, a
     // slender white pylon on the median rising to a pointed crown, two fans of stays down to both edges of the deck;
     // at night the stays and pylon run through colours in waves, lamps line the walkways and the light shimmers on the water
-    { const x0 = 26 * T, x1 = 30 * T, cx = 28 * T, z0 = 9 * T + 1.5, z1 = 10 * T - 1.5, cz = (z0 + z1) / 2, H = 34;
+    { const x0 = 26 * T, x1 = 30 * T, cx = 28 * T, z0 = 9 * T + 1.5, z1 = 10 * T - 1.5, cz = (z0 + z1) / 2, PH = 34;
       for (const px of [x0 + 4, cx - 9, cx + 9, x1 - 4]) box(px - 0.7, -3, cz - 1.6, px + 0.7, 0.4, cz + 1.6, '#94A3B8'); // the piers
       flat(x0, z0 + 0.4, x1, z0 + 1.4, 0.47, '#CBD5E1'); flat(x0, z1 - 1.4, x1, z1 - 0.4, 0.47, '#CBD5E1'); // the walkways
       flat(x0, cz - 0.35, x1, cz + 0.35, 0.47, '#9CA3AF'); // the median
@@ -2821,22 +2821,30 @@
       for (const z of [(z0 + 1.4 + cz - 0.35) / 2, (cz + 0.35 + z1 - 1.4) / 2]) { const p = P(x0, 0.48, z), q = P(x1, 0.48, z); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); }
       x.stroke(); x.setLineDash([]);
       // the pylon: a tapering white mast on the median, a pointed crown
-      for (let k = 0; k < 6; k++) { const y = k * (H / 6), w = 1.1 - k * 0.12; box(cx - w, y, cz - w * 0.8, cx + w, y + H / 6, cz + w * 0.8, '#F8FAFC'); }
-      pyramid(cx - 0.4, cz - 0.3, cx + 0.4, cz + 0.3, H, 4, '#E2E8F0');
+      for (let k = 0; k < 6; k++) { const y = k * (PH / 6), w = 1.1 - k * 0.12; box(cx - w, y, cz - w * 0.8, cx + w, y + PH / 6, cz + w * 0.8, '#F8FAFC'); }
+      pyramid(cx - 0.4, cz - 0.3, cx + 0.4, cz + 0.3, PH, 4, '#E2E8F0');
       // the stays: two fans, each to both edges of the deck
       const stays = (lit) => {
         const t = performance.now() / 1000; x.save(); if (lit) { x.globalCompositeOperation = 'lighter'; x.shadowBlur = 10; }
+        // the lit pass comes after every building, so where WYRD Tower stands in front of the bridge, cut its outline out
+        if (lit) { const wt = PLACES.find((p) => p[0] === 'wyrdtower'); if (wt) { const tx = (wt[1] + wt[3] / 2) * T, tz = (wt[2] + wt[4] / 2) * T; if (P(tx, 0, tz)[2] > P(cx, 0, cz)[2]) {
+          const pts = []; for (const [hw, hd, y] of [[9, 6.6, 0], [6.4, 4.6, 112], [2, 2, 134]]) for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const p = P(tx + sx * hw, y, tz + sz * hd); pts.push([p[0], p[1]]); }
+          pts.sort((p, q) => p[0] - q[0] || p[1] - q[1]); const cr = (o, p, q) => (p[0] - o[0]) * (q[1] - o[1]) - (p[1] - o[1]) * (q[0] - o[0]), lo = [], hi = [];
+          for (const p of pts) { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+          for (const p of pts.slice().reverse()) { while (hi.length > 1 && cr(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); }
+          const hull = lo.slice(0, -1).concat(hi.slice(0, -1)); x.beginPath(); x.rect(0, 0, W, H); x.moveTo(hull[0][0], hull[0][1]); for (const p of hull) x.lineTo(p[0], p[1]); x.closePath(); x.clip('evenodd');
+        } } }
         for (let k = 1; k <= 8; k++) for (const side of [-1, 1]) for (const ez of [z0 + 0.5, z1 - 0.5]) {
-          const ay = H - 2 - k * 1.5, a = P(cx, ay, cz), e = P(cx + side * (2.5 + k * 2.1), 1.3, ez), hue = (t * 40 + k * 22 + (side > 0 ? 0 : 180)) % 360;
+          const ay = PH - 2 - k * 1.5, a = P(cx, ay, cz), e = P(cx + side * (2.5 + k * 2.1), 1.3, ez), hue = (t * 40 + k * 22 + (side > 0 ? 0 : 180)) % 360;
           x.strokeStyle = lit ? `hsla(${hue},95%,62%,0.9)` : 'rgba(255,255,255,0.9)'; x.shadowColor = x.strokeStyle; x.lineWidth = lit ? 1.5 : Math.max(0.8, K * 0.1);
           x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(e[0], e[1]); x.stroke();
         }
         if (lit) {
           // the pylon washed in colour, a beacon on the crown, lamps along both walkways, light on the water below
-          const p0 = P(cx, 0.6, cz), p1 = P(cx, H + 3, cz), g = x.createLinearGradient(p0[0], p0[1], p1[0], p1[1]);
+          const p0 = P(cx, 0.6, cz), p1 = P(cx, PH + 3, cz), g = x.createLinearGradient(p0[0], p0[1], p1[0], p1[1]);
           g.addColorStop(0, `hsla(${(t * 40) % 360},95%,60%,0.85)`); g.addColorStop(1, `hsla(${(t * 40 + 140) % 360},95%,70%,0.85)`);
           x.strokeStyle = g; x.lineWidth = Math.max(3, K * 1.6); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
-          if (Math.floor(t * 1.2) % 2) { const b = P(cx, H + 4.2, cz); x.fillStyle = '#EF4444'; x.beginPath(); x.arc(b[0], b[1], Math.max(1.5, K * 0.5), 0, Math.PI * 2); x.fill(); }
+          if (Math.floor(t * 1.2) % 2) { const b = P(cx, PH + 4.2, cz); x.fillStyle = '#EF4444'; x.beginPath(); x.arc(b[0], b[1], Math.max(1.5, K * 0.5), 0, Math.PI * 2); x.fill(); }
           for (let k = 0; k <= 16; k++) for (const ez of [z0 + 0.5, z1 - 0.5]) { const p = P(x0 + k * 2.5, 2, ez); x.fillStyle = '#FEF3C7'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.3), 0, Math.PI * 2); x.fill(); }
           for (let k = 0; k < 10; k++) { const wx = x0 + 2 + k * 4, w = P(wx, -0.1, z1 + 2 + Math.sin(t * 2 + k) * 0.6), hue = (t * 40 + k * 30) % 360; x.fillStyle = `hsla(${hue},95%,60%,0.35)`; x.beginPath(); x.ellipse(w[0], w[1], K * 1.6, K * 0.35, 0, 0, Math.PI * 2); x.fill(); }
         } else { // the walkway lamp posts by day
