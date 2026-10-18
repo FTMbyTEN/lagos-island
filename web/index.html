@@ -514,14 +514,34 @@
   .pcard.err { background: rgba(255,0,60,.14); border-color: rgba(255,0,60,.6); box-shadow: inset 3px 0 0 var(--m); color: #FFD6DE; }
   #lockscr { padding: 90px 24px 64px !important; }
   #lockscr .lt { font-size: 72px !important; }
+  /* the island's icons: line-drawn, take the colour of the text around them */
+  .ic { width: 1.15em; height: 1.15em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.2em; }
+  #phone .app i .ic { width: 26px; height: 26px; color: var(--ac, #00F0FF); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--ac, #00F0FF) 60%, transparent)); stroke-width: 1.8; }
+  #phone .dock .app i .ic { width: 28px; height: 28px; }
+  #phone .wxic { color: #FCD34D; filter: drop-shadow(0 0 6px rgba(252,211,77,.55)); } #phone .wxi .wxic { width: 34px; height: 34px; } #phone .hwx .wxic { width: 18px; height: 18px; margin-right: 3px; } #shade .cct b .wxic { width: 22px; height: 22px; }
+  #phone .ahead > i .ic { width: 22px; height: 22px; color: var(--ac); stroke-width: 1.9; }
+  #phone .chips button .ic { margin-right: 2px; }
+  .pci { display: inline-grid; place-items: center; width: 26px; height: 26px; margin-right: 8px; border-radius: 9px; color: var(--pc); background: color-mix(in srgb, var(--pc) 14%, #fff); vertical-align: middle; } .pci .ic { width: 16px; height: 16px; }
+  /* the top bar: frosted glass, a logo badge, the island's count as a live chip, the weather as a chip, round icon buttons */
+  #top.pill { background: rgba(255,255,255,.72); backdrop-filter: blur(18px) saturate(1.6); -webkit-backdrop-filter: blur(18px) saturate(1.6); border: 1px solid rgba(255,255,255,.85); box-shadow: 0 10px 30px rgba(15,23,42,.14), inset 0 1px 0 rgba(255,255,255,.9); padding: 6px 7px 6px 7px; gap: 8px; }
+  #title { display: flex; align-items: center; gap: 8px; font-size: 16px; letter-spacing: -.2px; color: #0F172A; }
+  #title .logo { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1); color: #fff; box-shadow: 0 4px 12px rgba(14,165,233,.35); }
+  #title .logo .ic { width: 18px; height: 18px; stroke-width: 2.2; }
+  .logo.big { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; vertical-align: middle; background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1); color: #fff; box-shadow: 0 6px 16px rgba(14,165,233,.35); } .logo.big .ic { width: 24px; height: 24px; stroke-width: 2.2; vertical-align: 0; }
+  #online { display: flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border-radius: 999px; background: rgba(34,197,94,.12); font-size: 12px; }
+  #online i { animation: livePulse 2s ease-in-out infinite; box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+  @keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,.55); } 70%, 100% { box-shadow: 0 0 0 7px rgba(34,197,94,0); } }
+  #tWx { display: flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px !important; border-radius: 999px; background: rgba(15,23,42,.05); color: #0F172A !important; } #tWx b { font-weight: 800; }
+  #tWx .ic { width: 17px; height: 17px; color: #F59E0B; } #tWx[data-k="clear"] .ic, #tWx[data-k="partly"] .ic { color: #F59E0B; } #tWx[data-k="rain"] .ic, #tWx[data-k="drizzle"] .ic, #tWx[data-k="storm"] .ic { color: #0EA5E9; } #tWx[data-k="fog"] .ic, #tWx[data-k="haze"] .ic, #tWx[data-k="cloudy"] .ic, #tWx[data-k="overcast"] .ic { color: #64748B; }
+  #topR button { background: rgba(15,23,42,.05) !important; color: #0F172A; } #topR button .ic { width: 18px; height: 18px; } #topR button:hover { background: rgba(34,197,94,.16) !important; } #tMusic.playing { background: #22C55E !important; color: #fff; }
 </style>
 </head>
 <body>
 <canvas id="c" aria-label="Lagos Island, the game board"></canvas>
 <div id="top" class="pill">
-  <div id="title">🌴 Lagos Island</div>
+  <div id="title"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8"/></svg></span>Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
-  <div id="topR"><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night">🔊</button><button id="tMusic" aria-label="Island Music" title="Island Music">🎧</button></div>
+  <div id="topR"><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night"></button><button id="tMusic" aria-label="Island Music" title="Island Music"></button></div>
 
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
@@ -540,7 +560,7 @@
 <div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ltop"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lwx" id="lockw"></div></div><div class="lnotes" id="lockn"></div><div class="lbot"><button class="lq" data-lq="ride" aria-label="Ride">🛵</button><button class="lq" data-lq="music" aria-label="Music">🎧</button><div class="lu">Tap to unlock</div><button class="lq" data-lq="wyrd" aria-label="Ask WYRD">✨</button></div></div><div id="pbody"></div><div id="pnav"><button id="pback"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button><button id="phome"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-4v-3h-3v3h-4z"/></svg>Home</button><button id="pclose"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</button></div><span class="hbar"></span></div></div>
 <div id="hello">
   <div class="box">
-    <h1>🌴 Lagos Island</h1>
+    <h1><span class="logo big"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8"/></svg></span> Lagos Island</h1>
     <p>Lagos Island, Ikoyi, VI, Eko Atlantic, Lekki and Ajah, and Ilashe across the water. Walk it, meet the people on it, and WYRD.</p>
     <div class="crowd"><b id="crowd">Lagosians</b> on the island right now · free</div>
     <div id="who" class="who"></div>
@@ -643,6 +663,77 @@
     [70, 29, 70, 40, 'Dealers Causeway'],
   ];
   const FERRY = [4, 16, 4, 21]; // Lagos Island to Ilashe, by boat
+  // ---- the island's icons: one line-drawn set (24 x 24, round strokes) for the phone's apps, the top bar, the map's pins
+  // and the place cards, so everything speaks the same visual language. ico(name) gives inline SVG for the page;
+  // icoDraw() strokes the same paths on the game canvas.
+  const ICONS = (() => {
+    const house = 'M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6', bag = 'M5 8h14l-1 13H6zM9 8V6a3 3 0 0 1 6 0v2', tree = 'M12 3a5 5 0 0 0-5 5 4 4 0 0 0-1 7.5h12A4 4 0 0 0 17 8a5 5 0 0 0-5-5zM12 15.5V21M9 21h6';
+    const city = 'M4 21V8l6-3v16M10 21V3l10 4v14M3 21h18M13 8h4M13 12h4M13 16h4M6 11h2M6 15h2', car = 'M5 16v-5l2-5h10l2 5v5M3 16h18v3H3zM7 19v1.5M17 19v1.5M5 11h14M7.5 13.5h.01M16.5 13.5h.01';
+    const barrier = 'M4 21V8M20 21V14M4 10h17v4H4zM8 10l3 4M14 10l3 4', sofa = 'M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M2 13a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v5H2zM5 18v2M19 18v2';
+    const cloud = 'M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z', cloudHi = 'M7 15a4 4 0 0 1-.5-8A6 6 0 0 1 18 6a4.5 4.5 0 0 1-.5 9z';
+    return {
+      // the phone's apps
+      wallet: 'M3 7a2 2 0 0 1 2-2h12v4M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2zM16.5 14.5h.01',
+      jobs: 'M4 8h16v11H4zM9 8V5h6v3M4 13h16M11 13v2h2v-2',
+      chats: 'M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12zM9 12h.01M12 12h.01M15 12h.01',
+      hq: house, houses: house, huts: 'M2 12l10-8 10 8M5 10v10h14V10M10 20v-5h4v5M8 6.5V3',
+      arena: 'M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3M8 21h8',
+      casino: 'M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01',
+      wyrd: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 15.5l.7 1.8 1.8.7-1.8.7L19 20.5l-.7-1.8-1.8-.7 1.8-.7z',
+      ride: 'M3 18a2 2 0 1 0 4 0 2 2 0 1 0-4 0M17 18a2 2 0 1 0 4 0 2 2 0 1 0-4 0M7 18h8l2-7h-4M15 5h3l1.5 7M9 11h4',
+      garage: car, dealer: car,
+      store: sofa, homestore: sofa,
+      homes: 'M3 11l9-7 9 7M5 10v10h14V10M12 12.5a2 2 0 1 0 0 .01M12 14.5V18',
+      parties: 'M4 20l5-14 9 9zM7.5 10.5l6 6M14 3.5l.8 2M19.5 4.5l-2 2M20.5 10h-2M10.5 3l.4 1.5',
+      fashion: 'M8 3l4 3 4-3 5 3-2 5-3-1v11H8V10l-3 1-2-5z',
+      music: 'M4 15v-3a8 8 0 0 1 16 0v3M4 15h3v5H4zM17 15h3v5h-3z',
+      credits: 'M7 3h11a2 2 0 0 1 2 2v2h-4M7 3a2 2 0 0 0-2 2v12a2 2 0 0 1-2 2h11a2 2 0 0 0 2-2V5a2 2 0 0 1 2-2M8 8h5M8 12h5',
+      me: 'M3 5h18v14H3zM8 9.5a2 2 0 1 0 0 .01M5 16a3 3 0 0 1 6 0M14 9h4M14 13h4',
+      privacy: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4',
+      // the top bar and the sky
+      palm: 'M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8',
+      sound: 'M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12', mute: 'M4 9h4l5-4v14l-5-4H4zM17 10l4 4M21 10l-4 4',
+      sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      moon: 'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',
+      cloud, partly: 'M8 2.5v1.2M3.6 4.6l.8.8M2 9h1.2M8 6a3.5 3.5 0 0 0-3.2 5M10 20a4 4 0 0 1-.5-8 6 6 0 0 1 11 .5A3.8 3.8 0 0 1 20 20z',
+      rain: cloudHi + 'M9 18l-1 3M13 18l-1 3M17 18l-1 3', storm: cloudHi + 'M13 13l-3 4.5h4L11 22', fog: 'M7 6h10M4 10h16M3 14h18M5 18h14',
+      // the map's landmarks
+      mosque: 'M12 3c3 2 5 4 5 7H7c0-3 2-5 5-7zM5 10h14v10H5zM10 20v-4a2 2 0 0 1 4 0v4M3 20h18M21 6v14M12 1.5V3',
+      market: 'M3 10h18l-2 10H5zM7 10l3-6M17 10l-3-6M9 13.5v3M15 13.5v3M12 13.5v3',
+      shops: bag, mall: bag, arcade: bag,
+      palace: 'M3 8l4 4 5-6 5 6 4-4-2 11H5zM5 19h14',
+      fountain: 'M12 4v8M12 4c-2 0-4 2-4 4M12 4c2 0 4 2 4 4M4 14h16l-2 6H6zM8 12h8',
+      cathedral: 'M12 2v4M10 4h4M12 6l5 5v10H7V11zM3 21h18M10 21v-4a2 2 0 0 1 4 0v4',
+      field: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
+      towers: city, skyline: city, glass: 'M3 21h18M4 10h16M12 3l9 5H3zM6 10v11M10 10v11M14 10v11M18 10v11',
+      park: tree, forest: 'M5 21c0-9 5-15 15-16-1 10-7 15-15 16zM5 21l8-8',
+      hospital: 'M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM12 8v8M8 12h8',
+      jetty: 'M3 16l2 3h14l2-3zM5 16v-4h14v4M8 12V8h8v4M12 8V5M2 21.5c2 1 4 1 6 0s4-1 6 0 4 1 6 0',
+      golf: 'M6 21V3l10 4-10 4M3 21h12',
+      villas: house, marina: 'M12 3v13M12 4l7 11h-7M12 7l-5 8h5M3 18h18l-2 3H5z',
+      bigate: barrier, tollgate: barrier, soon: 'M12 3l7 16H5zM8.5 11h7M7 15h10M3 21h18',
+      motorpark: 'M5 4h14a2 2 0 0 1 2 2v11H3V6a2 2 0 0 1 2-2zM3 11h18M7 17v2M17 17v2M7 14h.01M17 14h.01',
+      hotel: 'M3 20V6M3 13h18v7M21 13a3 3 0 0 0-3-3h-7v3M7 10a1.5 1.5 0 1 0 0 .01',
+      beach: 'M12 3a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9zM12 12v7M12 19a2 2 0 0 0 4 0M2 21h20',
+      wyrdtower: 'M12 2v3M9 21l2-16h2l2 16M7 21h10M10.3 12h3.4M10.8 8h2.4M5 6a9 9 0 0 0 0 8M19 6a9 9 0 0 1 0 8',
+      gallery: 'M12 3a9 9 0 1 0 0 18c1 0 2-.8 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4c0-4.4-4-8-9-8zM7.5 11h.01M10 7h.01M15 7h.01',
+      club: 'M12 2v3M12 5a7 7 0 1 0 0 14 7 7 0 1 0 0-14M5 12h14M12 5c-2 2-3 4.5-3 7s1 5 3 7M12 5c2 2 3 4.5 3 7s-1 5-3 7',
+      airport: 'M10 3.5c0-1 2-1 2 0v5.5l8 4.5v2l-8-2.5v4.5l2.5 2v1.5L12 20l-2.5.5V19l2.5-2v-4.5L4 15v-2l6-4.5z',
+      refinery: 'M4 21V11l5 3v-3l5 3V5h5v16zM2 21h20M16 9h1M16 13h1',
+      screens: 'M3 5h18v12H3zM8 21h8M12 17v4M7 9l3 2-3 2',
+      station: 'M7 3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3zM4 10h16M8 13.5h.01M16 13.5h.01M8 21l2-4M16 21l-2-4',
+      welcome: 'M7 11V6a1.5 1.5 0 0 1 3 0v4M10 9V4.5a1.5 1.5 0 0 1 3 0V10M13 9.5V6a1.5 1.5 0 0 1 3 0v6M16 9a1.5 1.5 0 0 1 3 0v4a8 8 0 0 1-8 8 7 7 0 0 1-6-3.5L3 13.5a1.5 1.5 0 0 1 2.5-1.5L7 14',
+      pin: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 10h.01',
+    };
+  })();
+  const ico = (k, cls = '') => ICONS[k] ? `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONS[k]}"/></svg>` : '';
+  const ICO_P = {};
+  function icoDraw(g, k, cx, cy, size, col, lw = 2) {
+    const d = ICONS[k] || ICONS.pin, p = ICO_P[k] || (ICO_P[k] = new Path2D(d));
+    g.save(); g.translate(cx - size / 2, cy - size / 2); g.scale(size / 24, size / 24); g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(p); g.restore();
+  }
+  // each landmark's colour, for its pin
+  const PIN_COL = { mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
   // the landmarks: [type, i, j, wi, dj, name, emoji]
   const PLACES = [
     // Lagos Island
@@ -3229,8 +3320,7 @@
       x.save(); x.shadowColor = 'rgba(20,60,100,0.3)'; x.shadowBlur = 8; x.shadowOffsetY = 2;
       x.fillStyle = '#fff'; x.beginPath(); x.arc(s[0], s[1] - r - 6, r, 0, Math.PI * 2); x.fill();
       x.beginPath(); x.moveTo(s[0] - 5, s[1] - 9); x.lineTo(s[0] + 5, s[1] - 9); x.lineTo(s[0], s[1] - 1); x.fill(); x.restore();
-      x.font = '17px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-      x.fillText(p[6], s[0], s[1] - r - 5);
+      { const col = PIN_COL[p[0]] || '#0F172A'; x.strokeStyle = col; x.globalAlpha = 0.9; x.lineWidth = 2; x.beginPath(); x.arc(s[0], s[1] - r - 6, r - 2.5, 0, Math.PI * 2); x.stroke(); x.globalAlpha = 1; icoDraw(x, ICONS[p[0]] ? p[0] : 'pin', s[0], s[1] - r - 6, 17, col, 2.1); }
       const near = Math.hypot(cx - me.x, cz - me.z) < 70;
       if (near || cam.user > 1.3) {
         x.font = '700 12px "Plus Jakarta Sans", sans-serif';
@@ -4907,7 +4997,7 @@
     if (ENTERABLE.has(p[0])) return enterPlace(p);
     const o = OFFERS[p[0]];
     card.innerHTML = '';
-    const b = document.createElement('b'); b.textContent = p[6] + ' ' + p[5];
+    const b = document.createElement('b'); b.innerHTML = `<span class="pci" style="--pc:${PIN_COL[p[0]] || '#0F172A'}">${ico(ICONS[p[0]] ? p[0] : 'pin')}</span>${esc(p[5])}`;
     const s = document.createElement('span'); s.textContent = (sectorOf((p[1] + 0.5) * T, (p[2] + 0.5) * T) || {}).name || '';
     card.append(b, s);
     if (o) {
@@ -5561,8 +5651,8 @@
     djChip();
   }, 250);
   { const tc = document.getElementById('tCity'), tm = document.getElementById('tMusic');
-    tc.classList.toggle('off', !CITY.on); tc.textContent = CITY.on ? '🔊' : '🔈';
-    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.textContent = CITY.on ? '🔊' : '🔈'; notify(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
+    tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tm.innerHTML = ico('music');
+    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); notify(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
     tm.onclick = () => openPhone('music', MP.q.length ? { tab: 'now' } : undefined);
     document.getElementById('tDj').onclick = () => openPhone('music'); // see who's playing, take the decks inside a club
     for (const ev of ['play', 'pause']) MP.a.addEventListener(ev, () => tm.classList.toggle('playing', !MP.a.paused)); }
@@ -5573,7 +5663,7 @@
   // place and doesn't flicker
   function show(html) { pbody.innerHTML = html; if (pbody.dataset.fresh) { pbody.scrollTop = 0; delete pbody.dataset.fresh; } }
   // the shared app header: the app's icon in its colour, a title, a line under it
-  const ahead = (k, title, sub) => { const a = APPS.find((v) => v[0] === k); return `<div class="ahead" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${a ? a[1] : '✨'}</i><div><h2>${esc(title)}</h2>${sub ? `<span>${sub}</span>` : ''}</div></div>`; };
+  const ahead = (k, title, sub) => { const a = APPS.find((v) => v[0] === k); return `<div class="ahead" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || (a ? a[1] : '✨')}</i><div><h2>${esc(title)}</h2>${sub ? `<span>${sub}</span>` : ''}</div></div>`; };
   // a round avatar with someone's initials, in a colour that's always theirs
   const avatar = (name) => { let h = 0; for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) % 360; return `<span class="av2" style="background:hsl(${h},75%,62%)">${esc(String(name).replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '?')}</span>`; };
   function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); enterFx(); render(app, arg); }
@@ -5622,7 +5712,7 @@
     wxApply();
   }
   wxFetch(); setInterval(wxFetch, 15 * 60000);
-  setInterval(() => { const el = document.getElementById('tWx'); if (el) { el.textContent = WX.temp == null ? WX.icon : `${WX.icon} ${WX.temp}°`; el.title = WX.live ? `Lagos now: ${WX.text}, ${WX.temp}°C (feels ${WX.feels}°), humidity ${WX.humidity}%, wind ${Math.round(WX.wind)} km/h${WX.rainMm ? ', rain ' + WX.rainMm + ' mm/h' : ''}` : 'Lagos weather: waiting for the live reading'; } }, 2000);
+  setInterval(() => { const el = document.getElementById('tWx'); if (el) { { const k = WX.kind, day = WX.isDay !== 0, ic = ico({ storm: 'storm', rain: 'rain', drizzle: 'rain', fog: 'fog', haze: 'fog', overcast: 'cloud', cloudy: 'cloud', partly: day ? 'partly' : 'moon', clear: day ? 'sun' : 'moon' }[k] || 'sun'); const h = WX.temp == null ? ic : `${ic}<b>${WX.temp}°</b>`; if (el.innerHTML !== h) el.innerHTML = h; el.dataset.k = k; } el.title = WX.live ? `Lagos now: ${WX.text}, ${WX.temp}°C (feels ${WX.feels}°), humidity ${WX.humidity}%, wind ${Math.round(WX.wind)} km/h${WX.rainMm ? ', rain ' + WX.rainMm + ' mm/h' : ''}` : 'Lagos weather: waiting for the live reading'; } }, 2000);
   if (WX_FORCE) wxApply();
   // the drops (in screen space) and the clouds (in the world), the lightning, the sound
   const DROPS = Array.from({ length: 420 }, () => ({ x: Math.random(), y: Math.random(), s: 0.7 + Math.random() * 0.6 }));
@@ -5669,7 +5759,7 @@
     const s = c.createBufferSource(), g = c.createGain(); s.buffer = b; g.gain.value = v * (inside ? 0.5 : 1); s.connect(g); g.connect(c.destination); s.start();
   }
   // the weather for the phone: the real one (see WX)
-  function lagosWeather() { return { temp: WX.temp ?? '–', icon: WX.icon, text: WX.text }; }
+  function lagosWeather() { return { temp: WX.temp ?? '–', icon: ico({ storm: 'storm', rain: 'rain', drizzle: 'rain', fog: 'fog', haze: 'fog', overcast: 'cloud', cloudy: 'cloud', partly: WX.isDay !== 0 ? 'partly' : 'moon', clear: WX.isDay !== 0 ? 'sun' : 'moon' }[WX.kind] || 'sun', 'wxic'), text: WX.text }; }
   // WYRD OS themes: the accent colours, chosen in the control centre and remembered on this device
   const OS_THEMES = { neon: ['#FCEE0A', '#00F0FF', '#FF003C'], gold: ['#F5C542', '#FDE68A', '#B45309'], ocean: ['#5EEAD4', '#38BDF8', '#6366F1'], rose: ['#F9A8D4', '#C084FC', '#FB7185'] };
   let osTheme = store.get('li.os') || 'neon';
@@ -5796,7 +5886,7 @@
       const L = document.getElementById('lockscr'), d = new Date(Date.now() + 3600e3), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
-      document.getElementById('lockw').textContent = `${wx.icon} ${wx.temp}°C · ${wx.text} · Lagos`;
+      document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos`;
       // what's playing, with its controls, above the notifications
       const s = MP.q[MP.i], lm = s ? `<div class="lmus" onclick="event.stopPropagation()"><div class="mwa" style="background-image:url('${esc(s.art)}')"></div><div class="mwt"><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><div class="mwc"><button data-lm="prev">⏮</button><button data-lm="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-lm="next">⏭</button></div></div>` : '';
       document.getElementById('lockn').innerHTML = lm + notes.slice(0, 3).map(noteHtml).join('') + (notes.length > 3 ? `<div class="lmore">+${notes.length - 3} more</div>` : '');
@@ -5831,7 +5921,7 @@
       if (app === 'signin') { show(`<div class="ptitle">Your phone</div><div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
       if (app === 'home') {
         const d = new Date(Date.now() + 3600e3), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
-        const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
+        const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
         show(`<div class="hhead"><div class="hgreet">${hi},<b>${esc(me$.handle)}</b></div><div class="hwx">${wx.icon}<b>${wx.temp}°</b></div></div>
@@ -6470,7 +6560,7 @@
         const POP = ['WYRD Tower', 'Eko Hotel', 'Elegushi Beach', 'The Arena (live shows)', 'Eko Home Store', 'Lekki Luxury Cars', 'Banana Island Marina'].map((n) => PLACES.find((p) => p[5] === n)).filter(Boolean);
         show(`${ahead('ride', 'Ride', 'Okada or car · paid when you arrive')}
           <div class="search" style="--ac:#FF8A00"><span>🔎</span><input id="rFind" placeholder="Where to?" value="${esc(rideFind)}" autocomplete="off"></div>
-          <div class="chips" style="--ac:#FF8A00">${POP.map((p) => `<button data-p="${PLACES.indexOf(p)}">${p[6]} ${esc(p[5].replace(' (live shows)', ''))}</button>`).join('')}</div>
+          <div class="chips" style="--ac:#FF8A00">${POP.map((p) => `<button data-p="${PLACES.indexOf(p)}">${ico(ICONS[p[0]] ? p[0] : 'pin')} ${esc(p[5].replace(' (live shows)', ''))}</button>`).join('')}</div>
           <div id="rNone" class="pcard dim" style="display:none">No place by that name. Try a district: Ikoyi, Lekki, Ajah…</div>
           ${SECTORS.map((s, k) => s.id.startsWith('fill') ? '' : `<div class="rs" data-n="${esc(s.name.toLowerCase())}"><div class="rsec">${esc(s.name).toUpperCase()}</div><button class="peek" data-s="${k}"><div class="ph" data-peek="s${k}"></div><div class="cap"><b>${esc(s.name)}</b><span>${spots(k).length} places</span></div></button><div class="peeks">${spots(k).map((p) => `<button class="peek" data-n="${esc(p[5].toLowerCase())}" data-p="${PLACES.indexOf(p)}"><div class="ph" data-peek="p${PLACES.indexOf(p)}"></div><div class="cap"><b>${p[6]} ${esc(p[5])}</b></div></button>`).join('')}</div></div>`).join('')}`);
         const filter = () => {
