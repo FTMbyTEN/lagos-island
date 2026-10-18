@@ -370,6 +370,35 @@
   .mday { align-self: center; margin: 6px 0 2px; padding: 2px 10px; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 1px; text-transform: uppercase; color: #8FB6C2; background: rgba(255,255,255,.06); }
   .msg time { display: block; margin-top: 2px; font-size: 10.5px; opacity: .55; text-align: right; } .msg.cont { margin-top: -3px; }
   .qrep { display: flex; gap: 6px; overflow-x: auto; margin: 10px -16px 0; padding: 0 16px 2px; } .qrep button { flex: none; padding: 6px 10px; border: 1px solid rgba(255,0,60,.45); background: rgba(255,0,60,.1); color: #FFD6DE; font: 700 13px 'Rajdhani', sans-serif; cursor: pointer; }
+  /* the home screen: groups of apps, what you're wearing */
+  .hsec { margin: 16px 2px 0; font: 800 10.5px 'Orbitron', sans-serif; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(230,249,255,.55); }
+  .hsec + .apps { padding-top: 10px !important; }
+  .wfit { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 8px; padding: 0 12px 0 0; height: 64px; overflow: hidden; border: 1px solid rgba(245,158,11,.45); border-radius: 16px; background: linear-gradient(110deg, rgba(245,158,11,.22), rgba(124,58,237,.18) 60%, rgba(0,0,0,.35)); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; text-align: left; cursor: pointer; }
+  .wfit img { width: 56px; height: 76px; margin-top: 14px; object-fit: cover; object-position: top; flex: none; }
+  .wfit span { flex: 1; min-width: 0; } .wfit small { display: block; font: 700 10.5px 'Rajdhani', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: #F59E0B; } .wfit b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .wfit em { flex: none; font-style: normal; font: 700 12px 'Rajdhani', sans-serif; color: #FCD34D; }
+  /* Fashion: you in 3D in every look */
+  .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .frow { display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px 12px; padding: 0 16px 4px; scroll-snap-type: x mandatory; } .frow .fcard { flex: none; width: 132px; scroll-snap-align: start; }
+  .fcard { position: relative; display: flex; flex-direction: column; align-items: stretch; padding: 0 0 10px; border: 1px solid rgba(255,255,255,.1); background: radial-gradient(120% 70% at 50% 18%, color-mix(in srgb, var(--c1) 55%, #fff 0%) 0%, color-mix(in srgb, var(--c2) 35%, #0B0B14) 55%, #0B0B14 100%); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; text-align: left; cursor: pointer; overflow: hidden; border-radius: 14px; transition: transform .12s, border-color .15s; }
+  .fcard:hover { border-color: #F59E0B; } .fcard:active { transform: scale(.97); }
+  .fcard .fshot { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; display: block; filter: drop-shadow(0 6px 8px rgba(0,0,0,.45)); }
+  .fcard .fb { margin: 2px 10px 0; font: 800 10px 'Orbitron', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; color: #FCD34D; }
+  .fcard b { margin: 1px 10px 0; font-size: 14px; line-height: 1.15; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .fcard .fp { margin: 3px 10px 0; font: 800 12px 'Orbitron', sans-serif; color: var(--y); }
+  .fcard > i, .fstage > i { position: absolute; top: 8px; right: 8px; padding: 2px 7px; border-radius: 999px; font: 800 10px 'Rajdhani', sans-serif; font-style: normal; letter-spacing: 1px; text-transform: uppercase; color: #07070D; background: rgba(255,255,255,.85); } .fcard > i.on, .fstage > i.on { background: #22C55E; color: #fff; }
+  .fme { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; margin-bottom: 12px; padding: 0 14px 0 0; min-height: 132px; border: 1px solid rgba(245,158,11,.5); border-radius: 18px; background: linear-gradient(120deg, color-mix(in srgb, var(--c1) 45%, #0B0B14), color-mix(in srgb, var(--c2) 30%, #0B0B14) 60%, #0B0B14); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; text-align: left; cursor: pointer; overflow: hidden; }
+  .fme .fshot { width: 100px; height: 132px; object-fit: cover; object-position: top; flex: none; filter: drop-shadow(0 6px 8px rgba(0,0,0,.5)); }
+  .fme > div { flex: 1; min-width: 0; padding: 12px 0 12px 14px; } .fme .hl { font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 2.5px; text-transform: uppercase; color: #F59E0B; } .fme b { display: block; font: 900 18px 'Orbitron', sans-serif; color: #fff; margin: 2px 0; } .fme small { display: block; color: #CFE3EA; font-size: 13px; } .fme em { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(0,0,0,.4); font: 700 11px 'Rajdhani', sans-serif; font-style: normal; color: #FCD34D; }
+  .fseg { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 4px; padding: 3px; border-radius: 999px; background: rgba(255,255,255,.06); } .fseg button { padding: 8px; border: none; border-radius: 999px; background: none; color: #CFE3EA; font: 800 13px 'Rajdhani', sans-serif; letter-spacing: 1px; cursor: pointer; } .fseg button.on { background: #F59E0B; color: #07070D; }
+  .fdepts { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 10px; padding: 0 16px 4px; } .fdepts button { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 70px; padding: 8px 6px; border: 1px solid rgba(245,158,11,.3); border-radius: 14px; background: rgba(0,0,0,.35); color: #E6F9FF; font: 700 12px 'Rajdhani', sans-serif; cursor: pointer; } .fdepts i { font-style: normal; font-size: 20px; } .fdepts small { color: #8FB6C2; font-size: 10.5px; } .fdepts button.on { background: #F59E0B; border-color: #F59E0B; color: #07070D; } .fdepts button.on small { color: #3B2A06; }
+  .fstage { position: relative; margin: 0 0 10px; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); background: radial-gradient(85% 65% at 50% 32%, color-mix(in srgb, var(--c1) 30%, #F1ECE4), color-mix(in srgb, var(--c2) 35%, #3A3A48) 62%, #15151F); }
+  .fstage::after { content: ''; position: absolute; left: 18%; right: 18%; bottom: 6%; height: 7%; border-radius: 50%; background: radial-gradient(rgba(0,0,0,.45), transparent 70%); pointer-events: none; }
+  .fstage canvas { display: block; width: 100%; aspect-ratio: 3 / 4; touch-action: none; cursor: grab; position: relative; z-index: 1; } .fstage canvas:active { cursor: grabbing; }
+  .fhint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 2; padding: 2px 9px; border-radius: 999px; background: rgba(0,0,0,.45); color: #E6F9FF; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 1px; }
+  .fname { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 2px 2px 8px; } .fname b { font: 800 19px 'Rajdhani', sans-serif; color: #fff; line-height: 1.1; } .fname span { flex: none; font: 900 17px 'Orbitron', sans-serif; color: var(--y); }
+  .fsw { display: flex; gap: 6px; margin: 0 2px 8px; } .fsw i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,.7); box-shadow: 0 2px 6px rgba(0,0,0,.4); }
+  .ftags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 2px 12px; } .ftags span { padding: 3px 9px; border-radius: 999px; border: 1px solid rgba(245,158,11,.45); color: #FCD34D; font: 700 12px 'Rajdhani', sans-serif; }
+  .fwhere { display: flex; align-items: center; gap: 10px; margin-top: 10px; } .fwhere b { flex: none; } .fwhere span { flex: 1; color: #CFE3EA; } .fwhere .pbtn { margin: 0; }
   .pcard.err { background: rgba(255,0,60,.14); border-color: rgba(255,0,60,.6); box-shadow: inset 3px 0 0 var(--m); color: #FFD6DE; }
   #lockscr { padding: 90px 24px 64px !important; }
   #lockscr .lt { font-size: 72px !important; }
@@ -3520,14 +3549,45 @@
   function drawBoutique(R, now) {
     const [label, acc, soft] = BOUTIQUES[R.shop] || BOUTIQUES.mall;
     faceText(label.toUpperCase(), R.w / 2, 14, 0.15, acc, 3.4, 0); faceText('tap an outfit to see it · try it · buy it', R.w / 2, 10.6, 0.15, '#78716C', 1.3, 0, 700);
+    const stock = (BOUTIQUES[R.shop] || BOUTIQUES.mall)[3], t = now / 1000;
     flat(4, 44, R.w - 4, 52, 0.02, soft); // the runway to the door
+    for (const z of [16, 34]) { flat(8, z - 6, R.w - 8, z + 6, 0.025, shadeHex(soft, 0.96)); flat(8, z + 5.6, R.w - 8, z + 6, 0.03, acc); } // a rug under each row
+    // rails of clothes along the back wall, in the colours of what's in stock, a brand panel above
+    for (const [x0, x1] of [[4, R.w / 2 - 12], [R.w / 2 + 12, R.w - 26]]) {
+      for (const px of [x0, x1]) box(px - 0.2, 0, 2.6, px + 0.2, 6, 3, '#A8A29E');
+      box(x0, 5.8, 2.7, x1, 6.1, 2.9, '#A8A29E');
+      const n = Math.floor((x1 - x0 - 1) / 1.5);
+      for (let k = 0; k < n; k++) { const o = OUTFITS[stock[(k + (x0 | 0)) % stock.length]].look, gx = x0 + 1 + k * 1.5, long = k % 3 === 0; box(gx - 0.55, long ? 1.2 : 3, 2.4, gx + 0.55, 5.6, 3.2, k % 2 ? o.top : o.bot || o.top); }
+    }
+    // fitting rooms on the left, curtains in the shop's colour; a long mirror beside them
+    for (let k = 0; k < 2; k++) { const z0 = 8 + k * 9; box(0.5, 0, z0, 7, 9, z0 + 0.4, '#E7E5E4'); box(0.5, 0, z0 + 7.6, 7, 9, z0 + 8, '#E7E5E4'); box(6.8, 0.6, z0 + 0.4, 7.1, 8.4, z0 + 7.6, acc); }
+    faceText('FITTING', 3.8, 9.6, 8, '#57534E', 1.1, 0, 800);
+    { const m0 = P(0.2, 1, 28), m1 = P(0.2, 1, 36), m2 = P(0.2, 11, 36), m3 = P(0.2, 11, 28); quad([m0, m1, m2, m3], 'rgba(186,230,253,0.55)', '#D4AF37'); quad([P(0.21, 3, 30), P(0.21, 3, 31.2), P(0.21, 10, 33.6), P(0.21, 10, 32.4)], 'rgba(255,255,255,0.45)'); }
     box(R.w - 22, 0, 4, R.w - 6, 4, 8, acc); box(R.w - 22.2, 4, 3.8, R.w - 5.8, 4.4, 8.2, '#F5F5F4'); // the till
+    faceText('PAY HERE', R.w - 14, 2.2, 8.05, '#FFFFFF', 1.1, 0, 800);
+    for (const [px, pz] of [[R.w - 3, 40], [3, 40]]) { cylLit(px, pz, 1.2, 0, 1.6, '#78716C'); tree(px, pz, 2, C.treeLight); }
     for (const m of boutiqueSpots(R)) {
-      cylLit(m.x, m.z, 3.2, 0, 0.3, soft); { const p = P(m.x, 0.32, m.z), r = 3.2 * K; x.strokeStyle = acc; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
+      // a two-step plinth, a ring in the shop's colour, a pool of light from the spot above
+      flat(m.x - 4, m.z - 2.6, m.x + 4, m.z + 2.6, 0.03, 'rgba(255,244,214,0.35)');
+      cylLit(m.x, m.z, 3.5, 0, 0.18, '#E7E5E4'); cylLit(m.x, m.z, 3, 0.18, 0.2, soft);
+      { const p = P(m.x, 0.4, m.z), r = 3 * K; x.strokeStyle = acc; x.lineWidth = Math.max(1, K * 0.3); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
+      glow.push(() => { const top = P(m.x, 17, m.z), base = P(m.x, 0, m.z), r = K * 4; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createLinearGradient(top[0], top[1], base[0], base[1]); g.addColorStop(0, 'rgba(255,236,190,0.0)'); g.addColorStop(1, 'rgba(255,236,190,0.28)'); x.fillStyle = g; x.beginPath(); x.moveTo(top[0] - K * 0.6, top[1]); x.lineTo(top[0] + K * 0.6, top[1]); x.lineTo(base[0] + r, base[1]); x.lineTo(base[0] - r, base[1]); x.fill(); x.restore(); });
       const L = parseLook(`${m.g},${(m.x | 0) % 6},${m.g === 'f' ? 0 : 1},${m.g === 'f' ? 1 : 0},0,${m.id}`, 'mq:' + m.id);
       if (PEOPLE.ok) person3d(m.x, m.z, '#FFFFFF', 'mq:' + m.id, now, L, null, 0);
-      const o = OUTFITS[m.id], near = Math.hypot(m.x - me.x, m.z - me.z) < 14;
-      afterCars.push(() => { const p = P(m.x, 0, m.z + 4.2); x.save(); x.font = `800 ${near ? 10 : 9}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; const t = near ? `${o.brand} · ${o.name}` : o.brand, w = x.measureText(t).width + 14; x.fillStyle = acc; x.beginPath(); x.roundRect(p[0] - w / 2, p[1] - 8, w, 16, 8); x.fill(); x.fillStyle = '#FFFFFF'; x.fillText(t, p[0], p[1] + 0.5); x.restore(); });
+      // the tag: brand and price on a card; the name too when you're close
+      const o = OUTFITS[m.id], near = Math.hypot(m.x - me.x, m.z - me.z) < 14, bob = near ? Math.sin(t * 3) * 1.2 : 0;
+      afterCars.push(() => {
+        const p = P(m.x, 0, m.z + 4.4); x.save(); x.textAlign = 'left'; x.textBaseline = 'middle';
+        x.font = '800 10px "Plus Jakarta Sans", sans-serif'; const bw = x.measureText(o.brand).width;
+        x.font = '700 9px "Plus Jakarta Sans", sans-serif'; const pr = o.price ? naira(o.price) : 'Free', nm = near ? o.name : '', pw = x.measureText(near ? nm : pr).width;
+        const w = Math.max(bw, pw, near ? x.measureText(pr).width : 0) + 22, h = near ? 40 : 28, y0 = p[1] - 6 + bob;
+        x.shadowColor = 'rgba(0,0,0,0.25)'; x.shadowBlur = 6; x.fillStyle = '#FFFFFF'; x.beginPath(); x.roundRect(p[0] - w / 2, y0, w, h, 7); x.fill(); x.shadowBlur = 0;
+        x.fillStyle = acc; x.beginPath(); x.roundRect(p[0] - w / 2, y0, 5, h, [7, 0, 0, 7]); x.fill();
+        x.fillStyle = '#1C1917'; x.font = '800 10px "Plus Jakarta Sans", sans-serif'; x.fillText(o.brand, p[0] - w / 2 + 12, y0 + 9);
+        x.font = '600 9px "Plus Jakarta Sans", sans-serif'; if (near) { x.fillStyle = '#57534E'; x.fillText(nm, p[0] - w / 2 + 12, y0 + 20); }
+        x.font = '800 9px "Plus Jakarta Sans", sans-serif'; x.fillStyle = '#B45309'; x.fillText(pr, p[0] - w / 2 + 12, y0 + (near ? 31 : 20));
+        x.restore();
+      });
     }
   }
   // the Home Store: a plinth under each piece in its tier's colour, the rooms' names on the floor, a name plate (the price is on your phone)
@@ -3829,6 +3889,7 @@
   let myName = store.get('li.name') || '', myColor = store.get('li.color') || COLORS[Math.floor(Math.random() * COLORS.length)];
   const me = { x: 7.5 * T, z: 10.5 * T }; // on the road beside the Central Mosque
   let sector = SECTORS[0];
+  { const in0 = new URLSearchParams(location.search).get('in'); if (in0) setTimeout(() => { const p = PLACES.find((v) => v[0] === in0); if (p && ENTERABLE.has(in0)) enterPlace(p); }, 1200); } // ?in=mall opens a building straight away
   { const at0 = new URLSearchParams(location.search).get('at'); if (at0) { const [ai, aj] = at0.split(',').map(Number); if (isFinite(ai) && isFinite(aj)) { me.x = ai * T; me.z = aj * T; } } } // a link can start the view at a spot: ?at=column,row
 
   // ---- input
@@ -4178,6 +4239,8 @@
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
     ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
+  // the home screen, in groups under the widgets (the dock holds the four you use most)
+  const HOME_GROUPS = [['Your life', ['hq', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['arena', 'parties', 'casino']], ['You', ['me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     const m = innerWidth <= 560 ? 8 : 16, vh = (window.visualViewport && visualViewport.height) || innerHeight;
@@ -4280,9 +4343,11 @@
           <div class="widget"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">${wx.text}</div><div class="wn">${wx.temp}°C</div></div></div>
           <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>${naira(me$.earnedToday || 0)} of ${naira(cap)} today</small></button>
             <button class="wmini" data-app="homes"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${notes.length ? notes.length + ' new on your phone' : 'All quiet'}</small></button></div>
-          <div class="apps">${APPS.filter((a) => !DOCK.includes(a[0])).map(tile).join('')}</div>
+          ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
+          ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
+        { const im = pbody.querySelector('.wfit img'); const u = im ? fitShot(im.dataset.shot) : null; if (u) im.src = u; else if (im) im.remove(); }
         return;
       }
       if (app === 'wallet') {
@@ -4321,19 +4386,19 @@
       }
       if (app === 'postjob') {
         const f = [['company', 'Company'], ['title', 'Job title'], ['pay', 'Pay (e.g. ₦250,000 a month)'], ['skills', 'Skills needed, comma separated'], ['location', 'Where (e.g. Victoria Island, Lagos)'], ['contact', 'How applicants reach you (email or phone)']];
-        show(`<div class="ptitle">Post a job</div><div class="pcard"><p class="dim">A real job. WYRD's team checks every post before it shows. Applicants share their island name, skills and a note; you share your contact only with people who apply.</p>${f.map(([k, l]) => `<input id="pj_${k}" placeholder="${l}">`).join('')}<textarea id="pj_about" rows="4" placeholder="About the job"></textarea><button class="pbtn" id="pjGo">Send for checking</button></div>`);
+        show(`${ahead('jobs', 'Post a job', 'Checked by the WYRD team before it shows')}<div class="pcard"><p class="dim">A real job. WYRD's team checks every post before it shows. Applicants share their island name, skills and a note; you share your contact only with people who apply.</p>${f.map(([k, l]) => `<input id="pj_${k}" placeholder="${l}">`).join('')}<textarea id="pj_about" rows="4" placeholder="About the job"></textarea><button class="pbtn" id="pjGo">Send for checking</button></div>`);
         $('pjGo').onclick = async () => { try { const a = {}; for (const k of ['company', 'title', 'pay', 'skills', 'location', 'about', 'contact']) a[k] = $('pj_' + k).value; await my('postJob', a); show('<div class="ptitle">Sent</div><div class="pcard">Thanks. It shows on the board once it has been checked.</div>'); } catch (e) { fail(e); } };
         return;
       }
       if (app === 'myjobs') {
         const list = await my('myJobs');
-        show(`<div class="ptitle">My posts</div>${list.map((j) => `<div class="pcard"><h3>${esc(j.title)}</h3><div class="dim">${esc(j.company)} · ${esc(j.status)}</div>${j.applicants.map((p) => `<div class="row"><span><b>${esc(p.handle)}</b><br><span class="dim">${esc(p.skills)}</span><br>${esc(p.note)}</span></div>`).join('') || '<div class="dim">No applicants yet.</div>'}${j.status === 'open' || j.status === 'pending' ? `<button class="pbtn alt" data-close="${j.id}">Close</button>` : ''}</div>`).join('') || '<div class="pcard dim">You haven\'t posted a job.</div>'}`);
+        show(`${ahead('jobs', 'My posts', 'Your jobs and who applied')}${list.map((j) => `<div class="pcard"><h3>${esc(j.title)}</h3><div class="dim">${esc(j.company)} · ${esc(j.status)}</div>${j.applicants.map((p) => `<div class="row"><span><b>${esc(p.handle)}</b><br><span class="dim">${esc(p.skills)}</span><br>${esc(p.note)}</span></div>`).join('') || '<div class="dim">No applicants yet.</div>'}${j.status === 'open' || j.status === 'pending' ? `<button class="pbtn alt" data-close="${j.id}">Close</button>` : ''}</div>`).join('') || '<div class="pcard dim">You haven\'t posted a job.</div>'}`);
         pbody.querySelectorAll('[data-close]').forEach((b) => (b.onclick = async () => { await my('closeJob', { jobId: Number(b.dataset.close) }).catch(fail); render('myjobs'); }));
         return;
       }
       if (app === 'queue') {
         const list = await my('pendingJobs');
-        show(`<div class="ptitle">Check posts</div>${list.map((j) => `<div class="pcard"><h3>${esc(j.title)}</h3><div class="dim">${esc(j.company)} · ${esc(j.location)} · ${esc(j.pay)}</div><p>${esc(j.about)}</p><div class="dim">Contact: ${esc(j.contact)}</div><button class="pbtn" data-ok="${j.id}">Approve</button><button class="pbtn alt" data-no="${j.id}">Reject</button></div>`).join('') || '<div class="pcard dim">Nothing waiting.</div>'}`);
+        show(`${ahead('jobs', 'Check posts', 'Approve before they go live')}${list.map((j) => `<div class="pcard"><h3>${esc(j.title)}</h3><div class="dim">${esc(j.company)} · ${esc(j.location)} · ${esc(j.pay)}</div><p>${esc(j.about)}</p><div class="dim">Contact: ${esc(j.contact)}</div><button class="pbtn" data-ok="${j.id}">Approve</button><button class="pbtn alt" data-no="${j.id}">Reject</button></div>`).join('') || '<div class="pcard dim">Nothing waiting.</div>'}`);
         pbody.querySelectorAll('[data-ok],[data-no]').forEach((b) => (b.onclick = async () => { await my('reviewJob', { jobId: Number(b.dataset.ok || b.dataset.no), approve: !!b.dataset.ok }).catch(fail); render('queue'); }));
         return;
       }
@@ -4372,7 +4437,7 @@
       }
       if (app === 'newchat') {
         const opt = arg || { dm: false };
-        show(`<div class="ptitle">${opt.dm ? 'Private conversation' : 'New group'}</div><div class="pcard">${opt.dm ? '' : '<input id="nName" maxlength="40" placeholder="Group name (encrypted too)">'}<input id="nWho" value="${esc(opt.who || '')}" placeholder="${opt.dm ? 'Their username' : 'Usernames, comma separated'}"><button class="pbtn" id="nGo">${opt.dm ? 'Start private conversation' : 'Start group'}</button><p class="dim">Each person gets the chat's key locked to their own device key. Nobody else can open it, not even the server.</p></div>`);
+        show(`${ahead('chats', opt.dm ? 'Private chat' : 'New group', '🔒 End-to-end encrypted')}<div class="pcard">${opt.dm ? '' : '<input id="nName" maxlength="40" placeholder="Group name (encrypted too)">'}<input id="nWho" value="${esc(opt.who || '')}" placeholder="${opt.dm ? 'Their username' : 'Usernames, comma separated'}"><button class="pbtn" id="nGo">${opt.dm ? 'Start private conversation' : 'Start group'}</button><p class="dim">Each person gets the chat's key locked to their own device key. Nobody else can open it, not even the server.</p></div>`);
         $('nGo').onclick = async () => {
           try {
             const who = [...new Set($('nWho').value.split(',').map((s) => s.trim()).filter(Boolean))].filter((h) => h !== me$.handle);
@@ -4464,13 +4529,13 @@
       if (app === 'hostshow') {
         const t = new Date(Date.now() + 86400e3); t.setMinutes(0, 0, 0);
         const local = new Date(t.getTime() - t.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-        show(`<div class="ptitle">Host a show</div><div class="pcard"><p class="dim">Book the arena. WYRD's team checks it, then tickets go on sale. During the show, everything you type goes up on the arena's screens for your ticket holders.</p><input id="hsArtist" maxlength="60" placeholder="Artist name"><input id="hsTitle" maxlength="80" placeholder="Show title"><label class="dim">Starts</label><input id="hsAt" type="datetime-local" value="${local}"><input id="hsMin" type="number" value="60" min="15" max="240" placeholder="Minutes"><input id="hsPrice" type="number" value="2000" min="0" max="20000" placeholder="Ticket price (₦)"><button class="pbtn" id="hsGo">Book the arena</button></div>`);
+        show(`${ahead('arena', 'Host a show', 'Book the arena')}<div class="pcard"><p class="dim">Book the arena. WYRD's team checks it, then tickets go on sale. During the show, everything you type goes up on the arena's screens for your ticket holders.</p><input id="hsArtist" maxlength="60" placeholder="Artist name"><input id="hsTitle" maxlength="80" placeholder="Show title"><label class="dim">Starts</label><input id="hsAt" type="datetime-local" value="${local}"><input id="hsMin" type="number" value="60" min="15" max="240" placeholder="Minutes"><input id="hsPrice" type="number" value="2000" min="0" max="20000" placeholder="Ticket price (₦)"><button class="pbtn" id="hsGo">Book the arena</button></div>`);
         $('hsGo').onclick = async () => { try { await my('hostShow', { artist: $('hsArtist').value, title: $('hsTitle').value, startsAt: new Date($('hsAt').value).toISOString(), minutes: Number($('hsMin').value), price: Number($('hsPrice').value) }); stack.pop(); render('arena'); } catch (e) { fail(e); } };
         return;
       }
       if (app === 'showqueue') {
         const list = await my('pendingShows');
-        show(`<div class="ptitle">Check shows</div>${list.map((s) => `<div class="pcard"><h3>${esc(s.artist)}</h3><div>${esc(s.title)}</div><div class="dim">${new Date(s.startsAt).toLocaleString()} · ${naira(s.price)}</div><button class="pbtn" data-ok="${s.id}">Approve</button><button class="pbtn alt" data-no="${s.id}">Reject</button></div>`).join('') || '<div class="pcard dim">Nothing waiting.</div>'}`);
+        show(`${ahead('arena', 'Check shows', 'Approve before tickets go on sale')}${list.map((s) => `<div class="pcard"><h3>${esc(s.artist)}</h3><div>${esc(s.title)}</div><div class="dim">${new Date(s.startsAt).toLocaleString()} · ${naira(s.price)}</div><button class="pbtn" data-ok="${s.id}">Approve</button><button class="pbtn alt" data-no="${s.id}">Reject</button></div>`).join('') || '<div class="pcard dim">Nothing waiting.</div>'}`);
         pbody.querySelectorAll('[data-ok],[data-no]').forEach((b) => (b.onclick = async () => { await my('reviewShow', { showId: Number(b.dataset.ok || b.dataset.no), approve: !!b.dataset.ok }).catch(fail); render('showqueue'); }));
         return;
       }
@@ -4529,41 +4594,57 @@
         return;
       }
       if (app === 'fashion') {
-        // Shop (by department, cheapest first) and your Wardrobe (what you own: wear it); an outfit's page shows it on a figure
+        // Fashion: you, in 3D, in every outfit. The shop (featured looks, departments, a grid of you wearing each one), your
+        // wardrobe, and an outfit's page: a turntable to spin, its colours and fabrics, where to try it on, buy or wear it
         let owned = [], live = true;
         try { owned = await my('myOutfits'); } catch (e) { if (e.message === 'signin') throw e; live = false; }
         const have = new Set([...STARTERS, ...owned]), cur = parseLook(myLook, myName).outfit, a = arg || {};
-        const fig = (o) => { const l = o.look, sk = SKINS[parseLook(myLook, myName).skin] || SKINS[2], pat = (c1, c2, p, id) => p === 1 ? `<pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="3" fill="${c1}"/><rect y="3" width="6" height="3" fill="${c2}"/></pattern>` : p === 3 ? `<pattern id="${id}" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="${c1}"/><circle cx="4" cy="4" r="2.2" fill="${c2}"/></pattern>` : '', top2 = l.top2 || l.top, bot = l.bot || '#1F2A44', bot2 = l.bot2 || bot, tf = [1, 3].includes(l.topPat) ? 'url(#pt)' : l.top, bf = [1, 3].includes(l.botPat) ? 'url(#pb)' : bot, arm = [14, 30, 52][l.sleeve ?? 1];
-          return `<svg viewBox="0 0 100 150" width="110" height="165" aria-hidden="true"><defs>${pat(l.top, top2, l.topPat, 'pt')}${pat(bot, bot2, l.botPat, 'pb')}</defs>
-            <rect x="14" y="40" width="14" height="56" rx="7" fill="${sk}"/><rect x="72" y="40" width="14" height="56" rx="7" fill="${sk}"/><rect x="14" y="40" width="14" height="${arm}" rx="7" fill="${tf}"/><rect x="72" y="40" width="14" height="${arm}" rx="7" fill="${tf}"/>
-            <rect x="33" y="88" width="15" height="52" rx="6" fill="${sk}"/><rect x="52" y="88" width="15" height="52" rx="6" fill="${sk}"/>
-            ${l.robe ? `<path d="M28 40 H72 L80 140 H20 Z" fill="${tf}"/>` : `<rect x="33" y="86" width="15" height="${[52, 26, 18][l.botLen || 0]}" rx="5" fill="${bf}"/><rect x="52" y="86" width="15" height="${[52, 26, 18][l.botLen || 0]}" rx="5" fill="${bf}"/>${l.botLen === 1 ? `<path d="M30 84 H70 L74 114 H26 Z" fill="${bf}"/>` : ''}`}
-            ${l.robe ? '' : `<rect x="28" y="38" width="44" height="52" rx="10" fill="${tf}"/>${l.topPat === 2 ? `<rect x="28" y="70" width="44" height="20" fill="${top2}"/>` : ''}`}
-            <rect x="31" y="138" width="18" height="8" rx="4" fill="${l.shoe || '#111827'}"/><rect x="51" y="138" width="18" height="8" rx="4" fill="${l.shoe || '#111827'}"/><circle cx="50" cy="22" r="15" fill="${sk}"/></svg>`; };
+        const DEPTS = [['Sportswear', '👟'], ['Streetwear', '🧢'], ['Native', '🪡'], ['Formal', '👔'], ['Luxury', '💎']];
+        const FAB = ['Cotton', 'Denim', 'Fleece', 'Silk', 'Leather'], PAT = ['', 'Stripes', 'Two-tone', 'Print', 'Side stripe', 'Monogram'];
+        const shopsOf = (id) => Object.values(BOUTIQUES).filter((b) => b[3].includes(id)).map((b) => b[0]);
+        const label = (o) => (o.brand === 'Starter' ? 'Starter' : o.brand);
+        // a picture of you in it: filled in a few at a time so the app opens straight away
+        const pic = (o) => `<img class="fshot" data-shot="${o.id}" alt="" src="${FS.shots.get(o.id + '|' + myLook) || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='}">`;
+        const fill = () => { const imgs = [...pbody.querySelectorAll('img[data-shot]')].filter((i) => !FS.shots.has(i.dataset.shot + '|' + myLook)); const step = () => { const im = imgs.shift(); if (!im) return; if (!im.isConnected) return step(); const u = fitShot(im.dataset.shot); if (!u) return setTimeout(fill, 600); im.src = u; requestAnimationFrame(step); }; step(); pbody.querySelectorAll('img[data-shot]').forEach((i) => { const u = FS.shots.get(i.dataset.shot + '|' + myLook); if (u) i.src = u; }); };
+        const bg = (o) => `--c1:${o.look.top};--c2:${o.look.bot || o.look.top}`;
+        const card = (o, from) => `<button class="fcard" data-fit="${o.id}" data-from="${from}" style="${bg(o)}">${pic(o)}${cur === o.id ? '<i class="on">Wearing</i>' : have.has(o.id) && from === 'shop' && o.price ? '<i>Owned</i>' : ''}<span class="fb">${esc(label(o))}</span><b>${esc(o.name)}</b><span class="fp">${o.price ? naira(o.price) : 'Free'}</span></button>`;
         const wear = async (id) => { const q = myLook.split(','); while (q.length < 6) q.push(''); q[5] = id; myLook = q.join(','); store.set('li.look', myLook); try { await my('setLook', { look: myLook }); } catch (e) { if (!/\((404|500)\)/.test(e.message)) return fail(e); } notify(`Now wearing: ${OUTFITS[id].brand === 'Starter' ? '' : OUTFITS[id].brand + ' '}${OUTFITS[id].name}`, 'fashion'); };
         if (a.id && OUTFITS[a.id]) {
-          const o = OUTFITS[a.id], mine = have.has(o.id);
-          show(`${ahead('fashion', o.brand, o.dept)}
-            <div class="hero" style="--ac:${o.look.top};text-align:center"><div style="display:flex;justify-content:center">${fig(o)}</div><div class="hv" style="font-size:18px">${esc(o.name)}</div><small>${o.brand === 'Starter' ? 'Free for everyone' : esc(o.brand) + ' · not affiliated, the name only'}</small></div>
-            ${mine ? `<button class="pbtn big2" id="fWear">${cur === o.id ? '✓ Wearing it' : 'Wear it'}</button>` : `<div class="big" style="text-align:center;margin:6px 0">${naira(o.price)}</div><button class="pbtn big2" id="fBuy">Buy · ${naira(o.price)}</button><div class="dim">${live ? 'Paid from your wallet. It goes in your wardrobe; wear it any time.' : 'The boutiques open when the server update goes live.'}</div>`}
-            <button class="pbtn alt" id="fBack2">${a.from === 'wardrobe' ? 'Your wardrobe' : 'All outfits'}</button>`);
+          const o = OUTFITS[a.id], l = o.look, mine = have.has(o.id), shops = shopsOf(o.id);
+          const sw = [l.top, l.top2, l.jacket ? l.inner : null, l.bot, l.bot2, l.trim, l.belt, l.shoe].filter((c, i, arr) => c && arr.indexOf(c) === i).slice(0, 6);
+          const tags = [FAB[l.topFab || 0], l.botFab ? FAB[l.botFab] : null, PAT[l.topPat || 0], l.jacket ? 'Open jacket' : null, l.robe ? 'Full length' : null, l.cargo ? 'Cargo pockets' : null, l.sneaker ? 'Sneakers' : null].filter((t, i, arr) => t && arr.indexOf(t) === i);
+          const more = OUTFIT_LIST.map((r) => OUTFITS[r[0]]).filter((v) => v.id !== o.id && (v.brand === o.brand || v.dept === o.dept)).sort((p, q) => (q.brand === o.brand) - (p.brand === o.brand) || p.price - q.price).slice(0, 4);
+          show(`${ahead('fashion', label(o), `${(DEPTS.find((d) => d[0] === o.dept) || ['', '👔'])[1]} ${o.dept}`)}
+            <div class="fstage" style="${bg(o)}"><canvas id="fSpin" width="480" height="640"></canvas><span class="fhint">↔ drag to turn</span>${cur === o.id ? '<i class="on">Wearing</i>' : ''}</div>
+            <div class="fname"><b>${esc(o.name)}</b><span>${o.price ? naira(o.price) : 'Free'}</span></div>
+            <div class="fsw">${sw.map((c) => `<i style="background:${c}"></i>`).join('')}</div>
+            <div class="ftags">${tags.map((t) => `<span>${t}</span>`).join('')}</div>
+            ${mine ? `<button class="pbtn big2" id="fWear" ${cur === o.id ? 'disabled' : ''}>${cur === o.id ? '✓ You\'re wearing it' : 'Wear it now'}</button>` : `<button class="pbtn big2" id="fBuy">Buy · ${naira(o.price)}</button><div class="dim" style="text-align:center">${live ? 'Paid from your wallet; you wear it straight away and it stays in your wardrobe.' : 'The boutiques open when the server update goes live.'}</div>`}
+            ${shops.length ? `<div class="pcard fwhere"><b>📍 Try it on</b><span>${shops.join(' · ')}</span><button class="pbtn alt" id="fGo">Go</button></div>` : ''}
+            ${more.length ? `<div class="rsec">${more.some((v) => v.brand === o.brand) && o.brand !== 'Starter' ? 'MORE FROM ' + esc(o.brand).toUpperCase() : 'MORE ' + o.dept.toUpperCase()}</div><div class="fgrid">${more.map((v) => card(v, a.from || 'shop')).join('')}</div>` : ''}
+            <div class="lock">${o.brand === 'Starter' ? 'Free for everyone.' : esc(o.brand) + ': the name only, no logos. Not affiliated.'}</div>`);
+          if (!fitSpin($('fSpin'), o.id)) { const im = fitShot(o.id); if (im) $('fSpin').getContext('2d').drawImage(Object.assign(new Image(), { src: im }), 0, 0, 480, 640); }
           if ($('fWear')) $('fWear').onclick = async () => { await wear(o.id); render('fashion', a); };
-          if ($('fBuy')) $('fBuy').onclick = async () => { try { const v = await my('buyOutfit', { item: o.id }); pnaira.textContent = naira(v.naira); notify('Bought: ' + o.brand + ' ' + o.name, 'fashion'); await wear(o.id); render('fashion', a); } catch (e) { fail(/\((404|500)\)/.test(e.message) ? new Error('The boutiques open when the server update goes live.') : e); } };
-          $('fBack2').onclick = () => go('fashion', { tab: a.from === 'wardrobe' ? 'wardrobe' : 'shop' });
-          return;
+          if ($('fBuy')) $('fBuy').onclick = async () => { $('fBuy').disabled = true; try { const v = await my('buyOutfit', { item: o.id }); pnaira.textContent = naira(v.naira); notify('Bought: ' + o.brand + ' ' + o.name, 'fashion'); await wear(o.id); render('fashion', a); } catch (e) { $('fBuy').disabled = false; fail(/\((404|500)\)/.test(e.message) ? new Error('The boutiques open when the server update goes live.') : e); } };
+          if ($('fGo')) $('fGo').onclick = () => { const k = Object.keys(BOUTIQUES).find((k2) => BOUTIQUES[k2][3].includes(o.id)), p = PLACES.find((v) => v[0] === k); if (!p) return; const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); };
+          pbody.querySelectorAll('[data-fit]').forEach((b) => (b.onclick = () => go('fashion', { id: b.dataset.fit, from: b.dataset.from })));
+          fill(); return;
         }
-        const tab = a.tab || 'shop', DEPTS = ['Sportswear', 'Streetwear', 'Native', 'Formal', 'Luxury'], dept = a.dept || fashionDept;
-        const card = (o, from) => `<button class="sitem" data-fit="${o.id}" data-from="${from}" style="padding-top:4px">${fig(o)}<b>${esc(o.brand === 'Starter' ? o.name : o.brand)}</b><span>${o.brand === 'Starter' ? 'Free' : from === 'wardrobe' ? esc(o.name) : naira(o.price)}</span>${cur === o.id ? '<i>ON</i>' : have.has(o.id) && from === 'shop' ? '<i>✓</i>' : ''}</button>`;
-        show(`${ahead('fashion', 'Fashion', 'Brands from Idumota to Circle Mall')}
-          <div class="chips" style="--ac:#F59E0B"><button data-tab="shop" class="${tab === 'shop' ? 'on' : ''}">🛍️ Shop</button><button data-tab="wardrobe" class="${tab === 'wardrobe' ? 'on' : ''}">👔 Wardrobe · ${have.size}</button></div>
-          ${tab === 'shop' ? `<div class="chips" style="--ac:#F59E0B">${DEPTS.map((d) => `<button data-dept="${d}" class="${d === dept ? 'on' : ''}">${d}</button>`).join('')}</div>
-            <div class="sgrid">${OUTFIT_LIST.map((r) => OUTFITS[r[0]]).filter((o) => o.dept === dept).sort((p, q) => p.price - q.price).map((o) => card(o, 'shop')).join('')}</div>
-            <div class="lock" style="margin-top:8px">Brand names only, no logos; the game isn't affiliated with the brands. Try them on at Idumota, Falomo and Circle Mall.</div>`
-          : `<div class="sgrid">${[...have].filter((id) => OUTFITS[id]).map((id) => card(OUTFITS[id], 'wardrobe')).join('')}</div>`}`);
+        const tab = a.tab || 'shop', dept = a.dept || fashionDept, all = OUTFIT_LIST.map((r) => OUTFITS[r[0]]);
+        const wearing = OUTFITS[cur] || null, feat = all.filter((o) => o.dept === 'Luxury' || o.dept === 'Native').sort((p, q) => q.price - p.price).slice(0, 6);
+        show(`${ahead('fashion', 'Fashion', `${all.length} looks · Idumota, Falomo, Circle Mall`)}
+          <button class="fme" data-fit="${wearing ? wearing.id : ''}" style="${wearing ? bg(wearing) : '--c1:#F59E0B;--c2:#7C3AED'}">${wearing ? pic(wearing) : ''}<div><span class="hl">You're wearing</span><b>${wearing ? esc(label(wearing)) : 'Your own clothes'}</b><small>${wearing ? esc(wearing.name) : 'Pick a look below'}</small><em>${have.size} in your wardrobe</em></div></button>
+          <div class="fseg"><button data-tab="shop" class="${tab === 'shop' ? 'on' : ''}">🛍️ Shop</button><button data-tab="wardrobe" class="${tab === 'wardrobe' ? 'on' : ''}">👔 Wardrobe</button></div>
+          ${tab === 'shop' ? `<div class="rsec">⭐ FEATURED</div><div class="frow">${feat.map((o) => card(o, 'shop')).join('')}</div>
+            <div class="fdepts">${DEPTS.map(([d, ic]) => `<button data-dept="${d}" class="${d === dept ? 'on' : ''}"><i>${ic}</i>${d}<small>${all.filter((o) => o.dept === d).length}</small></button>`).join('')}</div>
+            <div class="fgrid">${all.filter((o) => o.dept === dept).sort((p, q) => p.price - q.price).map((o) => card(o, 'shop')).join('')}</div>
+            <div class="lock" style="margin-top:8px">Brand names only, no logos; the game isn't affiliated with the brands.</div>`
+          : `<div class="fgrid">${[...have].filter((id) => OUTFITS[id]).sort((p, q) => (q === cur) - (p === cur) || OUTFITS[q].price - OUTFITS[p].price).map((id) => card(OUTFITS[id], 'wardrobe')).join('')}</div>
+            <div class="lock" style="margin-top:8px">Tap a look to put it on. Buy more in the Shop or at the boutiques.</div>`}`);
         pbody.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => render('fashion', { tab: b.dataset.tab })));
         pbody.querySelectorAll('[data-dept]').forEach((b) => (b.onclick = () => { fashionDept = b.dataset.dept; render('fashion', { tab: 'shop' }); }));
-        pbody.querySelectorAll('[data-fit]').forEach((b) => (b.onclick = () => go('fashion', { id: b.dataset.fit, from: b.dataset.from })));
-        return;
+        pbody.querySelectorAll('[data-fit]').forEach((b) => (b.onclick = () => b.dataset.fit && go('fashion', { id: b.dataset.fit, from: b.dataset.from || 'wardrobe' })));
+        fill(); return;
       }
       if (app === 'parties') {
         // your party (if one's on), the parties you can go to now, and throwing one: where, the vibe, how long, who
@@ -4626,7 +4707,7 @@
         if (arg) {
           const [est, n] = arg.split(':'), style = (ESTATES[est] || [])[n]; if (!style) return render('homes');
           const st = HOME_STYLES[style], h = homesLive[arg];
-          show(`<div class="ptitle">Homes</div><div class="pcard"><h3>${st[0]}</h3><div class="dim">${esc(placeOf(est)[5])} · ${AREA[est]}</div><p>${BLURB[style]}</p><div class="big">${naira(st[1])}</div>
+          show(`${ahead('homes', 'Homes', 'From Ajah to Banana Island')}<div class="pcard"><h3>${st[0]}</h3><div class="dim">${esc(placeOf(est)[5])} · ${AREA[est]}</div><p>${BLURB[style]}</p><div class="big">${naira(st[1])}</div>
             ${h ? `<div class="dim">${h.mine ? 'This one is yours.' : 'Someone lives here.'}</div>` : `<button class="pbtn big2" id="hBuy">Buy · ${naira(st[1])}</button><div class="dim">Paid from your wallet. It comes empty: furnish it from the Eko Home Store.</div>`}</div>
             <button class="pbtn alt" id="hMap">📍 Show me</button><button class="pbtn alt" id="hAll">All homes</button>`);
           $('hMap').onclick = () => showOnMap(arg); $('hAll').onclick = () => go('homes');
@@ -4634,7 +4715,7 @@
           return;
         }
         const mine = Object.values(homesLive).filter((h) => h.mine);
-        show(`<div class="ptitle">Homes</div><div class="lock">Everyone has a free BQ on HQ Row. Buy up: Ajah, Lekki, Ikoyi, Banana Island.</div>
+        show(`${ahead('homes', 'Homes', 'From Ajah to Banana Island')}<div class="lock">Everyone has a free BQ on HQ Row. Buy up: Ajah, Lekki, Ikoyi, Banana Island.</div>
           <div class="rsec">YOUR HOMES</div><div class="pcard"><div class="row"><span>🏠 Your BQ · HQ Row</span><b>Free</b></div>${mine.map((h) => `<div class="row"><span>🏡 ${HOME_STYLES[h.style][0]} · ${AREA[h.plot.split(':')[0]]}</span><button class="pbtn alt" data-plot="${h.plot}">Open</button></div>`).join('')}</div>
           ${Object.keys(ESTATES).map((est) => `<div class="rsec">${esc(placeOf(est)[5]).toUpperCase()} · ${AREA[est].toUpperCase()}</div><div class="pcard">${ESTATES[est].map((style, n) => { const plot = est + ':' + n, h = homesLive[plot]; return `<div class="row"><span>${h ? (h.mine ? '🏡' : '🔒') : '🪧'} ${HOME_STYLES[style][0]} <span class="dim">#${n + 1}</span></span>${h ? `<span class="dim">${h.mine ? 'Yours' : 'Sold'}</span>` : `<button class="pbtn alt" data-plot="${plot}">${naira(HOME_STYLES[style][1])}</button>`}</div>`; }).join('')}</div>`).join('')}`);
         pbody.querySelectorAll('[data-plot]').forEach((b) => (b.onclick = () => go('homes', b.dataset.plot)));
@@ -5128,6 +5209,57 @@
       LP.r.render(LP.scene, LP.cam); const c = lkPrev.getContext('2d'); c.clearRect(0, 0, 320, 360); c.drawImage(LP.cv, 0, 0); requestAnimationFrame(spin);
     }; requestAnimationFrame(spin); }
     return true;
+  }
+  // the fashion studio: your own character wearing an outfit, for the phone. A still for the grid (kept, one per outfit and
+  // look) and a turntable for an outfit's page that you can spin with a finger.
+  const FS = { r: null, scene: null, cam: null, people: {}, shots: new Map() };
+  function fsSetup() {
+    if (!PEOPLE.ok) return false;
+    if (FS.r) return true;
+    const THREE = G3.T;
+    FS.cv = document.createElement('canvas'); FS.r = new THREE.WebGLRenderer({ canvas: FS.cv, alpha: true, antialias: true, preserveDrawingBuffer: true }); FS.r.setSize(240, 320, false);
+    FS.r.toneMapping = THREE.ACESFilmicToneMapping; FS.r.toneMappingExposure = 1.1;
+    FS.scene = new THREE.Scene(); FS.scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 2.1));
+    const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(1.5, 2, 2.5); FS.scene.add(key);
+    const rim = new THREE.DirectionalLight(0xffd9a0, 1.4); rim.position.set(-2, 1.5, -2); FS.scene.add(rim);
+    FS.cam = new THREE.PerspectiveCamera(28, 240 / 320, 0.1, 100); FS.cam.position.set(0, 5.6, 25); FS.cam.lookAt(0, 5.1, 0);
+    return true;
+  }
+  // dress the studio's person (one per body and hair) as [look] in outfit [id], posed, turned [ang]
+  function fsDress(id, lookStr, ang) {
+    const L = parseLook(lookStr, myName || 'you'), hairKey = (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4], k = L.g + hairKey;
+    let p = FS.people[k];
+    if (!p) { p = FS.people[k] = makePerson(L.g, hairKey); p.acts.Idle_Loop.play(); p.mixer.update(0.6); }
+    for (const q of Object.values(FS.people)) q.root.removeFromParent();
+    FS.scene.add(p.root); p.root.rotation.y = ang;
+    const o = (OUTFITS[id] && OUTFITS[id].look) || outfitOf(L, myColor), u = p.dress.u;
+    applyOutfit(u, o); if (p.dress.textured) u.uSkin.value.setScalar(0.62 + 0.9 * (L.skin / (SKINS.length - 1))); else u.uSkin.value.set(SKINS[L.skin] || SKINS[0]);
+    p.body.traverse((m) => { if (m.userData.hair) m.material.color.set(HAIRS[L.hair] || HAIRS[0]).multiplyScalar(2.2); });
+    return p;
+  }
+  function fitShot(id, lookStr = myLook) {
+    const key = id + '|' + lookStr; if (FS.shots.has(key)) return FS.shots.get(key);
+    if (!fsSetup()) return null;
+    fsDress(id, lookStr, -0.35); FS.r.render(FS.scene, FS.cam);
+    const url = FS.cv.toDataURL('image/png'); FS.shots.set(key, url); return url;
+  }
+  // a turntable in [cv]: turns slowly on its own, drag to spin it; stops when the canvas leaves the page
+  function fitSpin(cv, id, lookStr = myLook) {
+    if (!fsSetup()) return false;
+    let ang = -0.35, vel = 0.5, drag = null, last = performance.now();
+    const ctx = cv.getContext('2d'), p = fsDress(id, lookStr, ang);
+    cv.onpointerdown = (e) => { drag = e.clientX; vel = 0; cv.setPointerCapture(e.pointerId); };
+    cv.onpointermove = (e) => { if (drag == null) return; ang += (e.clientX - drag) * 0.012; vel = (e.clientX - drag) * 0.4; drag = e.clientX; };
+    cv.onpointerup = () => { drag = null; if (Math.abs(vel) < 0.2) vel = 0.5; };
+    const tick = (now) => {
+      if (!cv.isConnected) return;
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      if (drag == null) ang += vel * dt;
+      fsDress(id, lookStr, ang); p.mixer.update(dt);
+      FS.r.render(FS.scene, FS.cam); ctx.clearRect(0, 0, cv.width, cv.height); ctx.drawImage(FS.cv, 0, 0, cv.width, cv.height);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick); return true;
   }
   // the choices under the picture: skin, hair, a free starter outfit
   function lookChoices() {
