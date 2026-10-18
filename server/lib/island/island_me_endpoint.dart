@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -757,6 +758,10 @@ class IslandMeEndpoint extends Endpoint {
         createdAt: DateTime.now().toUtc(),
       ),
     );
+    // a message ends the sender's typing and wakes everyone waiting on the chat
+    final h = (await _profile(session, u)).handle;
+    _typing[groupId]?.remove(h);
+    _bump(groupId);
     return jsonEncode({'id': m.id});
   }
 
@@ -789,6 +794,86 @@ class IslandMeEndpoint extends Endpoint {
       });
     }
     return jsonEncode(out);
+  }
+
+
+  // ---------------- live chat: instant delivery, typing, read receipts ----------------
+  // Each chat has a version that goes up whenever something happens in it (a message, someone typing, someone reading).
+  // A phone with the chat open asks [live] with the version it has; the server holds the request until the version moves
+  // (or 20 seconds pass) and answers at once, so a message lands the moment it's sent. Typing and read marks are kept in
+  // memory: they're about now, and say nothing about what's in a message.
+  static final _ver = <int, int>{};
+  static final _waiters = <int, List<Completer<void>>>{};
+  static final _typing = <int, Map<String, DateTime>>{}; // group -> handle -> typing until
+  static final _reads = <int, Map<String, int>>{}; // group -> handle -> last message id read
+  static void _bump(int groupId) {
+    _ver[groupId] = (_ver[groupId] ?? 0) + 1;
+    final ws = _waiters.remove(groupId) ?? [];
+    for (final c in ws) {
+      if (!c.isCompleted) c.complete();
+    }
+  }
+
+  Future<bool> _member(Session session, int groupId, UuidValue u) async =>
+      await IslandMember.db.findFirstRow(
+        session,
+        where: (t) => t.groupId.equals(groupId) & t.authUserId.equals(u),
+      ) !=
+      null;
+
+  /// Wait (up to 20 s) for anything new in a chat after [since] / version [ver]; returns the new messages, who's typing
+  /// (and for how much longer), how far each other member has read, and the chat's version now.
+  Future<String> live(Session session, int groupId, int since, int ver) async {
+    final u = _user(session);
+    if (!await _member(session, groupId, u)) return _err('Not your chat.');
+    final me = (await _profile(session, u)).handle;
+    final end = DateTime.now().add(const Duration(seconds: 20));
+    while ((_ver[groupId] ?? 0) == ver && DateTime.now().isBefore(end)) {
+      final c = Completer<void>();
+      (_waiters[groupId] ??= []).add(c);
+      await c.future.timeout(end.difference(DateTime.now()), onTimeout: () {});
+      _waiters[groupId]?.remove(c);
+    }
+    final msgs = jsonDecode(await messages(session, groupId, since));
+    final now = DateTime.now();
+    final typing = [
+      for (final e in (_typing[groupId] ?? {}).entries)
+        if (e.key != me && e.value.isAfter(now))
+          {'h': e.key, 'ms': e.value.difference(now).inMilliseconds},
+    ];
+    final reads = {
+      for (final e in (_reads[groupId] ?? {}).entries)
+        if (e.key != me) e.key: e.value,
+    };
+    return jsonEncode({
+      'messages': msgs,
+      'typing': typing,
+      'reads': reads,
+      'ver': _ver[groupId] ?? 0,
+    });
+  }
+
+  /// I'm typing in a chat (sent every few seconds while I type; it lapses on its own).
+  Future<String> typing(Session session, int groupId) async {
+    final u = _user(session);
+    if (!await _member(session, groupId, u)) return _err('Not your chat.');
+    final me = (await _profile(session, u)).handle;
+    (_typing[groupId] ??= {})[me] =
+        DateTime.now().add(const Duration(seconds: 5));
+    _bump(groupId);
+    return jsonEncode({'ok': true});
+  }
+
+  /// I've read a chat up to message [upTo].
+  Future<String> read(Session session, int groupId, int upTo) async {
+    final u = _user(session);
+    if (!await _member(session, groupId, u)) return _err('Not your chat.');
+    final me = (await _profile(session, u)).handle;
+    final m = _reads[groupId] ??= {};
+    if ((m[me] ?? 0) >= upTo) return jsonEncode({'ok': true});
+    m[me] = upTo;
+    _bump(groupId);
+    return jsonEncode({'ok': true});
   }
 
   // ---------------- HQ ----------------
