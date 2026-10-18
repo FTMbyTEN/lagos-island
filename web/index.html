@@ -627,7 +627,7 @@
   ];
   const BILLBOARDS = [
     [13, 3.4, 'WYRD', 'Ask me anything'],
-    [27, 13.4, 'Lagos Island', 'Eko o ni baje'],
+    [24.5, 10.4, 'Lagos Island', 'Eko o ni baje'], // by the Link Bridge (WYRD Tower is a screen of its own)
     [41, 7.4, 'WYRD', 'Lekki? I know the way'],
     [12, 17.4, 'WELCOME', 'to Lagos Island'],
     [40, 23.6, 'THE ARENA', 'Live shows, real tickets'],
@@ -1796,6 +1796,27 @@
         rbox(cx, cz, s.hw, s.hd, s.an, s.y0, s.y1, col, '#C7D2FE');
         corners.push(s);
       }
+      // the digital façade: on each floor band, the face turned most towards you is an LED panel. Together they run ads
+      // down the tower, one letter a band, on a colour that sweeps up; a new ad every eight seconds, a wipe between
+      const facade = (lit) => {
+        const tt = performance.now() / 1000, slot = Math.floor(tt / 8), ad = ADS[slot % ADS.length], txt = (ad[0] + '  ').toUpperCase(), wipe = Math.min(1, (tt % 8) / 0.6), hue0 = (slot * 67) % 360;
+        for (let k = 3; k < N - 2; k++) {
+          const s = corners[k], ca = Math.cos(s.an), sa = Math.sin(s.an);
+          // the four faces' normals; pick the one facing you most
+          const faces = [[0, 1], [1, 0], [0, -1], [-1, 0]].map(([lx, lz]) => { const nx = lx * ca - lz * sa, nz = lx * sa + lz * ca; return { lx, lz, d: viewDot(nx, 0, nz) }; }).sort((p, q) => q.d - p.d);
+          const f = faces[0]; if (f.d < 0.05) continue;
+          const corner = (u, v) => { const lx = f.lz ? u * s.hw : f.lx * s.hw * 1.003, lz = f.lz ? f.lz * s.hd * 1.003 : u * s.hd; return [cx + lx * ca - lz * sa, cz + lx * sa + lz * ca]; };
+          const inset = 0.86, y0 = s.y0 + 0.5, y1 = s.y1 - 0.5, sgn = f.lz ? f.lz : -f.lx;
+          const [ax, az] = corner(-inset * sgn, 0), [bx2, bz2] = corner(inset * sgn, 0);
+          const p0 = P(ax, y0, az), p1 = P(bx2, y0, bz2), p2 = P(bx2, y1, bz2), p3 = P(ax, y1, az);
+          const band = (k - 3) / (N - 5), shown = 1 - band < wipe, hue = (hue0 + band * 80 - tt * 30) % 360;
+          quad([p0, p1, p2, p3], shown ? `hsl(${hue},85%,${lit ? 52 : 42}%)` : '#0B1020');
+          const ch = txt[(k - 3) % txt.length], wpx = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), hpx = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]);
+          if (shown && ch.trim() && hpx > 6) { x.save(); x.transform((p1[0] - p0[0]) / wpx, (p1[1] - p0[1]) / wpx, (p0[0] - p3[0]) / hpx, (p0[1] - p3[1]) / hpx, p0[0], p0[1]); x.fillStyle = '#FFFFFF'; if (lit) { x.shadowColor = '#FFFFFF'; x.shadowBlur = 8; } x.font = `900 ${Math.round(hpx * 0.8)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(ch, wpx / 2, -hpx / 2); x.restore(); }
+          if (wpx > 40) { x.strokeStyle = 'rgba(0,0,0,0.2)'; x.lineWidth = 1; x.beginPath(); for (let m = 1; m < 8; m++) { const u = m / 8; x.moveTo(p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u); x.lineTo(p3[0] + (p2[0] - p3[0]) * u, p3[1] + (p2[1] - p3[1]) * u); } x.stroke(); } // LED tiles
+        }
+      };
+      facade(false); glow.push(() => facade(true));
       // the crown: an open ring of fins round a spire
       const top = seg(N).y0, ts = seg(N);
       for (let k = 0; k < 8; k++) { const an = k / 8 * Math.PI * 2 + ts.an, p0 = P(cx + Math.cos(an) * 5.5, top, cz + Math.sin(an) * 4), p1 = P(cx + Math.cos(an) * 1.2, top + 14, cz + Math.sin(an) * 1); x.strokeStyle = '#C7D2FE'; x.lineWidth = Math.max(1, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
