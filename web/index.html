@@ -535,6 +535,27 @@
   #tWx { display: flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px !important; border-radius: 999px; background: rgba(15,23,42,.05); color: #0F172A !important; } #tWx b { font-weight: 800; }
   #tWx .ic { width: 17px; height: 17px; color: #F59E0B; } #tWx[data-k="clear"] .ic, #tWx[data-k="partly"] .ic { color: #F59E0B; } #tWx[data-k="rain"] .ic, #tWx[data-k="drizzle"] .ic, #tWx[data-k="storm"] .ic { color: #0EA5E9; } #tWx[data-k="fog"] .ic, #tWx[data-k="haze"] .ic, #tWx[data-k="cloudy"] .ic, #tWx[data-k="overcast"] .ic { color: #64748B; }
   #topR button { background: rgba(15,23,42,.05) !important; color: #0F172A; } #topR button .ic { width: 18px; height: 18px; } #topR button:hover { background: rgba(34,197,94,.16) !important; } #tMusic.playing { background: #22C55E !important; color: #fff; }
+  /* the top bar, clean: one even frosted fill, no white rim or highlight laid over it */
+  #top.pill { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(241,245,249,.84)) !important; border: 1px solid rgba(15,23,42,.07) !important; box-shadow: 0 10px 30px rgba(15,23,42,.16) !important; }
+  /* sign up and sign in, in the top bar's language: a frosted card, the palm badge, pill tabs like the "online" chip,
+     soft fields, the logo's gradient on the button, compact and centred over the island */
+  #hello { place-items: center; padding: 16px; background: radial-gradient(120% 80% at 50% 100%, rgba(15,23,42,.45), rgba(15,23,42,.08) 70%); }
+  #hello .box { width: min(380px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 22px 20px 16px; border-radius: 26px; background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(241,245,249,.86)); backdrop-filter: blur(18px) saturate(1.6); -webkit-backdrop-filter: blur(18px) saturate(1.6); border: 1px solid rgba(15,23,42,.07); box-shadow: 0 24px 60px rgba(15,23,42,.28); scrollbar-width: thin; }
+  #hello h1 { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 24px; color: #0F172A; }
+  #hello h1 .logo.big { width: 40px; height: 40px; } #hello h1 .logo.big .ic { width: 22px; height: 22px; }
+  #hello p { font-size: 13px; margin: 8px 0 10px; }
+  #hello .crowd { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 11px; border-radius: 999px; background: rgba(34,197,94,.12); color: #15803D; font-size: 12px; font-weight: 700; }
+  #hello .crowd::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #22C55E; animation: livePulse 2s ease-in-out infinite; } #hello .crowd b { color: #15803D; }
+  #hello .tabs { background: rgba(15,23,42,.05); padding: 4px; margin: 4px 0 6px; }
+  #hello .tabs button { padding: 8px; font-size: 13px; transition: background .2s, color .2s, box-shadow .2s; }
+  #hello .tabs button.on { background: #fff; color: #0F172A; box-shadow: 0 2px 8px rgba(15,23,42,.12); }
+  #hello .fl { font-size: 12px; color: #475569; margin-top: 8px; }
+  #hello input, #hello .fl input { border: 1px solid rgba(15,23,42,.08) !important; background: rgba(15,23,42,.04) !important; border-radius: 14px !important; padding: 11px 14px !important; font-size: 14.5px !important; transition: border-color .2s, background .2s, box-shadow .2s; }
+  #hello input:focus { outline: none; background: #fff !important; border-color: rgba(14,165,233,.5) !important; box-shadow: 0 0 0 4px rgba(14,165,233,.14); }
+  #hello .rules { font-size: 11.5px; }
+  #go { margin-top: 12px; padding: 13px !important; font-size: 15.5px !important; background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1) !important; box-shadow: 0 10px 24px rgba(14,165,233,.35) !important; transition: transform .15s, box-shadow .2s, filter .2s; }
+  #go:hover { filter: brightness(1.06); box-shadow: 0 12px 28px rgba(14,165,233,.45) !important; } #go:active { transform: scale(.98); }
+  #hello .link { color: #0369A1; font-weight: 700; }
 /* compact and sleek: everything fits in one slim bar, the DJ chip gives way first, nothing spills out */  #top.pill { width: min(600px, calc(100vw - 16px)); height: 46px; padding: 5px !important; gap: 6px !important; overflow: hidden; }  #title { font-size: 15px; gap: 7px; flex: none; } #title .logo { width: 34px; height: 34px; }  #online { height: 26px; padding: 0 9px; font-size: 11.5px; flex: none; }  #topR { flex: 1 1 auto; min-width: 0; justify-content: flex-end; gap: 4px !important; }  #tWx { height: 30px; padding: 0 9px !important; font-size: 12.5px !important; flex: none; }  .tdj { flex: 0 1 auto; min-width: 0; max-width: 190px; height: 32px; padding: 0 10px 0 8px; } .tdj.on { display: flex; }  #topR button { width: 32px !important; height: 32px !important; flex: none; transition: background .2s, transform .15s, color .2s !important; }  @media (max-width: 640px) { #title span.logo + * { display: none; } #title { font-size: 0; } .tdj { max-width: 150px; } }  @media (max-width: 430px) { #online { padding: 0 7px; } .tdj small { display: none; } .tdj { max-width: 112px; } #tWx b { font-size: 12px; } }
 </style>
 </head>
@@ -3192,12 +3213,16 @@
   const hqIndex = new Map();
   { let k = 0; for (const l of lots) if (l.kind === 'hq') hqIndex.set(l.i + ',' + l.j, k++); }
   // the Lagos clock: night from 7.30 pm to 5.30 am, with an hour's dusk and dawn
+  // the island runs on real Lagos time (UTC+1, no daylight saving), never the device's idea of it: the device clock is
+  // checked against the live weather service's reading for Lagos, and if it's more than a quarter of an hour out, corrected
+  const CLOCK = { off: 0 };
+  const lagosMs = () => Date.now() + CLOCK.off + 3600e3;
   const forcedNight = /^(localhost|127.0.0.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('night') : null; // ?night= is for local previews only: players live on Lagos time
   const nightPref = null; // the sky always follows Lagos time: nobody can change it from the phone
   function nightNow() {
     if (nightPref != null) return nightPref;
     if (forcedNight) return Number(forcedNight);
-    const d = new Date(Date.now() + 3600e3), h = d.getUTCHours() + d.getUTCMinutes() / 60;
+    const d = new Date(lagosMs()), h = d.getUTCHours() + d.getUTCMinutes() / 60;
     if (h >= 19.5 || h < 5.5) return 1;
     if (h >= 18.5) return h - 18.5;
     if (h < 6.5) return 6.5 - h;
@@ -5785,6 +5810,7 @@
     try {
       const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=6.45&longitude=3.42&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,is_day&timezone=Africa%2FLagos');
       const c0 = (await r.json()).current;
+      { const start = Date.parse(c0.time + ':00Z') - 3600e3, now = Date.now() + CLOCK.off; if (Number.isFinite(start) && (now < start - 120e3 || now > start + 17 * 60e3)) CLOCK.off = start + 7.5 * 60e3 - Date.now(); } // the reading is for the quarter hour Lagos is in now
       Object.assign(WX, { temp: Math.round(c0.temperature_2m), feels: Math.round(c0.apparent_temperature), humidity: c0.relative_humidity_2m, rainMm: c0.precipitation || 0, code: c0.weather_code, cloudPct: c0.cloud_cover, visibility: c0.visibility ?? 20000, wind: c0.wind_speed_10m, windDir: c0.wind_direction_10m, isDay: c0.is_day, live: true, at: c0.time });
     } catch {} // no signal: keep what we last had (the sky doesn't change on its own)
     try { const a0 = (await (await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=6.45&longitude=3.42&current=dust,pm10&timezone=Africa%2FLagos')).json()).current; WX.dust = a0.dust || 0; WX.pm10 = a0.pm10 || 0; } catch {}
@@ -5919,7 +5945,7 @@
     const cv = WALL.cv, scr = cv.parentElement, w = scr.clientWidth, h = scr.clientHeight; if (!w || !h) return;
     const dpr = Math.min(1.5, window.devicePixelRatio || 1); if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
     const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const d = new Date(Date.now() + 3600e3), hr = d.getUTCHours() + d.getUTCMinutes() / 60, t = now / 1000;
+    const d = new Date(lagosMs()), hr = d.getUTCHours() + d.getUTCMinutes() / 60, t = now / 1000;
     const dayness = Math.max(0, Math.min(1, (Math.sin((hr - 6) / 12 * Math.PI) + 0.2) * 1.4)), dusk = Math.max(0, 1 - Math.abs(hr - 18.6) / 1.4) + Math.max(0, 1 - Math.abs(hr - 6.4) / 1.2);
     const sky = g.createLinearGradient(0, 0, 0, h * 0.72);
     const mix = (a, b, u) => `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * u)).join(',')})`;
@@ -5962,7 +5988,7 @@
   { const n0 = notify; notify = (text, kind, open, from) => { n0(text, kind, open, from); if (phone.style.display === "block") islandToast(from ? from + ": " + text : text, kind); }; }
   function lockScreen() {
     return new Promise((done) => {
-      const L = document.getElementById('lockscr'), d = new Date(Date.now() + 3600e3), wx = lagosWeather();
+      const L = document.getElementById('lockscr'), d = new Date(lagosMs()), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
       document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos`;
@@ -5999,7 +6025,7 @@
     try {
       if (app === 'signin') { show(`<div class="ptitle">Your phone</div><div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
       if (app === 'home') {
-        const d = new Date(Date.now() + 3600e3), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+        const d = new Date(lagosMs()), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
@@ -6688,7 +6714,7 @@
   // the phone's clocks (status bar, home, lock screen) on Lagos time, and the naira wherever it shows
   setInterval(() => {
     if (phone.style.display !== 'block') return;
-    const d = new Date(Date.now() + 3600e3), hm = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
+    const d = new Date(lagosMs()), hm = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
     document.getElementById('pclock').textContent = hm; // hours and minutes only
     for (const el of phone.querySelectorAll('[data-clock]')) el.textContent = hm;
     if (me$) for (const el of phone.querySelectorAll('[data-naira]')) el.textContent = naira(me$.naira);
