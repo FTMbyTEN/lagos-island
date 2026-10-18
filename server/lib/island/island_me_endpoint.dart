@@ -143,8 +143,22 @@ class IslandMeEndpoint extends Endpoint {
 
   /// Save how I look on the island (chosen when I joined; changeable in Profile).
   Future<String> setLook(Session session, String look) async {
-    if (!RegExp(r'^[mf](,[0-9]{1,2}){4}$').hasMatch(look))
-      return _err('Bad look.');
+    // g,skin,hair,style,bottom and, optionally, the outfit being worn: a free starter or one I've bought
+    final m = RegExp(r'^[mf](,[0-9]{1,2}){4}(,([a-z0-9_]{1,30})?)?$').firstMatch(look);
+    if (m == null) return _err('Bad look.');
+    final outfit = m.group(3);
+    if (outfit != null) {
+      final o = outfitCatalog[outfit];
+      if (o == null) return _err('That outfit is not in any shop.');
+      if (o.price > 0 &&
+          await IslandOutfit.db.findFirstRow(
+                session,
+                where: (t) =>
+                    t.authUserId.equals(_user(session)) & t.item.equals(outfit),
+              ) ==
+              null)
+        return _err('Buy the ${o.name} first.');
+    }
     final p = await _profile(session, _user(session));
     await IslandProfile.db.updateRow(session, p.copyWith(look: look));
     return jsonEncode({'look': look});
@@ -1201,6 +1215,87 @@ class IslandMeEndpoint extends Endpoint {
         );
     }
     return jsonEncode({'active': carId});
+  }
+
+  // ---------------- fashion: outfits from the boutiques ----------------
+  /// outfit id -> (name, price in naira). The same list as OUTFIT_LIST in web/index.html. Price 0: a free starter.
+  /// Brand names only (no logos); not affiliated with the brands.
+  static const outfitCatalog = {
+    'st_tee': (name: 'White tee & jeans', price: 0),
+    'st_polo': (name: 'Polo & chinos', price: 0),
+    'st_ankara': (name: 'Ankara shirt & trousers', price: 0),
+    'st_sport': (name: 'Sports set', price: 0),
+    'puma_run': (name: 'Puma Running set', price: 28000),
+    'nike_dri': (name: 'Nike Dri-FIT tee & shorts', price: 35000),
+    'adidas_jersey': (name: 'Adidas Green and white football kit', price: 45000),
+    'adidas_track': (name: 'Adidas Track suit', price: 75000),
+    'nike_tech': (name: 'Nike Tech Fleece tracksuit', price: 85000),
+    'hm_hoodie': (name: 'H&M Hoodie & joggers', price: 30000),
+    'zara_linen': (name: 'Zara Linen shirt & trousers', price: 55000),
+    'levis_denim': (name: 'Levi\'s Denim jacket & jeans', price: 65000),
+    'zara_dress': (name: 'Zara Summer dress', price: 48000),
+    'offwhite_set': (name: 'Off-White Striped tee & cargos', price: 180000),
+    'lanre_buba': (name: 'Lanre Da Silva Buba & sokoto', price: 150000),
+    'orange_kaftan': (name: 'Orange Culture Kaftan', price: 220000),
+    'folawiyo_ankara': (name: 'Lisa Folawiyo Ankara two-piece', price: 260000),
+    'ize_asooke': (name: 'Kenneth Ize Aso-oke set', price: 380000),
+    'atafo_agbada': (name: 'Mai Atafo Bespoke agbada', price: 950000),
+    'ralph_suit': (name: 'Ralph Lauren Navy suit', price: 420000),
+    'balenciaga_set': (name: 'Balenciaga Oversized hoodie set', price: 950000),
+    'gucci_track': (name: 'Gucci Tracksuit', price: 1200000),
+    'versace_silk': (name: 'Versace Baroque silk shirt', price: 1400000),
+    'fendi_set': (name: 'Fendi Monogram set', price: 1800000),
+    'lv_jacket': (name: 'Louis Vuitton Monogram jacket', price: 2400000),
+    'dior_gown': (name: 'Dior Evening gown', price: 3000000),
+  };
+
+  /// Buy an outfit: the price comes out of my wallet; it's in my wardrobe to wear whenever I like.
+  Future<String> buyOutfit(Session session, String item) => _money(session, (
+    u,
+  ) async {
+    final o = outfitCatalog[item];
+    if (o == null || o.price == 0) return _err('That outfit is not for sale.');
+    if (await IslandOutfit.db.findFirstRow(
+          session,
+          where: (t) => t.authUserId.equals(u) & t.item.equals(item),
+        ) !=
+        null)
+      return _err('It\'s already in your wardrobe.');
+    final c = await WorldAuthority.citizen(session, u);
+    if (c.naira < o.price)
+      return _err(
+        'The ${o.name} costs N${_n(o.price)}. You have N${_n(c.naira)}.',
+      );
+    final r = await Bank.post(
+      session,
+      u,
+      key: 'island:outfit:${u.uuid}:$item',
+      amount: -o.price,
+      kind: 'fee',
+      counter: 'city:market',
+      memo: 'Bought: ${o.name}',
+    );
+    if (r.short != null) return _err('Not enough naira.');
+    await IslandOutfit.db.insertRow(
+      session,
+      IslandOutfit(
+        authUserId: u,
+        item: item,
+        price: o.price,
+        boughtAt: DateTime.now().toUtc(),
+      ),
+    );
+    final after = await Bank.fresh(session, u);
+    return jsonEncode({'item': item, 'name': o.name, 'naira': after.naira});
+  });
+
+  /// The outfits in my wardrobe (the free starters are everyone's and aren't listed).
+  Future<String> myOutfits(Session session) async {
+    final rows = await IslandOutfit.db.find(
+      session,
+      where: (t) => t.authUserId.equals(_user(session)),
+    );
+    return jsonEncode([for (final o in rows) o.item]);
   }
 
   // ---------------- the Eko Home Store: furniture, cheap to luxury ----------------

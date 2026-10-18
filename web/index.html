@@ -82,6 +82,9 @@
   #hello .rules li.ok::before { content: '✓ '; }
   #hello .lookrow { display: flex; gap: 6px; margin-top: 6px; } #hello .lookrow button { flex: 1; padding: 9px 4px; border: 2px solid #E6EEF5; border-radius: 12px; background: #F7FAFC; font: 700 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; color: var(--ink); } #hello .lookrow button.on { border-color: var(--green); background: #E8FBF2; }
   #hello canvas#lkPrev { position: static; inset: auto; display: block; margin: 6px auto 0; width: 160px; height: 180px; touch-action: auto; }
+  #hello .lksub { margin: 8px 0 2px; font: 700 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
+  #hello .lkdots { display: flex; gap: 8px; } #hello .lkdots button { width: 28px; height: 28px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #E6EEF5; cursor: pointer; } #hello .lkdots button.on { box-shadow: 0 0 0 2px var(--green); }
+  #hello .lkwrap { flex-wrap: wrap; } #hello .lkwrap button { flex: 1 1 45%; font-size: 12px; }
   #hello .forgot { display: block; text-align: left; color: var(--green-dark); font-weight: 700; }
   #hello .box { max-height: calc(100vh - 24px); overflow-y: auto; }
   #hello .note { font-size: 12px; color: var(--dim); margin-top: 8px; }
@@ -399,7 +402,10 @@
     </div>
     <div id="lookPick"><div class="fl" style="margin-top:12px">Your character</div>
     <div class="lookrow"><button type="button" id="lkM">👨 Man</button><button type="button" id="lkF">👩 Woman</button><button type="button" id="lkS">🎲 New look</button></div>
-    <canvas id="lkPrev" width="320" height="360" aria-label="Your character"></canvas></div>
+    <canvas id="lkPrev" width="320" height="360" aria-label="Your character"></canvas>
+    <div class="lksub">Skin</div><div class="lkdots" id="lkSkin"></div>
+    <div class="lksub">Hair</div><div class="lookrow" id="lkHair"></div>
+    <div class="lksub">Outfit</div><div class="lookrow lkwrap" id="lkFit"></div></div>
     <div id="err" class="err"></div>
     <button id="go">Enter Lagos Island</button>
     <button id="guest" class="link">Look around as a guest</button>
@@ -1530,7 +1536,7 @@
         G3.protos[model] = norm; G3.pool[model] = [];
       }, undefined, () => {});
     }
-    G3.ok = true;
+    G3.ok = true; setTimeout(initPeople, 0); // the people start loading straight away (the sign-up picture shows them)
   }
   window.addEventListener('three-ready', initThree); initThree();
   // queue a car for this frame's 3D pass (false when there's no model for it, or 3D is off)
@@ -1568,14 +1574,14 @@
     if (PEOPLE.started || !G3.ok) return; PEOPLE.started = true;
     const THREE = G3.T, L = new window.__three.GLTFLoader(), want = ['body_m', 'body_f', 'anims', 'hair_buzzed', 'hair_simpleparted', 'hair_beard', 'hair_long', 'hair_buns', 'hair_buzzedfemale', 'eyebrows_regular', 'eyebrows_female'];
     let left = want.length;
-    const done = () => { if (--left === 0) PEOPLE.ok = !!(PEOPLE.base.m && PEOPLE.base.f && Object.keys(PEOPLE.clips).length); };
+    const done = () => { if (--left === 0) { PEOPLE.ok = !!(PEOPLE.base.m && PEOPLE.base.f && Object.keys(PEOPLE.clips).length); if (PEOPLE.ok && typeof previewLook === 'function') previewLook(); } }; // ready: the sign-up picture turns 3D
     for (const n of want) L.load(PEOPLE_BASE + n + (n === 'anims' ? '.glb' : '.gltf'), (g) => {
       if (n === 'anims') { for (const c of g.animations) PEOPLE.clips[c.name] = c; }
       else if (n.startsWith('body_')) {
         const box = new THREE.Box3().setFromObject(g.scene), size = box.getSize(new THREE.Vector3());
         let geo = null, bodyName = ''; g.scene.traverse((o) => { if (o.isSkinnedMesh && (!geo || o.geometry.attributes.position.count > geo.attributes.position.count)) { geo = o.geometry; bodyName = o.name; } }); // the body: the biggest mesh (not the eyes or eyebrows)
         geo.computeBoundingBox(); const gb = geo.boundingBox, gs = gb.getSize(new THREE.Vector3());
-        PEOPLE.base[n.slice(5)] = { bodyName, scene: g.scene, scale: 10 / Math.max(0.01, gs.y), // the body's own height (1.8 m) to 10 units: a little larger than life, so people read well from above gMin: gb.min.clone(), gSize: gs, gMid: (gb.min.x + gb.max.x) / 2 };
+        PEOPLE.base[n.slice(5)] = { bodyName, scene: g.scene, scale: 10 / Math.max(0.01, gs.y) /* 1.8 m tall to 10 units: a little larger than life, so people read well from above */, gMin: gb.min.clone(), gSize: gs, gMid: (gb.min.x + gb.max.x) / 2 };
       } else PEOPLE.hair[n] = g.scene;
       done();
     }, undefined, () => done());
@@ -2242,7 +2248,40 @@
   const SKINS = ['#5C3A21', '#6B4226', '#7A4A2A', '#8D5A3B', '#A0673F', '#C58C5C'];
   const HAIRS = ['#14100E', '#2A1A12', '#4A2E1E', '#6B4428'];
   const BOTTOMS = ['#1F2A44', '#111827', '#3F3F46', '#5B4636', '#F5F5F4'];
-  const OUTFITS = {}; // filled in below: the clothing catalogue
+  // ---- the clothing catalogue: whole outfits, painted onto the 3D body (see dressMaterial). Brand names only, no logos;
+  // not affiliated with the brands. [id, brand, name, department, price, look]. look: top/top2 colours, topPat (0 plain,
+  // 1 stripes, 2 two-tone, 3 print, 4 side stripe), sleeve (0 none, 1 short, 2 long), bot/bot2/botPat, botLen (0 long,
+  // 1 skirt, 2 shorts), robe (down to the ankle), shoe. Price 0: a free starter, everyone has them.
+  const OUTFIT_LIST = [
+    ['st_tee', 'Starter', 'White tee & jeans', 'Starter', 0, { top: '#F8FAFC', sleeve: 1, bot: '#1E40AF', shoe: '#F8FAFC' }],
+    ['st_polo', 'Starter', 'Polo & chinos', 'Starter', 0, { top: '#0F766E', sleeve: 1, bot: '#D6C3A5', shoe: '#78350F' }],
+    ['st_ankara', 'Starter', 'Ankara shirt & trousers', 'Starter', 0, { top: '#F59E0B', top2: '#7C3AED', topPat: 3, sleeve: 1, bot: '#111827', shoe: '#111827' }],
+    ['st_sport', 'Starter', 'Sports set', 'Starter', 0, { top: '#DC2626', sleeve: 1, bot: '#111827', botLen: 2, shoe: '#F8FAFC' }],
+    ['puma_run', 'Puma', 'Running set', 'Sportswear', 28000, { top: '#DC2626', top2: '#111827', topPat: 2, sleeve: 1, bot: '#111827', botLen: 2, shoe: '#F8FAFC' }],
+    ['nike_dri', 'Nike', 'Dri-FIT tee & shorts', 'Sportswear', 35000, { top: '#2563EB', sleeve: 1, bot: '#111827', botLen: 2, shoe: '#F8FAFC' }],
+    ['adidas_jersey', 'Adidas', 'Green and white football kit', 'Sportswear', 45000, { top: '#008751', top2: '#F8FAFC', topPat: 2, sleeve: 1, bot: '#F8FAFC', botLen: 2, shoe: '#111827' }],
+    ['adidas_track', 'Adidas', 'Track suit', 'Sportswear', 75000, { top: '#111827', sleeve: 2, bot: '#111827', shoe: '#F8FAFC' }],
+    ['nike_tech', 'Nike', 'Tech Fleece tracksuit', 'Sportswear', 85000, { top: '#374151', sleeve: 2, bot: '#374151', shoe: '#F8FAFC' }],
+    ['hm_hoodie', 'H&M', 'Hoodie & joggers', 'Streetwear', 30000, { top: '#6B7280', sleeve: 2, bot: '#374151', shoe: '#F8FAFC' }],
+    ['zara_linen', 'Zara', 'Linen shirt & trousers', 'Streetwear', 55000, { top: '#E7E5E4', sleeve: 2, bot: '#A8A29E', shoe: '#78350F' }],
+    ['levis_denim', "Levi's", 'Denim jacket & jeans', 'Streetwear', 65000, { top: '#1E3A8A', sleeve: 2, bot: '#1D4ED8', shoe: '#111827' }],
+    ['zara_dress', 'Zara', 'Summer dress', 'Streetwear', 48000, { top: '#F472B6', top2: '#F8FAFC', topPat: 3, sleeve: 0, bot: '#F472B6', bot2: '#F8FAFC', botPat: 3, botLen: 1, shoe: '#F8FAFC' }],
+    ['offwhite_set', 'Off-White', 'Striped tee & cargos', 'Streetwear', 180000, { top: '#F8FAFC', top2: '#111827', topPat: 1, sleeve: 1, bot: '#57534E', shoe: '#F8FAFC' }],
+    ['lanre_buba', 'Lanre Da Silva', 'Buba & sokoto', 'Native', 150000, { top: '#F8FAFC', top2: '#22B573', topPat: 2, sleeve: 2, bot: '#F8FAFC', shoe: '#78350F' }],
+    ['orange_kaftan', 'Orange Culture', 'Kaftan', 'Native', 220000, { top: '#7C2D12', top2: '#F59E0B', topPat: 3, sleeve: 2, robe: 1, shoe: '#78350F' }],
+    ['folawiyo_ankara', 'Lisa Folawiyo', 'Ankara two-piece', 'Native', 260000, { top: '#F59E0B', top2: '#7C3AED', topPat: 3, sleeve: 1, bot: '#7C3AED', bot2: '#F59E0B', botPat: 3, botLen: 1, shoe: '#111827' }],
+    ['ize_asooke', 'Kenneth Ize', 'Aso-oke set', 'Native', 380000, { top: '#1D4ED8', top2: '#F8FAFC', topPat: 1, sleeve: 2, bot: '#1D4ED8', bot2: '#F8FAFC', botPat: 1, shoe: '#111827' }],
+    ['atafo_agbada', 'Mai Atafo', 'Bespoke agbada', 'Native', 950000, { top: '#F5F5F4', top2: '#D4AF37', topPat: 2, sleeve: 2, robe: 1, shoe: '#78350F' }],
+    ['ralph_suit', 'Ralph Lauren', 'Navy suit', 'Formal', 420000, { top: '#1E3A8A', sleeve: 2, bot: '#1E3A8A', shoe: '#111827' }],
+    ['balenciaga_set', 'Balenciaga', 'Oversized hoodie set', 'Luxury', 950000, { top: '#111827', sleeve: 2, bot: '#111827', shoe: '#DC2626' }],
+    ['gucci_track', 'Gucci', 'Tracksuit', 'Luxury', 1200000, { top: '#14532D', top2: '#DC2626', topPat: 2, sleeve: 2, bot: '#14532D', bot2: '#DC2626', botPat: 4, shoe: '#F8FAFC' }],
+    ['versace_silk', 'Versace', 'Baroque silk shirt', 'Luxury', 1400000, { top: '#D4AF37', top2: '#111827', topPat: 3, sleeve: 1, bot: '#111827', shoe: '#111827' }],
+    ['fendi_set', 'Fendi', 'Monogram set', 'Luxury', 1800000, { top: '#78350F', top2: '#D4A373', topPat: 1, sleeve: 2, bot: '#78350F', bot2: '#D4A373', botPat: 1, shoe: '#111827' }],
+    ['lv_jacket', 'Louis Vuitton', 'Monogram jacket', 'Luxury', 2400000, { top: '#3F2A18', top2: '#D4AF37', topPat: 3, sleeve: 2, bot: '#111827', shoe: '#3F2A18' }],
+    ['dior_gown', 'Dior', 'Evening gown', 'Luxury', 3000000, { top: '#7F1D1D', top2: '#B91C1C', topPat: 2, sleeve: 0, robe: 1, shoe: '#111827' }],
+  ];
+  const OUTFITS = Object.fromEntries(OUTFIT_LIST.map(([id, brand, name, dept, price, look]) => [id, { id, brand, name, dept, price, look }]));
+  const STARTERS = OUTFIT_LIST.filter((o) => !o[4]).map((o) => o[0]);
   // a look: "g,skin,hair,style,bottom,outfit" (g: m or f; outfit: an id from OUTFITS, or empty)
   function parseLook(look, name) {
     const h = [...(name || 'x')].reduce((a, ch) => a + ch.charCodeAt(0), 0);
@@ -4559,7 +4598,43 @@
   call('online', {}).then((n) => { if (typeof n === 'number') document.getElementById('crowd').textContent = n === 1 ? '1 Lagosian' : n + ' Lagosians'; }).catch(() => {});
   // the character picker: man or woman, and a new look (skin, hair, style, clothes) with each tap
   const lkPrev = document.getElementById('lkPrev');
+  // the 3D character, turning slowly, in a little studio of its own (its own renderer and camera)
+  const LP = { r: null, scene: null, cam: null, p: null, key: '', run: false, t: 0 };
+  function preview3d() {
+    if (!PEOPLE.ok) return false;
+    const THREE = G3.T;
+    if (!LP.r) {
+      LP.cv = document.createElement('canvas'); LP.r = new THREE.WebGLRenderer({ canvas: LP.cv, alpha: true, antialias: true }); LP.r.setSize(320, 360, false);
+      LP.scene = new THREE.Scene(); LP.scene.add(new THREE.HemisphereLight(0xffffff, 0x8899aa, 2)); const d = new THREE.DirectionalLight(0xffffff, 2.2); d.position.set(1, 2, 2); LP.scene.add(d);
+      LP.cam = new THREE.PerspectiveCamera(30, 320 / 360, 0.1, 100); LP.cam.position.set(0, 6, 27); LP.cam.lookAt(0, 5, 0);
+    }
+    const L = parseLook(myLook, myName || 'you'), key = L.g + (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4];
+    if (LP.key !== key) { if (LP.p) LP.p.root.removeFromParent(); LP.p = makePerson(L.g, (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4]); LP.scene.add(LP.p.root); LP.key = key; LP.p.acts.Idle_Loop.play(); }
+    const o = outfitOf(L, myColor), u = LP.p.dress.u, sk = SKINS[L.skin] || SKINS[0];
+    u.uTop.value.set(o.top); u.uTop2.value.set(o.top2 || o.top); u.uTopPat.value = o.topPat || 0; u.uSleeve.value = [0.12, 0.2, 0.37][o.sleeve ?? 1];
+    u.uBot.value.set(o.bot || '#1F2A44'); u.uBot2.value.set(o.bot2 || o.bot || '#1F2A44'); u.uBotPat.value = o.botPat || 0; u.uBotLo.value = [0.065, 0.3, 0.36][o.botLen || 0]; u.uRobe.value = o.robe ? 1 : 0; u.uShoe.value.set(o.shoe || '#111827');
+    if (LP.p.dress.textured) u.uSkin.value.setScalar(0.62 + 0.9 * (L.skin / (SKINS.length - 1))); else u.uSkin.value.set(sk);
+    LP.p.body.traverse((m) => { if (m.userData.hair) m.material.color.set(HAIRS[L.hair] || HAIRS[0]).multiplyScalar(2.2); });
+    if (!LP.run) { LP.run = true; let last = performance.now(); const spin = (now) => {
+      if (document.getElementById('hello').style.display === 'none') { LP.run = false; return; }
+      const dt = (now - last) / 1000; last = now; LP.p.mixer.update(dt); LP.p.root.rotation.y += dt * 0.6;
+      LP.r.render(LP.scene, LP.cam); const c = lkPrev.getContext('2d'); c.clearRect(0, 0, 320, 360); c.drawImage(LP.cv, 0, 0); requestAnimationFrame(spin);
+    }; requestAnimationFrame(spin); }
+    return true;
+  }
+  // the choices under the picture: skin, hair, a free starter outfit
+  function lookChoices() {
+    const p = myLook.split(','), L = parseLook(myLook, myName || 'you'), set = (k, v) => { const q = myLook.split(','); while (q.length < 6) q.push(''); q[k] = v; myLook = q.join(','); store.set('li.look', myLook); previewLook(); };
+    document.getElementById('lkSkin').innerHTML = SKINS.map((c, k) => `<button type="button" data-sk="${k}" class="${L.skin === k ? 'on' : ''}" style="background:${c}" aria-label="Skin ${k + 1}"></button>`).join('');
+    document.getElementById('lkHair').innerHTML = (L.g === 'f' ? ['Long', 'Buns', 'Short', 'Long, dark'] : ['Buzzed', 'Parted', 'Buzzed, beard', 'Parted, beard']).map((n, k) => `<button type="button" data-hs="${k}" class="${L.style === k ? 'on' : ''}">${n}</button>`).join('');
+    document.getElementById('lkFit').innerHTML = STARTERS.map((id) => `<button type="button" data-fit="${id}" class="${(L.outfit || '') === id ? 'on' : ''}">${OUTFITS[id].name}</button>`).join('');
+    document.querySelectorAll('[data-sk]').forEach((b) => (b.onclick = () => set(1, b.dataset.sk)));
+    document.querySelectorAll('[data-hs]').forEach((b) => (b.onclick = () => { set(3, b.dataset.hs); if (L.g === 'f' && b.dataset.hs === '3') set(2, '0'); }));
+    document.querySelectorAll('[data-fit]').forEach((b) => (b.onclick = () => set(5, b.dataset.fit)));
+  }
   function previewLook() {
+    lookChoices();
+    if (preview3d()) { const g = myLook.split(',')[0]; document.getElementById('lkM').classList.toggle('on', g === 'm'); document.getElementById('lkF').classList.toggle('on', g === 'f'); return; }
     const save = { x, W, H, K, sp, cp, co, si, cam: { ...cam }, inside };
     try {
       x = lkPrev.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, 320, 360);
