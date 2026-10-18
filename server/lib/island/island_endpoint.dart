@@ -22,6 +22,10 @@ class IslandEndpoint extends Endpoint {
   static const _keepChat = 300;
 
   static final _players = <String, _Player>{};
+  /// what each club's DJ is playing, by the club's room key: set by [spin] from inside the club, sent to everyone with
+  /// [tick] so the whole island hears the same song from the same moment; dropped when the DJ leaves or goes quiet
+  static final _decks = <String, _Deck>{};
+  static const _deckIdle = Duration(minutes: 12);
   static final _chat = <_Line>[];
   static var _seq = 0;
 
@@ -76,7 +80,13 @@ class IslandEndpoint extends Endpoint {
     for (final p in _players.values) {
       if (p.room.isNotEmpty && p.car.isNotEmpty) (parked[p.room] ??= []).add(p.car);
     }
+    // the clubs' decks: a DJ who has left the club (or the island), or gone quiet, hands back to the resident DJ
+    _decks.removeWhere((club, d) => _players[d.by]?.room != club || now.difference(d.at) > _deckIdle);
     return jsonEncode({
+      'decks': {
+        for (final e in _decks.entries)
+          e.key: {'url': e.value.url, 'title': e.value.title, 'artist': e.value.artist, 'art': e.value.art, 'dj': _players[e.value.by]?.name ?? 'DJ', 'by': e.value.by, 'ago': now.difference(e.value.at).inMilliseconds},
+      },
       'parked': parked,
       'online': _players.length,
       'players': near.take(60).toList(),
@@ -90,6 +100,24 @@ class IslandEndpoint extends Endpoint {
     final now = DateTime.now();
     _players.removeWhere((_, p) => now.difference(p.seen) > _fade);
     return _players.length;
+  }
+
+  /// Take the decks: the DJ, standing in a club, plays a song on its speakers for everyone. [url] must be a stream from
+  /// the two catalogues Island Music uses (Audius, Deezer previews). An empty [url] hands the decks back.
+  Future<bool> spin(Session session, String id, String club, String url, String title, String artist, String art) async {
+    final p = _players[id];
+    if (p == null || !club.startsWith('place:club:') || p.room != club) return false;
+    final held = _decks[club];
+    if (held != null && held.by != id && _players[held.by]?.room == club) return false; // someone else is on the decks
+    if (url.isEmpty) {
+      if (held?.by == id) _decks.remove(club);
+      return true;
+    }
+    final ok = RegExp(r'^https://(api\.audius\.co/v1/tracks/[A-Za-z0-9]+/stream\?app_name=[A-Za-z]+|cdn[a-z]*-preview[a-z0-9-]*\.dzcdn\.net/[^\s<>"]+)$');
+    final artOk = RegExp(r'^https://[a-z0-9.-]+(\.dzcdn\.net|\.audius\.co|\.audius\.org|audius[a-z0-9.-]*)/[^\s<>"]*$');
+    if (!ok.hasMatch(url)) return false;
+    _decks[club] = _Deck(id, url, _clean(title, 80), _clean(artist, 60), artOk.hasMatch(art) ? art : '', DateTime.now());
+    return true;
   }
 
   /// A line of chat, heard by the people near the speaker.
@@ -126,4 +154,10 @@ class _Line {
   final String id, name, color, text, room;
   final double x, z;
   _Line(this.seq, this.id, this.name, this.color, this.text, this.x, this.z, this.room);
+}
+
+class _Deck {
+  final String by, url, title, artist, art;
+  final DateTime at;
+  _Deck(this.by, this.url, this.title, this.artist, this.art, this.at);
 }

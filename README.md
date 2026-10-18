@@ -27,6 +27,7 @@ A multiplayer game of Lagos Island, Ikoyi, Victoria Island, Eko Atlantic, Lekki,
   - **Ride:** Uber-style okada and car trips, paid on arrival.
   - **Music:** Nigeria's top songs, new music, genres and search (Deezer, 30-second previews), and full-length tracks from independent artists (Audius). It keeps playing with the phone away; bass Off, Boost or Max and a live visualiser; no account needed. The 🎧 in the top bar opens it.
 - **The city at night:** real Afrobeats and Amapiano mixes play in Club Ozumba, Club Lekki and on Elegushi's stage. Out on the island you hear them louder as you get closer, bass through the walls, from the side they're on; inside a club it's the full sound. The 🔊 in the top bar turns it off.
+- **DJs:** every venue has a resident DJ and its own sound (Ozumba: Afrobeats and Afropop with DJ Ozzy Gold; Club Lekki: Amapiano and Afro house with DJ Tidewave; Elegushi: street-pop with DJ Shaku Bass), at a lit booth with decks, a mixer, a laptop and monitors; the lights flash with the bass. Inside a club, open Island Music and **Take the decks**: your picks play on the club speakers for everyone there (needs the island server update: `spin` and `decks` in `island_endpoint.dart`).
   - **WYRD:** the AI that runs the island.
 - **WYRD:** WYRD Tower is where you talk to WYRD itself. It never sees your Link messages.
 

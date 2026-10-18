@@ -372,6 +372,9 @@
   .msg time { display: block; margin-top: 2px; font-size: 10.5px; opacity: .55; text-align: right; } .msg.cont { margin-top: -3px; }
   .qrep { display: flex; gap: 6px; overflow-x: auto; margin: 10px -16px 0; padding: 0 16px 2px; } .qrep button { flex: none; padding: 6px 10px; border: 1px solid rgba(255,0,60,.45); background: rgba(255,0,60,.1); color: #FFD6DE; font: 700 13px 'Rajdhani', sans-serif; cursor: pointer; }
   /* Island Music */
+  .mdj { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 10px 12px; border-radius: 14px; background: linear-gradient(120deg, hsl(var(--h) 80% 30% / .85), hsl(calc(var(--h) + 60) 70% 18% / .9)); border: 1px solid hsl(var(--h) 90% 60% / .6); color: #fff; font-family: 'Rajdhani', sans-serif; }
+  .mdj > div { flex: 1; min-width: 0; } .mdj small { display: block; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 1px; opacity: .85; } .mdj b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mdj span { display: block; font-size: 12px; opacity: .8; }
+  .mdj button { flex: none; padding: 8px 12px; border: none; border-radius: 999px; background: #fff; color: #07070D; font: 800 12px 'Rajdhani', sans-serif; letter-spacing: .5px; cursor: pointer; } .mdj button.on { background: #22C55E; }
   .mseg { grid-template-columns: repeat(4, 1fr) !important; } .mseg button { font-size: 11.5px !important; padding: 8px 2px !important; } .mseg button.on { background: #22C55E !important; color: #07070D !important; }
   .mrow { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 10px; border: none; border-bottom: 1px solid rgba(0,240,255,.08); background: none; color: #E6F9FF; font-family: 'Rajdhani', sans-serif; text-align: left; cursor: pointer; } .mrow:hover { background: rgba(34,197,94,.08); }
   .mrow img { width: 42px; height: 42px; flex: none; object-fit: cover; border-radius: 6px; background: #1F2937; } .mrow .lt { flex: 1; min-width: 0; } .mrow .lt b { display: block; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mrow .lt small { display: block; color: #8FB6C2; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2425,7 +2428,7 @@
   // the outfit someone has on (see OUTFITS); a top in their colour and their trousers when they've bought nothing
   function outfitOf(L, color) { return (OUTFITS[L.outfit] && OUTFITS[L.outfit].look) || { top: color, bot: BOTTOMS[L.bottom] || '#1F2A44', shoe: '#F8FAFC', sleeve: 1 }; }
   // draw someone as a 3D person (false: not ready, draw them flat): place, face, dress and animate, then render in turn
-  function person3d(px, pz, color, name, now, L, pose, seatY) {
+  function person3d(px, pz, color, name, now, L, pose, seatY, standY = 0) { // standY: standing on something (a stage)
     if (!PEOPLE.ok) { initPeople(); return false; }
     if (pose === 'sleep') return false;
     const hairKey = (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4], key = name, THREE = G3.T;
@@ -2440,7 +2443,7 @@
     const want = pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : speed > 22 ? 'Sprint_Loop' : speed > 13 ? 'Jog_Fwd_Loop' : speed > 1 ? 'Walk_Loop' : partying ? 'Dance_Loop' : 'Idle_Loop';
     if (p.cur !== want && p.acts[want]) { const next = p.acts[want].reset().play(); if (p.cur && p.acts[p.cur]) p.acts[p.cur].crossFadeTo(next, 0.25, false); p.cur = want; }
     p.mixer.update(dt);
-    p.root.position.set(px, pose === 'sit' ? Math.max(0, (seatY || 2) - 1.9) : inWater ? -3 : 0, pz); p.root.rotation.y = p.ang;
+    p.root.position.set(px, pose === 'sit' ? Math.max(0, (seatY || 2) - 1.9) : inWater ? -3 : standY, pz); p.root.rotation.y = p.ang;
     // dressed for the day
     if (p.dress) {
       const o = outfitOf(L, color), u = p.dress.u, sk = SKINS[L.skin] || SKINS[0], tone = 0.62 + 0.9 * (SKINS.indexOf(sk) / (SKINS.length - 1));
@@ -3622,6 +3625,7 @@
   // LED wall behind it, a truss of moving heads above, a long bar with backlit bottles, neon signs, a VIP rope
   function drawClubShell(R, now) {
     const lekki = R.theme === 'lekki', t = now / 1000, cx = R.w / 2;
+    const deck = clubSrc(R.key), set = deck && deck.now, beat = clubBeat(R.key); // who is playing here, and the bass right now
     // Ozumba's lights stay warm gold and amber; Lekki's run through the ocean's blues and greens
     const hue = lekki ? 165 + Math.sin(t * 0.6) * 35 : 35 + Math.sin(t * 0.5) * 15;
     if (lekki) { // sand, a scatter of shells, palms in the corners, surfboards on the wall, a thatched bar roof
@@ -3650,12 +3654,50 @@
       const u0 = i / cols, v0 = j / rows, lerp = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u];
       const pt = (u, v) => lerp(lerp(a0, a1, u), lerp(a3, a2, u), v);
       const wave = Math.sin(i * 0.5 + t * 3) * 0.5 + Math.cos(j * 0.9 - t * 2) * 0.5;
-      x.fillStyle = `hsla(${hue + ((i * 7 + j * 11) % 44) - 22},95%,${45 + wave * 20}%,0.95)`;
+      x.fillStyle = `hsla(${hue + ((i * 7 + j * 11) % 44) - 22},95%,${45 + wave * 20 + beat * 25}%,0.95)`; // the wall breathes with the bass
       const q = [pt(u0 + 0.01, v0 + 0.02), pt(u0 + 1 / cols - 0.01, v0 + 0.02), pt(u0 + 1 / cols - 0.01, v0 + 1 / rows - 0.02), pt(u0 + 0.01, v0 + 1 / rows - 0.02)];
       x.beginPath(); x.moveTo(q[0][0], q[0][1]); for (let k = 1; k < 4; k++) x.lineTo(q[k][0], q[k][1]); x.closePath(); x.fill();
     }
-    box(cx - 6, 2.7, 5, cx + 6, 6.2, 7.5, '#0B0B10'); box(cx - 6, 6.2, 5, cx + 6, 6.5, 7.5, '#22D3EE');
-    for (const dx of [cx - 3, cx + 3]) { const p = P(dx, 6.55, 6.2); x.fillStyle = '#111'; x.beginPath(); x.ellipse(p[0], p[1], K * 1.3, K * 1.3 * sp, 0, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#A855F7'; x.lineWidth = 1; x.stroke(); }
+    // the DJ: the club's resident behind the decks (unless a player has taken over; then they're wherever they stand),
+    // the song and who's playing it lit across the foot of the LED wall
+    if (deck && (!set || set.resident)) {
+      const L = parseLook(lekki ? 'm,1,2,2,0,offwhite_set' : 'm,0,1,0,0,balenciaga_set', 'dj:' + R.key);
+      if (PEOPLE.ok && person3d(cx, 3.4, '#FFFFFF', 'dj:' + R.key, now, L, null, 0, 2.7)) {
+        // his headphones: a band over the head, big ear cups ringed in the club's colour, pulsing with the bass; his name over him
+        const hp = P(cx, 2.7 + 9.35, 3.4), r = K * 0.95; x.save(); x.strokeStyle = '#18181B'; x.lineWidth = Math.max(2, K * 0.28); x.beginPath(); x.arc(hp[0], hp[1], r, Math.PI * 1.05, Math.PI * 1.95); x.stroke();
+        for (const sx of [-1, 1]) { const e = [hp[0] + sx * r * 0.98, hp[1] + r * 0.15]; x.fillStyle = '#18181B'; x.beginPath(); x.ellipse(e[0], e[1], K * 0.32, K * 0.45, 0, 0, Math.PI * 2); x.fill(); x.strokeStyle = `hsl(${hue},95%,${55 + beat * 25}%)`; x.lineWidth = Math.max(1, K * 0.12); x.stroke(); }
+        x.restore();
+        const tg = P(cx, 2.7 + 11.6, 3.4); x.save(); x.font = '800 10px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; const tw = x.measureText('🎧 ' + deck.spot.dj).width + 14; x.fillStyle = 'rgba(0,0,0,0.65)'; x.beginPath(); x.roundRect(tg[0] - tw / 2, tg[1] - 9, tw, 18, 9); x.fill(); x.fillStyle = `hsl(${hue},95%,70%)`; x.fillText('🎧 ' + deck.spot.dj, tg[0], tg[1] + 0.5); x.restore();
+      }
+    }
+    if (deck) faceText(`♪ ${set ? set.title.slice(0, 42) : 'Warming up'}  ·  ${set ? set.dj : deck.spot.dj}`, cx, 3.9, 0.25, '#FFFFFF', 1, 8, 800);
+    // on a big bass hit the whole room flashes in the club's colour
+    if (beat > 0.55) { x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = `hsla(${hue},95%,60%,${Math.min(0.16, (beat - 0.55) * 0.5)})`; x.fillRect(0, 0, W, H); x.restore(); }
+    // the DJ booth: a curved-front console lit along its edge in time with the bass, the club's name on it; on top two
+    // decks (platters spinning, a strobe dot on each), the mixer between them (faders, glowing knobs, VU meters bouncing to
+    // the music), a laptop on its stand with the glow on the DJ's face, a monitor speaker either side
+    const by = 6.5, bz0 = 5, bz1 = 7.6, spin = t * 3.4, vu = Math.max(0.15, beat);
+    box(cx - 7, 2.7, bz0, cx + 7, by, bz1, '#0B0B10');
+    for (let k = 0; k < 14; k++) { const p0 = P(cx - 7 + k, 3, bz1 + 0.02), p1 = P(cx - 6.2 + k, 3, bz1 + 0.02), p2 = P(cx - 6.2 + k, by - 0.3, bz1 + 0.02), p3 = P(cx - 7 + k, by - 0.3, bz1 + 0.02); quad([p0, p1, p2, p3], `hsla(${hue + k * 6},95%,${30 + beat * 40 * Math.abs(Math.sin(k * 0.7 + t * 4))}%,0.9)`); } // the front's LED panel
+    faceText(lekki ? 'LEKKI' : 'OZUMBA', cx, by - 1.6, bz1 + 0.05, '#FFFFFF', 0.9, 6);
+    box(cx - 7.1, by, bz0 - 0.1, cx + 7.1, by + 0.2, bz1 + 0.1, '#1F2937'); // the top
+    for (const dx of [cx - 4.2, cx + 4.2]) { // the decks
+      box(dx - 1.8, by + 0.2, bz0 + 0.2, dx + 1.8, by + 0.5, bz1 - 0.2, '#18181B');
+      const c0 = P(dx - 0.2, by + 0.52, (bz0 + bz1) / 2), r = K * 1.2; x.fillStyle = '#0A0A0A'; x.beginPath(); x.ellipse(c0[0], c0[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#3F3F46'; x.lineWidth = 1; x.stroke();
+      x.fillStyle = `hsl(${hue},90%,60%)`; x.beginPath(); x.ellipse(c0[0], c0[1], r * 0.3, r * 0.3 * sp, 0, 0, Math.PI * 2); x.fill(); // the label
+      const sp1 = spin * (dx < cx ? 1 : 1.04), m = [c0[0] + Math.cos(sp1) * r * 0.85, c0[1] + Math.sin(sp1) * r * 0.85 * sp]; x.fillStyle = '#F8FAFC'; x.beginPath(); x.arc(m[0], m[1], Math.max(0.8, K * 0.15), 0, Math.PI * 2); x.fill(); // the strobe dot, going round
+      const arm = P(dx + 1.3, by + 0.6, bz0 + 0.5), tip = P(dx + 0.4, by + 0.6, (bz0 + bz1) / 2 + 0.3); x.strokeStyle = '#D4D4D8'; x.lineWidth = Math.max(1, K * 0.12); x.beginPath(); x.moveTo(arm[0], arm[1]); x.lineTo(tip[0], tip[1]); x.stroke(); // the tonearm
+    }
+    // the mixer: faders, knobs and the VU meters
+    box(cx - 1.6, by + 0.2, bz0 + 0.2, cx + 1.6, by + 0.6, bz1 - 0.2, '#27272A');
+    for (let k = 0; k < 4; k++) { const fx = cx - 1.1 + k * 0.73, fz = bz1 - 0.6, fy = Math.sin(t * 0.7 + k) * 0.3; flat(fx - 0.05, fz - 0.9, fx + 0.05, fz, by + 0.62, '#52525B'); box(fx - 0.18, by + 0.62, fz - 0.5 + fy - 0.12, fx + 0.18, by + 0.8, fz - 0.5 + fy + 0.12, '#E4E4E7'); for (let j = 0; j < 2; j++) { const kp = P(fx, by + 0.65, bz0 + 0.6 + j * 0.6); x.fillStyle = ['#22D3EE', '#F472B6', '#FACC15', '#A3E635'][k]; x.beginPath(); x.arc(kp[0], kp[1], Math.max(0.6, K * 0.12), 0, Math.PI * 2); x.fill(); } }
+    for (let k = 0; k < 2; k++) for (let j = 0; j < 6; j++) { const lit = j / 6 < vu * (0.8 + 0.2 * Math.sin(t * 9 + k)); const p = P(cx - 0.25 + k * 0.5, by + 0.65 + j * 0.25, bz0 + 0.25); x.fillStyle = lit ? (j > 4 ? '#EF4444' : j > 3 ? '#FACC15' : '#22C55E') : '#27272A'; x.fillRect(p[0] - K * 0.12, p[1] - K * 0.08, K * 0.24, K * 0.16); } // the VU meters
+    // the laptop on its stand, its screen glowing
+    box(cx - 0.9, by + 0.6, bz0 - 0.2, cx + 0.9, by + 1.2, bz0 + 0.1, '#52525B');
+    const l0 = P(cx - 1, by + 1.2, bz0), l1 = P(cx + 1, by + 1.2, bz0), l2 = P(cx + 1, by + 2.4, bz0 - 0.5), l3 = P(cx - 1, by + 2.4, bz0 - 0.5); quad([l0, l1, l2, l3], '#A1A1AA');
+    glow.push(() => { const p = P(cx, by + 1.8, bz0 - 0.4), r = K * 2.6; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(165,243,252,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
+    // the booth monitors either side, cones pumping with the bass
+    for (const sx of [cx - 9.4, cx + 7.4]) { box(sx, 2.7, bz0, sx + 2, 7.2, bz0 + 2, '#111827'); for (const [cy2, cr] of [[4.2, 0.75], [6.3, 0.4]]) { const p = P(sx + 1, cy2, bz0 + 2.02), rr = K * cr * (1 + beat * 0.12); x.fillStyle = '#27272A'; x.beginPath(); x.arc(p[0], p[1], rr, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#52525B'; x.lineWidth = 1; x.stroke(); } }
     // two trusses of moving heads
     for (const tz of [15, 44]) {
       box(16, 18, tz, R.w - 22, 18.6, tz + 0.8, '#4B5563');
@@ -4580,6 +4622,7 @@
     try {
       const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : ''), car: myCar });
       document.getElementById('count').textContent = r.online;
+      if (r.decks) cityDecks(r.decks); // what each club DJ is playing
       const now = performance.now(), seen = new Set();
       for (const p of r.players) {
         seen.add(p.id);
@@ -4813,40 +4856,91 @@
   // ---- the city at night: real Afrobeats and Amapiano mixes (Audius) playing in the clubs and on Elegushi's stage, heard from
   // wherever you are: louder as you get closer, muffled through the walls with the bass coming through, panned to the side
   // it's on. Inside a club it's the full sound; in any other room it's gone; Island Music turns the city down while it plays.
-  const CITY = { on: store.get('li.city') !== '0', srcs: [], master: null };
-  const CITY_SPOTS = [['Club Ozumba', 'afrobeats mix'], ['Club Lekki', 'amapiano mix'], ['Elegushi Beach', 'afro party mix']];
+  // Each venue has its resident DJ and its own sound (no two play the same set): Ozumba is Afrobeats and Afropop, VI
+  // glamour; Club Lekki is Amapiano and Afro house by the sea; Elegushi is street-pop and shaku. A player inside a club
+  // can take the decks from Island Music: their picks go to the club's speakers for everyone (shared through the island
+  // server), and the resident takes over again when they leave.
+  const CITY = { on: store.get('li.city') !== '0', srcs: [], master: null, used: new Set(), dj: null };
+  const CITY_SPOTS = [
+    { name: 'Club Ozumba', dj: 'DJ Ozzy Gold', vibe: 'Afrobeats · Afropop', q: ['afrobeats mix', 'afropop mix', 'naija afrobeats dj mix'], hue: 45 },
+    { name: 'Club Lekki', dj: 'DJ Tidewave', vibe: 'Amapiano · Afro house', q: ['amapiano mix', 'afro house mix', 'amapiano log drum mix'], hue: 190 },
+    { name: 'Elegushi Beach', dj: 'DJ Shaku Bass', vibe: 'Street-pop · party', q: ['street pop mix', 'afro party mix', 'naija street mix'], hue: 300 },
+  ];
+  async function residentSet(s) { // the resident DJ's mix: long, streamable, not one another club is playing
+    for (const q of s.spot.q) {
+      try {
+        const list = (await au('/tracks/search?query=' + encodeURIComponent(q) + '&limit=15')).filter((t) => t.is_streamable !== false && t.duration > 600 && !CITY.used.has(t.id)).sort((x1, x2) => x2.duration - x1.duration);
+        const tr = list[Math.floor(Math.random() * Math.min(3, list.length))];
+        if (tr) { CITY.used.add(tr.id); return { url: `${MUSIC.au}/tracks/${tr.id}/stream?app_name=${MUSIC.app}`, title: tr.title, artist: tr.user ? tr.user.name : '', dj: s.spot.dj, resident: true }; }
+      } catch {}
+    }
+    return null;
+  }
+  function deckPlay(s, set, from) { // put a set on a venue's speakers; [from]: seconds in (a DJ's song: how long ago it started)
+    s.now = set; if (!set) return;
+    s.a.loop = !!set.resident; s.a.src = set.url;
+    s.a.addEventListener('loadedmetadata', () => { s.a.currentTime = set.resident ? Math.random() * s.a.duration * 0.8 : Math.min(from || 0, Math.max(0, s.a.duration - 1)); }, { once: true });
+    if (s.g && s.g.gain.value > 0.01) s.a.play().catch(() => {});
+  }
   async function cityStart() {
     const c = audioCtx(); if (!c || CITY.master) return;
-    // the city's mix bus: the clubs, then an echo off the buildings (two delays feeding back through a low-pass, so the
-    // repeats come back dark and boomy), then a compressor so the bass can hit hard without clipping
+    // the city's mix bus: the venues, an echo off the buildings, a compressor
     CITY.master = c.createGain(); CITY.master.gain.value = 0;
-    const comp = c.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 4; comp.attack.value = 0.005; comp.release.value = 0.25; comp.connect(c.destination);
+    const comp = c.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.25; comp.connect(c.destination);
     CITY.master.connect(comp);
-    for (const [dt, fb, wet] of [[0.33, 0.45, 0.55], [0.71, 0.35, 0.4]]) { const dl = c.createDelay(2), fbk = c.createGain(), lp = c.createBiquadFilter(), out = c.createGain(); dl.delayTime.value = dt; fbk.gain.value = fb; lp.type = 'lowpass'; lp.frequency.value = 850; out.gain.value = wet; CITY.master.connect(dl); dl.connect(lp); lp.connect(fbk); fbk.connect(dl); lp.connect(out); out.connect(comp); }
-    for (const [name, q] of CITY_SPOTS) {
-      const p = PLACES.find((v) => v[5].startsWith(name)); if (!p) continue;
-      const s = { name, x: (p[1] + p[3] / 2) * T, z: (p[2] + p[4] / 2) * T, room: p[0] === 'club' ? 'place:club:' + p[1] : '', a: new Audio() };
-      s.a.crossOrigin = 'anonymous'; s.a.loop = true; s.a.preload = 'none';
-      const el = c.createMediaElementSource(s.a), bass = c.createBiquadFilter(), muff = c.createBiquadFilter(); s.g = c.createGain(); s.pan = c.createStereoPanner ? c.createStereoPanner() : null;
-      bass.type = 'lowshelf'; bass.frequency.value = 120; bass.gain.value = 14; muff.type = 'lowpass'; muff.frequency.value = 600; muff.Q.value = 0.7; s.muff = muff; s.g.gain.value = 0;
-      const sub = c.createBiquadFilter(); sub.type = 'peaking'; sub.frequency.value = 55; sub.Q.value = 1.1; sub.gain.value = 9; // the sub: the thump you feel streets away
-      el.connect(bass); bass.connect(sub); sub.connect(muff); muff.connect(s.g); if (s.pan) { s.g.connect(s.pan); s.pan.connect(CITY.master); } else s.g.connect(CITY.master);
-      try { const list = (await au('/tracks/search?query=' + encodeURIComponent(q) + '&limit=12')).filter((t) => t.is_streamable !== false && t.duration > 600).sort((x1, x2) => x2.duration - x1.duration); const tr = list[Math.floor(Math.random() * Math.min(3, list.length))]; if (tr) { s.a.src = `${MUSIC.au}/tracks/${tr.id}/stream?app_name=${MUSIC.app}`; s.a.addEventListener('loadedmetadata', () => { s.a.currentTime = Math.random() * s.a.duration * 0.8; }, { once: true }); } } catch {}
+    for (const [dt, fb, wet] of [[0.33, 0.32, 0.35], [0.71, 0.22, 0.22]]) { const dl = c.createDelay(2), fbk = c.createGain(), lp = c.createBiquadFilter(), out = c.createGain(); dl.delayTime.value = dt; fbk.gain.value = fb; lp.type = 'lowpass'; lp.frequency.value = 1600; out.gain.value = wet; CITY.master.connect(dl); dl.connect(lp); lp.connect(fbk); fbk.connect(dl); lp.connect(out); out.connect(comp); }
+    for (const spot of CITY_SPOTS) {
+      const p = PLACES.find((v) => v[5].startsWith(spot.name)); if (!p) continue;
+      const s = { spot, x: (p[1] + p[3] / 2) * T, z: (p[2] + p[4] / 2) * T, room: p[0] === 'club' ? 'place:club:' + p[1] : '', a: new Audio(), now: null };
+      s.a.crossOrigin = 'anonymous'; s.a.preload = 'none';
+      const el = c.createMediaElementSource(s.a), bass = c.createBiquadFilter(), sub = c.createBiquadFilter(), muff = c.createBiquadFilter(); s.g = c.createGain(); s.pan = c.createStereoPanner ? c.createStereoPanner() : null;
+      bass.type = 'lowshelf'; bass.frequency.value = 110; bass.gain.value = 5; sub.type = 'peaking'; sub.frequency.value = 60; sub.Q.value = 1; sub.gain.value = 2.5;
+      muff.type = 'lowpass'; muff.frequency.value = 600; muff.Q.value = 0.5; s.muff = muff; s.g.gain.value = 0;
+      s.an = c.createAnalyser(); s.an.fftSize = 64; s.buf = new Uint8Array(32);
+      el.connect(bass); bass.connect(sub); sub.connect(s.an); sub.connect(muff); muff.connect(s.g); if (s.pan) { s.g.connect(s.pan); s.pan.connect(CITY.master); } else s.g.connect(CITY.master);
+      s.a.addEventListener('ended', () => { if (s.now && !s.now.resident) { if (CITY.dj === s.room) djNext(); else residentSet(s).then((set) => deckPlay(s, set)); } });
       CITY.srcs.push(s);
+      residentSet(s).then((set) => { if (!s.now || s.now.resident) deckPlay(s, set); });
+    }
+    if (CITY.pendingDecks) cityDecks(CITY.pendingDecks);
+  }
+  // what the island server says each club's DJ is playing (from tick): switch to it, or back to the resident
+  function cityDecks(decks) {
+    if (!CITY.master) { CITY.pendingDecks = decks; return; }
+    for (const s of CITY.srcs) {
+      if (!s.room) continue;
+      const d = decks[s.room];
+      if (d && (!s.now || s.now.url !== d.url)) deckPlay(s, { url: d.url, title: d.title, artist: d.artist, art: d.art, dj: d.dj, by: d.by }, d.ago / 1000);
+      else if (!d && s.now && !s.now.resident && !s.now.local) residentSet(s).then((set) => deckPlay(s, set));
     }
   }
+  const clubSrc = (room) => CITY.srcs.find((s) => s.room === room);
+  // the bass in a club right now (0 to 1), for its lights
+  function clubBeat(room) { const s = clubSrc(room); if (!s || !s.an || s.a.paused) return 0; s.an.getByteFrequencyData(s.buf); return (s.buf[1] + s.buf[2] + s.buf[3]) / 765; }
+  // taking the decks: your pick goes on the club's speakers, for you straight away and for everyone through the server
+  async function djSpin(song) {
+    const room = CITY.dj, s = clubSrc(room); if (!room || !s || !song) return;
+    deckPlay(s, { ...song, dj: myName || 'You', local: true }, 0);
+    MP.a.pause();
+    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '' }); if (ok === false) notify('Someone else is on the decks here right now', 'music'); }
+    catch { notify('You are playing it here; the whole club hears your set once the island server is updated', 'music'); }
+  }
+  function djNext() { if (!MP.q.length) return; MP.i = (MP.i + 1) % MP.q.length; djSpin(MP.q[MP.i]); }
+  function djLeave() { const room = CITY.dj; CITY.dj = null; if (!room) return; call('spin', { id, club: room, url: '', title: '', artist: '', art: '' }).catch(() => {}); const s = clubSrc(room); if (s) residentSet(s).then((set) => deckPlay(s, set)); }
   setInterval(() => {
-    if (!CITY.on || night < 0.2) { if (CITY.master) { CITY.master.gain.value *= 0.8; if (CITY.master.gain.value < 0.01) for (const s of CITY.srcs) if (!s.a.paused) s.a.pause(); } return; }
+    if (CITY.dj && (!inside || inside.key !== CITY.dj)) djLeave(); // you walked out: the resident takes over
+    const inClub = inside && inside.kind === 'club';
+    if (!CITY.on || (night < 0.2 && !inClub)) { if (CITY.master) { CITY.master.gain.value *= 0.8; if (CITY.master.gain.value < 0.01) for (const s of CITY.srcs) if (!s.a.paused) s.a.pause(); } return; }
     if (!AX.ctx) return; if (!CITY.master) { cityStart(); return; }
-    const duck = MP.a.paused ? 1 : 0.18, nf = Math.min(1, (night - 0.2) / 0.4);
+    const duck = MP.a.paused ? 1 : 0.18, nf = inClub ? 1 : Math.min(1, (night - 0.2) / 0.4);
     CITY.master.gain.value += (nf * duck - CITY.master.gain.value) * 0.25;
     const lx = me.x, lz = me.z, R = 520; // heard right across the district
     for (const s of CITY.srcs) {
       let vol, cut;
-      if (inside) { const here = !!s.room && inside.key === s.room; vol = here ? 0.9 : 0; cut = here ? 14000 : 600; } // in that club: the full sound; any other room: nothing
-      else { const d = Math.hypot(s.x - lx, s.z - lz), u = Math.max(0, 1 - d / R); vol = Math.pow(u, 1.6) * 0.9; cut = 180 + 3200 * u * u * u; } // far off it's only the bass, the rest comes in as you get close
+      if (inside) { const here = !!s.room && inside.key === s.room; vol = here ? 0.9 : 0; cut = here ? 16000 : 600; } // in that club: the full sound; any other room: nothing
+      else { const d = Math.hypot(s.x - lx, s.z - lz), u = Math.max(0, 1 - d / R); vol = Math.pow(u, 1.6) * 0.85; cut = 320 + 3400 * u * u * u; } // far off it's mostly the low end, the rest comes in as you get close
       s.g.gain.value += (vol - s.g.gain.value) * 0.3; s.muff.frequency.value = cut;
-      if (s.pan) { const sp2 = P(s.x, 0, s.z)[0] - W / 2; s.pan.pan.value = Math.max(-0.9, Math.min(0.9, sp2 / (W * 0.45))); }
+      if (s.pan) { const sp2 = P(s.x, 0, s.z)[0] - W / 2; s.pan.pan.value = inside ? 0 : Math.max(-0.9, Math.min(0.9, sp2 / (W * 0.45))); }
       if (vol > 0.01 && s.a.paused && s.a.src) s.a.play().catch(() => {}); if (vol <= 0.01 && !s.a.paused && s.g.gain.value < 0.01) s.a.pause();
     }
   }, 250);
@@ -5393,11 +5487,15 @@
         const tabs = `<div class="fseg mseg">${[['home', '🏠 Home'], ['search', '🔍 Search'], ['lib', '♥ Library'], ['now', '🎧 Playing']].map(([k, n]) => `<button data-mt="${k}" class="${tab === k ? 'on' : ''}">${n}</button>`).join('')}</div>`;
         const wire = () => {
           pbody.querySelectorAll('[data-mt]').forEach((b) => (b.onclick = () => render('music', { tab: b.dataset.mt })));
-          pbody.querySelectorAll('[data-ml]').forEach((b) => (b.onclick = (e) => { const lk = e.target.closest('[data-like]'); const list = lists[b.dataset.ml], i = +b.dataset.mi; if (lk) { lk.classList.toggle('on', mpLike(list[i])); return; } mpPlay(list, i); pbody.querySelectorAll('.mrow.on').forEach((r) => r.classList.remove('on')); b.classList.add('on'); }));
+          pbody.querySelectorAll('[data-ml]').forEach((b) => (b.onclick = (e) => { const lk = e.target.closest('[data-like]'); const list = lists[b.dataset.ml], i = +b.dataset.mi; if (lk) { lk.classList.toggle('on', mpLike(list[i])); return; } if (CITY.dj && inside && inside.key === CITY.dj) { MP.q = list.filter(Boolean); MP.i = i; djSpin(list[i]); setTimeout(() => render('music', a), 600); return; } mpPlay(list, i); pbody.querySelectorAll('.mrow.on').forEach((r) => r.classList.remove('on')); b.classList.add('on'); }));
           pbody.querySelectorAll('[data-album]').forEach((b) => (b.onclick = () => go('music', { tab: 'album', id: b.dataset.album, title: b.dataset.title })));
           pbody.querySelectorAll('[data-genre]').forEach((b) => (b.onclick = () => go('music', { tab: 'genre', q: b.dataset.genre })));
+          if ($('mDeck')) $('mDeck').onclick = () => { audioCtx(); if (CITY.dj) { djLeave(); notify('Handed the decks back to ' + club.spot.dj, 'music'); } else { CITY.dj = inside.key; notify(`You're on the decks at ${club.spot.name}. Pick a song to drop it.`, 'music'); } render('music', a); };
         };
-        const head = ahead('music', 'Island Music', 'Charts and new songs · full tracks from independent artists');
+        // inside a club: who's on the decks and what's playing, and the button to take over (or hand back)
+        const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, onDecks = !!club && CITY.dj === inside.key;
+        const dj = club ? `<div class="mdj" style="--h:${club.spot.hue}"><div><small>🎧 ${esc(club.spot.name)} · ${esc(club.spot.vibe)}</small><b>${club.now ? esc(club.now.title) : 'Warming up…'}</b><span>${onDecks ? 'You are on the decks · pick a song to drop it' : 'On the decks: ' + esc(club.now ? club.now.dj : club.spot.dj)}</span></div><button id="mDeck" class="${onDecks ? 'on' : ''}">${onDecks ? 'Hand back' : 'Take the decks'}</button></div>` : '';
+        const head = ahead('music', 'Island Music', 'Charts and new songs · full tracks from independent artists') + dj;
         if (tab === 'now') {
           const s = MP.q[MP.i];
           if (!s) { show(`${head}${tabs}<div class="pcard"><h3>Nothing playing</h3><p class="dim">Pick a song from Home or Search. It keeps playing when you put the phone away.</p></div>`); wire(); return; }
