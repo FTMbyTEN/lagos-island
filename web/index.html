@@ -606,6 +606,9 @@
     // nights out and play money
     ['club', 20, 17, 3, 2, 'Club Ozumba (open every night)', '🪩'],
     ['club', 38, 20, 4, 2, 'Club Lekki (open every night)', '🪩'],
+    ['club', 30, 13, 3, 2, 'Quilox (open every night)', '🪩'],
+    ['club', 34, 4, 3, 2, 'The Secret Palace (open every night)', '🪩'],
+    ['club', 16, 10, 3, 2, 'Vein (open every night)', '🪩'],
     ['casino', 30, 16, 3, 3, 'Island Casino', '🎰'],
     // the refinery, always running
     ['refinery', 52, 8, 9, 7, 'Lekki Free Zone Refinery', '🛢️'],
@@ -1638,7 +1641,7 @@
     },
     // ---- a club: dark walls, a neon roof line, and the light show at night
     club(a, b, c, d) {
-      const lekki = a > 300, bx1 = a + (c - a) * 0.58; // the building on the left, the car park on the right
+      const LK = clubLook((PLACES.find((p) => p[0] === 'club' && p[1] * T === a) || [])[5]), lekki = LK.theme === 'lekki', bx1 = a + (c - a) * 0.58; // the building on the left, the car park on the right
       flat(a, b, c, d, 0.05, lekki ? '#E9D5A1' : '#1C1917');
       parking(bx1 + 1, b + 1, c - 1, d - 1, 'place:club:' + Math.round(a / T));
       const t = performance.now() / 1000;
@@ -1669,7 +1672,7 @@
           if (night > 0.3) beams((a + bx1) / 2, 10, (b + d) / 2, 190, t);
         };
         neon(); glow.push(neon);
-      } else {
+      } else if (LK.theme === 'ozumba') {
         // Club Ozumba: two floors of black glass behind gold fins, LED bands chasing round, a rooftop lounge with umbrellas
         // and a glowing rail, a gold marquee over the door, the red carpet between velvet ropes
         const m0 = a + 2, m1 = bx1 - 1, z0 = b + 2, z1 = d - 4;
@@ -1696,6 +1699,35 @@
           if (night > 0.3) beams((a + bx1) / 2, 15, (b + d) / 2, 45, t);
         };
         neon(); glow.push(neon);
+      } else {
+        // Quilox: a purple glass box with LED bars chasing up its face, a crown of light on the roof, gold canopy.
+        // The Secret Palace: a deep red palace front, gold columns, an arched gold door, a small gold crown on top, lanterns.
+        // Vein: black, its face shot through with glowing cyan veins that pulse like a heartbeat.
+        const th = LK.theme, h = th === 'secret' ? 10 : th === 'vein' ? 12 : 14, m0 = a + 2, m1 = bx1 - 1, z1 = d - 4;
+        box(m0, 0, b + 2, m1, h, z1, th === 'quilox' ? '#2E1065' : th === 'secret' ? '#3F0D12' : '#05080C', th === 'quilox' ? '#C084FC' : th === 'secret' ? '#F59E0B' : '#0E7490', 3);
+        box(m0, h, b + 2, m1, h + 0.6, z1, LK.trim);
+        if (th === 'secret') {
+          for (let px = m0 + 1; px <= m1 - 1; px += 2.6) cylLit(px, z1 + 0.6, 0.4, 0, h - 0.4, '#D4AF37');
+          arch((m0 + m1) / 2, z1 + 0.02, 1.8, 6, '#D4AF37'); arch((m0 + m1) / 2, z1 + 0.04, 1.4, 5.5, '#1C0A0A');
+          const cx2 = (m0 + m1) / 2, cz2 = (b + 2 + z1) / 2; cylLit(cx2, cz2, 1.4, h + 0.6, 1, '#D4AF37'); for (let k = 0; k < 5; k++) { const an = k / 5 * Math.PI * 2; box(cx2 + Math.cos(an) * 1.1 - 0.2, h + 1.6, cz2 + Math.sin(an) * 1.1 - 0.2, cx2 + Math.cos(an) * 1.1 + 0.2, h + 2.6, cz2 + Math.sin(an) * 1.1 + 0.2, '#D4AF37'); }
+        } else {
+          box(a + 3, 4, z1, m1 - 1, 4.5, d - 1.5, th === 'quilox' ? '#D4AF37' : '#0F172A'); // the canopy
+        }
+        flat(a + 5, z1, m1 - 3, d, 0.08, th === 'vein' ? '#0F172A' : '#B91C1C'); // the carpet
+        const R2 = rnd(a + b), veins = [];
+        if (th === 'vein') for (let k = 0; k < 7; k++) { let px = m0 + 1 + R2() * (m1 - m0 - 2), py = 0.5; const path = [[px, py]]; while (py < h - 0.5) { px = Math.max(m0 + 0.4, Math.min(m1 - 0.4, px + (R2() - 0.5) * 2.2)); py += 0.8 + R2() * 1.2; path.push([px, Math.min(py, h - 0.3)]); } veins.push(path); }
+        const lights = () => {
+          const tt = performance.now() / 1000, beat = 0.5 + 0.5 * Math.sin(tt * 2 * Math.PI * 2);
+          if (th === 'quilox') { for (let k = 0; k < 8; k++) { const px = m0 + 1 + k * ((m1 - m0 - 2) / 7), up = (tt * 1.6 + k * 0.17) % 1; const p0 = P(px, 0.6, z1 + 0.03), p1 = P(px, h - 0.6, z1 + 0.03), pm = P(px, 0.6 + up * (h - 1.2), z1 + 0.03); x.save(); x.strokeStyle = 'rgba(192,132,252,0.45)'; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); x.fillStyle = '#F5D0FE'; x.shadowColor = '#E879F9'; x.shadowBlur = 10; x.beginPath(); x.arc(pm[0], pm[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill(); x.restore(); }
+            const cr = P((m0 + m1) / 2, h + 2.5, (b + 2 + z1) / 2); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(cr[0], cr[1], 0, cr[0], cr[1], K * 7); g.addColorStop(0, 'rgba(232,121,249,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(cr[0], cr[1], K * 7, 0, Math.PI * 2); x.fill(); x.restore(); }
+          if (th === 'vein') { x.save(); x.strokeStyle = `rgba(34,211,238,${0.45 + beat * 0.5})`; x.shadowColor = '#22D3EE'; x.shadowBlur = 10 * beat; x.lineWidth = Math.max(1, K * 0.18); for (const path of veins) { x.beginPath(); path.forEach(([px, py], k2) => { const p = P(px, py, z1 + 0.03); k2 ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }); x.stroke(); } x.restore(); }
+          if (th === 'secret') for (const lx of [a + 4, m1 - 2]) { const p = P(lx, 5, z1 + 0.4), r = K * 2.4 * (0.85 + Math.sin(tt * 7 + lx) * 0.15); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,190,90,0.85)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }
+          const sg = P((a + bx1) / 2, th === 'secret' ? h - 2.2 : 7, z1 + 0.35), col = `hsl(${LK.hue},95%,75%)`;
+          x.save(); x.font = `900 ${Math.max(7, K * (LK.sign.length > 8 ? 1.4 : 2.4))}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 16; x.fillStyle = th === 'secret' ? '#FDE68A' : '#FFFFFF'; x.fillText(LK.sign, sg[0], sg[1]); x.restore();
+          if (night > 0.3) beams((a + bx1) / 2, h + 1, (b + d) / 2, LK.hue, tt);
+        };
+        lights(); glow.push(lights);
+        palm(a + 1.5, d - 1.2, 9);
       }
       for (let k = 0; k < 4; k++) box(a + 3 + k * 2, 0, d - 1.2, a + 3.8 + k * 2, 3, d - 0.4, ['#F472B6', '#22D3EE', '#FACC15', '#A78BFA'][k]); // the queue
     },
@@ -3626,11 +3658,21 @@
   }
   // a club: a glossy black floor that catches the lights, LED strips round the walls, a raised DJ stage with an
   // LED wall behind it, a truss of moving heads above, a long bar with backlit bottles, neon signs, a VIP rope
+  // each club's look, inside and out: its name in lights, its colours, the name of its back room, how its DJ dresses
+  function clubLook(name) {
+    const n = String(name || '');
+    if (/lekki/i.test(n)) return { theme: 'lekki', sign: 'LEKKI VIBES', short: 'LEKKI', hue: 190, floor: '#D6B98C', wall: '#134E4A', trim: '#22D3EE', pal: ['#0E7490', '#F43F5E', '#14B8A6', '#F59E0B'], couch: '#0F766E', wing: 'TERRACE', djLook: 'm,1,2,2,0,offwhite_set' };
+    if (/quilox/i.test(n)) return { theme: 'quilox', sign: 'QUILOX', short: 'QUILOX', hue: 285, floor: '#0B0613', wall: '#1E0B2E', trim: '#C026D3', pal: ['#581C87', '#86198F', '#1E1B4B', '#701A75'], couch: '#3B0764', wing: 'PURPLE ROOM', djLook: 'm,3,1,1,0,gucci_track' };
+    if (/secret/i.test(n)) return { theme: 'secret', sign: 'SECRET PALACE', short: 'SECRET', hue: 350, floor: '#120507', wall: '#2A0A10', trim: '#D4AF37', pal: ['#7F1D1D', '#991B1B', '#450A0A', '#78350F'], couch: '#450A0A', wing: 'VELVET ROOM', djLook: 'm,2,0,3,0,ralph_suit' };
+    if (/vein/i.test(n)) return { theme: 'vein', sign: 'VEIN', short: 'VEIN', hue: 200, floor: '#05080C', wall: '#0B1220', trim: '#22D3EE', pal: ['#0C4A6E', '#164E63', '#0F172A', '#1E3A8A'], couch: '#0F172A', wing: 'THE LAB', djLook: 'm,4,1,0,0,nike_tech' };
+    return { theme: 'ozumba', sign: 'OZUMBA', short: 'OZUMBA', hue: 40, floor: '#0C0A09', wall: '#1C1917', trim: '#D4AF37', pal: ['#111827', '#7F1D1D', '#1C1917', '#78350F'], couch: '#1C1917', wing: 'GOLD ROOM', djLook: 'm,0,1,0,0,balenciaga_set' };
+  }
   function drawClubShell(R, now) {
     const lekki = R.theme === 'lekki', t = now / 1000, cx = 48; // the stage stays over the dance floor however big the room
+    const LK = R.look || clubLook(R.title); // this club's look
     const deck = clubSrc(R.key), set = deck && deck.now, beat = clubBeat(R.key); // who is playing here, and the bass right now
     // Ozumba's lights stay warm gold and amber; Lekki's run through the ocean's blues and greens
-    const hue = lekki ? 165 + Math.sin(t * 0.6) * 35 : 35 + Math.sin(t * 0.5) * 15;
+    const hue = lekki ? 165 + Math.sin(t * 0.6) * 35 : LK.hue + Math.sin(t * 0.5) * 15;
     if (lekki) { // sand, a scatter of shells, palms in the corners, surfboards on the wall, a thatched bar roof
       x.fillStyle = 'rgba(120,90,50,0.18)'; for (let k = 0; k < 40; k++) { const R2 = rnd(k * 13 + 5), p = P(R2() * R.w, 0.02, R2() * R.d); x.beginPath(); x.ellipse(p[0], p[1], K * 0.4, K * 0.25, 0, 0, Math.PI * 2); x.fill(); }
       for (const [px, pz] of [[4, 4], [R.w - 4, 4], [R.w - 4, R.d - 4]]) palm(px, pz, 14);
@@ -3674,7 +3716,7 @@
       glow.push(() => { const top = P(cx, 18, 9), base = P(cx, 2.7, 7.4), r = K * 3.6; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createLinearGradient(top[0], top[1], base[0], base[1]); g.addColorStop(0, 'rgba(255,255,255,0.05)'); g.addColorStop(1, 'rgba(255,255,255,0.32)'); x.fillStyle = g; x.beginPath(); x.moveTo(top[0] - K * 0.5, top[1]); x.lineTo(top[0] + K * 0.5, top[1]); x.lineTo(base[0] + r, base[1]); x.lineTo(base[0] - r, base[1]); x.fill();
         const pool = P(cx, 2.75, 7.4); const g2 = x.createRadialGradient(pool[0], pool[1], 0, pool[0], pool[1], r * 1.3); g2.addColorStop(0, 'rgba(255,255,255,0.35)'); g2.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g2; x.beginPath(); x.ellipse(pool[0], pool[1], r * 1.3, r * 1.3 * sp, 0, 0, Math.PI * 2); x.fill(); x.restore(); }); }
     if (deck && (!set || set.resident)) {
-      const L = parseLook(lekki ? 'm,1,2,2,0,offwhite_set' : 'm,0,1,0,0,balenciaga_set', 'dj:' + R.key);
+      const L = parseLook(LK.djLook, 'dj:' + R.key);
       if (PEOPLE.ok && person3d(cx, 7.4, '#FFFFFF', 'dj:' + R.key, now, L, null, 0, 2.7)) {
         // his headphones: a band over the head, big ear cups ringed in the club's colour, pulsing with the bass; his name over him
         const hp = P(cx, 2.7 + 9.35, 7.4), r = K * 0.95; x.save(); x.strokeStyle = '#18181B'; x.lineWidth = Math.max(2, K * 0.28); x.beginPath(); x.arc(hp[0], hp[1], r, Math.PI * 1.05, Math.PI * 1.95); x.stroke();
@@ -3692,7 +3734,7 @@
     const by = 6.5, bz0 = 9, bz1 = 11.6, spin = t * 3.4, vu = Math.max(0.15, beat);
     box(cx - 7, 2.7, bz0, cx + 7, by, bz1, '#0B0B10');
     for (let k = 0; k < 14; k++) { const p0 = P(cx - 7 + k, 3, bz1 + 0.02), p1 = P(cx - 6.2 + k, 3, bz1 + 0.02), p2 = P(cx - 6.2 + k, by - 0.3, bz1 + 0.02), p3 = P(cx - 7 + k, by - 0.3, bz1 + 0.02); quad([p0, p1, p2, p3], `hsla(${hue + k * 6},95%,${30 + beat * 40 * Math.abs(Math.sin(k * 0.7 + t * 4))}%,0.9)`); } // the front's LED panel
-    faceText(lekki ? 'LEKKI' : 'OZUMBA', cx, by - 1.6, bz1 + 0.05, '#FFFFFF', 0.9, 6);
+    faceText(LK.short, cx, by - 1.6, bz1 + 0.05, '#FFFFFF', 0.9, 6);
     box(cx - 7.1, by, bz0 - 0.1, cx + 7.1, by + 0.2, bz1 + 0.1, '#1F2937'); // the top
     for (const dx of [cx - 4.2, cx + 4.2]) { // the decks
       box(dx - 1.8, by + 0.2, bz0 + 0.2, dx + 1.8, by + 0.5, bz1 - 0.2, '#18181B');
@@ -3736,7 +3778,7 @@
     for (const [dx, lbl] of [[62, 'WC'], [70, 'WC']]) { const p0 = P(dx, 0, 0.12), p1 = P(dx + 4, 0, 0.12), p2 = P(dx + 4, 9, 0.12), p3 = P(dx, 9, 0.12); quad([p0, p1, p2, p3], '#1F2937', '#A855F7'); const c0 = P(dx + 2, 10.5, 0.12); x.save(); x.font = `800 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.fillStyle = '#E9D5FF'; x.fillText(lbl, c0[0], c0[1]); x.restore(); }
     // neon signs
     const neon = (txt, x0, y0, z0, alongX, col, size) => { const o = P(x0, y0, z0), e = alongX ? P(x0 + 1, y0, z0) : P(x0, y0, z0 + 1), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `800 ${size || 2.6}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
-    neon(lekki ? 'LEKKI VIBES' : 'OZUMBA', 86, 12, 0.15, true, lekki ? '#67E8F9' : '#FDE68A', 3.4);
+    neon(LK.sign, 86, 12, 0.15, true, lekki ? '#67E8F9' : `hsl(${LK.hue},95%,72%)`, LK.sign.length > 8 ? 2.4 : 3.4);
     neon('BAR', 10, 10, 0.15, true, '#22D3EE');
     neon(lekki ? 'BEACH VIP' : 'VIP', 0.15, 11, 36, false, lekki ? '#FDA4AF' : '#F5C542');
     if (!lekki) { // the chandeliers over the floor
@@ -3752,7 +3794,7 @@
     const WX = 98, FZ = 66;
     const part = (x0, z0, x1, z1) => { box(x0, 0, z0, x1, 9, z1, '#18122B'); box(x0, 9, z0, x1, 9.4, z1, `hsl(${hue},90%,55%)`); };
     part(WX, 0, WX + 0.8, 22); part(WX, 34, WX + 0.8, FZ); // the wall to the wing, the arch between
-    box(WX, 9, 22, WX + 0.8, 10.4, 34, '#18122B'); neon(lekki ? 'TERRACE →' : 'GOLD ROOM →', WX + 0.85, 10.8, 28, false, lekki ? '#67E8F9' : '#FDE68A', 1.6);
+    box(WX, 9, 22, WX + 0.8, 10.4, 34, '#18122B'); neon(LK.wing + ' →', WX + 0.85, 10.8, 28, false, lekki ? '#67E8F9' : '#FDE68A', 1.6);
     part(0, FZ, 40, FZ + 0.8); part(52, FZ, WX, FZ + 0.8); // the foyer's wall, the doorway in the middle
     if (lekki) {
       // the terrace: a deck, a glowing pool along the far side, loungers, palms, the sea and sky beyond a glass rail
@@ -3773,7 +3815,7 @@
       box(WX + 4, 0, 0.2, R.w - 4, 14, 2.2, '#0C0A09');
       for (let r = 0; r < 3; r++) { box(WX + 4, 3.5 + r * 3, 0.4, R.w - 4, 3.8 + r * 3, 2, '#D4AF37'); for (let k = 0; k < 24; k++) { const bx = WX + 5 + k * ((R.w - WX - 10) / 24); box(bx, 3.8 + r * 3, 0.8, bx + 0.5, 5.4 + r * 3, 1.3, ['#15803D', '#B45309', '#7F1D1D', '#E5E7EB', '#FDE68A'][(k + r) % 5]); } }
       box(WX + 6, 0, 6, R.w - 6, 4.2, 8.4, '#1C1917'); box(WX + 5.6, 4.2, 5.6, R.w - 5.6, 4.6, 8.8, '#D4AF37'); // the counter
-      neon('GOLD ROOM', (WX + R.w) / 2, 15, 0.15, true, '#FDE68A', 2.6);
+      neon(LK.wing, (WX + R.w) / 2, 15, 0.15, true, `hsl(${LK.hue},95%,72%)`, 2.6);
       for (const [hx, hz] of [[WX + 12, 26], [WX + 26, 26], [R.w - 10, 26], [WX + 12, 46], [WX + 26, 46], [R.w - 10, 46]]) {
         cylLit(hx, hz, 2.2, 0, 2.6, '#1C1917'); cylLit(hx, hz, 2.3, 2.6, 0.2, '#D4AF37');
         cylLit(hx, hz, 0.35, 2.8, 2.6, '#7DD3FC'); cylLit(hx, hz, 0.5, 5.4, 0.4, '#B45309');
@@ -3785,7 +3827,7 @@
     // the ropes, a pair of plants
     flat(0.2, FZ + 0.8, R.w, R.d, 0.016, '#1A1220');
     flat(R.w / 2 - 3, FZ + 0.8, R.w / 2 + 3, R.d, 0.02, '#991B1B'); flat(43, FZ - 6, 49, FZ + 0.8, 0.02, '#991B1B'); flat(43, FZ + 0.8, R.w / 2 + 3, FZ + 6, 0.02, '#991B1B');
-    { const pw0 = 12, pw1 = 34, pz = FZ + 6; box(pw0, 0, pz - 0.5, pw1, 10, pz, '#F8FAFC'); for (let i = 0; i < 6; i++) for (let j = 0; j < 4; j++) faceText(lekki ? 'LEKKI' : 'OZUMBA', pw0 + 2 + i * 3.6, 1.6 + j * 2.4, pz + 0.02, i % 2 ? '#111827' : (lekki ? '#0E7490' : '#B08A43'), 0.55, 0, 800);
+    { const pw0 = 12, pw1 = 34, pz = FZ + 6; box(pw0, 0, pz - 0.5, pw1, 10, pz, '#F8FAFC'); for (let i = 0; i < 6; i++) for (let j = 0; j < 4; j++) faceText(LK.short, pw0 + 2 + i * 3.6, 1.6 + j * 2.4, pz + 0.02, i % 2 ? '#111827' : (lekki ? '#0E7490' : '#B08A43'), 0.55, 0, 800);
       glow.push(() => { const p = P((pw0 + pw1) / 2, 5, pz + 4), r = K * 10; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,255,255,0.25)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }); }
     box(R.w / 2 + 6, 0, FZ + 12, R.w / 2 + 10, 3.6, FZ + 14, '#111827'); box(R.w / 2 + 5.8, 3.6, FZ + 11.8, R.w / 2 + 10.2, 3.9, FZ + 14.2, `hsl(${hue},90%,55%)`); // the host stand
     for (let k = 0; k < 6; k++) for (const sx of [R.w / 2 - 4.5, R.w / 2 + 4.5]) { const pz = FZ + 4 + k * 3.5; box(sx - 0.15, 0, pz - 0.15, sx + 0.15, 2.4, pz + 0.15, '#D4AF37'); if (k) { const p0 = P(sx, 2.1, pz - 3.5), p1 = P(sx, 2.1, pz), m = P(sx, 1.4, pz - 1.75); x.strokeStyle = '#7F1D1D'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
@@ -4352,10 +4394,9 @@
       for (const it of R.layout) if (moves[it.k] && !(it.k === 'plant' && it.x < 50)) [it.x, it.z] = moves[it.k];
     }
     if (kind === 'club') {
-      R.theme = /lekki/i.test(title) ? 'lekki' : 'ozumba';
-      const pal = R.theme === 'lekki' ? ['#0E7490', '#F43F5E', '#14B8A6', '#F59E0B'] : ['#111827', '#7F1D1D', '#1C1917', '#78350F'];
-      let k = 0; for (const it of R.layout) if (it.k === 'booth') it.c = pal[k++ % pal.length]; else if (it.k === 'couch2') it.c = R.theme === 'lekki' ? '#0F766E' : '#1C1917';
-      if (R.theme === 'lekki') { R.floor = '#D6B98C'; R.wall = '#134E4A'; R.trim = '#22D3EE'; } else { R.floor = '#0C0A09'; R.wall = '#1C1917'; R.trim = '#D4AF37'; }
+      const look = clubLook(title); R.theme = look.theme; R.look = look;
+      let k = 0; for (const it of R.layout) if (it.k === 'booth') it.c = look.pal[k++ % look.pal.length]; else if (it.k === 'couch2') it.c = look.couch;
+      R.floor = look.floor; R.wall = look.wall; R.trim = look.trim;
     }
     if (signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
       try {
@@ -4917,11 +4958,17 @@
   // can take the decks from Island Music: their picks go to the club's speakers for everyone (shared through the island
   // server), and the resident takes over again when they leave.
   const CITY = { on: store.get('li.city') !== '0', srcs: [], master: null, used: new Set(), dj: null };
+  const CITY_SPOTS_MORE = [
+    { name: 'Quilox', dj: 'DJ Q-Royale', vibe: 'Afrobeats · Hip-hop, the VIP night', q: ['naija hip hop mix', 'afrobeats party mix 2025', 'afro hip hop dj mix'], hue: 285 },
+    { name: 'The Secret Palace', dj: 'DJ Velvet', vibe: 'Afro R&B · Soul, after dark', q: ['afro rnb mix', 'rnb slow jams mix', 'afro soul mix'], hue: 350 },
+    { name: 'Vein', dj: 'DJ Pulse', vibe: 'Afro tech · Techno, underground', q: ['afro tech mix', 'techno mix', 'melodic techno mix'], hue: 200 },
+  ];
   const CITY_SPOTS = [
     { name: 'Club Ozumba', dj: 'DJ Ozzy Gold', vibe: 'Afrobeats · Afropop', q: ['afrobeats mix', 'afropop mix', 'naija afrobeats dj mix'], hue: 45 },
     { name: 'Club Lekki', dj: 'DJ Tidewave', vibe: 'Amapiano · Afro house', q: ['amapiano mix', 'afro house mix', 'amapiano log drum mix'], hue: 190 },
     { name: 'Elegushi Beach', dj: 'DJ Shaku Bass', vibe: 'Street-pop · party', q: ['street pop mix', 'afro party mix', 'naija street mix'], hue: 300 },
   ];
+  CITY_SPOTS.push(...CITY_SPOTS_MORE);
   async function residentSet(s) { // the resident DJ's mix: long, streamable, not one another club is playing
     for (const q of s.spot.q) {
       try {
