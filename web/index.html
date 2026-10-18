@@ -246,6 +246,26 @@
   @keyframes pulse { 50% { opacity: .3; } }
   #shade { position: absolute; left: 0; right: 0; top: 0; z-index: 4; max-height: 70%; overflow-y: auto; padding: 46px 14px 14px; background: rgba(7,7,13,.97); border-bottom: 2px solid var(--y); transform: translateY(-105%); transition: transform .25s ease; }
   #shade.on { transform: none; }
+  /* the shade lives over the sky of the hour: by day a moving blue sky with clouds drifting and the sun breathing, by night stars twinkling over a slow aurora with the moon */
+  #shade { background: #07070D; isolation: isolate; border-radius: 0 0 26px 26px; border-bottom: 0 !important; box-shadow: 0 18px 40px rgba(0,0,0,.45); max-height: 78%; padding-bottom: 34px; }
+  #shade .sky { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit; pointer-events: none; }
+  #shade .sky::before, #shade .sky::after, #shade .sky i { content: ""; position: absolute; inset: 0; }
+  #shade.day .sky { background: linear-gradient(180deg, #1E6FD9, #4FA3F0 55%, #9FD3F7); background-size: 100% 200%; animation: skyShift 14s ease-in-out infinite alternate; }
+  #shade.day .sky::before { background: radial-gradient(60px 22px at 20% 30%, rgba(255,255,255,.75), transparent 70%), radial-gradient(90px 26px at 70% 18%, rgba(255,255,255,.6), transparent 70%), radial-gradient(70px 20px at 45% 62%, rgba(255,255,255,.55), transparent 70%), radial-gradient(80px 24px at 88% 80%, rgba(255,255,255,.5), transparent 70%); background-size: 200% 100%; animation: cloudDrift 40s linear infinite; }
+  #shade.day .sky::after { background: radial-gradient(circle at 85% 8%, rgba(255,236,170,.95) 0 18px, rgba(255,210,120,.35) 34px, transparent 90px); animation: sunBreath 5s ease-in-out infinite alternate; }
+  #shade.day .sky i { background: linear-gradient(180deg, rgba(7,20,40,.15), rgba(7,20,40,.55)); }
+  #shade.night .sky { background: linear-gradient(180deg, #05051A, #120A35 60%, #1F0B3A); }
+  #shade.night .sky::before { background-image: radial-gradient(1.4px 1.4px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 32% 42%, #fff, transparent), radial-gradient(1.6px 1.6px at 58% 12%, #fff, transparent), radial-gradient(1px 1px at 76% 36%, #fff, transparent), radial-gradient(1.3px 1.3px at 90% 60%, #fff, transparent), radial-gradient(1px 1px at 22% 72%, #fff, transparent), radial-gradient(1.4px 1.4px at 46% 86%, #fff, transparent), radial-gradient(1px 1px at 66% 70%, #fff, transparent), radial-gradient(1.2px 1.2px at 6% 50%, #fff, transparent), radial-gradient(1px 1px at 84% 90%, #fff, transparent); animation: twinkle 3.2s ease-in-out infinite alternate; }
+  #shade.night .sky::after { background: radial-gradient(circle at 86% 9%, #F5F3FF 0 13px, rgba(200,200,255,.25) 24px, transparent 70px), radial-gradient(140% 50% at 30% 100%, rgba(236,72,153,.28), transparent 70%), radial-gradient(120% 45% at 80% 100%, rgba(0,240,255,.18), transparent 70%); animation: aurora 9s ease-in-out infinite alternate; }
+  #shade.night .sky i { background: linear-gradient(180deg, transparent, rgba(5,5,15,.35)); }
+  @keyframes skyShift { to { background-position: 0 100%; } } @keyframes cloudDrift { to { background-position: -200% 0; } } @keyframes sunBreath { to { opacity: .7; transform: scale(1.04); } } @keyframes twinkle { to { opacity: .45; } } @keyframes aurora { to { filter: hue-rotate(40deg); opacity: .8; } }
+  #shade .n { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background: rgba(10,12,24,.42) !important; border-left: 0 !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+  #shade .n.new { background: rgba(10,12,24,.55) !important; box-shadow: inset 3px 0 0 var(--c), inset 0 0 0 1px rgba(0,240,255,.35); }
+  #shade .ngrp, #shade .n small { color: rgba(255,255,255,.72) !important; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  #shade.on, #shade { display: flex; flex-direction: column; overflow: hidden !important; padding: 0 !important; } #shade .shin { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 46px 14px 34px; overscroll-behavior: contain; }
+  #shade .grab { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; } #shade .grab::before { content: ""; width: 44px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.7); }
+  #shade .shx { position: absolute; right: 12px; top: 14px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(0,0,0,.35); color: #fff; font: 700 14px/28px sans-serif; cursor: pointer; z-index: 2; }
+  #shade.on + .shveil, .shveil.on { display: block; } .shveil { display: none; position: absolute; inset: 0; z-index: 3; background: rgba(0,0,0,.25); }
   #shade .n { padding: 8px 10px; margin-bottom: 6px; border-left: 2px solid var(--c); background: rgba(0,240,255,.07); font: 600 14px 'Rajdhani', sans-serif; color: #E6F9FF; }
   #shade .n small { display: block; color: #8FB6C2; font-size: 11px; letter-spacing: 1px; }
   #shade .n { display: flex; gap: 10px; align-items: flex-start; border-radius: 12px; transition: background .2s; } #shade .n > i { font-style: normal; font-size: 18px; line-height: 22px; } #shade .n > div { flex: 1; min-width: 0; } #shade .n b { display: block; font-size: 13px; color: #fff; } #shade .n span { display: block; overflow-wrap: anywhere; } #shade .n > small { flex: none; } #shade .n.new { background: rgba(0,240,255,.16); box-shadow: inset 0 0 0 1px rgba(0,240,255,.35); } #shade .n.tap { cursor: pointer; } #shade .n.tap:active { transform: scale(.98); } #shade .n.quiet { opacity: .7; }
@@ -5592,12 +5612,13 @@
     const wx = lagosWeather();
     const groups = new Map(); notes.forEach((n, i) => { const g = NOTE_GROUP[n.kind] || 'WYRD OS'; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(noteHtml(n, i)); });
     const order = ['Messages', 'Island chat', 'WYRD OS'].filter((g) => groups.has(g));
-    shadeEl.innerHTML = `<div class="cc"><button class="cct${G3.on ? ' on' : ''}" data-cc="3d"><b>🧊</b><span>3D models</span><small>${G3.on ? 'On' : 'Off'}</small></button>
+    shadeEl.classList.toggle("night", nightNow() > 0.5); shadeEl.classList.toggle("day", nightNow() <= 0.5);
+    shadeEl.innerHTML = `<div class="sky"><i></i></div><button class="shx" aria-label="Close">✕</button><div class="grab" aria-label="Close"></div><div class="shin"><div class="cc"><button class="cct${G3.on ? ' on' : ''}" data-cc="3d"><b>🧊</b><span>3D models</span><small>${G3.on ? 'On' : 'Off'}</small></button>
       <div class="cct wide"><b>${wx.icon}</b><span>${wx.temp}°C · ${wx.text}</span><small>Lagos</small></div>
       <div class="ccth"><span>Theme</span>${Object.entries(OS_THEMES).map(([k, c]) => `<button data-th="${k}" class="${k === osTheme ? 'on' : ''}" style="background:linear-gradient(135deg,${c[0]},${c[1]} 55%,${c[2]})" aria-label="${k}"></button>`).join('')}</div></div>
       <div class="nhead"><span>Notifications</span>${notes.length ? '<button data-cc="clear">Clear</button>' : ''}</div>
       ${hqReqs ? `<div class="n new tap" data-hq="1"><i>🏠</i><div><b>Your HQ</b><span>${hqReqs} waiting at your door</span></div><small>now</small></div>` : ''}
-      ${order.map((g) => `<div class="ngrp">${g}</div>${groups.get(g).slice(0, 12).join('')}`).join('') || (hqReqs ? '' : '<div class="n quiet">All quiet on the island.</div>')}`;
+      ${order.map((g) => `<div class="ngrp">${g}</div>${groups.get(g).slice(0, 12).join('')}`).join('') || (hqReqs ? '' : '<div class="n quiet">All quiet on the island.</div>')}</div>`;
     shadeEl.querySelector('[data-cc="3d"]').onclick = (e) => { e.stopPropagation(); G3.on = !G3.on; buildShade(); };
     const cl = shadeEl.querySelector('[data-cc="clear"]'); if (cl) cl.onclick = (e) => { e.stopPropagation(); notes.length = 0; updBadge(); buildShade(); };
     shadeEl.querySelectorAll('[data-th]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); osTheme = b.dataset.th; store.set('li.os', osTheme); applyTheme(); buildShade(); }));
@@ -5607,7 +5628,13 @@
   }
   // opening the shade marks what you can see as seen (after a moment, so the "new" glow shows first)
   document.getElementById('pbar').onclick = () => { buildShade(); const on = shadeEl.classList.toggle('on'); if (on) setTimeout(() => { notes.forEach((n) => (n.seen = true)); updBadge(); }, 900); };
-  shadeEl.onclick = () => shadeEl.classList.remove('on');
+  // closing it: the ✕, the handle, a tap below it, a swipe up, or Escape
+  const closeShade = () => shadeEl.classList.remove("on");
+  const veil = document.createElement("div"); veil.className = "shveil"; shadeEl.after(veil); veil.onclick = closeShade;
+  shadeEl.onclick = (e) => { if (e.target === shadeEl || e.target.closest(".shx,.grab")) closeShade(); };
+  { let y0 = null; shadeEl.addEventListener("touchstart", (e) => (y0 = e.touches[0].clientY), { passive: true }); shadeEl.addEventListener("touchend", (e) => { if (y0 != null && y0 - e.changedTouches[0].clientY > 50 && shadeEl.querySelector(".shin").scrollTop <= 0) closeShade(); y0 = null; }, { passive: true }); }
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && shadeEl.classList.contains("on")) closeShade(); });
+  setInterval(() => { if (shadeEl.classList.contains("on")) { shadeEl.classList.toggle("night", nightNow() > 0.5); shadeEl.classList.toggle("day", nightNow() <= 0.5); } }, 30000);
   // Link: new messages from other players reach you anywhere on the island, opened on this device like the app does
   let linkBase = null;
   setInterval(async () => {
