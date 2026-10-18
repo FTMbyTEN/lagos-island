@@ -6496,7 +6496,7 @@
   setInterval(() => {
     if (phone.style.display !== 'block') return;
     const d = new Date(Date.now() + 3600e3), hm = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
-    document.getElementById('pclock').textContent = hm + ':' + String(d.getUTCSeconds()).padStart(2, '0');
+    document.getElementById('pclock').textContent = hm; // hours and minutes only
     for (const el of phone.querySelectorAll('[data-clock]')) el.textContent = hm;
     if (me$) for (const el of phone.querySelectorAll('[data-naira]')) el.textContent = naira(me$.naira);
   }, 1000);
