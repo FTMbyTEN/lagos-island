@@ -1847,7 +1847,8 @@
       // runs down every side, one letter a band, so whichever side you see reads the same; the colour wave travels round
       // the tower from face to face, and a bright sweep circles it; a new ad every eight seconds, a wipe between
       const facade = (lit) => {
-        const tt = performance.now() / 1000, slot = Math.floor(tt / 8), ad = ADS[slot % ADS.length], txt = (ad[0] + '  ').toUpperCase(), wipe = Math.min(1, (tt % 8) / 0.6), hue0 = (slot * 67) % 360, sweep = (tt * 0.35) % 4;
+        const tt = performance.now() / 1000, cyc = tt % 20, mode = cyc < 6 ? 'year' : cyc < 12 ? 'flag' : 'ad', slot = Math.floor(tt / 20), ad = ADS[slot % ADS.length], txt = (ad[0] + '  ').toUpperCase(), wipe = Math.min(1, (mode === 'year' ? cyc : mode === 'flag' ? cyc - 6 : cyc - 12) / 0.6), hue0 = (slot * 67) % 360, sweep = (tt * 0.35) % 4;
+        const B0 = 3, B1 = N - 3, G = Math.floor((B1 - B0 + 1) / 4); // the bands in use; four groups for 2026's four figures
         for (let k = 3; k < N - 2; k++) {
           const s = corners[k], ca = Math.cos(s.an), sa = Math.sin(s.an);
           // the four faces, the ones facing away dropped, the far one drawn first
@@ -1859,9 +1860,17 @@
             const p0 = P(ax, y0, az), p1 = P(bx2, y0, bz2), p2 = P(bx2, y1, bz2), p3 = P(ax, y1, az);
             const band = (k - 3) / (N - 5), shown = 1 - band < wipe, hue = (hue0 + band * 80 - tt * 30 + f.fi * 90 * 0.4 + 720) % 360;
             const near = Math.min(Math.abs(sweep - f.fi), 4 - Math.abs(sweep - f.fi)), boost = Math.max(0, 1 - near) * 18;
-            quad([p0, p1, p2, p3], shown ? `hsl(${hue},85%,${(lit ? 50 : 40) + boost}%)` : '#0B1020');
-            const ch = txt[(k - 3) % txt.length], wpx = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), hpx = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]);
-            if (shown && ch.trim() && hpx > 6 && wpx > 6) { x.save(); x.transform((p1[0] - p0[0]) / wpx, (p1[1] - p0[1]) / wpx, (p0[0] - p3[0]) / hpx, (p0[1] - p3[1]) / hpx, p0[0], p0[1]); x.fillStyle = '#FFFFFF'; if (lit) { x.shadowColor = '#FFFFFF'; x.shadowBlur = 8; } x.font = `900 ${Math.round(Math.min(hpx * 0.8, wpx * 0.9))}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(ch, wpx / 2, -hpx / 2); x.restore(); }
+            const wpx = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), hpx = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]), L = lit ? 52 : 42;
+            if (mode === 'flag') { // green, white, green, a ripple running across it as it waves
+              const lerp = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u];
+              for (let st = 0; st < 3; st++) { const u0 = st / 3, u1 = (st + 1) / 3, wave = Math.sin(tt * 3 - k * 0.5 + st * 1.2 + f.fi) * 8, col = !shown ? '#0B1020' : st === 1 ? `hsl(0,0%,${(lit ? 90 : 82) + wave * 0.6}%)` : `hsl(145,100%,${(lit ? 30 : 24) + wave}%)`; quad([lerp(p0, p1, u0), lerp(p0, p1, u1), lerp(p3, p2, u1), lerp(p3, p2, u0)], col); }
+            } else if (mode === 'year') { // gold and green behind, 2026 one figure to each group of bands, each slice clipped to its band
+              quad([p0, p1, p2, p3], shown ? `hsl(${(140 + (k - B0) * 4 + tt * 20) % 360},75%,${L - 14 + boost * 0.5}%)` : '#0B1020');
+              const gi = Math.floor((k - B0) / G), digit = '2026'[3 - gi];
+              if (shown && digit && hpx > 4 && wpx > 6) { const gStart = B0 + gi * G, yC = -((G / 2) - (k - gStart)) * hpx; x.save(); x.transform((p1[0] - p0[0]) / wpx, (p1[1] - p0[1]) / wpx, (p0[0] - p3[0]) / hpx, (p0[1] - p3[1]) / hpx, p0[0], p0[1]); x.beginPath(); x.rect(0, -hpx - 0.5, wpx, hpx + 1); x.clip(); x.fillStyle = '#FDE68A'; if (lit) { x.shadowColor = '#FBBF24'; x.shadowBlur = 10; } x.font = `900 ${Math.round(Math.min(G * hpx * 0.95, wpx * 1.1))}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(digit, wpx / 2, yC); x.restore(); }
+            } else quad([p0, p1, p2, p3], shown ? `hsl(${hue},85%,${(lit ? 50 : 40) + boost}%)` : '#0B1020');
+            const ch = txt[(k - 3) % txt.length];
+            if (mode === 'ad' && shown && ch.trim() && hpx > 6 && wpx > 6) { x.save(); x.transform((p1[0] - p0[0]) / wpx, (p1[1] - p0[1]) / wpx, (p0[0] - p3[0]) / hpx, (p0[1] - p3[1]) / hpx, p0[0], p0[1]); x.fillStyle = '#FFFFFF'; if (lit) { x.shadowColor = '#FFFFFF'; x.shadowBlur = 8; } x.font = `900 ${Math.round(Math.min(hpx * 0.8, wpx * 0.9))}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(ch, wpx / 2, -hpx / 2); x.restore(); }
             if (wpx > 40) { x.strokeStyle = 'rgba(0,0,0,0.2)'; x.lineWidth = 1; x.beginPath(); for (let m = 1; m < 8; m++) { const u = m / 8; x.moveTo(p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u); x.lineTo(p3[0] + (p2[0] - p3[0]) * u, p3[1] + (p2[1] - p3[1]) * u); } x.stroke(); } // LED tiles
           }
         }
@@ -5077,60 +5086,121 @@
     CITY.mix = liveMix(c);
     if (CITY.pendingDecks) cityDecks(CITY.pendingDecks);
   }
+  // DJ Eko Nights, playing like a pro. Every song is analysed before it goes on (its tempo and where its beats fall, from the
+  // low end of the audio), the next one is pitch-held and sped or slowed to the playing song's tempo, and dropped in on the
+  // bar. Then a transition, picked to keep it moving: a bass-swap blend, a tempo-timed echo-out, a spinback, a loop roll that
+  // stutters faster into the drop, or a filter build. Risers and airhorns land on the downbeat.
   function liveMix(c) {
     const out = c.createGain(); out.gain.value = 0; out.connect(CITY.master);
-    const echo = c.createDelay(1.5), efb = c.createGain(); echo.delayTime.value = 0.375; efb.gain.value = 0.45;
-    echo.connect(efb); efb.connect(echo); echo.connect(out);
-    const deck = () => { const a = new Audio(); a.crossOrigin = 'anonymous'; a.preload = 'auto'; const el = c.createMediaElementSource(a), hp = c.createBiquadFilter(), lo = c.createBiquadFilter(), g = c.createGain();
-      hp.type = 'highpass'; hp.frequency.value = 20; hp.Q.value = 0.8; lo.type = 'lowshelf'; lo.frequency.value = 120; lo.gain.value = 3; g.gain.value = 0;
-      el.connect(hp); hp.connect(lo); lo.connect(g); g.connect(out); return { a, hp, lo, g, send: null }; };
-    const M = { out, decks: [deck(), deck()], cur: 0, list: [], i: -1, playing: false, timer: 0, now: null, spot: { name: 'Lagos Nights', dj: 'DJ Eko Nights' }, loading: null };
-    M.a = { get paused() { return !M.playing; } }; // so the top bar can ask, like any other source
-    const PLAY = 21, XF = 4.5; // seconds of each song, seconds of the blend
+    const echo = c.createDelay(2), efb = c.createGain(), ehp = c.createBiquadFilter(); efb.gain.value = 0.5; ehp.type = 'highpass'; ehp.frequency.value = 300;
+    echo.connect(ehp); ehp.connect(efb); efb.connect(echo); ehp.connect(out);
+    const deck = () => {
+      const a = new Audio(); a.crossOrigin = 'anonymous'; a.preload = 'auto'; a.preservesPitch = true;
+      const el = c.createMediaElementSource(a), hp = c.createBiquadFilter(), lp = c.createBiquadFilter(), bass = c.createBiquadFilter(), g = c.createGain(), send = c.createGain();
+      hp.type = 'highpass'; hp.frequency.value = 20; lp.type = 'lowpass'; lp.frequency.value = 20000; bass.type = 'lowshelf'; bass.frequency.value = 150; bass.gain.value = 2; g.gain.value = 0; send.gain.value = 0;
+      el.connect(hp); hp.connect(lp); lp.connect(bass); bass.connect(g); g.connect(out); g.connect(send); send.connect(echo);
+      return { a, hp, lp, bass, g, send, song: null };
+    };
+    const M = { out, decks: [deck(), deck()], cur: 0, list: [], i: -1, playing: false, timers: [], now: null, spot: { name: 'Lagos Nights', dj: 'DJ Eko Nights' }, loading: null, grid: new Map() };
+    M.a = { get paused() { return !M.playing; } };
+    const later = (ms, f) => { const id = setTimeout(f, ms); M.timers.push(id); return id; };
+    const clearAll = () => { for (const id of M.timers) clearTimeout(id); M.timers = []; };
+    const ramp = (p, v, t0, dur, exp) => { p.cancelScheduledValues(t0); p.setValueAtTime(p.value, t0); exp ? p.exponentialRampToValueAtTime(Math.max(0.0001, v), t0 + dur) : p.linearRampToValueAtTime(v, t0 + dur); };
+    // ---- the beat grid: tempo and the first beat, found from the song's low-end energy (autocorrelation of its onsets)
+    async function analyse(song) {
+      if (M.grid.has(song.id)) return M.grid.get(song.id);
+      let res = { bpm: 110, phase: 0, ok: false };
+      try {
+        const buf = await c.decodeAudioData(await (await fetch(song.url)).arrayBuffer()), sr = buf.sampleRate, d = buf.getChannelData(0), hop = 512, n = Math.floor(d.length / hop);
+        const env = new Float32Array(n); let lp = 0, prev = 0;
+        for (let k = 0; k < n; k++) { let e = 0; for (let j = 0; j < hop; j++) { lp += 0.06 * (d[k * hop + j] - lp); e += lp * lp; } env[k] = Math.max(0, e - prev); prev = e; }
+        const fps = sr / hop; let best = 0, bestLag = 0;
+        for (let bpm = 80; bpm <= 170; bpm += 0.5) { const lag = fps * 60 / bpm, L = Math.floor(lag); let s = 0; for (let k = 0; k + lag + 1 < n; k++) { const f = lag - L; s += env[k] * (env[k + L] * (1 - f) + env[k + L + 1] * f); } const pref = bpm >= 95 && bpm <= 135 ? 1.12 : 1; if (s * pref > best) { best = s * pref; bestLag = lag; } }
+        const P = bestLag; let bestO = 0, bestS = -1; for (let o = 0; o < P; o++) { let s = 0; for (let t = o; t < n; t += P) s += env[Math.round(t)] || 0; if (s > bestS) { bestS = s; bestO = o; } }
+        res = { bpm: 60 * fps / P, phase: bestO / fps, ok: true };
+      } catch {}
+      M.grid.set(song.id, res); return res;
+    }
+    // where a deck is on its own grid, in real seconds to the next bar (4 beats)
+    const toNextBar = (D) => { const gr = M.grid.get(D.song.id) || { bpm: 110, phase: 0 }, beat = 60 / gr.bpm, pos = D.a.currentTime - gr.phase, into = ((pos / beat) % 4 + 4) % 4; return ((4 - into) % 4 || 4) * beat / (D.a.playbackRate || 1); };
+    const beatSec = (D) => { const gr = (D.song && M.grid.get(D.song.id)) || { bpm: 110 }; return 60 / gr.bpm / (D.a.playbackRate || 1); };
     async function load() {
-      // Deezer's Afro editors' New Afro (the week's new Afrobeats, Amapiano and Afro-pop releases), interleaved with
-      // Nigeria's chart right now, then their Afro Hits to keep it going
       const pull = async (id) => { try { return (await dz('/playlist/' + id + '/tracks?limit=50')).data; } catch { return []; } };
       const [fresh, top, hits] = await Promise.all([pull(1257036831), pull(1362516565), pull(1440614715)]), got = [];
       for (let k = 0; k < Math.max(fresh.length, top.length); k++) { if (fresh[k]) got.push(fresh[k]); if (k % 2 && top[k]) got.push(top[k]); }
       got.push(...hits);
       const seen = new Set(), list = [];
       for (const t of got) { const s = fromDz(t); if (!s || seen.has(s.id)) continue; seen.add(s.id); list.push(s); }
-      // newest first where the catalogue says when (charts keep their order), lightly shuffled in fours so it isn't the same set twice
       for (let k = 0; k < list.length; k += 4) { const part = list.slice(k, k + 4).sort(() => Math.random() - 0.5); list.splice(k, part.length, ...part); }
       M.list = list; return list.length;
     }
-    function riser() { // white noise swept up through a band-pass, then a little airhorn on the drop
-      const len = 2.6, buf = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = buf.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = (Math.random() * 2 - 1) * (k / d.length);
-      const n = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(); n.buffer = buf; bp.type = 'bandpass'; bp.Q.value = 2; bp.frequency.setValueAtTime(400, c.currentTime); bp.frequency.exponentialRampToValueAtTime(6000, c.currentTime + len); g.gain.value = 0.18;
+    // ---- the hype: a riser that ends on the downbeat, an airhorn on the drop, a brake for the spinback
+    function riser(dur) {
+      const len = Math.max(1, dur), buf = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = buf.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = (Math.random() * 2 - 1) * Math.pow(k / d.length, 2);
+      const n = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(); n.buffer = buf; bp.type = 'bandpass'; bp.Q.value = 3; bp.frequency.setValueAtTime(300, c.currentTime); bp.frequency.exponentialRampToValueAtTime(7000, c.currentTime + len); g.gain.value = 0.2;
       n.connect(bp); bp.connect(g); g.connect(out); n.start(); n.stop(c.currentTime + len);
-      setTimeout(() => { for (const [f, dt] of [[466, 0], [466, 0.18], [440, 0.36]]) { const o = c.createOscillator(), og = c.createGain(); o.type = 'sawtooth'; o.frequency.value = f; og.gain.setValueAtTime(0, c.currentTime + dt); og.gain.linearRampToValueAtTime(0.09, c.currentTime + dt + 0.02); og.gain.linearRampToValueAtTime(0, c.currentTime + dt + 0.16); o.connect(og); og.connect(out); o.start(c.currentTime + dt); o.stop(c.currentTime + dt + 0.2); } }, len * 1000);
     }
-    function next() { // bring the next song in on the other deck and hand over to it
+    function airhorn() { for (const [f, dt] of [[466, 0], [466, 0.16], [466, 0.32], [440, 0.5]]) { const o = c.createOscillator(), o2 = c.createOscillator(), og = c.createGain(); o.type = o2.type = 'sawtooth'; o.frequency.value = f; o2.frequency.value = f * 1.5; og.gain.setValueAtTime(0, c.currentTime + dt); og.gain.linearRampToValueAtTime(0.07, c.currentTime + dt + 0.02); og.gain.linearRampToValueAtTime(0, c.currentTime + dt + 0.14); o.connect(og); o2.connect(og); og.connect(out); for (const x2 of [o, o2]) { x2.start(c.currentTime + dt); x2.stop(c.currentTime + dt + 0.16); } } }
+    const label = (trick) => { if (M.now) { M.now.dj = 'DJ Eko Nights · ' + trick; later(2600, () => { if (M.now) M.now.dj = 'DJ Eko Nights · live remix'; }); } };
+    // ---- the transitions
+    function transition(outD, inD, song) {
+      const now = c.currentTime, b = beatSec(outD), bar = 4 * b;
+      const kinds = ['blend', 'blend', 'echo', 'spinback', 'roll', 'filter'], kind = outD.a.src && !outD.a.paused ? kinds[Math.floor(Math.random() * kinds.length)] : 'cut';
+      const startIn = (delay, fadeIn, bassIn) => later(delay * 1000, () => {
+        const t1 = c.currentTime; inD.a.play().catch(() => {});
+        ramp(inD.g.gain, 1, t1, fadeIn); if (bassIn != null) { inD.bass.gain.setValueAtTime(-24, t1); later(bassIn * 1000, () => ramp(inD.bass.gain, 2, c.currentTime, 0.05)); }
+        M.now = { title: `${song.title} — ${song.artist}`, dj: 'DJ Eko Nights · live remix', art: song.art, resident: true };
+      });
+      const stopOut = (delay) => later(delay * 1000, () => { outD.a.pause(); outD.g.gain.value = 0; outD.send.gain.value = 0; outD.hp.frequency.value = 20; outD.lp.frequency.value = 20000; outD.bass.gain.value = 2; outD.a.playbackRate = 1; });
+      for (const p of [inD.hp.frequency, inD.lp.frequency]) p.cancelScheduledValues(now); inD.hp.frequency.value = 20; inD.lp.frequency.value = 20000; inD.g.gain.value = 0; inD.send.gain.value = 0;
+      if (kind === 'cut') { startIn(0, 0.05); return; }
+      label({ blend: 'bass swap', echo: 'echo out', spinback: 'spinback!', roll: 'loop roll', filter: 'filter build' }[kind]);
+      if (kind === 'blend') { // 8 bars of both, the bass swapped on the one halfway
+        startIn(0, 4 * b, 4 * b);
+        later(4 * b * 1000, () => ramp(outD.bass.gain, -24, c.currentTime, 0.05));
+        later(4 * b * 1000, () => { ramp(outD.g.gain, 0, c.currentTime, 4 * b); }); stopOut(8 * b + 0.2);
+      } else if (kind === 'echo') { // the outgoing echoes away on dotted eighths while the next slams in on the bar
+        echo.delayTime.setValueAtTime(Math.min(1.9, b * 0.75), now); ramp(outD.send.gain, 1, now, b); ramp(outD.hp.frequency, 1200, now, bar, true); ramp(outD.g.gain, 0, now + b * 0.5, b * 1.5);
+        startIn(bar, 0.02); later(bar * 1000, airhorn); stopOut(bar + 0.3);
+      } else if (kind === 'spinback') { // the record pulled back hard, a brake, then the drop
+        later(0, () => { outD.a.preservesPitch = false; const r0 = performance.now(); const spin = () => { const u = (performance.now() - r0) / 650; if (u >= 1) { outD.a.playbackRate = 0.1; return; } outD.a.playbackRate = Math.max(0.1, 1.6 - u * 1.5); requestAnimationFrame(spin); }; spin(); });
+        ramp(outD.lp.frequency, 300, now, 0.65, true); ramp(outD.g.gain, 0, now + 0.3, 0.4); later(700, () => { outD.a.preservesPitch = true; });
+        startIn(0.75, 0.02); later(750, airhorn); stopOut(0.8);
+      } else if (kind === 'roll') { // the last beat looped: halves, quarters, eighths, faster and higher into the drop
+        const t0 = outD.a.currentTime, seq = []; let at = 0; for (const [div, reps] of [[2, 4], [4, 4], [8, 8]]) for (let k = 0; k < reps; k++) { seq.push(at); at += b / div; }
+        seq.forEach((dt) => later(dt * 1000, () => { outD.a.currentTime = t0; }));
+        ramp(outD.hp.frequency, 900, now, at, true); riser(at); startIn(at, 0.02); later(at * 1000, airhorn); stopOut(at + 0.1);
+      } else { // filter build: the next song creeps in through a low-pass that opens over 2 bars, then takes over
+        inD.lp.frequency.value = 200; startIn(0, bar * 0.5); later(10, () => ramp(inD.lp.frequency, 20000, c.currentTime, 2 * bar, true));
+        ramp(outD.g.gain, 0, now + bar, bar); riser(2 * bar); later(2 * bar * 1000, airhorn); stopOut(2 * bar + 0.3);
+      }
+    }
+    // ---- the set: analyse the next song, match its tempo, cue it to its first downbeat, wait for the playing song's bar
+    async function next() {
       if (!M.playing || !M.list.length) return;
       M.i = (M.i + 1) % M.list.length;
-      const song = M.list[M.i], inD = M.decks[1 - M.cur], outD = M.decks[M.cur], t0 = c.currentTime;
-      inD.a.src = song.url; inD.a.currentTime = 0;
-      const go = () => {
-        const t1 = c.currentTime;
-        inD.a.currentTime = Math.min(4, Math.max(0, (inD.a.duration || 30) - PLAY - 2)); inD.a.play().catch(() => {});
-        // in: bass cut and a high-pass that opens up as it rises; out: the high-pass closes in, it fades on an echo
-        inD.g.gain.cancelScheduledValues(t1); inD.g.gain.setValueAtTime(0, t1); inD.g.gain.linearRampToValueAtTime(1, t1 + XF);
-        inD.hp.frequency.cancelScheduledValues(t1); inD.hp.frequency.setValueAtTime(700, t1); inD.hp.frequency.exponentialRampToValueAtTime(20, t1 + XF);
-        if (outD.a.src && !outD.a.paused) {
-          outD.hp.frequency.cancelScheduledValues(t1); outD.hp.frequency.setValueAtTime(20, t1); outD.hp.frequency.exponentialRampToValueAtTime(1500, t1 + XF);
-          outD.g.gain.cancelScheduledValues(t1); outD.g.gain.setValueAtTime(outD.g.gain.value, t1); outD.g.gain.linearRampToValueAtTime(0, t1 + XF + 0.5);
-          try { outD.g.disconnect(echo); } catch {} outD.g.connect(echo); setTimeout(() => { try { outD.g.disconnect(echo); } catch {} outD.a.pause(); }, (XF + 3) * 1000);
-        }
-        M.cur = 1 - M.cur; M.now = { title: `${song.title} — ${song.artist}`, dj: 'DJ Eko Nights · live remix', art: song.art, resident: true };
-        if (Math.random() < 0.35) setTimeout(riser, (PLAY - XF - 2.6) * 1000);
-        clearTimeout(M.timer); M.timer = setTimeout(next, (PLAY - XF) * 1000);
-      };
-      const ready = () => { inD.a.removeEventListener('canplay', ready); go(); };
-      if (inD.a.readyState >= 3) go(); else { inD.a.addEventListener('canplay', ready); setTimeout(() => { if (M.decks[1 - M.cur] === inD && inD.a.readyState < 3) { inD.a.removeEventListener('canplay', ready); next(); } }, 8000); } // a song that won't load: skip it
+      const song = M.list[M.i], inD = M.decks[1 - M.cur], outD = M.decks[M.cur];
+      const grid = await analyse(song); if (!M.playing) return;
+      inD.song = song; inD.a.src = song.url;
+      await new Promise((res) => { const ok = () => { inD.a.removeEventListener('canplay', ok); res(); }; if (inD.a.readyState >= 3) res(); else { inD.a.addEventListener('canplay', ok); setTimeout(res, 8000); } });
+      if (!M.playing) return;
+      if (inD.a.readyState < 2) return next(); // won't load: skip it
+      const live = outD.song && outD.a.src && !outD.a.paused, master = live ? (M.grid.get(outD.song.id) || grid).bpm * (outD.a.playbackRate || 1) : grid.bpm;
+      let rate = master / grid.bpm; if (rate > 1.35) rate /= 2; if (rate < 0.74) rate *= 2; // half or double time when that's closer
+      inD.a.playbackRate = Math.abs(rate - 1) <= 0.08 ? rate : 1; // only a nudge: past 8% it'd sound wrong, so it just drops on the bar
+      const beat = 60 / grid.bpm; inD.a.currentTime = grid.phase + Math.max(0, Math.round((2 - grid.phase) / beat / 4)) * 4 * beat; // cue: a downbeat a couple of seconds in
+      const wait = live ? toNextBar(outD) : 0;
+      later(Math.max(0, wait - 0.02) * 1000, () => {
+        if (!M.playing) return;
+        transition(live ? outD : { a: { src: '', paused: true } }, inD, song);
+        M.cur = 1 - M.cur;
+        // play 8 bars of it (the preview is 30 s), then go again
+        const left = Math.max(10, ((inD.a.duration || 30) - inD.a.currentTime) / (inD.a.playbackRate || 1) - 7);
+        later(Math.min(left, 32 * 60 / grid.bpm / (inD.a.playbackRate || 1)) * 1000, next);
+      });
     }
     M.play = async () => { if (M.playing) return; M.playing = true; if (!M.list.length) { if (!M.loading) M.loading = load(); await M.loading; } if (M.playing && M.list.length) next(); };
-    M.pause = () => { if (!M.playing) return; M.playing = false; clearTimeout(M.timer); for (const d of M.decks) d.a.pause(); };
+    M.pause = () => { if (!M.playing) return; M.playing = false; clearAll(); for (const d of M.decks) { d.a.pause(); d.g.gain.value = 0; } };
     return M;
   }
   // what the island server says each club's DJ is playing (from tick): switch to it, or back to the resident
