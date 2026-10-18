@@ -25,6 +25,7 @@ A multiplayer game of Lagos Island, Ikoyi, Victoria Island, Eko Atlantic, Lekki,
   - **My HQ** and **Arena:** tickets for live shows.
   - **Casino:** play money.
   - **Ride:** Uber-style okada and car trips, paid on arrival.
+  - **Music:** Nigeria's top songs, new music, genres and search (Deezer, 30-second previews), and full-length tracks from independent artists (Audius). It keeps playing with the phone away; no account needed.
   - **WYRD:** the AI that runs the island.
 - **WYRD:** WYRD Tower is where you talk to WYRD itself. It never sees your Link messages.
 
