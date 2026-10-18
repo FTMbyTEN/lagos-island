@@ -437,6 +437,9 @@
   /* no backdrop: the words float over the island, lit like neon, readable on anything */
   #cyberwel { background: none !important; } .cw-scan, .cw-noise { display: none; } .cw-box { background: none; border: none; box-shadow: none; clip-path: none; }
   #phone .fav { flex: none; width: 32px; height: 32px; margin-right: 6px; border: 0; border-radius: 10px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.35); font-size: 16px; cursor: pointer; transition: color .2s, background .2s, transform .15s; } #phone .fav.on { color: #FCD34D; background: rgba(252,211,77,.16); text-shadow: 0 0 8px rgba(252,211,77,.6); } #phone .fav:active { transform: scale(.88); }
+  #phone .gbar { height: 6px; margin: 8px 0 4px; border-radius: 6px; background: rgba(255,255,255,.1); overflow: hidden; } #phone .gbar i { display: block; height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.2,.8,.3,1); }
+  #phone .grow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0 2px; } #phone .grow span { min-width: 0; } #phone .grow b { display: block; font-size: 14px; } #phone .grow small { display: block; opacity: .65; font-size: 11.5px; } #phone .grow em { font-style: normal; font-weight: 800; font-size: 13px; color: #22D3EE; white-space: nowrap; }
+  #phone .grow em.gon { color: #22C55E; } #phone .grow em.gsoon { color: rgba(255,255,255,.45); font-weight: 600; } #phone .gnote { font-size: 13.5px; line-height: 1.4; }
   /* live chat: someone typing (three bouncing dots in a bubble), and read ticks turning blue */
   #phone .typing { display: none; align-items: center; gap: 4px; width: max-content; margin: 2px 0 8px; padding: 9px 13px; border-radius: 18px 18px 18px 6px; background: rgba(0,240,255,.1); box-shadow: inset 0 0 0 1px rgba(0,240,255,.18); color: #8FB6C2; font: 600 12px 'Rajdhani', sans-serif; }
   #phone .typing.on { display: flex; animation: appIn .2s ease; }
@@ -747,6 +750,7 @@
       station: 'M7 3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3zM4 10h16M8 13.5h.01M16 13.5h.01M8 21l2-4M16 21l-2-4',
       welcome: 'M7 11V6a1.5 1.5 0 0 1 3 0v4M10 9V4.5a1.5 1.5 0 0 1 3 0V10M13 9.5V6a1.5 1.5 0 0 1 3 0v6M16 9a1.5 1.5 0 0 1 3 0v4a8 8 0 0 1-8 8 7 7 0 0 1-6-3.5L3 13.5a1.5 1.5 0 0 1 2.5-1.5L7 14',
       bank: 'M3 21h18M5 18h14M12 3l9 5H3zM6 10v6M10 10v6M14 10v6M18 10v6M12 6.2h.01',
+      gov: 'M3 21h18M5 21V11h14v10M8 11a4 4 0 0 1 8 0M12 3v4M12 3l3 1.2-3 1.2M7.5 14v4M10.5 14v4M13.5 14v4M16.5 14v4',
       pin: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 10h.01',
     };
   })();
@@ -3136,6 +3140,18 @@
   };
   const ESTATE_OF = { 'Victoria Garden City': 'vgc', 'Lekki Phase 1': 'lekki1', 'Lekki estates': 'lekkiest', 'Ikoyi homes': 'ikoyihomes', 'Old Ikoyi': 'oldikoyi', 'Banana Island': 'banana' };
   let homesLive = {}; // plot -> { style, mine, may, slot, color, owner } for plots someone owns
+  // the housing register (kept by WYRD's government): every residential home on the island, by estate and by kind, how
+  // many are lived in and how many are free. It's worked out fresh from who owns what each time it's asked, so it's
+  // always current (the owners' list refreshes every 15 seconds while you're signed in)
+  const EST_NAME = { vgc: 'Victoria Garden City', lekki1: 'Lekki Phase 1', lekkiest: 'Lekki estates', ikoyihomes: 'Ikoyi homes', oldikoyi: 'Old Ikoyi', banana: 'Banana Island' };
+  function census() {
+    const est = {}, style = {}; let total = 0, taken = 0;
+    for (const [e, list] of Object.entries(ESTATES)) {
+      est[e] = { name: EST_NAME[e] || e, total: list.length, taken: 0 };
+      list.forEach((st, k) => { const occ = !!homesLive[e + ':' + k]; total++; if (occ) { taken++; est[e].taken++; } const v = style[st] || (style[st] = { total: 0, taken: 0 }); v.total++; if (occ) v.taken++; });
+    }
+    return { total, taken, free: total - taken, pct: total ? Math.round(taken / total * 100) : 0, est, style };
+  }
   const estateAt = (i, j) => PLACES.find((p) => ESTATE_OF[p[5]] && i >= p[1] && i < p[1] + p[3] && j >= p[2] && j < p[2] + p[4]);
   function plotAt(i, j) {
     const p = estateAt(i, j); if (!p) return null;
@@ -5354,13 +5370,13 @@
   let me$ = null, stack = [], chatTimer = 0, threadTok = null, storeRoom = 'Living', storeQ = '', storeSort = 'low', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the home screen, in groups under the widgets (the dock holds the four you use most)
-  const HOME_GROUPS = [['Your life', ['hq', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['me', 'privacy', 'credits']]];
+  const HOME_GROUPS = [['Your life', ['hq', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['gov', 'me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
@@ -5873,7 +5889,7 @@
   // WYRD OS: it boots once, then each time you pick it up it's on the lock screen until you tap
   let booted = false, lockGo = null;
   const notes = []; // the notification centre: every note keeps where it leads (tap to open) and whether you've seen it
-  const NOTE_ICON = { wyrd: '✨', chat: '💬', link: '🔗', music: '🎧', store: '🛋️', fashion: '👔', island: '✨', hq: '🏠', ride: '🛵', money: '👛' };
+  const NOTE_ICON = { wyrd: '✨', gov: '🏛️', chat: '💬', link: '🔗', music: '🎧', store: '🛋️', fashion: '👔', island: '✨', hq: '🏠', ride: '🛵', money: '👛' };
   const NOTE_GROUP = { chat: 'Island chat', link: 'Messages' };
   let hqReqs = 0;
   function notify(text, kind = 'island', open = null, from = '') {
@@ -6016,8 +6032,8 @@
     if (!booted) await boot();
     if (!app) await lockScreen(); // you picked the phone up yourself; something in the world (a piece in the store, a car, a ride) opens straight to it
     if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
-    if (app === 'music') return go(app, arg); // music needs no account
-    if (!signedIn()) return app === 'ride' || app === 'yacht' ? go(app) : render('signin'); // a ride or the free harbour tour need no account
+    if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
+    if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' ? go(app) : render('signin'); // a ride or the free harbour tour need no account
     try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
     if (app) go(app, arg); else render('home');
   }
@@ -6035,7 +6051,7 @@
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
           ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🪩</i></button>`; })()}
           <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>${naira(me$.earnedToday || 0)} of ${naira(cap)} today</small></button>
-            <button class="wmini" data-app="homes"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${notes.length ? notes.length + ' new on your phone' : 'All quiet'}</small></button></div>
+            <button class="wmini" data-app="gov"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${(() => { const c = census(); return `${c.taken}/${c.total} homes lived in`; })()}</small></button></div>
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
@@ -6428,10 +6444,33 @@
           return;
         }
         const mine = Object.values(homesLive).filter((h) => h.mine);
-        show(`${ahead('homes', 'Homes', 'From Ajah to Banana Island')}<div class="lock">Everyone has a free BQ on HQ Row. Buy up: Ajah, Lekki, Ikoyi, Banana Island.</div>
+        const cz = census();
+        show(`${ahead('homes', 'Homes', 'From Ajah to Banana Island')}<button class="hero" data-gov style="--ac:#22D3EE;width:100%;text-align:left;cursor:pointer"><div class="hl">Housing register · live</div><div class="hv" style="font-size:22px">${cz.free} free<span style="font-size:14px;opacity:.7"> · ${cz.taken} of ${cz.total} lived in</span></div><div class="gbar"><i style="width:${cz.pct}%;background:linear-gradient(90deg,#22D3EE,#A78BFA)"></i></div></button><div class="lock">Everyone has a free BQ on HQ Row. Buy up: Ajah, Lekki, Ikoyi, Banana Island.</div>
           <div class="rsec">YOUR HOMES</div><div class="pcard"><div class="row"><span>🏠 Your BQ · HQ Row</span><b>Free</b></div>${mine.map((h) => `<div class="row"><span>🏡 ${HOME_STYLES[h.style][0]} · ${AREA[h.plot.split(':')[0]]}</span><button class="pbtn alt" data-plot="${h.plot}">Open</button></div>`).join('')}</div>
           ${Object.keys(ESTATES).map((est) => `<div class="rsec">${esc(placeOf(est)[5]).toUpperCase()} · ${AREA[est].toUpperCase()}</div><div class="pcard">${ESTATES[est].map((style, n) => { const plot = est + ':' + n, h = homesLive[plot]; return `<div class="row"><span>${h ? (h.mine ? '🏡' : '🔒') : '🪧'} ${HOME_STYLES[style][0]} <span class="dim">#${n + 1}</span></span>${h ? `<span class="dim">${h.mine ? 'Yours' : 'Sold'}</span>` : `<button class="pbtn alt" data-plot="${plot}">${naira(HOME_STYLES[style][1])}</button>`}</div>`; }).join('')}</div>`).join('')}`);
         pbody.querySelectorAll('[data-plot]').forEach((b) => (b.onclick = () => go('homes', b.dataset.plot)));
+        { const gb = pbody.querySelector('[data-gov]'); if (gb) gb.onclick = () => go('gov'); }
+        return;
+      }
+      if (app === 'gov') {
+        // the Lagos Island Government, run by WYRD. First department open: Housing, the live register. The rest are
+        // being set up, each to come alive as its system lands on the island.
+        const c = census(), bar = (p, col) => `<div class="gbar"><i style="width:${p}%;background:${col}"></i></div>`, online = (typeof others !== 'undefined' ? others.size : 0) + 1;
+        const full = Object.values(c.est).filter((e) => e.taken === e.total).map((e) => e.name), empty = Object.values(c.est).filter((e) => !e.taken).map((e) => e.name);
+        const notices = [
+          `Housing: ${c.taken} of ${c.total} homes on the island are lived in (${c.pct}%). ${c.free} are free to buy in the Homes app.`,
+          full.length ? `Fully occupied: ${full.join(', ')}.` : `No estate is full yet. Every estate has homes for sale.`,
+          empty.length ? `No residents yet: ${empty.join(', ')}.` : `Every estate has residents.`,
+          'Every Lagosian keeps a free BQ on HQ Row, whatever they own.',
+        ];
+        show(`<div class="ahead" style="--ac:#22D3EE"><i>${ico('gov')}</i><div><h2>Lagos Island Government</h2><span>Administered by WYRD</span></div></div>
+          <div class="hero" style="--ac:#22D3EE"><div class="hl">Housing register · live</div><div class="hv" style="font-size:26px">${c.taken}<span style="font-size:15px;opacity:.7"> / ${c.total} occupied</span></div>${bar(c.pct, 'linear-gradient(90deg,#22D3EE,#A78BFA)')}<small>${c.free} free · ${c.pct}% occupied · ${online} on the island now</small></div>
+          <div class="rsec">BY ESTATE</div><div class="pcard">${Object.entries(c.est).map(([k, e]) => `<div class="grow"><span><b>${esc(e.name)}</b><small>${e.taken} lived in · ${e.total - e.taken} free</small></span><em>${e.taken}/${e.total}</em></div>${bar(Math.round(e.taken / e.total * 100), e.taken === e.total ? '#F87171' : '#22D3EE')}`).join('')}</div>
+          <div class="rsec">BY KIND OF HOME</div><div class="pcard">${Object.entries(c.style).map(([k, v]) => `<div class="grow"><span><b>${esc(HOME_STYLES[k][0])}</b><small>${naira(HOME_STYLES[k][1])}</small></span><em>${v.taken}/${v.total}</em></div>`).join('')}</div>
+          <div class="rsec">NOTICES FROM WYRD</div>${notices.map((t) => `<div class="pcard gnote">✨ ${esc(t)}</div>`).join('')}
+          <div class="rsec">DEPARTMENTS</div><div class="pcard">${[['Housing', 'Live: the register above', 1], ['Treasury', 'With the Island Reserve Bank, when the financial system opens'], ['Transport', 'Rides and the roads'], ['Culture', 'The Arena, the clubs, the parties'], ['Works', 'The reclaimed land, and what gets built on it'], ['Law and order', 'The island\'s rules']].map(([d, t, on]) => `<div class="grow"><span><b>${d}</b><small>${t}</small></span><em class="${on ? 'gon' : 'gsoon'}">${on ? 'Open' : 'Setting up'}</em></div>`).join('')}</div>
+          <button class="pbtn" data-go="homes">See homes for sale</button>`);
+        pbody.querySelector('[data-go]').onclick = () => go('homes');
         return;
       }
       if (app === 'store') {
@@ -6843,7 +6882,7 @@
   async function loadHqRow() {
     if (!signedIn()) return;
     try { hqSlots = await my('hqRow'); } catch {}
-    try { homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); } catch {} // who owns which plot (until the server has homes, everything's for sale)
+    try { const before = census().taken; homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); const now = census(); if (loadHqRow.seen && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']); loadHqRow.seen = true; } catch {} // who owns which plot (until the server has homes, everything's for sale)
     try { // the parties going on that I can go to; a new invite pings my phone
       const list = await my('parties'), seen = new Set(Object.keys(partiesLive));
       partiesLive = Object.fromEntries(list.map((p) => [p.key, { ...p, until: Date.parse(p.until) }]));
