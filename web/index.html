@@ -787,22 +787,73 @@
     quad(p, '#F8FAFC', '#94A3B8');
     box(bx - 1.6, 0.4, bz - 0.9, bx + 1.6, 2, bz + 0.9, '#0EA5E9');
   }
+  // a flat disc on the ground (or at height y)
+  function disk(cx, cz, y, r, col) { const p = P(cx, y, cz); x.fillStyle = col; x.beginPath(); x.ellipse(p[0], p[1], r * K, r * K * sp, 0, 0, Math.PI * 2); x.fill(); }
+  // a cone (a minaret cap): shaded across its width
+  function cone(cx, cz, y, r, h, col) {
+    const b0 = P(cx, y, cz), t0 = P(cx, y + h, cz), rr = r * K, g = x.createLinearGradient(b0[0] - rr, 0, b0[0] + rr, 0);
+    g.addColorStop(0, shadeHex(col, 0.8)); g.addColorStop(0.4, shadeHex(col, 1.2)); g.addColorStop(1, shadeHex(col, 0.75));
+    x.fillStyle = g; x.beginPath(); x.moveTo(b0[0] - rr, b0[1]); x.lineTo(t0[0], t0[1]); x.lineTo(b0[0] + rr, b0[1]); x.ellipse(b0[0], b0[1], rr, rr * sp, 0, 0, Math.PI); x.fill();
+  }
+  // a gold crescent on a finial
+  function crescent(cx, y, cz, r) {
+    const p = P(cx, y, cz), rr = Math.max(1.2, r * K);
+    x.fillStyle = '#D4AF37'; x.beginPath(); x.arc(p[0], p[1], rr, 0, Math.PI * 2); x.arc(p[0] + rr * 0.45, p[1] - rr * 0.15, rr * 0.8, 0, Math.PI * 2, true); x.fill('evenodd');
+  }
+  // an arched opening on a south-facing wall at z: centre ax, half-width w, height h (from y0)
+  function arch(ax, z, w, h, col, y0 = 0) {
+    const b0 = P(ax - w, y0, z), b1 = P(ax + w, y0, z), s1 = P(ax + w, y0 + h - w, z), s0 = P(ax - w, y0 + h - w, z), tp = P(ax, y0 + h, z);
+    x.fillStyle = col; x.beginPath(); x.moveTo(b0[0], b0[1]); x.lineTo(b1[0], b1[1]); x.lineTo(s1[0], s1[1]); x.quadraticCurveTo(s1[0], tp[1], tp[0], tp[1]); x.quadraticCurveTo(s0[0], tp[1], s0[0], s0[1]); x.closePath(); x.fill();
+  }
+  // a flagpole with a waving flag (cols: three vertical stripes)
+  function flagpole(fx, fz, h, cols, t) {
+    box(fx - 0.12, 0, fz - 0.12, fx + 0.12, h, fz + 0.12, '#CBD5E1');
+    const L = 4, H = 2.4, seg = 12;
+    for (let s = 0; s < 3; s++) {
+      x.fillStyle = cols[s]; x.beginPath();
+      for (let i = 0; i <= seg; i++) { const u = (s + i / seg) / 3, w = Math.sin(t * 3 - u * 5) * 0.5 * u, p = P(fx + 0.12 + u * L, h - 0.2 + w * 0.3, fz + w); i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); }
+      for (let i = seg; i >= 0; i--) { const u = (s + i / seg) / 3, w = Math.sin(t * 3 - u * 5) * 0.5 * u, p = P(fx + 0.12 + u * L, h - 0.2 - H + w * 0.3, fz + w); x.lineTo(p[0], p[1]); }
+      x.fill();
+    }
+  }
+  function bench(bx, bz) { box(bx, 0, bz, bx + 3, 0.9, bz + 1, '#8B5E3C'); box(bx, 0.9, bz, bx + 3, 1.8, bz + 0.25, '#8B5E3C'); }
   function rnd(seed) { let t = (seed * 2654435761) >>> 0; return () => { t += 0x6D2B79F5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; }
 
   // ================= the landmarks, each its own little model =================
   // each draws inside its lot: x0, z0 (north-west corner) to x1, z1, in world units
   const STALLS = ['#EF4444', '#F59E0B', '#22C55E', '#3B82F6', '#A855F7', '#EC4899', '#14B8A6', '#F97316'];
   const MODELS = {
+    // ---- Lagos Central Mosque: white walls, the great green dome on its drum, four small domes, four tall
+    // minarets with two balconies each and green caps, gold crescents, an arcade porch, a walled courtyard
     mosque(a, b, c, d) {
-      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      const m = 4;
-      box(a + m, 0, b + m, c - m, 9, d - m, '#FFFFFF', '#2F855A', 2);
-      dome((a + c) / 2, (b + d) / 2, 9, Math.min(c - a, d - b) * 0.3, '#22A06B');
-      for (const [px, pz] of [[a + 2, b + 2], [c - 2, b + 2], [a + 2, d - 2], [c - 2, d - 2]]) {
-        box(px - 0.9, 0, pz - 0.9, px + 0.9, 20, pz + 0.9, '#FFFFFF');
-        box(px - 1.2, 15, pz - 1.2, px + 1.2, 15.8, pz + 1.2, '#E2E8F0');
-        pyramid(px - 0.9, pz - 0.9, px + 0.9, pz + 0.9, 20, 3, '#22A06B');
-      }
+      flat(a, b, c, d, 0.05, '#E7E2D6', C.plotEdge);
+      flat(a + 9, d - 6, c - 9, d, 0.07, '#F5F1E8'); // the forecourt
+      for (const [x0, z0, x1, z1] of [[a + 0.5, b + 0.5, c - 0.5, b + 1.1], [a + 0.5, b + 0.5, a + 1.1, d - 0.5], [c - 1.1, b + 0.5, c - 0.5, d - 0.5]]) box(x0, 0, z0, x1, 1.6, z1, '#F8FAFC'); // the compound wall
+      const minaret = (px, pz) => {
+        cylLit(px, pz, 1.25, 0, 1.4, '#E2E8F0');
+        cylLit(px, pz, 0.95, 1.4, 12.6, '#FFFFFF');
+        cylLit(px, pz, 1.5, 14, 0.7, '#22A06B'); // the first balcony
+        cylLit(px, pz, 0.8, 14.7, 7.3, '#FFFFFF');
+        cylLit(px, pz, 1.3, 22, 0.6, '#22A06B'); // the second
+        cylLit(px, pz, 0.7, 22.6, 2.4, '#F8FAFC');
+        cone(px, pz, 25, 0.95, 4, '#16A34A'); crescent(px, 29.6, pz, 0.7);
+      };
+      minaret(a + 3, b + 3); minaret(c - 3, b + 3);
+      const x0 = a + 6, x1 = c - 6, z0 = b + 5, z1 = d - 8, cx = (a + c) / 2, cz = (z0 + z1) / 2;
+      box(x0, 0, z0, x1, 10, z1, '#FFFFFF', '#2F855A', 2); // the prayer hall
+      box(x0 - 0.3, 10, z0 - 0.3, x1 + 0.3, 10.7, z1 + 0.3, '#22A06B'); // a green cornice
+      for (const [px, pz] of [[x0 + 2.5, z0 + 2.5], [x1 - 2.5, z0 + 2.5], [x0 + 2.5, z1 - 2.5], [x1 - 2.5, z1 - 2.5]]) { cylLit(px, pz, 1.7, 10.7, 1, '#FFFFFF'); dome(px, pz, 11.7, 1.7, '#22A06B'); crescent(px, 13.9, pz, 0.45); }
+      cylLit(cx, cz, 6.2, 10.7, 2.6, '#FFFFFF'); // the drum, windows round it
+      for (let k = 0; k < 8; k++) { const an = (k / 8) * Math.PI * 2; if (Math.sin(an) < -0.2) continue; const p = P(cx + Math.cos(an) * 6.1, 12, cz + Math.sin(an) * 6.1); x.fillStyle = '#2F855A'; x.beginPath(); x.ellipse(p[0], p[1], K * 0.45, K * 0.8, 0, 0, Math.PI * 2); x.fill(); }
+      dome(cx, cz, 13.3, 6.2, '#22A06B');
+      cylLit(cx, cz, 0.25, 19.5, 1.4, '#D4AF37'); crescent(cx, 21.6, cz, 0.9);
+      // the porch: an arcade of arches across the front
+      box(x0 + 3, 0, z1, x1 - 3, 7, z1 + 2.6, '#FFFFFF'); box(x0 + 2.7, 7, z1 - 0.2, x1 - 2.7, 7.6, z1 + 2.9, '#22A06B');
+      for (let k = 0; k < 5; k++) { const ax = x0 + 4.6 + k * ((x1 - x0 - 9.2) / 4); arch(ax, z1 + 2.62, 1.1, 5, '#2F6B4A'); }
+      minaret(a + 3, d - 4); minaret(c - 3, d - 4);
+      for (const px of [a + 8, c - 8]) palm(px, d - 2, 8);
+      lamp(cx - 5, d - 2, 5); lamp(cx + 5, d - 2, 5);
+      glow.push(() => { const p = P(cx, 16, cz), r = K * 16; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(120,255,170,0.22)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     market(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
@@ -830,22 +881,65 @@
       box(a + 6, 0, b + 4, c - 6, 6, d - 4, '#FFF7E6');
       gable(a + 5.5, b + 3.5, c - 5.5, d - 3.5, 6, 4, '#B91C1C');
     },
+    // ---- Tinubu Square: a paved plaza in rings, flower beds, the flag, benches, and the three-tier fountain
+    // with its jets playing (lit up at night)
     fountain(a, b, c, d) {
-      flat(a, b, c, d, 0.05, '#E5E7EB', C.plotEdge);
-      const cx = (a + c) / 2, cz = (b + d) / 2, r = Math.min(c - a, d - b) * 0.28;
-      const ctr = P(cx, 0.6, cz);
-      x.fillStyle = '#CBD5E1'; x.beginPath(); x.ellipse(ctr[0], ctr[1], r * K * 1.15, r * K * sp * 1.15, 0, 0, Math.PI * 2); x.fill();
-      x.fillStyle = '#60A5FA'; x.beginPath(); x.ellipse(ctr[0], ctr[1], r * K, r * K * sp, 0, 0, Math.PI * 2); x.fill();
-      box(cx - 0.6, 0.6, cz - 0.6, cx + 0.6, 3.5, cz + 0.6, '#F8FAFC');
-      x.fillStyle = 'rgba(255,255,255,0.8)'; const tp = P(cx, 4.2, cz); x.beginPath(); x.arc(tp[0], tp[1], Math.max(2, K * 0.9), 0, Math.PI * 2); x.fill();
-      for (const [px, pz] of [[a + 2, b + 2], [c - 2, d - 2]]) palm(px, pz, 8);
+      flat(a, b, c, d, 0.05, '#E7E2D6', C.plotEdge);
+      const cx = (a + c) / 2, cz = (b + d) / 2 + 2, t = performance.now() / 1000;
+      disk(cx, cz, 0.07, 8.6, '#D6CCB8'); disk(cx, cz, 0.08, 7.6, '#EDE7DA');
+      for (const [x0, z0] of [[a + 1, b + 1], [c - 6, b + 1], [a + 1, d - 5], [c - 6, d - 5]]) { // flower beds
+        box(x0, 0, z0, x0 + 5, 0.6, z0 + 4, '#A8A29E'); flat(x0 + 0.3, z0 + 0.3, x0 + 4.7, z0 + 3.7, 0.65, '#4D9A4A');
+        const R = rnd(x0 * 7 + z0); for (let k = 0; k < 9; k++) { const p = P(x0 + 0.8 + R() * 3.4, 0.9, z0 + 0.8 + R() * 2.4); x.fillStyle = ['#EF4444', '#FACC15', '#F472B6', '#F8FAFC'][k % 4]; x.beginPath(); x.arc(p[0], p[1], Math.max(0.8, K * 0.32), 0, Math.PI * 2); x.fill(); }
+      }
+      flagpole(cx, b + 3, 16, ['#008751', '#FFFFFF', '#008751'], t);
+      cylLit(cx, cz, 5.6, 0, 1, '#CFC6B4'); disk(cx, cz, 1.0, 5.1, '#4F9BD8'); // the outer basin
+      const ripple = P(cx, 1.02, cz); x.strokeStyle = 'rgba(255,255,255,0.45)'; x.lineWidth = 1; for (let k = 0; k < 2; k++) { const rr = ((t * 0.6 + k * 0.5) % 1) * 4.8 * K; x.beginPath(); x.ellipse(ripple[0], ripple[1], rr, rr * sp, 0, 0, Math.PI * 2); x.stroke(); }
+      cylLit(cx, cz, 0.9, 1, 1.6, '#E7E2D6'); cylLit(cx, cz, 2.6, 2.6, 0.5, '#E7E2D6'); disk(cx, cz, 3.12, 2.2, '#60A5FA'); // the middle tier
+      cylLit(cx, cz, 0.5, 3.1, 1.6, '#E7E2D6'); cylLit(cx, cz, 1.4, 4.7, 0.4, '#E7E2D6'); disk(cx, cz, 5.12, 1.1, '#7DB8F0'); // the top bowl
+      const jets = () => {
+        x.strokeStyle = 'rgba(225,242,255,0.85)'; x.lineWidth = Math.max(1, K * 0.22); x.lineCap = 'round';
+        const top = P(cx, 5.2, cz), hi = 8.4 + Math.sin(t * 3) * 0.4;
+        x.beginPath(); x.moveTo(top[0], top[1]); const pk = P(cx, hi, cz); x.lineTo(pk[0], pk[1]); x.stroke();
+        for (let k = 0; k < 10; k++) {
+          const an = (k / 10) * Math.PI * 2 + t * 0.15, ca = Math.cos(an), sa = Math.sin(an);
+          const s0 = P(cx + ca * 2.2, 3.2, cz + sa * 2.2), m = P(cx + ca * 3.6, 4.6 + Math.sin(t * 4 + k) * 0.2, cz + sa * 3.6), e = P(cx + ca * 4.7, 1.1, cz + sa * 4.7);
+          x.beginPath(); x.moveTo(s0[0], s0[1]); x.quadraticCurveTo(m[0], m[1] - K, e[0], e[1]); x.stroke();
+        }
+        x.fillStyle = 'rgba(255,255,255,0.9)'; x.beginPath(); x.arc(pk[0], pk[1], Math.max(1.5, K * 0.6), 0, Math.PI * 2); x.fill(); x.lineCap = 'butt';
+      };
+      jets();
+      glow.push(() => { const p = P(cx, 2, cz), r = K * 9; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(120,190,255,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.6, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
+      for (const [px, pz] of [[cx - 7, cz + 7], [cx + 4.5, cz + 7]]) bench(px, pz);
+      for (const [px, pz] of [[a + 2, cz], [c - 2, cz]]) palm(px, pz, 9);
+      lamp(a + 2.5, d - 1.5, 6); lamp(c - 2.5, d - 1.5, 6);
     },
+    // ---- the Cathedral Church of Christ, Marina: a Gothic stone nave with buttresses and stained glass,
+    // a transept, and the tower at the front with its belfry, a rose window, a slate spire and a gold cross
     cathedral(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.grassLot);
-      box(a + 2.5, 0, b + 7, c - 2.5, 9, d - 2, '#F1EBDD', '#7C6F57', 2);
-      gable(a + 2.2, b + 6.7, c - 2.2, d - 1.7, 9, 5, '#7F1D1D');
-      box(a + 5, 0, b + 2, c - 5, 18, b + 7, '#F1EBDD', '#7C6F57', 3);
-      pyramid(a + 5, b + 2, c - 5, b + 7, 18, 10, '#7F1D1D');
+      flat((a + c) / 2 - 1.6, d - 4, (a + c) / 2 + 1.6, d, 0.07, '#D6CFC0'); // the path to the door
+      tree(a + 2.5, b + 3, 2.6); tree(c - 2.5, b + 4, 2.4);
+      const n0 = a + 4, n1 = c - 4, cx = (a + c) / 2, glass = '#3B4A8A';
+      box(n0, 0, b + 3, n1, 10, d - 9, '#EDE4D0', glass, 2); // the nave
+      for (let z = b + 4; z < d - 9; z += 3.4) for (const bx of [n0 - 0.7, n1]) box(bx, 0, z, bx + 0.7, 7, z + 0.7, '#D9CFB8'); // buttresses
+      gable(n0 - 0.3, b + 2.7, n1 + 0.3, d - 8.7, 10, 6.5, '#5B2C2C');
+      const tz = (b + d - 9) / 2;
+      box(a + 1.5, 0, tz - 2.2, c - 1.5, 9, tz + 2.2, '#EDE4D0', glass, 2); gable(a + 1.2, tz - 2.5, c - 1.2, tz + 2.5, 9, 5, '#5B2C2C'); // the transept
+      // the tower
+      const t0 = cx - 3.6, t1 = cx + 3.6, z0 = d - 9.5, z1 = d - 3;
+      box(t0, 0, z0, t1, 23, z1, '#EDE4D0');
+      for (const px of [t0 - 0.5, t1 - 0.2]) box(px, 0, z1 - 0.7, px + 0.7, 21, z1 + 0.2, '#D9CFB8');
+      arch(cx, z1 + 0.02, 1.3, 4.5, '#4A3424'); // the door
+      const rw = P(cx, 10, z1 + 0.03); x.fillStyle = '#7C6F57'; x.beginPath(); x.arc(rw[0], rw[1], K * 1.7, 0, Math.PI * 2); x.fill();
+      const rg = x.createRadialGradient(rw[0], rw[1], 0, rw[0], rw[1], K * 1.4); rg.addColorStop(0, '#FDE68A'); rg.addColorStop(0.5, '#B91C1C'); rg.addColorStop(1, '#1E3A8A');
+      x.fillStyle = rg; x.beginPath(); x.arc(rw[0], rw[1], K * 1.4, 0, Math.PI * 2); x.fill(); // the rose window
+      for (let k = 0; k < 2; k++) arch(t0 + 2 + k * 3.2, z1 + 0.02, 0.8, 3, '#2B2118', 17); // the belfry
+      box(t0 - 0.4, 23, z0 - 0.4, t1 + 0.4, 23.8, z1 + 0.4, '#D9CFB8');
+      for (const [px, pz] of [[t0, z0], [t1, z0], [t0, z1], [t1, z1]]) pyramid(px - 0.5, pz - 0.5, px + 0.5, pz + 0.5, 23.8, 2.6, '#475569'); // pinnacles
+      pyramid(t0 + 0.6, z0 + 0.6, t1 - 0.6, z1 - 0.6, 23.8, 13, '#475569'); // the spire
+      const sz = (z0 + z1) / 2; box(cx - 0.12, 36.6, sz - 0.12, cx + 0.12, 39.6, sz + 0.12, '#D4AF37'); box(cx - 0.9, 38.2, sz - 0.12, cx + 0.9, 38.6, sz + 0.12, '#D4AF37');
+      lamp(cx - 3, d - 1.5, 5); lamp(cx + 3, d - 1.5, 5);
+      glow.push(() => { const p = P(cx, 10, z1), r = K * 6; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,200,120,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     field(a, b, c, d) {
       flat(a, b, c, d, 0.05, '#7BC26A');
@@ -879,9 +973,35 @@
       const cx = (a + c) / 2, cz = (b + d) / 2;
       flat(cx - 2.6, cz - 0.8, cx + 2.6, cz + 0.8, 12.05, '#EF4444'); flat(cx - 0.8, cz - 2.6, cx + 0.8, cz + 2.6, 12.06, '#EF4444');
     },
+    // ---- Marina Jetty: a plank deck on piles out over the water, a ticket kiosk, railings and bollards,
+    // and the ferry and a water taxi rocking at the landing (the ferry comes and goes)
     jetty(a, b, c, d) {
-      flat(a, b, c, d + 4, 0.3, '#A16207');
-      boat(a + 5, d + 6);
+      const t = performance.now() / 1000, e = d + 5;
+      for (let px = a + 1; px < c; px += 3) box(px - 0.3, -1, e - 0.6, px + 0.3, 0.4, e, '#4A3420'); // piles
+      box(a, 0, b, c, 0.4, e, '#A0672E');
+      x.strokeStyle = 'rgba(70,40,15,0.45)'; x.lineWidth = 1; for (let px = a + 1; px < c; px += 1) { const p = P(px, 0.42, b), q = P(px, 0.42, e); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } // planks
+      // the ticket kiosk, blue roof, a sign
+      box(a + 1, 0.4, b + 0.8, a + 6, 3.4, b + 4.4, '#F8FAFC', '#0EA5E9', 1); box(a + 0.6, 3.4, b + 0.4, a + 6.4, 3.8, b + 4.8, '#1D4ED8');
+      box(a + 1.5, 3.8, b + 4.2, a + 5.5, 5.2, b + 4.5, '#FACC15');
+      const sg = P(a + 3.5, 4.5, b + 4.5); if (K > 3) { x.fillStyle = '#1E293B'; x.font = `800 ${Math.round(K * 0.8)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('FERRY', sg[0], sg[1]); }
+      for (const px of [a + 9, a + 12]) bench(px, b + 2);
+      // the railings down both sides
+      for (const sx of [a + 0.15, c - 0.15]) { for (let pz = b + 5; pz <= e; pz += 2) box(sx - 0.1, 0.4, pz - 0.1, sx + 0.1, 1.6, pz + 0.1, '#E5E7EB'); box(sx - 0.1, 1.5, b + 5, sx + 0.1, 1.7, e, '#E5E7EB'); }
+      for (const px of [a + 3, a + 10, c - 3]) { cylLit(px, e - 0.5, 0.35, 0.4, 0.8, '#1F2937'); } // bollards
+      const ring = P(c - 0.3, 1.2, b + 7); x.strokeStyle = '#F97316'; x.lineWidth = Math.max(1.5, K * 0.3); x.beginPath(); x.ellipse(ring[0], ring[1], K * 0.6, K * 0.7, 0, 0, Math.PI * 2); x.stroke(); // a life ring
+      // the ferry: in for 14 s, out for 10, back again
+      const cyc = t % 30, off = cyc < 14 ? 0 : cyc < 20 ? (cyc - 14) * 6 : cyc < 24 ? 36 : 36 - (cyc - 24) * 6;
+      const fx = a + 10 + off, fz = e + 3.5, bob = Math.sin(t * 1.4) * 0.15;
+      if (off < 34) {
+        quad([P(fx - 7, bob, fz - 2), P(fx + 6, bob, fz - 2), P(fx + 8, bob, fz), P(fx + 6, bob, fz + 2), P(fx - 7, bob, fz + 2)], '#F8FAFC', '#94A3B8');
+        box(fx - 7, bob, fz - 2, fx + 6, 1.4 + bob, fz + 2, '#F8FAFC'); box(fx - 7, 1.2 + bob, fz - 2, fx + 6, 1.5 + bob, fz + 2, '#1D4ED8');
+        box(fx - 5, 1.5 + bob, fz - 1.5, fx + 3, 3.6 + bob, fz + 1.5, '#E2E8F0', '#0F172A', 1); box(fx - 5.3, 3.6 + bob, fz - 1.8, fx + 3.3, 3.9 + bob, fz + 1.8, '#F59E0B');
+      }
+      // a yellow water taxi tied up at the side
+      const wx = a - 3, wz = d + 1, wb = Math.sin(t * 1.8 + 1) * 0.12;
+      quad([P(wx - 1.3, wb, wz - 4), P(wx + 1.3, wb, wz - 4), P(wx + 1.3, wb, wz + 3), P(wx, wb, wz + 4.5), P(wx - 1.3, wb, wz + 3)], '#FACC15', '#A16207');
+      box(wx - 1.1, wb, wz - 3, wx + 1.1, 1 + wb, wz + 2, '#FACC15'); box(wx - 1, 1 + wb, wz - 1.5, wx + 1, 2.2 + wb, wz + 1, '#0EA5E9');
+      lamp(a + 7, b + 1, 5); lamp(c - 1, e - 1, 5);
     },
     golf(a, b, c, d) {
       flat(a, b, c, d, 0.05, '#86CC74');
@@ -1341,8 +1461,23 @@
       const cx = (a + c) / 2, cz = (b + d) / 2;
       groundText('WELCOME TO', cx, cz - 9, 5.5, '#B08A43', 'rgba(60,40,10,0.35)');
       groundText('LAGOS ISLAND', cx, cz + 1, 10, '#F8FAFC', 'rgba(60,40,10,0.45)');
-      for (const px of [a + 4, c - 4]) { box(px - 0.3, 0, d - 5, px + 0.3, 14, d - 4.4, '#E5E7EB'); flat(px + 0.3, d - 4.9, px + 6, d - 4.5, 12.6, '#22B573'); flat(px + 0.3, d - 4.9, px + 6, d - 4.5, 11.4, '#F8FAFC'); flat(px + 0.3, d - 4.9, px + 6, d - 4.5, 10.2, '#22B573'); }
+      const t = performance.now() / 1000;
       for (let k = 0; k < 5; k++) palm(a + 8 + k * 16, b + 3, 9 + (k % 2) * 2);
+      // flags along the back: Nigeria and Lagos State, flying
+      for (let k = 0; k < 4; k++) flagpole(a + 16 + k * ((c - a - 32) / 3), b + 6, 12, k % 2 ? ['#1D4ED8', '#FACC15', '#B91C1C'] : ['#008751', '#FFFFFF', '#008751'], t + k);
+      // a boardwalk along the front, with the gateway arch in the middle: EKO O NI BAJE
+      flat(a + 2, d - 3.5, c - 2, d - 0.5, 0.2, '#B07A45');
+      x.strokeStyle = 'rgba(70,40,15,0.35)'; x.lineWidth = 1; for (let px = a + 3; px < c - 2; px += 1.5) { const p = P(px, 0.22, d - 3.5), q = P(px, 0.22, d - 0.5); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      const gx = cx;
+      for (const px of [gx - 8, gx + 6.4]) { box(px, 0, d - 3.2, px + 1.6, 11, d - 1.6, '#F8FAFC'); box(px - 0.2, 0, d - 3.4, px + 1.8, 1.2, d - 1.4, '#22B573'); }
+      box(gx - 8.5, 11, d - 3.3, gx + 8.5, 14, d - 1.5, '#22B573'); box(gx - 8.7, 14, d - 3.5, gx + 8.7, 14.5, d - 1.3, '#F8FAFC');
+      const s0 = P(gx - 7, 11.3, d - 1.48), s1 = P(gx + 7, 11.3, d - 1.48), s3 = P(gx - 7, 13.7, d - 1.48), wpx = Math.hypot(s1[0] - s0[0], s1[1] - s0[1]);
+      if (wpx > 30) { x.save(); x.translate((s1[0] + s3[0]) / 2, (s1[1] + s3[1]) / 2); x.rotate(Math.atan2(s1[1] - s0[1], s1[0] - s0[0])); x.fillStyle = '#FFFFFF'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = `900 ${Math.round(wpx * 0.085)}px "Plus Jakarta Sans", sans-serif`; x.fillText('EKO O NI BAJE', 0, 0); x.restore(); }
+      // umbrellas and loungers along the sand, benches by the boardwalk
+      for (let k = 0; k < 6; k++) { const ux = a + 6 + k * ((c - a - 12) / 5); if (Math.abs(ux - gx) < 12) continue; umbrella(ux, d - 9, STALLS[k % STALLS.length]); box(ux + 1.4, 0, d - 9.6, ux + 2.4, 0.5, d - 7, '#F8FAFC'); }
+      for (const px of [a + 10, gx - 16, gx + 13, c - 12]) bench(px, d - 4.6);
+      for (const px of [a + 4, gx - 11, gx + 11, c - 4]) lamp(px, d - 2, 6);
+      glow.push(() => { const p = P(gx, 12.5, d - 1.5), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(80,255,170,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.5, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     soon(a, b, c, d) {
       for (let k = 0; k < 4; k++) { const px = a + 4 + k * ((c - a - 8) / 3); box(px - 0.8, 0, d - 3, px + 0.8, 2.4, d - 1.4, k % 2 ? '#F8FAFC' : '#F97316'); }
