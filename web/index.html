@@ -32,6 +32,7 @@
   #top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; }
   #title { font-weight: 800; font-size: 17px; white-space: nowrap; }
   #online { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
+  #topR { margin-left: auto; display: flex; gap: 6px; } #topR button { width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(15,23,42,.06); font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: transform .12s, background .15s; } #topR button:hover { background: rgba(34,197,94,.15); } #topR button:active { transform: scale(.9); } #topR button.off { opacity: .45; } #tMusic.playing { background: #22C55E; animation: mpulse 1.2s ease-in-out infinite; } @keyframes mpulse { 50% { box-shadow: 0 0 0 6px rgba(34,197,94,.18); } }
   #online i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 6px; vertical-align: 1px; }
   #talkTop { right: 16px; bottom: calc(22px + env(safe-area-inset-bottom)); width: 58px; height: 58px; font-size: 24px; }
   #chips { position: fixed; top: calc(68px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: none; max-width: calc(100vw - 20px); }
@@ -379,6 +380,11 @@
   .malb { display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px 8px; padding: 0 16px 4px; } .malb button { flex: none; width: 112px; padding: 0; border: none; background: none; color: #E6F9FF; font-family: 'Rajdhani', sans-serif; text-align: left; cursor: pointer; } .malb img { width: 112px; height: 112px; border-radius: 10px; object-fit: cover; display: block; box-shadow: 0 6px 14px rgba(0,0,0,.4); } .malb b { display: block; margin-top: 5px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .malb small { display: block; color: #8FB6C2; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mgen { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; } .mgen button { height: 54px; padding: 8px 10px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--g), color-mix(in srgb, var(--g) 40%, #07070D)); color: #fff; font: 800 15px 'Rajdhani', sans-serif; text-align: left; cursor: pointer; }
   .mnow { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 8px 0 4px; } .mnow img { width: 230px; height: 230px; border-radius: 14px; object-fit: cover; box-shadow: 0 14px 30px rgba(0,0,0,.55); margin-bottom: 8px; background: #1F2937; } .mnow > b { font: 800 20px 'Rajdhani', sans-serif; color: #fff; } .mnow > small { color: #8FB6C2; font-size: 13px; }
+  .mnow { position: relative; overflow: hidden; margin: 0 -16px; padding: 16px 16px 10px !important; } .mnow > * { position: relative; }
+  .mnow .mbg { position: absolute !important; inset: -30px; background: var(--art) center / cover; filter: blur(28px) saturate(1.4) brightness(.45); }
+  #mViz { width: 100%; height: 46px; margin-top: 8px; }
+  .mbass { display: flex; align-items: center; gap: 6px; margin-top: 12px; padding: 4px; border-radius: 999px; background: rgba(0,0,0,.35); } .mbass span { padding: 0 8px; font: 700 12px 'Rajdhani', sans-serif; color: #CFE3EA; } .mbass button { padding: 6px 12px; border: none; border-radius: 999px; background: none; color: #E6F9FF; font: 800 12px 'Rajdhani', sans-serif; cursor: pointer; } .mbass button.on { background: #22C55E; color: #07070D; }
+  .mrow.on img { outline: 2px solid #22C55E; outline-offset: 1px; } .mrow.on .lt b::before { content: '▶ '; font-size: 11px; }
   .mprog { width: 100%; height: 4px; margin-top: 10px; background: rgba(255,255,255,.12); border-radius: 2px; overflow: hidden; } .mprog i { display: block; height: 100%; width: 0; background: #22C55E; }
   .mctl { display: flex; align-items: center; gap: 18px; margin-top: 6px; } .mctl button { border: none; background: none; color: #E6F9FF; font-size: 24px; cursor: pointer; } .mctl button.big { width: 58px; height: 58px; border-radius: 50%; background: #22C55E; color: #07070D; font-size: 24px; } .mctl button.on { color: #F43F5E; }
   #mbar { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: 8px; width: min(420px, calc(100% - 32px)); padding: 7px 10px 9px; border-radius: 14px; background: rgba(10,14,22,.92); border: 1px solid rgba(34,197,94,.45); box-shadow: 0 10px 26px rgba(0,0,0,.4); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; backdrop-filter: blur(10px); }
@@ -424,6 +430,7 @@
 <div id="top" class="pill">
   <div id="title">🌴 Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
+  <div id="topR"><button id="tCity" aria-label="City sound at night" title="City sound at night">🔊</button><button id="tMusic" aria-label="Island Music" title="Island Music">🎧</button></div>
 
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
@@ -4759,7 +4766,7 @@
   const fromDz = (t) => t && t.preview ? { id: 'dz' + t.id, title: t.title_short || t.title, artist: t.artist ? t.artist.name : '', art: (t.album && (t.album.cover_medium || t.album.cover)) || '', url: t.preview, full: false, secs: 30 } : null;
   const fromAu = (t) => t && t.id ? { id: 'au' + t.id, title: t.title, artist: t.user ? t.user.name : '', art: (t.artwork && (t.artwork['480x480'] || t.artwork['150x150'])) || '', url: `${MUSIC.au}/tracks/${t.id}/stream?app_name=${MUSIC.app}`, full: true, secs: t.duration || 0 } : null;
   function mpPlay(list, i) {
-    MP.q = list.filter(Boolean); MP.i = i; const s = MP.q[i]; if (!s) return;
+    MP.q = list.filter(Boolean); MP.i = i; const s = MP.q[i]; if (!s) return; const c = audioCtx(); if (c && c.state === 'suspended') c.resume();
     MP.a.src = s.url; MP.a.play().catch(() => {});
     MP.recent = [s, ...MP.recent.filter((r) => r.id !== s.id)].slice(0, 30); store.set('li.recent', JSON.stringify(MP.recent));
     mpBar();
@@ -4782,6 +4789,63 @@
     const np = document.getElementById('mNowT'); if (np) { np.textContent = `${fmtT(MP.a.currentTime)} / ${fmtT(d)}`; const bar = document.getElementById('mNowB'); if (bar) bar.style.width = Math.min(100, 100 * MP.a.currentTime / d) + '%'; const pb = document.getElementById('mNowP'); if (pb && !tick) pb.textContent = MP.a.paused ? '▶' : '⏸'; }
   }
   const fmtT = (s) => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  // ---- the sound engine (Web Audio, started by your first tap): Island Music through a bass shelf, a touch of presence and
+  // a gentle compressor, with an analyser for the visualiser; bass at Off, Boost or Max (kept on this device)
+  const AX = { ctx: null, bass: +(store.get('li.bass') || 6) };
+  MP.a.crossOrigin = 'anonymous';
+  function audioCtx() {
+    if (AX.ctx) return AX.ctx;
+    const C2 = window.AudioContext || window.webkitAudioContext; if (!C2) return null;
+    const c = AX.ctx = new C2();
+    const src = c.createMediaElementSource(MP.a), sub = c.createBiquadFilter(), lo = c.createBiquadFilter(), pres = c.createBiquadFilter(), comp = c.createDynamicsCompressor();
+    sub.type = 'lowshelf'; sub.frequency.value = 90; lo.type = 'peaking'; lo.frequency.value = 160; lo.Q.value = 0.9; pres.type = 'peaking'; pres.frequency.value = 3200; pres.gain.value = 1.5;
+    comp.threshold.value = -14; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.2;
+    AX.an = c.createAnalyser(); AX.an.fftSize = 64; AX.sub = sub; AX.lo = lo;
+    src.connect(sub); sub.connect(lo); lo.connect(pres); pres.connect(comp); comp.connect(AX.an); AX.an.connect(c.destination);
+    setBass(AX.bass);
+    return c;
+  }
+  function setBass(db) { AX.bass = db; store.set('li.bass', String(db)); if (AX.sub) { AX.sub.gain.value = db; AX.lo.gain.value = db * 0.45; } }
+  addEventListener('pointerdown', () => { const c = audioCtx(); if (c && c.state === 'suspended') c.resume(); }, { once: false, passive: true });
+  // ---- the city at night: real Afrobeats and Amapiano mixes (Audius) playing in the clubs and on Elegushi's stage, heard from
+  // wherever you are: louder as you get closer, muffled through the walls with the bass coming through, panned to the side
+  // it's on. Inside a club it's the full sound; in any other room it's gone; Island Music turns the city down while it plays.
+  const CITY = { on: store.get('li.city') !== '0', srcs: [], master: null };
+  const CITY_SPOTS = [['Club Ozumba', 'afrobeats mix'], ['Club Lekki', 'amapiano mix'], ['Elegushi Beach', 'afro party mix']];
+  async function cityStart() {
+    const c = audioCtx(); if (!c || CITY.master) return;
+    CITY.master = c.createGain(); CITY.master.gain.value = 0; CITY.master.connect(c.destination);
+    for (const [name, q] of CITY_SPOTS) {
+      const p = PLACES.find((v) => v[5].startsWith(name)); if (!p) continue;
+      const s = { name, x: (p[1] + p[3] / 2) * T, z: (p[2] + p[4] / 2) * T, room: p[0] === 'club' ? 'place:club:' + p[1] : '', a: new Audio() };
+      s.a.crossOrigin = 'anonymous'; s.a.loop = true; s.a.preload = 'none';
+      const el = c.createMediaElementSource(s.a), bass = c.createBiquadFilter(), muff = c.createBiquadFilter(); s.g = c.createGain(); s.pan = c.createStereoPanner ? c.createStereoPanner() : null;
+      bass.type = 'lowshelf'; bass.frequency.value = 110; bass.gain.value = 9; muff.type = 'lowpass'; muff.frequency.value = 600; muff.Q.value = 0.7; s.muff = muff; s.g.gain.value = 0;
+      el.connect(bass); bass.connect(muff); muff.connect(s.g); if (s.pan) { s.g.connect(s.pan); s.pan.connect(CITY.master); } else s.g.connect(CITY.master);
+      try { const list = (await au('/tracks/search?query=' + encodeURIComponent(q) + '&limit=12')).filter((t) => t.is_streamable !== false && t.duration > 600).sort((x1, x2) => x2.duration - x1.duration); const tr = list[Math.floor(Math.random() * Math.min(3, list.length))]; if (tr) { s.a.src = `${MUSIC.au}/tracks/${tr.id}/stream?app_name=${MUSIC.app}`; s.a.addEventListener('loadedmetadata', () => { s.a.currentTime = Math.random() * s.a.duration * 0.8; }, { once: true }); } } catch {}
+      CITY.srcs.push(s);
+    }
+  }
+  setInterval(() => {
+    if (!CITY.on || night < 0.2) { if (CITY.master) { CITY.master.gain.value *= 0.8; if (CITY.master.gain.value < 0.01) for (const s of CITY.srcs) if (!s.a.paused) s.a.pause(); } return; }
+    if (!AX.ctx) return; if (!CITY.master) { cityStart(); return; }
+    const duck = MP.a.paused ? 1 : 0.18, nf = Math.min(1, (night - 0.2) / 0.4);
+    CITY.master.gain.value += (nf * duck - CITY.master.gain.value) * 0.25;
+    const lx = me.x, lz = me.z, R = 240;
+    for (const s of CITY.srcs) {
+      let vol, cut;
+      if (inside) { const here = !!s.room && inside.key === s.room; vol = here ? 0.9 : 0; cut = here ? 14000 : 600; } // in that club: the full sound; any other room: nothing
+      else { const d = Math.hypot(s.x - lx, s.z - lz), u = Math.max(0, 1 - d / R); vol = u * u * 0.85; cut = 380 + 2600 * u * u; }
+      s.g.gain.value += (vol - s.g.gain.value) * 0.3; s.muff.frequency.value = cut;
+      if (s.pan) { const sp2 = P(s.x, 0, s.z)[0] - W / 2; s.pan.pan.value = Math.max(-0.9, Math.min(0.9, sp2 / (W * 0.45))); }
+      if (vol > 0.01 && s.a.paused && s.a.src) s.a.play().catch(() => {}); if (vol <= 0.01 && !s.a.paused && s.g.gain.value < 0.01) s.a.pause();
+    }
+  }, 250);
+  { const tc = document.getElementById('tCity'), tm = document.getElementById('tMusic');
+    tc.classList.toggle('off', !CITY.on); tc.textContent = CITY.on ? '🔊' : '🔈';
+    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.textContent = CITY.on ? '🔊' : '🔈'; notify(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
+    tm.onclick = () => openPhone('music', MP.q.length ? { tab: 'now' } : undefined);
+    for (const ev of ['play', 'pause']) MP.a.addEventListener(ev, () => tm.classList.toggle('playing', !MP.a.paused)); }
   // Link: the last message seen in each conversation (kept on this device), and a short time for the list
   const linkSeen = () => { try { return JSON.parse(store.get('li.seen') || '{}') || {}; } catch { return {}; } };
   const chatTime = (iso) => { const d = new Date(iso), now = new Date(); return d.toDateString() === now.toDateString() ? d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : now - d < 6 * 864e5 ? d.toLocaleDateString(undefined, { weekday: 'short' }) : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }); };
@@ -5329,12 +5393,18 @@
           const s = MP.q[MP.i];
           if (!s) { show(`${head}${tabs}<div class="pcard"><h3>Nothing playing</h3><p class="dim">Pick a song from Home or Search. It keeps playing when you put the phone away.</p></div>`); wire(); return; }
           lists.q = MP.q;
-          show(`${head}${tabs}<div class="mnow"><img src="${esc(s.art)}" alt=""><b>${esc(s.title)}</b><small>${esc(s.artist)}${s.full ? '' : ' · 30-second preview'}</small>
+          show(`${head}${tabs}<div class="mnow" style="--art:url('${esc(s.art)}')"><div class="mbg"></div><img src="${esc(s.art)}" alt=""><b>${esc(s.title)}</b><small>${esc(s.artist)}${s.full ? ' · full track' : ' · 30-second preview'}</small>
+            <canvas id="mViz" width="560" height="90"></canvas>
             <div class="mprog"><i id="mNowB"></i></div><div class="dim" id="mNowT">0:00</div>
-            <div class="mctl"><button id="mPrev">⏮</button><button id="mNowP" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button id="mNext">⏭</button><button id="mLike" class="${MP.liked.some((l) => l.id === s.id) ? 'on' : ''}">♥</button></div></div>
+            <div class="mctl"><button id="mPrev">⏮</button><button id="mNowP" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button id="mNext">⏭</button><button id="mLike" class="${MP.liked.some((l) => l.id === s.id) ? 'on' : ''}">♥</button></div>
+            <div class="mbass"><span>🔊 Bass</span>${[[0, 'Off'], [6, 'Boost'], [12, 'Max']].map(([v, n]) => `<button data-bass="${v}" class="${AX.bass === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
             <div class="rsec">UP NEXT</div><div class="lst">${MP.q.map((v, i) => i > MP.i && i < MP.i + 12 ? row(v, i, 'q') : '').join('')}</div>`);
           $('mPrev').onclick = () => { mpNext(-1); render('music', { tab: 'now' }); }; $('mNext').onclick = () => { mpNext(1); render('music', { tab: 'now' }); };
-          $('mNowP').onclick = mpToggle; $('mLike').onclick = () => $('mLike').classList.toggle('on', mpLike(s)); wire(); mpBar(); return;
+          $('mNowP').onclick = mpToggle; $('mLike').onclick = () => $('mLike').classList.toggle('on', mpLike(s));
+          pbody.querySelectorAll('[data-bass]').forEach((b) => (b.onclick = () => { audioCtx(); setBass(+b.dataset.bass); pbody.querySelectorAll('[data-bass]').forEach((o) => o.classList.toggle('on', o === b)); }));
+          // the visualiser: the music's spectrum as bars, the low end (the bass) brightest
+          { const cv = $('mViz'), g2 = cv.getContext('2d'), buf = new Uint8Array(32); const draw = () => { if (!cv.isConnected) return; g2.clearRect(0, 0, cv.width, cv.height); if (AX.an) AX.an.getByteFrequencyData(buf); for (let k = 0; k < 28; k++) { const v = AX.an && !MP.a.paused ? buf[k] / 255 : 0.04 + Math.abs(Math.sin(performance.now() / 600 + k)) * 0.03, h = Math.max(3, v * cv.height), bw2 = cv.width / 28; const gr = g2.createLinearGradient(0, cv.height, 0, cv.height - h); gr.addColorStop(0, k < 6 ? '#16A34A' : '#0EA5E9'); gr.addColorStop(1, k < 6 ? '#86EFAC' : '#A78BFA'); g2.fillStyle = gr; g2.beginPath(); g2.roundRect(k * bw2 + 2, cv.height - h, bw2 - 4, h, 3); g2.fill(); } requestAnimationFrame(draw); }; draw(); }
+          wire(); mpBar(); return;
         }
         if (tab === 'lib') {
           lists.liked = MP.liked; lists.recent = MP.recent;
