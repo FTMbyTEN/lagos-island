@@ -5265,8 +5265,11 @@
   const HOME_GROUPS = [['Your life', ['hq', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
-    const m = innerWidth <= 560 ? 8 : 16, vh = (window.visualViewport && visualViewport.height) || innerHeight;
-    phone.style.setProperty('--ps', Math.min(0.8, (innerWidth - 2 * m) / 372, (vh - 2 * m) * 0.84 / 780).toFixed(4)); // compact: never more than 80% size or 84% of the window's height
+    // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
+    // tablet, and on a desktop up to 80% of its real size; always within the window's width and height
+    const w = innerWidth, vh = (window.visualViewport && visualViewport.height) || innerHeight, m = w <= 560 ? 8 : 16;
+    const [fw, fh, cap] = w < 600 ? [0.74, 0.68, 0.72] : w < 1024 ? [0.5, 0.74, 0.76] : [1, 0.84, 0.8];
+    phone.style.setProperty('--ps', Math.max(0.45, Math.min(cap, (w - 2 * m) * fw / 372, (vh - 2 * m) * fh / 780)).toFixed(4));
   }
   addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
   // ---- Island Music: songs from two open catalogues. Deezer for what's charting and new (Nigeria's top 100, new releases,
@@ -5927,7 +5930,7 @@
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
-        show(`<div class="hhead"><div class="hgreet">${hi},<b>${esc(me$.handle)}</b></div><div class="hwx">${wx.icon}<b>${wx.temp}°</b></div></div>
+        show(`<div class="hhead"><div class="hgreet">${hi},<b>${esc(me$.handle)}</b></div></div>
           <form class="osq" id="osQ"><i>✨</i><input id="osQi" placeholder="Ask WYRD anything…" autocomplete="off"><button aria-label="Ask">➤</button></form>
           <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
