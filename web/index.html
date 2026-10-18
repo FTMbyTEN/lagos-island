@@ -1036,15 +1036,50 @@
       box(a + 3, 4, b - 0.5, c - 3, 4.4, b + 2.4, '#16A34A');
       for (const [px, pz] of [[c - 3, d - 4], [a + 3, d - 4]]) { box(px - 0.15, 0, pz - 0.15, px + 0.15, 9, pz + 0.15, '#9CA3AF'); flat(px + 0.15, pz - 0.05, px + 3.2, pz + 0.05, 8.2, '#16A34A'); }
     },
+    // ---- The Marina & NECOM House: NECOM House in the middle (the tall white telecoms tower with its ribbed face, its
+    // dishes and the red-and-white mast on top), a dark glass office tower and a bank's tower either side, on a podium
+    // with a plaza, palms and flags along Marina Road
     towers(a, b, c, d) {
-      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      const hs = [34, 52, 26], n = Math.max(2, Math.round((c - a) / 13)), w = (c - a - 2) / n;
-      for (let i = 0; i < n; i++) {
-        const x0 = a + 1 + i * w + 1, h = hs[i % 3];
-        box(x0, 0, b + 3, x0 + w - 2, h, d - 3, i % 2 ? '#94A3B8' : '#7FB3D9', i % 2 ? '#334155' : '#DCEBF7');
-        box(x0 + 2, h, b + 6, x0 + w - 4, h + 3, d - 6, '#64748B');
-        if (i === 1) box(x0 + w / 2 - 1.3, h + 3, (b + d) / 2 - 0.2, x0 + w / 2 - 1, h + 14, (b + d) / 2 + 0.2, '#9CA3AF'); // a mast
+      if (c - a < 30) { // a plain block of towers elsewhere
+        flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
+        const hs = [34, 52, 26], n = Math.max(2, Math.round((c - a) / 13)), w = (c - a - 2) / n;
+        for (let i = 0; i < n; i++) { const x0 = a + 1 + i * w + 1, h = hs[i % 3]; box(x0, 0, b + 3, x0 + w - 2, h, d - 3, i % 2 ? '#94A3B8' : '#7FB3D9', i % 2 ? '#334155' : '#DCEBF7'); box(x0 + 2, h, b + 6, x0 + w - 4, h + 3, d - 6, '#64748B'); }
+        return;
       }
+      const t = performance.now() / 1000, mid = (a + c) / 2;
+      flat(a, b, c, d, 0.05, '#DCDFE4', C.plotEdge);
+      flat(a + 1, d - 6, c - 1, d - 0.5, 0.06, '#EDE6D6'); // the plaza along Marina Road
+      box(a + 2, 0, b + 2, c - 2, 3, d - 8, '#CBD5E1', '#1E293B', 1); // the podium: banks' halls and a lobby
+      box(a + 1.8, 3, b + 1.8, c - 1.8, 3.4, d - 7.8, '#94A3B8');
+      // the glass office tower (west), dark blue with gold fins
+      const g0 = a + 4, g1 = a + 13;
+      box(g0, 3.4, b + 5, g1, 46, b + 15, '#1E3A5F', '#60A5FA');
+      for (let px = g0 + 1.5; px < g1; px += 2.5) box(px - 0.12, 3.4, b + 15, px + 0.12, 46, b + 15.25, '#D4AF37');
+      box(g0 + 1, 46, b + 6, g1 - 1, 49, b + 14, '#0F172A'); box(g0 + 2, 49, b + 7, g1 - 2, 49.4, b + 13, '#334155');
+      // NECOM House: tall, white, a ribbed face of vertical piers and dark slot windows, setbacks near the top
+      const n0 = mid - 5, n1 = mid + 5, z0 = b + 4, z1 = b + 16;
+      box(n0, 3.4, z0, n1, 64, z1, '#F1F5F9');
+      for (let px = n0 + 1; px < n1; px += 1.6) quad([P(px, 4, z1 + 0.02), P(px + 0.7, 4, z1 + 0.02), P(px + 0.7, 63, z1 + 0.02), P(px, 63, z1 + 0.02)], '#334155'); // the slot windows between the piers
+      for (let pz = z0 + 1; pz < z1; pz += 1.6) quad([P(n1 + 0.02, 4, pz), P(n1 + 0.02, 4, pz + 0.7), P(n1 + 0.02, 63, pz + 0.7), P(n1 + 0.02, 63, pz)], '#475569');
+      box(n0 + 1, 64, z0 + 1, n1 - 1, 70, z1 - 1, '#E2E8F0'); box(n0 + 2.5, 70, z0 + 2.5, n1 - 2.5, 74, z1 - 2.5, '#CBD5E1');
+      // the dishes on the top deck
+      for (const [ox, oz, ang] of [[-2.6, -2, 0.4], [2.6, -1.5, -0.5], [0, 2.4, 0]]) { const p = P(mid + ox, 66.5, (z0 + z1) / 2 + oz); x.fillStyle = '#F8FAFC'; x.strokeStyle = '#94A3B8'; x.lineWidth = 1; x.beginPath(); x.ellipse(p[0], p[1], K * 1.3, K * 1.6, ang, 0, Math.PI * 2); x.fill(); x.stroke(); }
+      // the mast: red and white bands, a beacon blinking on top
+      const mz = (z0 + z1) / 2; for (let k = 0; k < 8; k++) box(mid - 0.35 + k * 0.02, 74 + k * 3, mz - 0.35 + k * 0.02, mid + 0.35 - k * 0.02, 77 + k * 3, mz + 0.35 - k * 0.02, k % 2 ? '#F8FAFC' : '#DC2626');
+      const bcn = () => { if (Math.floor(t * 1.2) % 2) return; const p = P(mid, 98.4, mz); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = '#EF4444'; x.shadowColor = '#EF4444'; x.shadowBlur = 12; x.beginPath(); x.arc(p[0], p[1], Math.max(2, K * 0.6), 0, Math.PI * 2); x.fill(); x.restore(); };
+      bcn(); glow.push(bcn);
+      // the name over the entrance
+      if (K > 2) { const p = P(mid, 2.4, d - 7.95); x.save(); x.font = `800 ${Math.round(K * 0.95)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#1E293B'; x.fillText('NECOM HOUSE', p[0], p[1]); x.restore(); }
+      // the bank's tower (east): pale stone with a band of green glass every few floors, a crown
+      const s0 = c - 13, s1 = c - 4;
+      box(s0, 3.4, b + 6, s1, 38, b + 16, '#E7E2D6', '#0F766E');
+      for (let y = 10; y < 38; y += 7) box(s0 - 0.1, y, b + 5.9, s1 + 0.1, y + 0.6, b + 16.1, '#0F766E');
+      pyramid(s0, b + 6, s1, b + 16, 38, 5, '#0F766E');
+      // flags, palms and lamps along the plaza; office lights at night
+      for (let k = 0; k < 3; k++) flagpole(mid - 8 + k * 8, d - 4, 9, k === 1 ? ['#1D4ED8', '#FACC15', '#B91C1C'] : ['#008751', '#FFFFFF', '#008751'], t + k);
+      for (const px of [a + 3, c - 3]) palm(px, d - 2, 9);
+      lamp(a + 9, d - 1.5, 5); lamp(c - 9, d - 1.5, 5);
+      glow.push(() => { const R2 = rnd(a + b); x.fillStyle = 'rgba(254,240,170,0.85)'; for (let k = 0; k < 40; k++) { const tw = R2() < 0.5, px = tw ? g0 + 0.6 + R2() * (g1 - g0 - 1.2) : s0 + 0.6 + R2() * (s1 - s0 - 1.2), py = 6 + R2() * (tw ? 38 : 30), p = P(px, py, b + (tw ? 15.3 : 16.2)); x.fillRect(p[0] - K * 0.3, p[1] - K * 0.25, K * 0.6, K * 0.5); } });
     },
     park(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.grassLot);
@@ -3510,6 +3545,67 @@
   }
   // inside a home you bought: [floor, walls, trim] by style, then its finish: tiles, planks, marble, brick and steel
   const HOME_FINISH = { flat: ['#D9CBB5', '#F3EEE6', '#94A3B8'], bungalow: ['#D6C3A5', '#F7F3EC', '#B08A43'], terrace: ['#B7895C', '#F5F5F4', '#475569'], duplex: ['#C19A6B', '#FAFAF9', '#1E293B'], townhouse: ['#A47551', '#EDE9E3', '#0F172A'], loft: ['#A3A3A3', '#9A3412', '#1F2937'], mansion: ['#F5F5F4', '#FFFDF8', '#D4AF37'], villa: ['#ECEAE4', '#FFFFFF', '#38BDF8'] };
+  // ---- each home comes fitted: a kitchen along the back wall, a bathroom behind low walls in the far corner, a bedroom
+  // corner with a built-in wardrobe, curtains, ceiling lights, and what makes each style itself (stairs up in a duplex,
+  // terrace or townhouse; a kitchen island in the loft; a grand stair and a bar in the mansion; a plunge pool in the villa).
+  // All of it against the walls, so the middle of the room is yours to furnish.
+  const FITOUT = {
+    //          kitchen [x0, len], bath [w, d], bed [w, d], cabinets, counter, accent, stairs, extra
+    flat:      { k: [12, 14], b: [10, 9], bed: [12, 11], cab: '#F5F5F4', top: '#57534E', acc: '#0EA5E9' },
+    bungalow:  { k: [14, 18], b: [12, 10], bed: [14, 13], cab: '#E7D7BD', top: '#3F3F46', acc: '#16A34A' },
+    terrace:   { k: [14, 18], b: [12, 10], bed: [14, 13], cab: '#1E3A5F', top: '#E5E7EB', acc: '#F59E0B', stairs: 1 },
+    duplex:    { k: [16, 22], b: [14, 12], bed: [16, 15], cab: '#111827', top: '#F5F5F4', acc: '#D4AF37', stairs: 1 },
+    townhouse: { k: [16, 20], b: [13, 11], bed: [15, 14], cab: '#14532D', top: '#E7E5E4', acc: '#B45309', stairs: 1, study: 1 },
+    loft:      { k: [16, 24], b: [14, 12], bed: [18, 16], cab: '#1F2937', top: '#A8A29E', acc: '#F97316', island: 1 },
+    mansion:   { k: [20, 26], b: [16, 14], bed: [20, 18], cab: '#FFFDF8', top: '#D6D3D1', acc: '#D4AF37', stairs: 2, bar: 1, island: 1 },
+    villa:     { k: [22, 26], b: [18, 14], bed: [22, 18], cab: '#F8FAFC', top: '#0F172A', acc: '#38BDF8', bar: 1, island: 1, pool: 1 },
+  };
+  function homeFitout(R) {
+    const F = FITOUT[R.style]; if (!F) return;
+    const W = R.w, D = R.d, t = performance.now() / 1000, dark = night > 0.5;
+    // ---- the bedroom corner (front left): carpet, a built-in wardrobe on the left wall, a reading light
+    const [bw, bd] = F.bed, bz0 = D - bd - 6;
+    flat(0.2, bz0, bw, D - 6, 0.025, shadeHex(R.floor, 0.82)); flat(0.2, bz0, bw, bz0 + 0.3, 0.03, F.acc);
+    box(0, 0, bz0 + 1, 2.2, 11, bz0 + bd - 1, F.cab); for (let k = 1; k < 3; k++) box(2.2, 1, bz0 + 1 + k * (bd - 2) / 3 - 0.05, 2.25, 10.5, bz0 + 1 + k * (bd - 2) / 3 + 0.05, '#A8A29E'); // the wardrobe's doors
+    box(0, 0, bz0 + 1, 2.25, 0.6, bz0 + bd - 1, F.top);
+    // ---- the kitchen along the back wall: base units, worktop, hob, sink, wall cupboards, a tiled splashback, the fridge
+    const [kx, kl] = F.k, kx1 = kx + kl;
+    flat(kx - 1, 0.2, kx1 + 1, 7, 0.025, '#E7E5E4'); x.strokeStyle = 'rgba(120,113,108,0.25)'; x.lineWidth = 1; x.beginPath(); for (let px = kx; px <= kx1; px += 2) { const p = P(px, 0.03, 0.2), q = P(px, 0.03, 7); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
+    quad([P(kx, 3.2, 0.12), P(kx1, 3.2, 0.12), P(kx1, 7, 0.12), P(kx, 7, 0.12)], '#E0F2FE', 'rgba(148,163,184,0.5)'); // splashback
+    box(kx, 0, 0.1, kx1, 3, 2.6, F.cab); box(kx - 0.1, 3, 0.1, kx1 + 0.1, 3.3, 2.8, F.top);
+    for (let px = kx + 2; px < kx1; px += 3) box(px - 0.05, 0.4, 2.6, px + 0.05, 2.8, 2.65, '#A8A29E'); // the doors' seams
+    const hob = kx + kl * 0.65; flat(hob - 1.2, 0.5, hob + 1.2, 2.3, 3.32, '#111827'); for (const [ox, oz] of [[-0.6, 0.9], [0.6, 0.9], [-0.6, 1.9], [0.6, 1.9]]) disk(hob + ox, oz, 3.34, 0.32, dark ? '#7F1D1D' : '#374151');
+    const sink = kx + kl * 0.3; flat(sink - 1.3, 0.6, sink + 1.3, 2.2, 3.32, '#CBD5E1'); box(sink - 0.1, 3.3, 0.4, sink + 0.1, 4.6, 0.6, '#9CA3AF');
+    box(kx, 8, 0.1, kx1, 11.5, 1.6, F.cab); // wall cupboards
+    box(kx1 + 0.4, 0, 0.1, kx1 + 3.6, 11, 3, '#D4D4D8'); box(kx1 + 3.3, 4, 3, kx1 + 3.45, 9, 3.05, '#71717A'); // the fridge
+    if (F.island) { const ix = kx + kl / 2; box(ix - kl * 0.32, 0, 10, ix + kl * 0.32, 3, 13, F.cab); box(ix - kl * 0.32 - 0.3, 3, 9.7, ix + kl * 0.32 + 0.3, 3.3, 13.3, F.top); for (let k = -1; k <= 1; k++) { cylLit(ix + k * kl * 0.2, 14.4, 0.6, 0, 2.6, '#1F2937'); disk(ix + k * kl * 0.2, 14.4, 2.62, 0.7, F.acc); } }
+    // ---- the bathroom in the far corner (back right), tiled, behind low walls: a shower, a basin, the WC
+    const [bwid, bdep] = F.b, x0 = W - bwid;
+    flat(x0, 0.2, W, bdep, 0.025, '#E2E8F0'); x.strokeStyle = 'rgba(100,116,139,0.3)'; x.beginPath(); for (let px = x0 + 2; px < W; px += 2) { const p = P(px, 0.03, 0.2), q = P(px, 0.03, bdep); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } for (let pz = 2; pz < bdep; pz += 2) { const p = P(x0, 0.03, pz), q = P(W, 0.03, pz); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
+    if (R.style === 'mansion' || R.style === 'villa') { box(x0 + 2, 0, 1, x0 + 9, 2.4, 4.6, '#FFFFFF'); flat(x0 + 2.5, 1.5, x0 + 8.5, 4.1, 2.42, '#93C5FD'); } // a bath
+    else { quad([P(W - 5, 0, 5), P(W - 5, 0, 0.2), P(W - 5, 11, 0.2), P(W - 5, 11, 5)], 'rgba(186,230,253,0.45)', 'rgba(255,255,255,0.8)'); disk(W - 2.5, 2.6, 0.05, 1.6, '#CBD5E1'); box(W - 2.7, 9, 0.2, W - 2.3, 9.4, 1.6, '#9CA3AF'); } // a walk-in shower
+    box(x0 + 1, 0, 0.2, x0 + 4, 3.2, 1.8, '#F8FAFC'); flat(x0 + 1.5, 0.5, x0 + 3.5, 1.5, 3.22, '#BFDBFE'); quad([P(x0 + 1, 5, 0.12), P(x0 + 4, 5, 0.12), P(x0 + 4, 9, 0.12), P(x0 + 1, 9, 0.12)], 'rgba(219,234,254,0.85)', '#D4AF37'); // basin and mirror
+    box(x0 + 5.5, 0, 0.2, x0 + 7.5, 1.6, 2.6, '#FFFFFF'); box(x0 + 5.5, 1.6, 0.2, x0 + 7.5, 3.6, 0.8, '#FFFFFF'); // the WC
+    const lw = (a, b, c, d) => { box(a, 0, b, c, 5, d, R.wall); box(a, 5, b, c, 5.3, d, R.trim); };
+    lw(x0 - 0.6, 0, x0, bdep - 4); lw(x0, bdep - 0.6, W - 6, bdep); // the bathroom's walls, a door gap at the front
+    // ---- stairs up the left wall to the floor above (terrace, duplex, townhouse; the mansion's are grand and curve out)
+    if (F.stairs) {
+      const wide = F.stairs === 2 ? 6 : 3.6, sz0 = 6, n = 11;
+      for (let k = 0; k < n; k++) { const z1 = sz0 + (n - k) * 1.3, y = (k + 1) * 1.5; box(0, 0, z1 - 1.3, wide, y, z1, k % 2 ? '#E7E5E4' : '#F5F5F4'); box(0, y - 0.15, z1 - 1.3, wide, y, z1, F.stairs === 2 ? '#B91C1C' : '#D6D3D1'); }
+      box(wide, 0, sz0, wide + 0.25, 17, sz0 + 0.25, F.acc); // the newel post
+      x.strokeStyle = F.acc; x.lineWidth = Math.max(1, K * 0.3); x.beginPath(); { const p = P(wide + 0.1, 2.6, sz0 + n * 1.3), q = P(wide + 0.1, 17.4, sz0); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); // the handrail
+      box(0, 16.4, 0, wide + 4, 17, sz0, '#E7E5E4'); // the landing
+    }
+    // ---- the townhouse's study wall: shelves of books on the left wall
+    if (F.study) { const z0 = 6 + 15, z1 = Math.min(bz0 - 1, z0 + 10); if (z1 > z0 + 3) { box(0, 0, z0, 1.6, 12, z1, '#78350F'); for (let y = 2.5; y < 12; y += 2.4) { box(1.2, y, z0, 1.65, y + 0.25, z1, '#92400E'); for (let pz = z0 + 0.3; pz < z1 - 0.4; pz += 0.55) box(1.25, y + 0.25, pz, 1.6, y + 1.6 + ((pz * 7) % 3) * 0.2, pz + 0.45, ['#B91C1C', '#1D4ED8', '#15803D', '#CA8A04', '#F8FAFC'][Math.floor(pz * 3) % 5]); } } }
+    // ---- a bar against the back wall (mansion, villa): a counter, stools, bottles lit on the shelves behind
+    if (F.bar) { const b0 = kx1 + 6, b1 = Math.min(x0 - 3, b0 + 16); if (b1 > b0 + 6) { quad([P(b0, 5, 0.12), P(b1, 5, 0.12), P(b1, 11, 0.12), P(b0, 11, 0.12)], '#1C1917'); for (let k = 0; k < Math.floor((b1 - b0) / 0.9); k++) for (const y of [6, 8.6]) box(b0 + 0.5 + k * 0.9, y, 0.2, b0 + 0.9 + k * 0.9, y + 1.6, 0.6, ['#15803D', '#B45309', '#7F1D1D', '#E5E7EB'][(k + Math.floor(y)) % 4]); box(b0, 0, 4, b1, 3.4, 6, '#1C1917'); box(b0 - 0.3, 3.4, 3.7, b1 + 0.3, 3.7, 6.3, F.acc); for (let px = b0 + 2; px < b1 - 1; px += 3.5) { cylLit(px, 7.6, 0.25, 0, 2.6, '#71717A'); disk(px, 7.6, 2.62, 0.75, '#111827'); } glow.push(() => { const p = P((b0 + b1) / 2, 8, 0.3), r = K * 8; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(251,191,36,0.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }); } }
+    // ---- the villa's plunge pool, set into the floor in front of the glass, the light rippling
+    if (F.pool) { const p0 = W / 2 - 14, p1 = W / 2 + 14, pz0 = 9, pz1 = 17; flat(p0 - 1, pz0 - 1, p1 + 1, pz1 + 1, 0.03, '#E7E5E4'); flat(p0, pz0, p1, pz1, 0.04, '#0EA5E9'); x.strokeStyle = 'rgba(255,255,255,0.5)'; x.lineWidth = 1; for (let k = 0; k < 6; k++) { const pz = pz0 + 1 + k * 1.2, ph = Math.sin(t * 2 + k) * 1.5; x.beginPath(); const a = P(p0 + 2 + ph, 0.05, pz), b = P(p1 - 2 + ph, 0.05, pz); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); } for (const lx of [p0 + 4, p1 - 4]) box(lx - 1.4, 0, pz1 + 2, lx + 1.4, 1, pz1 + 7, '#F8FAFC'); }
+    // ---- curtains at the back windows (not the villa's wall of glass), ceiling light pools over the rooms
+    if (R.style !== 'villa') { const n = Math.max(2, Math.round(W / 18)), hw = R.style === 'loft' ? 6 : 3; for (let k = 0; k < n; k++) { const wx = (k + 0.5) * W / n; if (wx > x0 - 2) continue; for (const sx of [-1, 1]) box(wx + sx * (hw + 0.6) - 0.6, 2, 0.15, wx + sx * (hw + 0.6) + 0.6, 16, 0.6, F.acc); box(wx - hw - 1.4, 15.6, 0.1, wx + hw + 1.4, 16.1, 0.4, '#71717A'); } }
+    glow.push(() => { for (const [lx, lz] of [[kx + kl / 2, 6], [bw / 2, bz0 + bd / 2], [x0 + bwid / 2, bdep / 2], [W / 2, D / 2]]) { const p = P(lx, 0.1, lz), r = K * 7; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,226,170,0.32)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.restore(); } });
+  }
   function drawHomeShell(R) {
     const s = R.style, line = (x0, z0, x1, z1) => { const p = P(x0, 0.02, z0), q = P(x1, 0.02, z1); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); };
     x.lineWidth = 1; x.beginPath();
@@ -3532,6 +3628,7 @@
       (R.cars || []).slice(0, 3).forEach((c2, k) => drawCar(bx + 32 / 6 + k * 32 / 3, R.d - 14, c2.model, c2.color, Math.PI / 2, 2.4));
       afterCars.push(() => { for (let k = 1; k < 4; k++) box(k * R.w / 4 - 0.6, 17, 0, k * R.w / 4 + 0.6, 18, R.d, '#1F2937'); });
     }
+    homeFitout(R);
     if (s === 'mansion' || s === 'villa') { const p = P(R.w / 2, 16, R.d / 2), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,236,190,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }
   }
   // ---- the boutiques: Idumota (native and easy on the pocket), Falomo (sportswear and tailoring), Circle Mall (streetwear
