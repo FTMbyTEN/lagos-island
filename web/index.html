@@ -358,6 +358,18 @@
   .sitem b { font-size: 14px; line-height: 1.1; text-align: center; } .sitem span { font: 800 12px 'Orbitron', sans-serif; color: var(--y); }
   .sitem i { position: absolute; top: 6px; right: 6px; font: 800 11px 'Orbitron', sans-serif; font-style: normal; color: #07070D; background: #FB923C; padding: 1px 5px; }
   .sdet { text-align: center; } .sdet img { display: block; width: 150px; height: 150px; margin: 4px auto 6px; object-fit: contain; } .sdet .big { margin: 8px 0; }
+  .sitem em { position: absolute; top: 6px; left: 6px; font: 800 9px 'Orbitron', sans-serif; font-style: normal; letter-spacing: .5px; color: #07070D; padding: 1px 5px; text-transform: uppercase; }
+  .sdet { position: relative; } .sdet .tier { position: absolute; top: 10px; left: 10px; font: 800 10px 'Orbitron', sans-serif; color: #07070D; padding: 2px 7px; text-transform: uppercase; }
+  .qty { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 4px 0 10px; } .qty button { width: 36px; height: 36px; border: 1px solid #FB923C; background: rgba(251,146,60,.12); color: #FB923C; font: 800 20px 'Rajdhani', sans-serif; cursor: pointer; } .qty b { min-width: 24px; font: 800 20px 'Orbitron', sans-serif; color: #E6F9FF; }
+  .spick { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; cursor: pointer; border: none; font-family: inherit; color: inherit; } .spick > div { flex: 1; min-width: 0; } .spick img { width: 86px; height: 86px; object-fit: contain; flex: none; }
+  .ssearch { width: 100%; margin: 0 0 10px; padding: 9px 11px; background: rgba(0,0,0,.5); color: #E6F9FF; border: 1px solid rgba(0,240,255,.35); font: 600 15px 'Rajdhani', sans-serif; outline: none; } .ssearch:focus { border-color: var(--y); }
+  .stabs button small { opacity: .6; font-size: 11px; }
+  .onl { position: relative; display: inline-block; } .onl::after { content: ''; position: absolute; right: 0; bottom: 0; width: 10px; height: 10px; border-radius: 50%; background: #22C55E; border: 2px solid #07070D; }
+  .li .lr2 { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; } .li .lr2 small { color: #8FB6C2; font-size: 11px; } .li .lr2 em { font: 800 11px 'Orbitron', sans-serif; font-style: normal; color: #fff; background: #FF003C; min-width: 20px; padding: 2px 6px; border-radius: 10px; text-align: center; }
+  .li.unr .lt b { color: #fff; } .li.unr .lt small { color: #E6F9FF; font-weight: 700; }
+  .mday { align-self: center; margin: 6px 0 2px; padding: 2px 10px; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 1px; text-transform: uppercase; color: #8FB6C2; background: rgba(255,255,255,.06); }
+  .msg time { display: block; margin-top: 2px; font-size: 10.5px; opacity: .55; text-align: right; } .msg.cont { margin-top: -3px; }
+  .qrep { display: flex; gap: 6px; overflow-x: auto; margin: 10px -16px 0; padding: 0 16px 2px; } .qrep button { flex: none; padding: 6px 10px; border: 1px solid rgba(255,0,60,.45); background: rgba(255,0,60,.1); color: #FFD6DE; font: 700 13px 'Rajdhani', sans-serif; cursor: pointer; }
   .pcard.err { background: rgba(255,0,60,.14); border-color: rgba(255,0,60,.6); box-shadow: inset 3px 0 0 var(--m); color: #FFD6DE; }
   #lockscr { padding: 90px 24px 64px !important; }
   #lockscr .lt { font-size: 72px !important; }
@@ -4158,7 +4170,7 @@
 
   // ---- the phone's screens
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
-  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
+  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', storeQ = '', storeSort = 'low', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
   const APP_AC = { fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
@@ -4172,6 +4184,9 @@
     phone.style.setProperty('--ps', Math.min(1, (innerWidth - 2 * m) / 372, (vh - 2 * m) / 780).toFixed(4));
   }
   addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
+  // Link: the last message seen in each conversation (kept on this device), and a short time for the list
+  const linkSeen = () => { try { return JSON.parse(store.get('li.seen') || '{}') || {}; } catch { return {}; } };
+  const chatTime = (iso) => { const d = new Date(iso), now = new Date(); return d.toDateString() === now.toDateString() ? d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : now - d < 6 * 864e5 ? d.toLocaleDateString(undefined, { weekday: 'short' }) : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }); };
   function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
   // the shared app header: the app's icon in its colour, a title, a line under it
   const ahead = (k, title, sub) => { const a = APPS.find((v) => v[0] === k); return `<div class="ahead" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${a ? a[1] : '✨'}</i><div><h2>${esc(title)}</h2>${sub ? `<span>${sub}</span>` : ''}</div></div>`; };
@@ -4326,14 +4341,26 @@
         const gs = await my('groups');
         const names = await Promise.all(gs.map(async (g) => { try { return dec.decode(await open(await groupKey(g), g.nameCt)); } catch { return '🔒 (can\'t open on this device)'; } }));
         const people = [...new Map([...others.values()].filter((o) => o.name && o.name !== me$.handle && !/^(Guest|Lagosian)$/.test(o.name)).map((o) => [o.name, o])).values()];
-        // who's on the island now (tap to talk), then your conversations, each with an avatar; everything locked on your device
-        show(`${ahead('chats', 'Link', '🔒 End-to-end encrypted on your device')}
-          <div class="rsec">ON THE ISLAND NOW</div>
-          ${people.length ? `<div class="ppl">${people.map((o) => `<button data-dm="${esc(o.name)}">${avatar(o.name)}<span>${esc(o.name)}</span></button>`).join('')}</div>` : '<div class="dim" style="margin:0 2px 12px">Nobody else signed in nearby right now.</div>'}
+        // each conversation's latest message (opened here, on the device) and how many you haven't seen; newest first
+        const seen = linkSeen();
+        const last = await Promise.all(gs.map(async (g) => {
+          try { const ms = await my('messages', { groupId: g.id, since: 0 }); const m = ms[ms.length - 1]; if (!m) return { id: 0, unread: 0 };
+            let t; try { t = JSON.parse(dec.decode(await open(await groupKey(g), m.ct))).t; } catch { t = '🔒'; }
+            return { id: m.id, t, from: m.mine ? 'You' : m.from, at: m.at, unread: ms.filter((v) => !v.mine && v.id > (seen[g.id] || 0)).length };
+          } catch { return { id: 0, unread: 0 }; }
+        }));
+        const order = gs.map((_, i) => i).sort((p, q) => last[q].id - last[p].id);
+        const unreadAll = last.reduce((n, l) => n + l.unread, 0);
+        // who's on the island now (tap to talk), then your conversations with their latest line; everything locked on your device
+        show(`${ahead('chats', 'Link', `🔒 End-to-end encrypted${unreadAll ? ` · <b style="color:#FF003C">${unreadAll} new</b>` : ''}`)}
+          <div class="rsec">ON THE ISLAND NOW ${people.length ? `<span class="dim">· ${people.length}</span>` : ''}</div>
+          ${people.length ? `<div class="ppl">${people.map((o) => `<button data-dm="${esc(o.name)}"><span class="onl">${avatar(o.name)}</span><span>${esc(o.name)}</span></button>`).join('')}</div>` : '<div class="dim" style="margin:0 2px 12px">Nobody else signed in nearby right now.</div>'}
           <div class="qa" style="--ac:#FF003C;grid-template-columns:1fr 1fr"><button id="cDm"><i>✉️</i>Private</button><button id="cGroup"><i>👥</i>New group</button></div>
+          ${gs.length > 3 ? '<input id="cQ" class="ssearch" placeholder="🔍 Search conversations">' : ''}
           <div class="rsec">CONVERSATIONS</div>
-          <div class="lst">${gs.map((g, i) => `<button class="li" data-g="${i}">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#FF003C,#00F0FF)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || names[i])}<span class="lt"><b>${esc(names[i])}</b><small>${g.members.length > 2 ? g.members.length + ' people · ' : ''}${g.members.filter((m) => m !== me$.handle).map(esc).join(', ')}</small></span><span class="lr">🔒</span></button>`).join('') || '<div class="li"><span class="lt"><small>No conversations yet. Say hello to someone on the island.</small></span></div>'}</div>
+          <div class="lst" id="cList">${order.map((i) => { const g = gs[i], l = last[i]; return `<button class="li${l.unread ? ' unr' : ''}" data-g="${i}" data-name="${esc((names[i] + ' ' + g.members.join(' ')).toLowerCase())}">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#FF003C,#00F0FF)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || names[i])}<span class="lt"><b>${esc(names[i])}</b><small>${l.id ? `${esc(l.from)}: ${esc(l.t)}` : g.members.length > 2 ? g.members.length + ' people · say hello' : 'Say hello'}</small></span><span class="lr2">${l.at ? `<small>${chatTime(l.at)}</small>` : ''}${l.unread ? `<em>${l.unread}</em>` : ''}</span></button>`; }).join('') || '<div class="li"><span class="lt"><small>No conversations yet. Say hello to someone on the island.</small></span></div>'}</div>
           <div class="lock" style="margin-top:4px">The server only ever holds scrambled text. WYRD can't read your chats.</div>`);
+        if ($('cQ')) $('cQ').oninput = () => { const q = $('cQ').value.trim().toLowerCase(); pbody.querySelectorAll('#cList [data-name]').forEach((b) => (b.style.display = b.dataset.name.includes(q) ? '' : 'none')); };
         $('cDm').onclick = () => go('newchat', { dm: true });
         $('cGroup').onclick = () => go('newchat', { dm: false });
         pbody.querySelectorAll('[data-dm]').forEach((b) => (b.onclick = () => {
@@ -4365,18 +4392,26 @@
         const g = arg, key = await groupKey(g);
         show(`<div class="ahead" style="--ac:#FF003C">${g.members.length > 2 ? '<span class="av2" style="background:linear-gradient(135deg,#FF003C,#00F0FF)">👥</span>' : avatar(g.members.find((m) => m !== me$.handle) || g.name)}<div><h2 style="font-size:15px">${esc(g.name)}</h2><span>🔒 ${g.members.map(esc).join(', ')}</span></div></div>
           <div class="chips" style="--ac:#FF003C"><button id="tAdd">➕ Add someone</button><button id="tLeave">🚪 Leave</button></div>
-          <div class="msgs" id="tMsgs"></div>
-          <div class="comp"><input id="tText" maxlength="2000" placeholder="Message (encrypted)"><button class="pbtn" id="tGo">Send</button></div>`);
-        let since = 0;
+          <div class="msgs" id="tMsgs"><div class="lock" style="text-align:center">🔒 Messages here are locked on your devices. Not even the server or WYRD can read them.</div></div>
+          <div class="qrep">${['👍', '😂', '🙏', '🔥', 'On my way 🛵', 'Where you dey?'].map((v) => `<button data-q="${esc(v)}">${esc(v)}</button>`).join('')}</div>
+          <div class="comp"><input id="tText" maxlength="2000" placeholder="Message (encrypted)"><button class="pbtn" id="tGo" aria-label="Send">➤</button></div>`);
+        let since = 0, lastDay = '', lastFrom = '';
+        const group = g.members.length > 2;
         const pull = async () => {
           const ms = await my('messages', { groupId: g.id, since });
           for (const m of ms) {
             since = Math.max(since, m.id);
             let t; try { t = JSON.parse(dec.decode(await open(key, m.ct))).t; } catch { t = '🔒 (can\'t open)'; }
-            const d = document.createElement('div'); d.className = 'msg' + (m.mine ? ' me' : ''); d.innerHTML = `<b>${esc(m.from)}</b>${esc(t)}`; $('tMsgs').append(d);
+            const when = m.at ? new Date(m.at) : new Date(), day = when.toDateString();
+            if (day !== lastDay) { lastDay = day; lastFrom = ''; const s = document.createElement('div'); s.className = 'mday'; s.textContent = day === new Date().toDateString() ? 'Today' : when.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }); $('tMsgs').append(s); }
+            const d = document.createElement('div'), first = m.from !== lastFrom; lastFrom = m.from;
+            d.className = 'msg' + (m.mine ? ' me' : '') + (first ? '' : ' cont');
+            d.innerHTML = `${!m.mine && group && first ? `<b>${esc(m.from)}</b>` : ''}${esc(t)}<time>${when.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}${m.mine ? ' ✓' : ''}</time>`;
+            $('tMsgs').append(d);
           }
-          if (ms.length) pbody.scrollTop = pbody.scrollHeight;
+          if (ms.length) { pbody.scrollTop = pbody.scrollHeight; const s = linkSeen(); s[g.id] = since; store.set('li.seen', JSON.stringify(s)); }
         };
+        pbody.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { $('tText').value = b.dataset.q; send(); }));
         await pull(); chatTimer = setInterval(() => pull().catch(() => {}), 3000);
         const send = async () => { const t = $('tText').value.trim(); if (!t) return; $('tText').value = ''; try { await my('post', { groupId: g.id, ct: await seal(key, enc.encode(JSON.stringify({ t }))) }); await pull(); } catch (e) { fail(e); } };
         $('tGo').onclick = send; $('tText').onkeydown = (e) => { if (e.key === 'Enter') send(); };
@@ -4610,21 +4645,53 @@
         let owned = {}, live = true;
         try { owned = (await my('myFurniture', { room: '' })).items || {}; } catch (e) { if (e.message === 'signin') throw e; live = false; }
         const thumb = (s) => `<img src="${FURN_BASE}thumbs/${s.m}.png" alt="" loading="lazy">`;
+        const card = (s) => `<button class="sitem" data-item="${s.id}"><em style="background:${TIER_COL[s.tier]}">${s.tier}</em>${thumb(s)}<b>${esc(s.name)}</b><span>${naira(s.price)}</span>${owned[s.id] ? `<i>×${owned[s.id]}</i>` : ''}</button>`;
+        const wire = () => pbody.querySelectorAll('[data-item]').forEach((b) => (b.onclick = () => go('store', b.dataset.item)));
         if (arg && STORE[arg]) {
-          const s = STORE[arg];
-          show(`<div class="ptitle">Home Store</div><div class="pcard sdet">${thumb(s)}<h3>${esc(s.name)}</h3><div class="dim">${ROOM_ICON[s.room]} ${s.room} · <b style="color:${TIER_COL[s.tier]}">${s.tier}</b>${owned[s.id] ? ` · you have ${owned[s.id]}` : ''}</div><div class="big">${naira(s.price)}</div>
-            <button class="pbtn big2" id="fBuy">Buy · ${naira(s.price)}</button><div class="dim">${live ? 'Paid from your wallet. It goes into your home; place it from your HQ.' : 'The store opens when the server update goes live.'}</div></div>
-            <button class="pbtn alt" id="fAll">See the whole store</button>`);
-          $('fAll').onclick = () => go('store');
-          $('fBuy').onclick = async () => { try { const v = await my('buyFurniture', { item: s.id }); pnaira.textContent = naira(v.naira); notify('Bought: ' + s.name, 'store'); render('store', s.id); } catch (e) { fail(/\((404|500)\)/.test(e.message) ? new Error('The Home Store opens when the server update goes live.') : e); } };
+          // a piece's page: the picture, its tier and room, how many you have, a quantity, the total, and more like it
+          const s = STORE[arg]; let qty = 1, bal = null;
+          try { bal = (await loadMe()).naira; } catch (e) { if (e.message === 'signin') throw e; }
+          const like = storeSorted().filter((o) => o.room === s.room && o.id !== s.id).sort((p, q) => Math.abs(p.price - s.price) - Math.abs(q.price - s.price)).slice(0, 4);
+          show(`${ahead('store', s.name, `${ROOM_ICON[s.room]} ${s.room} · Eko Home Store`)}
+            <div class="pcard sdet"><span class="tier" style="background:${TIER_COL[s.tier]}">${s.tier}</span>${thumb(s)}
+              ${owned[s.id] ? `<div class="dim"><b style="color:#FB923C">You have ${owned[s.id]}</b></div>` : ''}
+              <div class="big">${naira(s.price)}</div>
+              <div class="qty"><button id="qM">−</button><b id="qN">1</b><button id="qP">+</button></div>
+              <button class="pbtn big2" id="fBuy">Buy · <span id="fTot">${naira(s.price)}</span></button>
+              <div class="dim">${!live ? 'The store opens when the server update goes live.' : bal != null ? `Wallet: ${naira(bal)} · paid from your wallet, delivered to your home.` : 'Paid from your wallet, delivered to your home.'}</div></div>
+            <div class="qa" style="--ac:#FB923C;grid-template-columns:1fr 1fr"><button id="fHome"><i>🏠</i>Place at home</button><button id="fAll"><i>🛋️</i>The whole store</button></div>
+            ${like.length ? `<div class="rsec">MORE FOR THE ${s.room.toUpperCase()}</div><div class="sgrid">${like.map(card).join('')}</div>` : ''}`);
+          const upd = () => { $('qN').textContent = qty; $('fTot').textContent = naira(s.price * qty); const over = bal != null && s.price * qty > bal; $('fBuy').disabled = over; $('fBuy').style.opacity = over ? 0.5 : 1; };
+          $('qM').onclick = () => { qty = Math.max(1, qty - 1); upd(); }; $('qP').onclick = () => { qty = Math.min(6, qty + 1); upd(); }; upd();
+          $('fAll').onclick = () => go('store'); $('fHome').onclick = () => go('hq'); wire();
+          $('fBuy').onclick = async () => {
+            $('fBuy').disabled = true;
+            try { let v; for (let k = 0; k < qty; k++) v = await my('buyFurniture', { item: s.id }); pnaira.textContent = naira(v.naira); notify(`Bought: ${qty > 1 ? qty + ' × ' : ''}${s.name}`, 'store'); render('store', s.id); }
+            catch (e) { $('fBuy').disabled = false; fail(/\((404|500)\)/.test(e.message) ? new Error('The Home Store opens when the server update goes live.') : e); }
+          };
           return;
         }
-        const room = storeRoom;
-        show(`<div class="ptitle">Home Store</div><div class="lock">Furniture for every budget, ${naira(2000)} to ${naira(1500000)}. Tap a piece to buy it.</div>
-          <div class="stabs">${STORE_ROOMS.map((r) => `<button class="${r === room ? 'on' : ''}" data-room="${r}">${ROOM_ICON[r]} ${r}</button>`).join('')}</div>
-          ${TIERS.map(([, t]) => { const list = storeSorted().filter((s) => s.room === room && s.tier === t); return list.length ? `<div class="rsec" style="color:${TIER_COL[t]}">${t.toUpperCase()}</div><div class="sgrid">${list.map((s) => `<button class="sitem" data-item="${s.id}">${thumb(s)}<b>${esc(s.name)}</b><span>${naira(s.price)}</span>${owned[s.id] ? `<i>×${owned[s.id]}</i>` : ''}</button>`).join('')}</div>` : ''; }).join('')}`);
-        pbody.querySelectorAll('[data-room]').forEach((b) => (b.onclick = () => { storeRoom = b.dataset.room; render('store'); }));
-        pbody.querySelectorAll('[data-item]').forEach((b) => (b.onclick = () => go('store', b.dataset.item)));
+        // the store: today's pick, a search across everything, rooms, cheapest or priciest first, grouped by tier
+        const all = storeSorted(), day = Math.floor(Date.now() / 864e5), picks = all.filter((s) => s.tier === 'Premium' || s.tier === 'Luxury'), pick = picks[day % picks.length];
+        const have = Object.values(owned).reduce((n, v) => n + v, 0);
+        show(`${ahead('store', 'Eko Home Store', `${all.length} pieces · ${naira(2000)} to ${naira(1500000)} · Lekki`)}
+          ${pick ? `<button class="hero spick" data-item="${pick.id}" style="--ac:#FB923C"><div><div class="hl">⭐ Pick of the day</div><div class="hv" style="font-size:18px">${esc(pick.name)}</div><small>${ROOM_ICON[pick.room]} ${pick.room} · ${naira(pick.price)}</small></div>${thumb(pick)}</button>` : ''}
+          <input id="sQ" class="ssearch" placeholder="🔍 Search sofas, beds, lamps…" value="${esc(storeQ)}">
+          <div class="stabs">${STORE_ROOMS.map((r) => `<button class="${r === storeRoom ? 'on' : ''}" data-room="${r}">${ROOM_ICON[r]} ${r} <small>${all.filter((s) => s.room === r).length}</small></button>`).join('')}</div>
+          <div class="chips" style="--ac:#FB923C;margin:0 0 8px;padding:0"><button data-sort="low" class="${storeSort === 'low' ? 'on' : ''}">Cheapest first</button><button data-sort="high" class="${storeSort === 'high' ? 'on' : ''}">Priciest first</button>${have ? `<button id="sMine">🏠 ${have} in your home</button>` : ''}</div>
+          <div id="sList"></div>`);
+        const draw = () => {
+          const q = storeQ.trim().toLowerCase(), ord = (l) => (storeSort === 'high' ? l.slice().reverse() : l);
+          const list = q ? ord(all.filter((s) => (s.name + ' ' + s.room + ' ' + s.tier).toLowerCase().includes(q)).sort((p, r) => p.price - r.price)) : null;
+          $('sList').innerHTML = list ? (list.length ? `<div class="rsec">${list.length} FOUND</div><div class="sgrid">${list.map(card).join('')}</div>` : '<div class="dim" style="margin:8px 2px">Nothing by that name. Try "chair" or "bed".</div>')
+            : ord(TIERS.map(([, t]) => t)).map((t) => { const l = ord(all.filter((s) => s.room === storeRoom && s.tier === t)); return l.length ? `<div class="rsec" style="color:${TIER_COL[t]}">${t.toUpperCase()}</div><div class="sgrid">${l.map(card).join('')}</div>` : ''; }).join('');
+          wire();
+        };
+        draw(); wire();
+        $('sQ').oninput = () => { storeQ = $('sQ').value; draw(); };
+        pbody.querySelectorAll('[data-room]').forEach((b) => (b.onclick = () => { storeRoom = b.dataset.room; storeQ = ''; render('store'); }));
+        pbody.querySelectorAll('[data-sort]').forEach((b) => (b.onclick = () => { storeSort = b.dataset.sort; render('store'); }));
+        if ($('sMine')) $('sMine').onclick = () => go('hq');
         return;
       }
       if (app === 'casino') {
