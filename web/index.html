@@ -398,6 +398,15 @@
   @keyframes cwType { from { max-width: 0; } to { max-width: 100%; } }
   .cw-bar { height: 4px; background: rgba(255,255,255,.08); overflow: hidden; } .cw-bar i { display: block; height: 100%; background: linear-gradient(90deg, #FF003C, #FCEE0A, #00F0FF); animation: cwLoad 4s ease-out both; } @keyframes cwLoad { from { width: 0; } to { width: 100%; } }
   .cw-tap { margin-top: 16px; font: 800 12px 'Orbitron', sans-serif; letter-spacing: 4px; color: #00F0FF; animation: cwBlink 1.2s steps(2) infinite 4s; opacity: .9; }
+  /* no backdrop: the words float over the island, lit like neon, readable on anything */
+  #cyberwel { background: none !important; } .cw-scan, .cw-noise { display: none; } .cw-box { background: none; border: none; box-shadow: none; clip-path: none; }
+  .cw-tag { color: #FF2A6D; text-shadow: 0 0 10px rgba(255,42,109,.8), 0 1px 3px #000; font-size: 13px; }
+  .cw-glitch { text-shadow: 3px 0 #FF003C, -3px 0 #00F0FF, 0 0 22px rgba(252,238,10,.55), 0 6px 22px rgba(0,0,0,.8); }
+  h2.cw-name { color: #FFFFFF; text-shadow: 3px 0 #FF003C, -3px 0 #00F0FF, 0 0 26px rgba(0,240,255,.75), 0 6px 24px rgba(0,0,0,.85); letter-spacing: 6px; }
+  .cw-log { font-size: 15px; text-shadow: 0 0 8px rgba(94,234,212,.7), 0 1px 3px #000, 0 0 2px #000; width: fit-content; min-width: min(420px, 90%); }
+  .cw-bar { width: min(420px, 80%); margin: 0 auto; background: none; height: 3px; filter: drop-shadow(0 0 6px #00F0FF); }
+  .cw-tap { text-shadow: 0 0 10px #00F0FF, 0 1px 3px #000; }
+  .cw-glitch { -webkit-text-stroke: 1.5px rgba(10,6,20,.85); paint-order: stroke fill; } .cw-tag, .cw-log, .cw-tap { -webkit-text-stroke: 3px rgba(5,4,12,.85); paint-order: stroke fill; } .cw-log { color: #99F6E4; font-weight: 700; }
   /* Island Music */
   .mdj { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 10px 12px; border-radius: 14px; background: linear-gradient(120deg, hsl(var(--h) 80% 30% / .85), hsl(calc(var(--h) + 60) 70% 18% / .9)); border: 1px solid hsl(var(--h) 90% 60% / .6); color: #fff; font-family: 'Rajdhani', sans-serif; }
   .mdj > div { flex: 1; min-width: 0; } .mdj small { display: block; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 1px; opacity: .85; } .mdj b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mdj span { display: block; font-size: 12px; opacity: .8; }
@@ -6601,6 +6610,13 @@
       <h2 class="cw-glitch cw-name" data-t="${n.replace(/[<>&"]/g, '')}">${n.replace(/[<>&"]/g, '')}</h2>
       <div class="cw-log"></div><div class="cw-bar"><i></i></div><div class="cw-tap">TAP TO ENTER</div></div>`;
     document.body.append(el);
+    // the title and the name decode: random characters flicker and lock into place, left to right
+    for (const [h, t0, dur] of [[el.querySelector('h1'), 150, 900], [el.querySelector('h2'), 700, 1100]]) {
+      const target = h.textContent, chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&@!?/<>=+*', start = performance.now() + t0;
+      h.textContent = ''; h.dataset.t = '';
+      const tick = (now) => { const u = Math.max(0, (now - start) / dur), lock = Math.floor(u * target.length); let s = ''; for (let k = 0; k < target.length; k++) s += k < lock || target[k] === ' ' ? target[k] : now < start ? '' : chars[Math.floor(Math.random() * chars.length)]; h.textContent = s; h.dataset.t = s; if (u < 1) requestAnimationFrame(tick); else { h.textContent = target; h.dataset.t = target; } };
+      requestAnimationFrame(tick);
+    }
     const log = el.querySelector('.cw-log'), lines = ['> identity verified ............ OK', '> naira wallet issued ......... ₦0.00', '> HQ Row: your BQ assigned ...... OK', '> link encryption keys ......... GENERATED', '> island uplink ................ ONLINE', `> eko o ni baje, ${n}.`];
     lines.forEach((ln, k) => setTimeout(() => { const d = document.createElement('div'); d.textContent = ln; log.append(d); blip(600 + k * 120); }, 900 + k * 520));
     const blip = (f) => { const c = typeof audioCtx === 'function' ? audioCtx() : null; if (!c) return; const o = c.createOscillator(), g = c.createGain(); o.type = 'square'; o.frequency.value = f; g.gain.setValueAtTime(0.05, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.08); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.09); };
