@@ -865,6 +865,7 @@
   if (isTouch) document.body.classList.add('touch');
   let W = 0, H = 0, DPR = 1;
   let quality = 1; // drops when frames run slow
+  const cvMain = cv.getContext('2d');
   function resize() { DPR = Math.max(1, Math.min(2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
@@ -5181,6 +5182,7 @@
     for (const o of others.values()) { o.x += (o.tx - o.x) * Math.min(1, dt * 4); o.z += (o.tz - o.z) * Math.min(1, dt * 4); }
     if (!inside) wyrdStep(dt);
     if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); }
+    if (x === cvMain && (W !== innerWidth || H !== innerHeight)) resize(); // a preview put back a stale size (the window changed while it drew): fit the screen again
     draw();
     requestAnimationFrame(frame);
   }
