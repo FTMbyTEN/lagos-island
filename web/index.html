@@ -32,7 +32,11 @@
   #top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 16px; }
   #title { font-weight: 800; font-size: 17px; white-space: nowrap; }
   #online { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
-  #topR { margin-left: auto; display: flex; gap: 6px; } #topR button { width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(15,23,42,.06); font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: transform .12s, background .15s; } #topR button:hover { background: rgba(34,197,94,.15); } #topR button:active { transform: scale(.9); } #topR button.off { opacity: .45; } #tMusic.playing { background: #22C55E; animation: mpulse 1.2s ease-in-out infinite; } @keyframes mpulse { 50% { box-shadow: 0 0 0 6px rgba(34,197,94,.18); } }
+  #topR { margin-left: auto; display: flex; gap: 6px; }
+  .tdj { display: none; align-items: center; gap: 7px; max-width: 210px; height: 34px; padding: 0 12px 0 9px; border-radius: 999px; background: linear-gradient(90deg, #111827, #3B0764); color: #fff; cursor: pointer; overflow: hidden; } .tdj.on { display: flex; }
+  .tdj span { min-width: 0; line-height: 1.05; } .tdj small { display: block; font-size: 10px; font-weight: 800; color: #F0ABFC; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .tdj b { display: block; font-size: 11.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tdj .eq { display: flex; align-items: flex-end; gap: 2px; height: 14px; flex: none; } .tdj .eq s { width: 3px; background: #22C55E; border-radius: 1px; animation: eqb .8s ease-in-out infinite; } .tdj .eq s:nth-child(2) { animation-delay: -.3s; } .tdj .eq s:nth-child(3) { animation-delay: -.55s; } .tdj .eq s:nth-child(4) { animation-delay: -.15s; }
+  @keyframes eqb { 0%, 100% { height: 4px; } 50% { height: 14px; } } @media (max-width: 560px) { .tdj { max-width: 130px; } #title { display: none; } } #topR button { width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(15,23,42,.06); font-size: 16px; cursor: pointer; display: grid; place-items: center; transition: transform .12s, background .15s; } #topR button:hover { background: rgba(34,197,94,.15); } #topR button:active { transform: scale(.9); } #topR button.off { opacity: .45; } #tMusic.playing { background: #22C55E; animation: mpulse 1.2s ease-in-out infinite; } @keyframes mpulse { 50% { box-shadow: 0 0 0 6px rgba(34,197,94,.18); } }
   #online i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 6px; vertical-align: 1px; }
   #talkTop { right: 16px; bottom: calc(22px + env(safe-area-inset-bottom)); width: 58px; height: 58px; font-size: 24px; }
   #chips { position: fixed; top: calc(68px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 8px; pointer-events: none; max-width: calc(100vw - 20px); }
@@ -433,7 +437,7 @@
 <div id="top" class="pill">
   <div id="title">🌴 Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
-  <div id="topR"><button id="tCity" aria-label="City sound at night" title="City sound at night">🔊</button><button id="tMusic" aria-label="Island Music" title="Island Music">🎧</button></div>
+  <div id="topR"><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night">🔊</button><button id="tMusic" aria-label="Island Music" title="Island Music">🎧</button></div>
 
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
@@ -5067,6 +5071,13 @@
       CITY.srcs.push(s);
       residentSet(s).then((set) => { if (!s.now || s.now.resident) deckPlay(s, set); });
     }
+    // the city's own DJ: one mix over the whole island at night (the clubs keep their sound inside, so they never clash)
+    { const s = { spot: { name: 'Lagos Nights', dj: 'DJ Eko Nights', q: ['afrobeats amapiano mix 2025', 'afrobeats mix 2025', 'naija party mix'] }, a: new Audio(), now: null };
+      s.a.crossOrigin = 'anonymous'; s.a.preload = 'none';
+      const el = c.createMediaElementSource(s.a), bass = c.createBiquadFilter(); s.g = c.createGain(); s.g.gain.value = 0;
+      bass.type = 'lowshelf'; bass.frequency.value = 100; bass.gain.value = 3;
+      el.connect(bass); bass.connect(s.g); s.g.connect(CITY.master);
+      CITY.mix = s; residentSet(s).then((set) => deckPlay(s, set)); }
     if (CITY.pendingDecks) cityDecks(CITY.pendingDecks);
   }
   // what the island server says each club's DJ is playing (from tick): switch to it, or back to the resident
@@ -5080,6 +5091,15 @@
     }
   }
   const clubSrc = (room) => CITY.srcs.find((s) => s.room === room);
+  // the top bar shows who's playing where you are: the club's DJ inside a club, the city's DJ out on the island at night
+  function djChip() {
+    const el = document.getElementById('tDj'); if (!el) return;
+    const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, s = club || (!inside && night >= 0.2 ? CITY.mix : null);
+    const on = !!(CITY.on && s && s.now && !s.a.paused);
+    el.classList.toggle('on', on); if (!on) return;
+    const dj = s.now.dj || s.spot.dj, title = s.now.title || '';
+    if (el.dataset.k !== dj + title) { el.dataset.k = dj + title; el.querySelector('small').textContent = '🎧 ' + dj; el.querySelector('b').textContent = title; el.title = `${dj} · ${title}`; }
+  }
   // the bass in a club right now (0 to 1), for its lights
   function clubBeat(room) { const s = clubSrc(room); if (!s || !s.an || s.a.paused) return 0; s.an.getByteFrequencyData(s.buf); return (s.buf[1] + s.buf[2] + s.buf[3]) / 765; }
   // taking the decks: your pick goes on the club's speakers, for you straight away and for everyone through the server
@@ -5095,24 +5115,24 @@
   setInterval(() => {
     if (CITY.dj && (!inside || inside.key !== CITY.dj)) djLeave(); // you walked out: the resident takes over
     const inClub = inside && inside.kind === 'club';
-    if (!CITY.on || (night < 0.2 && !inClub)) { if (CITY.master) { CITY.master.gain.value *= 0.8; if (CITY.master.gain.value < 0.01) for (const s of CITY.srcs) if (!s.a.paused) s.a.pause(); } return; }
+    if (!CITY.on || (night < 0.2 && !inClub)) { djChip(); if (CITY.master) { CITY.master.gain.value *= 0.8; if (CITY.master.gain.value < 0.01) for (const s of CITY.srcs) if (!s.a.paused) s.a.pause(); } return; }
     if (!AX.ctx) return; if (!CITY.master) { cityStart(); return; }
     const duck = MP.a.paused ? 1 : 0.18, nf = inClub ? 1 : Math.min(1, (night - 0.2) / 0.4);
     CITY.master.gain.value += (nf * duck - CITY.master.gain.value) * 0.25;
-    const lx = me.x, lz = me.z, R = 520; // heard right across the district
+    // inside a club: that club's DJ only; out on the island at night: the city mix only; any other room: quiet
     for (const s of CITY.srcs) {
-      let vol, cut;
-      if (inside) { const here = !!s.room && inside.key === s.room; vol = here ? 0.9 : 0; cut = here ? 16000 : 600; } // in that club: the full sound; any other room: nothing
-      else { const d = Math.hypot(s.x - lx, s.z - lz), u = Math.max(0, 1 - d / R); vol = Math.pow(u, 1.6) * 0.85; cut = 320 + 3400 * u * u * u; } // far off it's mostly the low end, the rest comes in as you get close
-      s.g.gain.value += (vol - s.g.gain.value) * 0.3; s.muff.frequency.value = cut;
-      if (s.pan) { const sp2 = P(s.x, 0, s.z)[0] - W / 2; s.pan.pan.value = inside ? 0 : Math.max(-0.9, Math.min(0.9, sp2 / (W * 0.45))); }
+      const here = !!inside && !!s.room && inside.key === s.room, vol = here ? 0.9 : 0;
+      s.g.gain.value += (vol - s.g.gain.value) * 0.3; s.muff.frequency.value = here ? 16000 : 600; if (s.pan) s.pan.pan.value = 0;
       if (vol > 0.01 && s.a.paused && s.a.src) s.a.play().catch(() => {}); if (vol <= 0.01 && !s.a.paused && s.g.gain.value < 0.01) s.a.pause();
     }
+    if (CITY.mix) { const s = CITY.mix, vol = !inside && night >= 0.2 ? 0.6 : 0; s.g.gain.value += (vol - s.g.gain.value) * 0.25; if (vol > 0.01 && s.a.paused && s.a.src) s.a.play().catch(() => {}); if (vol <= 0.01 && !s.a.paused && s.g.gain.value < 0.01) s.a.pause(); }
+    djChip();
   }, 250);
   { const tc = document.getElementById('tCity'), tm = document.getElementById('tMusic');
     tc.classList.toggle('off', !CITY.on); tc.textContent = CITY.on ? '🔊' : '🔈';
     tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.textContent = CITY.on ? '🔊' : '🔈'; notify(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
     tm.onclick = () => openPhone('music', MP.q.length ? { tab: 'now' } : undefined);
+    document.getElementById('tDj').onclick = () => openPhone('music'); // see who's playing, take the decks inside a club
     for (const ev of ['play', 'pause']) MP.a.addEventListener(ev, () => tm.classList.toggle('playing', !MP.a.paused)); }
   // Link: the last message seen in each conversation (kept on this device), and a short time for the list
   const linkSeen = () => { try { return JSON.parse(store.get('li.seen') || '{}') || {}; } catch { return {}; } };
