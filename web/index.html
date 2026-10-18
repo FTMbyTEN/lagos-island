@@ -1586,37 +1586,72 @@
       done();
     }, undefined, () => done());
   }
-  // the outfit shader: which part of the body is a top, a sleeve, trousers, a robe or shoes, by where it sits on the body
+  // the outfit shader: which part of the body is a top, a sleeve, trousers, a robe or shoes (by where it sits on the body,
+  // in its rest pose), then the cloth itself: its fabric (cotton, denim with fading, fleece, silk with a sheen, leather), an
+  // open jacket over a tee, a collar and cuffs, a waistband and belt, side seams, cargo pockets, sneakers with white soles
   function dressMaterial(mat, b) {
-    const THREE = G3.T, m = mat.clone(), u = {
-      uMin: { value: b.gMin }, uSize: { value: b.gSize.y }, uMid: { value: b.gMid },
-      uTop: { value: new THREE.Color('#22B573') }, uTop2: { value: new THREE.Color('#F8FAFC') }, uTopPat: { value: 0 }, uSleeve: { value: 0.22 },
-      uBot: { value: new THREE.Color('#1F2A44') }, uBot2: { value: new THREE.Color('#F8FAFC') }, uBotPat: { value: 0 }, uBotLo: { value: 0.065 }, uRobe: { value: 0 },
-      uShoe: { value: new THREE.Color('#F8FAFC') }, uSkin: { value: new THREE.Color(1, 1, 1) },
+    const THREE = G3.T, m = mat.clone(), C = (h) => ({ value: new THREE.Color(h) }), F = (v) => ({ value: v }), u = {
+      uMin: F(b.gMin), uSize: F(b.gSize.y), uMid: F(b.gMid), uZMid: F(b.gMin.z + b.gSize.z / 2),
+      uTop: C('#22B573'), uTop2: C('#F8FAFC'), uTopPat: F(0), uSleeve: F(0.22), uTopFab: F(0),
+      uBot: C('#1F2A44'), uBot2: C('#F8FAFC'), uBotPat: F(0), uBotLo: F(0.065), uRobe: F(0), uBotFab: F(0),
+      uJacket: F(0), uInner: C('#F8FAFC'), uTrim: C('#111827'), uTrimOn: F(0), uBelt: F(0), uBeltC: C('#111827'), uCargo: F(0),
+      uShoe: C('#F8FAFC'), uSole: C('#F8FAFC'), uSkin: { value: new THREE.Color(1, 1, 1) },
     };
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, u);
       sh.vertexShader = 'varying vec3 vBind;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vBind = position;');
-      sh.fragmentShader = `varying vec3 vBind; uniform vec3 uMin; uniform float uSize, uMid, uTopPat, uSleeve, uBotPat, uBotLo, uRobe; uniform vec3 uTop, uTop2, uBot, uBot2, uShoe, uSkin;
+      sh.fragmentShader = `varying vec3 vBind; uniform vec3 uMin; uniform float uSize, uMid, uZMid, uTopPat, uSleeve, uTopFab, uBotPat, uBotLo, uRobe, uBotFab, uJacket, uTrimOn, uBelt, uCargo;
+        uniform vec3 uTop, uTop2, uBot, uBot2, uInner, uTrim, uBeltC, uShoe, uSole, uSkin;
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
         vec3 patt(vec3 a, vec3 b, float p, float h, float ax) {
           if (p < 0.5) return a;
           if (p < 1.5) return mod(floor(h * 60.0), 2.0) < 1.0 ? a : b;                                   // stripes across
-          if (p < 2.5) return h > 0.7 ? a : b;                                                             // two-tone
+          if (p < 2.5) return h > 0.7 ? a : b;                                                             // colour-blocked
           if (p < 3.5) { float d = sin(h * 140.0) * sin(ax * 140.0 + h * 40.0); return d > 0.35 ? b : (d < -0.55 ? mix(a, b, 0.5) : a); } // a wax print
-          return abs(fract(ax * 9.0) - 0.5) < 0.06 ? b : a;                                               // a stripe down the side
+          if (p < 4.5) return abs(fract(ax * 9.0) - 0.5) < 0.06 ? b : a;                                   // a stripe down the side
+          return mod(floor(h * 30.0) + floor(ax * 30.0), 2.0) < 1.0 ? a : b;                              // check
+        }
+        // the cloth: fine weave or twill, fleece fuzz, denim worn paler at the thighs and knees, silk catching the light
+        vec3 fabric(vec3 c, float f, float h, float ax) {
+          float n = hash(floor(vec2(h, ax) * 900.0)) - 0.5;
+          if (f < 0.5) return c * (1.0 + n * 0.06);                                                       // cotton
+          if (f < 1.5) { float tw = sin((h + ax) * 1400.0) * 0.06; float wear = smoothstep(0.06, 0.0, abs(h - 0.4)) * 0.18 + smoothstep(0.05, 0.0, abs(h - 0.27)) * 0.14; return mix(c * (1.0 + tw + n * 0.08), vec3(0.75, 0.82, 0.95), wear); } // denim
+          if (f < 2.5) return c * (1.0 + n * 0.12);                                                       // fleece
+          if (f < 3.5) return c * (1.0 + 0.22 * pow(abs(sin(h * 40.0 + ax * 25.0)), 6.0));                // silk sheen
+          return c * (0.92 + n * 0.05 + 0.15 * pow(abs(sin(h * 18.0)), 12.0));                            // leather
         }
         ` + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
         diffuseColor.rgb *= uSkin;
-        { float h = (vBind.y - uMin.y) / uSize, ax = abs(vBind.x - uMid) / uSize; vec3 c = vec3(0.0); float k = 0.0;
-          if (h < 0.065) { c = uShoe; k = 1.0; }
-          else if (ax >= 0.12 && h > 0.64) { if (ax < uSleeve) { c = patt(uTop, uTop2, uTopPat, h, ax); k = 1.0; } }
-          else if (h >= 0.53 && h < 0.815) { c = patt(uTop, uTop2, uTopPat, h, ax); k = 1.0; }
-          else if (h < 0.53 && uRobe > 0.5) { c = patt(uTop, uTop2, uTopPat, h, ax); k = 1.0; }
-          else if (h < 0.53 && h > uBotLo) { c = patt(uBot, uBot2, uBotPat, h, ax); k = 1.0; }
+        { float h = (vBind.y - uMin.y) / uSize, ax = abs(vBind.x - uMid) / uSize; bool front = vBind.z > uZMid; vec3 c = vec3(0.0); float k = 0.0;
+          if (h < 0.065) { c = h < 0.016 ? uSole : (h < 0.022 ? uShoe * 0.7 : uShoe); k = 1.0; }                                          // shoes: the sole, a welt, the upper
+          else if (ax >= 0.12 && h > 0.64) { if (ax < uSleeve) { c = fabric(patt(uTop, uTop2, uTopPat, h, ax), uTopFab, h, ax); if (uTrimOn > 0.5 && ax > uSleeve - 0.018) c = uTrim; k = 1.0; } } // sleeves, cuffed
+          else if (h >= 0.53 && h < 0.815) {
+            c = fabric(patt(uTop, uTop2, uTopPat, h, ax), uTopFab, h, ax); k = 1.0;
+            if (uJacket > 0.5 && front && ax < 0.034) c = uInner * (1.0 + (hash(floor(vec2(h, ax) * 600.0)) - 0.5) * 0.05);                // an open jacket: the tee underneath
+            if (uJacket > 0.5 && front && abs(ax - 0.034) < 0.004) c *= 0.6;                                                                // its edges
+            if (uTrimOn > 0.5 && h > 0.795) c = uTrim;                                                                                       // the collar
+            if (uTrimOn > 0.5 && uRobe < 0.5 && h < 0.548) c = uTrim;                                                                         // the hem band
+          }
+          else if (h < 0.53 && uRobe > 0.5) { c = fabric(patt(uTop, uTop2, uTopPat, h, ax), uTopFab, h, ax); k = 1.0; }
+          else if (h < 0.53 && h > uBotLo) {
+            c = fabric(patt(uBot, uBot2, uBotPat, h, ax), uBotFab, h, ax); k = 1.0;
+            if (h > 0.51) c = uBelt > 0.5 ? (ax < 0.012 && front ? vec3(0.85, 0.75, 0.45) : uBeltC) : c * 0.82;                                // waistband, or a belt with its buckle
+            if (abs(ax - 0.105) < 0.0025) c *= 0.7;                                                                                           // the side seams
+            if (uCargo > 0.5 && h > 0.3 && h < 0.4 && ax > 0.085 && ax < 0.118) c *= (abs(h - 0.3) < 0.004 || abs(h - 0.4) < 0.004 || abs(ax - 0.085) < 0.002) ? 0.55 : 0.9; // cargo pockets
+            if (uBotLo > 0.1 && h < uBotLo + 0.012) c *= 0.8;                                                                                 // a hem on shorts and skirts
+          }
           diffuseColor.rgb = mix(diffuseColor.rgb, c * 0.92, k); }`);
     };
-    m.customProgramCacheKey = () => 'dress';
+    m.customProgramCacheKey = () => 'dress2';
     return { mat: m, u };
+  }
+  // put an outfit on a dressed body (its shader's settings); the game and the sign-up picture both use this
+  function applyOutfit(u, o) {
+    u.uTop.value.set(o.top); u.uTop2.value.set(o.top2 || o.top); u.uTopPat.value = o.topPat || 0; u.uSleeve.value = [0.12, 0.2, 0.37][o.sleeve ?? 1]; u.uTopFab.value = o.topFab || 0;
+    u.uBot.value.set(o.bot || '#1F2A44'); u.uBot2.value.set(o.bot2 || o.bot || '#1F2A44'); u.uBotPat.value = o.botPat || 0; u.uBotLo.value = [0.065, 0.3, 0.36][o.botLen || 0]; u.uRobe.value = o.robe ? 1 : 0; u.uBotFab.value = o.botFab || 0;
+    u.uJacket.value = o.jacket ? 1 : 0; u.uInner.value.set(o.inner || '#F8FAFC'); u.uTrimOn.value = o.trim ? 1 : 0; u.uTrim.value.set(o.trim || '#111827');
+    u.uBelt.value = o.belt ? 1 : 0; u.uBeltC.value.set(o.belt || '#111827'); u.uCargo.value = o.cargo ? 1 : 0;
+    u.uShoe.value.set(o.shoe || '#111827'); u.uSole.value.set(o.sole || (o.sneaker ? '#F8FAFC' : '#1C1917'));
   }
   function makePerson(g, hairKey) {
     const THREE = G3.T, SU = window.__three.SkeletonUtils, b = PEOPLE.base[g];
@@ -1654,9 +1689,7 @@
     // dressed for the day
     if (p.dress) {
       const o = outfitOf(L, color), u = p.dress.u, sk = SKINS[L.skin] || SKINS[0], tone = 0.62 + 0.9 * (SKINS.indexOf(sk) / (SKINS.length - 1));
-      u.uTop.value.set(o.top); u.uTop2.value.set(o.top2 || o.top); u.uTopPat.value = o.topPat || 0; u.uSleeve.value = [0.12, 0.2, 0.37][o.sleeve ?? 1];
-      u.uBot.value.set(o.bot || '#1F2A44'); u.uBot2.value.set(o.bot2 || o.bot || '#1F2A44'); u.uBotPat.value = o.botPat || 0; u.uBotLo.value = [0.065, 0.3, 0.36][o.botLen || 0]; u.uRobe.value = o.robe ? 1 : 0;
-      u.uShoe.value.set(o.shoe || '#111827'); if (p.dress.textured) u.uSkin.value.setScalar(tone); else u.uSkin.value.set(sk); // a skin texture tinted lighter or darker, or plain skin colour
+      applyOutfit(u, o); if (p.dress.textured) u.uSkin.value.setScalar(tone); else u.uSkin.value.set(sk); // a skin texture tinted lighter or darker, or plain skin colour
       p.body.traverse((m) => { if (m.userData.hair) m.material.color.set(HAIRS[L.hair] || HAIRS[0]).multiplyScalar(2.2); });
     }
     G3.queue.push({ obj: p.root }); flush3d();
@@ -2251,34 +2284,42 @@
   // ---- the clothing catalogue: whole outfits, painted onto the 3D body (see dressMaterial). Brand names only, no logos;
   // not affiliated with the brands. [id, brand, name, department, price, look]. look: top/top2 colours, topPat (0 plain,
   // 1 stripes, 2 two-tone, 3 print, 4 side stripe), sleeve (0 none, 1 short, 2 long), bot/bot2/botPat, botLen (0 long,
-  // 1 skirt, 2 shorts), robe (down to the ankle), shoe. Price 0: a free starter, everyone has them.
+  // 1 skirt, 2 shorts), robe (down to the ankle), shoe; and the cloth: topFab/botFab (0 cotton, 1 denim, 2 fleece, 3 silk,
+  // 4 leather), jacket (worn open over an inner tee), trim (collar, cuffs, hem), belt, cargo pockets, sneaker (white sole) or
+  // sole, topPat 5 (a check). Price 0: a free starter, everyone has them.
   const OUTFIT_LIST = [
-    ['st_tee', 'Starter', 'White tee & jeans', 'Starter', 0, { top: '#F8FAFC', sleeve: 1, bot: '#1E40AF', shoe: '#F8FAFC' }],
-    ['st_polo', 'Starter', 'Polo & chinos', 'Starter', 0, { top: '#0F766E', sleeve: 1, bot: '#D6C3A5', shoe: '#78350F' }],
-    ['st_ankara', 'Starter', 'Ankara shirt & trousers', 'Starter', 0, { top: '#F59E0B', top2: '#7C3AED', topPat: 3, sleeve: 1, bot: '#111827', shoe: '#111827' }],
-    ['st_sport', 'Starter', 'Sports set', 'Starter', 0, { top: '#DC2626', sleeve: 1, bot: '#111827', botLen: 2, shoe: '#F8FAFC' }],
-    ['puma_run', 'Puma', 'Running set', 'Sportswear', 28000, { top: '#DC2626', top2: '#111827', topPat: 2, sleeve: 1, bot: '#111827', botLen: 2, shoe: '#F8FAFC' }],
-    ['nike_dri', 'Nike', 'Dri-FIT tee & shorts', 'Sportswear', 35000, { top: '#2563EB', sleeve: 1, bot: '#111827', botLen: 2, shoe: '#F8FAFC' }],
-    ['adidas_jersey', 'Adidas', 'Green and white football kit', 'Sportswear', 45000, { top: '#008751', top2: '#F8FAFC', topPat: 2, sleeve: 1, bot: '#F8FAFC', botLen: 2, shoe: '#111827' }],
-    ['adidas_track', 'Adidas', 'Track suit', 'Sportswear', 75000, { top: '#111827', sleeve: 2, bot: '#111827', shoe: '#F8FAFC' }],
-    ['nike_tech', 'Nike', 'Tech Fleece tracksuit', 'Sportswear', 85000, { top: '#374151', sleeve: 2, bot: '#374151', shoe: '#F8FAFC' }],
-    ['hm_hoodie', 'H&M', 'Hoodie & joggers', 'Streetwear', 30000, { top: '#6B7280', sleeve: 2, bot: '#374151', shoe: '#F8FAFC' }],
-    ['zara_linen', 'Zara', 'Linen shirt & trousers', 'Streetwear', 55000, { top: '#E7E5E4', sleeve: 2, bot: '#A8A29E', shoe: '#78350F' }],
-    ['levis_denim', "Levi's", 'Denim jacket & jeans', 'Streetwear', 65000, { top: '#1E3A8A', sleeve: 2, bot: '#1D4ED8', shoe: '#111827' }],
-    ['zara_dress', 'Zara', 'Summer dress', 'Streetwear', 48000, { top: '#F472B6', top2: '#F8FAFC', topPat: 3, sleeve: 0, bot: '#F472B6', bot2: '#F8FAFC', botPat: 3, botLen: 1, shoe: '#F8FAFC' }],
-    ['offwhite_set', 'Off-White', 'Striped tee & cargos', 'Streetwear', 180000, { top: '#F8FAFC', top2: '#111827', topPat: 1, sleeve: 1, bot: '#57534E', shoe: '#F8FAFC' }],
-    ['lanre_buba', 'Lanre Da Silva', 'Buba & sokoto', 'Native', 150000, { top: '#F8FAFC', top2: '#22B573', topPat: 2, sleeve: 2, bot: '#F8FAFC', shoe: '#78350F' }],
-    ['orange_kaftan', 'Orange Culture', 'Kaftan', 'Native', 220000, { top: '#7C2D12', top2: '#F59E0B', topPat: 3, sleeve: 2, robe: 1, shoe: '#78350F' }],
-    ['folawiyo_ankara', 'Lisa Folawiyo', 'Ankara two-piece', 'Native', 260000, { top: '#F59E0B', top2: '#7C3AED', topPat: 3, sleeve: 1, bot: '#7C3AED', bot2: '#F59E0B', botPat: 3, botLen: 1, shoe: '#111827' }],
-    ['ize_asooke', 'Kenneth Ize', 'Aso-oke set', 'Native', 380000, { top: '#1D4ED8', top2: '#F8FAFC', topPat: 1, sleeve: 2, bot: '#1D4ED8', bot2: '#F8FAFC', botPat: 1, shoe: '#111827' }],
-    ['atafo_agbada', 'Mai Atafo', 'Bespoke agbada', 'Native', 950000, { top: '#F5F5F4', top2: '#D4AF37', topPat: 2, sleeve: 2, robe: 1, shoe: '#78350F' }],
-    ['ralph_suit', 'Ralph Lauren', 'Navy suit', 'Formal', 420000, { top: '#1E3A8A', sleeve: 2, bot: '#1E3A8A', shoe: '#111827' }],
-    ['balenciaga_set', 'Balenciaga', 'Oversized hoodie set', 'Luxury', 950000, { top: '#111827', sleeve: 2, bot: '#111827', shoe: '#DC2626' }],
-    ['gucci_track', 'Gucci', 'Tracksuit', 'Luxury', 1200000, { top: '#14532D', top2: '#DC2626', topPat: 2, sleeve: 2, bot: '#14532D', bot2: '#DC2626', botPat: 4, shoe: '#F8FAFC' }],
-    ['versace_silk', 'Versace', 'Baroque silk shirt', 'Luxury', 1400000, { top: '#D4AF37', top2: '#111827', topPat: 3, sleeve: 1, bot: '#111827', shoe: '#111827' }],
-    ['fendi_set', 'Fendi', 'Monogram set', 'Luxury', 1800000, { top: '#78350F', top2: '#D4A373', topPat: 1, sleeve: 2, bot: '#78350F', bot2: '#D4A373', botPat: 1, shoe: '#111827' }],
-    ['lv_jacket', 'Louis Vuitton', 'Monogram jacket', 'Luxury', 2400000, { top: '#3F2A18', top2: '#D4AF37', topPat: 3, sleeve: 2, bot: '#111827', shoe: '#3F2A18' }],
-    ['dior_gown', 'Dior', 'Evening gown', 'Luxury', 3000000, { top: '#7F1D1D', top2: '#B91C1C', topPat: 2, sleeve: 0, robe: 1, shoe: '#111827' }],
+    // free starters: what everyone owns
+    ['st_tee', 'Starter', 'Boxy tee & washed jeans', 'Starter', 0, { top: '#F8FAFC', sleeve: 1, trim: '#E5E7EB', bot: '#3B5B8C', botFab: 1, belt: '#3F2A18', shoe: '#F8FAFC', sneaker: 1 }],
+    ['st_polo', 'Starter', 'Knit polo & pleated chinos', 'Starter', 0, { top: '#0F766E', sleeve: 1, trim: '#F8FAFC', bot: '#D6C3A5', belt: '#78350F', shoe: '#78350F' }],
+    ['st_ankara', 'Starter', 'Ankara shirt & black denim', 'Starter', 0, { top: '#F59E0B', top2: '#7C3AED', topPat: 3, sleeve: 1, bot: '#111827', botFab: 1, shoe: '#111827', sneaker: 1 }],
+    ['st_sport', 'Starter', 'Training tee & shorts', 'Starter', 0, { top: '#DC2626', sleeve: 1, trim: '#F8FAFC', bot: '#111827', botLen: 2, shoe: '#F8FAFC', sneaker: 1 }],
+    // sportswear
+    ['puma_run', 'Puma', 'Colour-block running set', 'Sportswear', 28000, { top: '#DC2626', top2: '#111827', topPat: 2, sleeve: 1, trim: '#111827', bot: '#111827', botLen: 2, shoe: '#F8FAFC', sneaker: 1, sole: '#DC2626' }],
+    ['nike_dri', 'Nike', 'Dri-FIT tee & running shorts', 'Sportswear', 35000, { top: '#2563EB', sleeve: 1, bot: '#111827', botLen: 2, botPat: 4, bot2: '#F8FAFC', shoe: '#F97316', sneaker: 1 }],
+    ['adidas_jersey', 'Adidas', 'Green and white matchday kit', 'Sportswear', 45000, { top: '#008751', top2: '#F8FAFC', topPat: 2, sleeve: 1, trim: '#F8FAFC', bot: '#F8FAFC', botLen: 2, shoe: '#111827', sneaker: 1 }],
+    ['adidas_track', 'Adidas', 'Track jacket & tapered pants', 'Sportswear', 75000, { top: '#111827', topFab: 2, sleeve: 2, jacket: 1, inner: '#F8FAFC', trim: '#F8FAFC', bot: '#111827', botFab: 2, botPat: 4, bot2: '#F8FAFC', shoe: '#F8FAFC', sneaker: 1 }],
+    ['nike_tech', 'Nike', 'Tech Fleece hoodie & joggers', 'Sportswear', 85000, { top: '#4B5563', topFab: 2, sleeve: 2, trim: '#374151', bot: '#4B5563', botFab: 2, cargo: 1, shoe: '#111827', sneaker: 1 }],
+    // streetwear
+    ['hm_hoodie', 'H&M', 'Oversized hoodie & cargos', 'Streetwear', 30000, { top: '#A8A29E', topFab: 2, sleeve: 2, trim: '#78716C', bot: '#57534E', cargo: 1, belt: '#111827', shoe: '#F8FAFC', sneaker: 1 }],
+    ['zara_dress', 'Zara', 'Floral slip dress', 'Streetwear', 48000, { top: '#F472B6', top2: '#F8FAFC', topPat: 3, topFab: 3, sleeve: 0, bot: '#F472B6', bot2: '#F8FAFC', botPat: 3, botFab: 3, botLen: 1, shoe: '#F8FAFC' }],
+    ['zara_linen', 'Zara', 'Linen overshirt & wide trousers', 'Streetwear', 55000, { top: '#E7E5E4', sleeve: 2, jacket: 1, inner: '#111827', bot: '#A8A29E', belt: '#3F2A18', shoe: '#78350F' }],
+    ['levis_denim', "Levi's", 'Trucker jacket & 501 jeans', 'Streetwear', 65000, { top: '#2C4A7A', topFab: 1, sleeve: 2, jacket: 1, inner: '#F8FAFC', trim: '#1E3A5F', bot: '#3B5B8C', botFab: 1, belt: '#3F2A18', shoe: '#F8FAFC', sneaker: 1 }],
+    ['offwhite_set', 'Off-White', 'Striped tee & utility cargos', 'Streetwear', 180000, { top: '#F8FAFC', top2: '#111827', topPat: 1, sleeve: 1, trim: '#111827', bot: '#57534E', cargo: 1, belt: '#FACC15', shoe: '#F8FAFC', sneaker: 1, sole: '#F97316' }],
+    // Nigerian designers
+    ['lanre_buba', 'Lanre Da Silva', 'Embroidered buba & sokoto', 'Native', 150000, { top: '#F8FAFC', top2: '#22B573', topPat: 2, sleeve: 2, trim: '#22B573', bot: '#F8FAFC', shoe: '#78350F' }],
+    ['orange_kaftan', 'Orange Culture', 'Printed kaftan', 'Native', 220000, { top: '#7C2D12', top2: '#F59E0B', topPat: 3, sleeve: 2, trim: '#F59E0B', robe: 1, shoe: '#78350F' }],
+    ['folawiyo_ankara', 'Lisa Folawiyo', 'Ankara crop top & midi skirt', 'Native', 260000, { top: '#F59E0B', top2: '#7C3AED', topPat: 3, sleeve: 0, bot: '#7C3AED', bot2: '#F59E0B', botPat: 3, botLen: 1, shoe: '#111827' }],
+    ['ize_asooke', 'Kenneth Ize', 'Aso-oke shirt & trousers', 'Native', 380000, { top: '#1D4ED8', top2: '#F8FAFC', topPat: 1, sleeve: 1, bot: '#1D4ED8', bot2: '#F8FAFC', botPat: 1, shoe: '#111827', sneaker: 1 }],
+    ['atafo_agbada', 'Mai Atafo', 'Bespoke agbada', 'Native', 950000, { top: '#F5F5F4', top2: '#D4AF37', topPat: 2, topFab: 3, sleeve: 2, trim: '#D4AF37', robe: 1, shoe: '#78350F' }],
+    // tailoring
+    ['ralph_suit', 'Ralph Lauren', 'Navy two-piece suit', 'Formal', 420000, { top: '#1E3A8A', sleeve: 2, jacket: 1, inner: '#F8FAFC', bot: '#1E3A8A', belt: '#111827', shoe: '#111827' }],
+    // luxury
+    ['balenciaga_set', 'Balenciaga', 'Oversized hoodie & baggy jeans', 'Luxury', 950000, { top: '#111827', topFab: 2, sleeve: 2, trim: '#111827', bot: '#1F2937', botFab: 1, shoe: '#F8FAFC', sneaker: 1, sole: '#111827' }],
+    ['gucci_track', 'Gucci', 'Web-stripe tracksuit', 'Luxury', 1200000, { top: '#14532D', top2: '#DC2626', topPat: 2, topFab: 3, sleeve: 2, jacket: 1, inner: '#F8FAFC', trim: '#DC2626', bot: '#14532D', bot2: '#DC2626', botPat: 4, shoe: '#F8FAFC', sneaker: 1 }],
+    ['versace_silk', 'Versace', 'Baroque silk shirt & black trousers', 'Luxury', 1400000, { top: '#D4AF37', top2: '#111827', topPat: 3, topFab: 3, sleeve: 1, bot: '#111827', belt: '#D4AF37', shoe: '#111827' }],
+    ['fendi_set', 'Fendi', 'Monogram co-ord', 'Luxury', 1800000, { top: '#78350F', top2: '#D4A373', topPat: 5, sleeve: 2, jacket: 1, inner: '#111827', bot: '#78350F', bot2: '#D4A373', botPat: 5, shoe: '#111827' }],
+    ['lv_jacket', 'Louis Vuitton', 'Leather varsity jacket', 'Luxury', 2400000, { top: '#3F2A18', top2: '#D4AF37', topPat: 3, topFab: 4, sleeve: 2, jacket: 1, inner: '#F8FAFC', trim: '#D4AF37', bot: '#111827', botFab: 1, shoe: '#F8FAFC', sneaker: 1 }],
+    ['dior_gown', 'Dior', 'Silk evening gown', 'Luxury', 3000000, { top: '#7F1D1D', top2: '#B91C1C', topPat: 2, topFab: 3, sleeve: 0, robe: 1, shoe: '#111827' }],
   ];
   const OUTFITS = Object.fromEntries(OUTFIT_LIST.map(([id, brand, name, dept, price, look]) => [id, { id, brand, name, dept, price, look }]));
   const STARTERS = OUTFIT_LIST.filter((o) => !o[4]).map((o) => o[0]);
@@ -4684,8 +4725,7 @@
     const L = parseLook(myLook, myName || 'you'), key = L.g + (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4];
     if (LP.key !== key) { if (LP.p) LP.p.root.removeFromParent(); LP.p = makePerson(L.g, (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4]); LP.scene.add(LP.p.root); LP.key = key; LP.p.acts.Idle_Loop.play(); }
     const o = outfitOf(L, myColor), u = LP.p.dress.u, sk = SKINS[L.skin] || SKINS[0];
-    u.uTop.value.set(o.top); u.uTop2.value.set(o.top2 || o.top); u.uTopPat.value = o.topPat || 0; u.uSleeve.value = [0.12, 0.2, 0.37][o.sleeve ?? 1];
-    u.uBot.value.set(o.bot || '#1F2A44'); u.uBot2.value.set(o.bot2 || o.bot || '#1F2A44'); u.uBotPat.value = o.botPat || 0; u.uBotLo.value = [0.065, 0.3, 0.36][o.botLen || 0]; u.uRobe.value = o.robe ? 1 : 0; u.uShoe.value.set(o.shoe || '#111827');
+    applyOutfit(u, o);
     if (LP.p.dress.textured) u.uSkin.value.setScalar(0.62 + 0.9 * (L.skin / (SKINS.length - 1))); else u.uSkin.value.set(sk);
     LP.p.body.traverse((m) => { if (m.userData.hair) m.material.color.set(HAIRS[L.hair] || HAIRS[0]).multiplyScalar(2.2); });
     if (!LP.run) { LP.run = true; let last = performance.now(); const spin = (now) => {
