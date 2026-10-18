@@ -3816,6 +3816,7 @@
     townhouse: { k: [16, 20], b: [13, 11], bed: [15, 14], cab: '#14532D', top: '#E7E5E4', acc: '#B45309', stairs: 1, study: 1 },
     loft:      { k: [16, 24], b: [14, 12], bed: [18, 16], cab: '#1F2937', top: '#A8A29E', acc: '#F97316', island: 1 },
     mansion:   { k: [20, 26], b: [16, 14], bed: [20, 18], cab: '#FFFDF8', top: '#D6D3D1', acc: '#D4AF37', stairs: 2, bar: 1, island: 1 },
+    bq:        { k: [20, 16], b: [14, 12], bed: [18, 13], cab: '#F5F0E6', top: '#3F3F46', acc: '#B08A43' }, // your free BQ on HQ Row
     villa:     { k: [22, 26], b: [18, 14], bed: [22, 18], cab: '#F8FAFC', top: '#0F172A', acc: '#38BDF8', bar: 1, island: 1, pool: 1 },
   };
   function homeFitout(R) {
@@ -3994,6 +3995,8 @@
   }
   // an apartment: oak herringbone in the living room, carpet in the bedroom, marble in the kitchen,
   // tiles in the bathroom; low cut-away walls between the rooms; tall windows with the day coming in
+  // your BQ: oak on the diagonal, a rug for the sitting room, windows down the back and the side, and the same fitted
+  // kitchen, bathroom and bedroom corner as a bought home (see FITOUT.bq), sized for a BQ; the middle is yours to furnish
   function drawApartment(R) {
     const zone = (x0, z0, x1, z1, base, line, step, diag) => {
       flat(x0, z0, x1, z1, 0.02, base);
@@ -4003,21 +4006,19 @@
         x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke();
       }
     };
-    zone(0, 0, R.w, R.d, '#B7895C', 'rgba(70,40,15,0.18)', 2.2, true);   // oak, laid on the diagonal
-    zone(0, 0, 20, 17, '#8E9AAF', 'rgba(255,255,255,0.08)', 3, false);     // the bedroom carpet
-    zone(40, 0, R.w, 14, '#E2E8F0', 'rgba(100,116,139,0.35)', 2.5, false); // bathroom tiles
-    for (let z = 2.5; z < 14; z += 2.5) { const p = P(40, 0.03, z), q = P(R.w, 0.03, z); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
-    zone(40, 14, R.w, R.d, '#F1F5F9', 'rgba(148,163,184,0.35)', 5, false);  // kitchen marble
-    for (let z = 19; z < R.d; z += 5) { const p = P(40, 0.03, z), q = P(R.w, 0.03, z); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
-    // windows along the back and left walls, daylight falling in
-    for (const wx of [6, 26, 34]) { const p0 = P(wx - 3, 4, 0.05), p1 = P(wx + 3, 4, 0.05), p2 = P(wx + 3, 15, 0.05), p3 = P(wx - 3, 15, 0.05); quad([p0, p1, p2, p3], '#BFE3FF', '#E5E7EB'); x.strokeStyle = '#E5E7EB'; x.lineWidth = Math.max(1, K * 0.3); const m0 = P(wx, 4, 0.05), m1 = P(wx, 15, 0.05); x.beginPath(); x.moveTo(m0[0], m0[1]); x.lineTo(m1[0], m1[1]); x.stroke();
+    zone(0, 0, R.w, R.d, '#B7895C', 'rgba(70,40,15,0.18)', 2.2, true); // oak, laid on the diagonal
+    // the sitting-room rug: a border, a field, a band of pattern
+    flat(22, 18, 40, 32, 0.025, '#7C2D12'); flat(23, 19, 39, 31, 0.03, '#B45309'); flat(24.5, 20.5, 37.5, 29.5, 0.035, '#F5E6C8');
+    for (let k = 0; k < 6; k++) { const px = 25.5 + k * 2.2; flat(px, 24.4, px + 1.2, 25.6, 0.04, k % 2 ? '#B45309' : '#15803D'); }
+    // windows down the back wall (where the kitchen's curtains hang) and the side wall, daylight falling in
+    const n = Math.max(2, Math.round(R.w / 18));
+    for (let k = 0; k < n; k++) { const wx = (k + 0.5) * R.w / n, p0 = P(wx - 3, 4, 0.05), p1 = P(wx + 3, 4, 0.05), p2 = P(wx + 3, 15, 0.05), p3 = P(wx - 3, 15, 0.05); quad([p0, p1, p2, p3], '#BFE3FF', '#E5E7EB'); x.strokeStyle = '#E5E7EB'; x.lineWidth = Math.max(1, K * 0.3); const m0 = P(wx, 4, 0.05), m1 = P(wx, 15, 0.05); x.beginPath(); x.moveTo(m0[0], m0[1]); x.lineTo(m1[0], m1[1]); x.stroke();
       if (night < 0.5) { x.fillStyle = 'rgba(255,248,220,0.18)'; x.beginPath(); const f0 = P(wx - 3, 0.05, 0), f1 = P(wx + 3, 0.05, 0), f2 = P(wx + 5, 0.05, 10), f3 = P(wx - 1, 0.05, 10); x.moveTo(f0[0], f0[1]); x.lineTo(f1[0], f1[1]); x.lineTo(f2[0], f2[1]); x.lineTo(f3[0], f3[1]); x.fill(); } }
-    for (const wz of [24, 32]) { const p0 = P(0.05, 4, wz - 3), p1 = P(0.05, 4, wz + 3), p2 = P(0.05, 15, wz + 3), p3 = P(0.05, 15, wz - 3); quad([p0, p1, p2, p3], '#BFE3FF', '#E5E7EB'); }
-    // skirting boards
-    box(0, 0, -0.1, R.w, 0.7, 0.15, '#FFFFFF'); box(-0.1, 0, 0, 0.15, 0.7, R.d, '#FFFFFF');
-    // partition walls, cut away low so you can see in: the bedroom and the bathroom, with door gaps
-    const wall = (x0, z0, x1, z1) => { box(x0, 0, z0, x1, 5, z1, '#EDE7DD'); box(x0, 5, z0, x1, 5.3, z1, '#B08A43'); };
-    wall(0, 16.6, 13, 17.2); wall(19.6, 0, 20.2, 10); wall(39.8, 0, 40.4, 8); wall(40.4, 13.6, 47, 14.2); wall(52, 13.6, R.w, 14.2);
+    for (const wz of [9, 15]) { const p0 = P(0.05, 4, wz - 2.5), p1 = P(0.05, 4, wz + 2.5), p2 = P(0.05, 15, wz + 2.5), p3 = P(0.05, 15, wz - 2.5); quad([p0, p1, p2, p3], '#BFE3FF', '#E5E7EB'); }
+    box(0, 0, -0.1, R.w, 0.7, 0.15, '#FFFFFF'); box(-0.1, 0, 0, 0.15, 0.7, R.d, '#FFFFFF'); // skirting boards
+    homeFitout({ ...R, style: 'bq' });
+    // by the door: a shoe rack and a mirror on a stand
+    box(R.w / 2 + 6, 0, R.d - 2.2, R.w / 2 + 9, 1.4, R.d - 1.2, '#78350F'); for (let k = 0; k < 3; k++) box(R.w / 2 + 6.3 + k * 0.9, 1.4, R.d - 2, R.w / 2 + 6.9 + k * 0.9, 1.8, R.d - 1.4, ['#111827', '#F8FAFC', '#B91C1C'][k]);
   }
   function drawStands(R, now) {
     const t = now / 1000;
