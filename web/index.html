@@ -564,7 +564,7 @@
     ['skyline', 15, 26, 4, 2, 'Eko Atlantic City', '🏙️'],
     ['skyline', 20, 26, 3, 2, 'Eko Pearl Towers', '🏙️'],
     // Lekki
-    ['tollgate', 30, 15, 3, 1, 'Lekki Toll Gate', '🚧'],
+    ['tollgate', 33, 22, 2, 1, 'Lekki Toll Gate', '🚧'], // across the Coastal Road
     ['gallery', 34, 10, 3, 3, 'Nike Art Gallery', '🎨'],
     ['forest', 38, 10, 4, 4, 'Lekki Conservation Centre', '🌿'],
     ['mall', 38, 16, 4, 3, 'Circle Mall', '🛍️'],
@@ -1348,12 +1348,28 @@
       for (let k = 0; k < Math.round((c - a) / 14); k++) lamp(a + 6.5 + k * 14, d - 1, 5);
       glow.push(() => { x.fillStyle = 'rgba(254,240,170,0.9)'; for (const [px, py, pz] of lit) { if ((px * 7 + py) % 3 < 1 && Math.sin(t * 0.2 + px) < 0.6) continue; const p = P(px, py, pz); x.fillRect(p[0] - K * 0.35, p[1] - K * 0.3, K * 0.7, K * 0.6); } });
     },
+    // ---- the Lekki toll plaza, across the Coastal Road: traffic runs along x through three lanes, a booth on each island,
+    // barrier arms lifting in turn, the long white canopy on its piers with the name along it, lights under it at night
     tollgate(a, b, c, d) {
-      const z = (b + d) / 2;
-      for (const px of [a + 1, c - 1]) box(px - 0.5, 0, z - 4, px + 0.5, 6, z + 4, '#9CA3AF');
-      box(a, 6, z - 5, c, 7, z + 5, '#F8FAFC');
-      box(a, 7, z - 5, c, 7.4, z + 5, '#EF4444');
-      for (let k = 1; k < 4; k++) box(a + k * (c - a) / 4 - 0.8, 0, z - 1, a + k * (c - a) / 4 + 0.8, 3, z + 1, '#F3F4F6');
+      const t = performance.now() / 1000, mid = (a + c) / 2, isl = [b + 3.6, b + 6.4];
+      for (const z of isl) {
+        box(a + 6, 0, z - 0.45, c - 6, 0.5, z + 0.45, '#E5E7EB'); flat(a + 6, z - 0.45, a + 7, z + 0.45, 0.52, '#FACC15'); flat(c - 7, z - 0.45, c - 6, z + 0.45, 0.52, '#FACC15'); // the islands, yellow noses
+        box(mid - 1.4, 0.5, z - 0.4, mid + 1.4, 3.4, z + 0.4, '#F8FAFC', '#0EA5E9', 1); box(mid - 1.6, 3.4, z - 0.55, mid + 1.6, 3.7, z + 0.55, '#1D4ED8'); // the booth
+      }
+      // barrier arms, one per lane, each lifting in its turn
+      for (let k = 0; k < 3; k++) {
+        const z = [b + 2, b + 5, b + 8][k], up = Math.max(0, Math.sin(t * 0.9 + k * 2.1)) > 0.6, px = mid + 2;
+        box(px - 0.2, 0, z - 1.3, px + 0.2, 1.4, z - 1, '#374151');
+        const p0 = P(px, 1.2, z - 1.15), p1 = up ? P(px, 4.2, z - 0.4) : P(px, 1.2, z + 1.2);
+        x.strokeStyle = '#EF4444'; x.lineWidth = Math.max(1.5, K * 0.3); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
+        x.strokeStyle = '#F8FAFC'; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); x.setLineDash([]);
+      }
+      // the canopy: piers at both kerbs and on the islands, a deep white roof with a red edge
+      for (const pz of [b + 0.7, ...isl, d - 0.7]) for (const px of [a + 4, c - 4]) box(px - 0.4, 0, pz - 0.4, px + 0.4, 7, pz + 0.4, '#CBD5E1');
+      box(a + 2, 7, b, c - 2, 8.4, d, '#F8FAFC'); for (const ez of [b - 0.15, d - 0.05]) box(a + 2, 7.6, ez, c - 2, 8.4, ez + 0.2, '#DC2626'); // a red band along each face
+      const sg = () => faceText('LEKKI TOLL PLAZA', mid, 7.7, d + 0.12, '#1D4ED8', 0.9, 0);
+      sg(); glow.push(sg);
+      glow.push(() => { for (const z of [b + 2, b + 5, b + 8]) { const p = P(mid, 0.1, z), r = K * 4; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,240,200,0.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.restore(); } });
     },
     gallery(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.grassLot);
