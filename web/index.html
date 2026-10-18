@@ -3749,6 +3749,21 @@
   function drawClubShell(R, now) {
     const lekki = R.theme === 'lekki', t = now / 1000, cx = 48; // the stage stays over the dance floor however big the room
     const LK = R.look || clubLook(R.title); // this club's look
+    // each club's own floor plan: where its stage stands and where its bar runs (the rest follows from its look). Ozumba
+    // keeps the classic, stage at the back; Club Lekki's stage is off to the right with a long beach bar out in the room;
+    // Quilox puts the DJ on a stage in the middle of the floor, the crowd all round; Secrets Palace holds court from the left
+    // with the bar further in; VEIN brings its stage forward onto the floor for the show
+    const PL = { ozumba: { st: [0, 0], bar: [0, 0] }, lekki: { st: [24, 0], bar: [26, 6] }, quilox: { st: [0, 18], bar: [0, 0] }, secret: { st: [-16, 0], bar: [0, 8] }, vein: { st: [0, 8], bar: [0, 0] } }[LK.theme] || { st: [0, 0], bar: [0, 0] };
+    // draw a part of the room moved by (ox, oz): the camera is shifted the other way while it draws, and anything it leaves
+    // to draw later (night glows, labels) is shifted the same when its turn comes
+    const shift = (ox, oz, f) => {
+      if (!ox && !oz) return f();
+      const wrap = (fn) => () => { cam.x -= ox; cam.z -= oz; try { fn(); } finally { cam.x += ox; cam.z += oz; } };
+      const g0 = glow.push, a0 = afterCars.push;
+      glow.push = (...fns) => g0.apply(glow, fns.map(wrap)); afterCars.push = (...fns) => a0.apply(afterCars, fns.map(wrap));
+      cam.x -= ox; cam.z -= oz;
+      try { f(); } finally { cam.x += ox; cam.z += oz; delete glow.push; delete afterCars.push; }
+    };
     const deck = clubSrc(R.key), set = deck && deck.now, beat = clubBeat(R.key); // who is playing here, and the bass right now
     // Ozumba's lights stay warm gold and amber; Lekki's run through the ocean's blues and greens
     const hue = lekki ? 165 + Math.sin(t * 0.6) * 35 : LK.hue + Math.sin(t * 0.5) * 15;
@@ -3756,7 +3771,7 @@
       x.fillStyle = 'rgba(120,90,50,0.18)'; for (let k = 0; k < 40; k++) { const R2 = rnd(k * 13 + 5), p = P(R2() * R.w, 0.02, R2() * R.d); x.beginPath(); x.ellipse(p[0], p[1], K * 0.4, K * 0.25, 0, 0, Math.PI * 2); x.fill(); }
       for (const [px, pz] of [[4, 4], [R.w - 4, 4], [R.w - 4, R.d - 4]]) palm(px, pz, 14);
       for (let k = 0; k < 3; k++) { const z0 = 50 + k * 4; const p0 = P(0.2, 2, z0), p1 = P(0.2, 2, z0 + 2.2), p2 = P(0.2, 12, z0 + 2.2), p3 = P(0.2, 12, z0); quad([p0, p1, p2, p3], ['#F97316', '#22D3EE', '#F43F5E'][k], 'rgba(0,0,0,.2)'); }
-      pyramid(-0.5, 10, 10, 58, 13.5, 3.5, '#A16207');
+      pyramid(-0.5 + PL.bar[0], 10 + PL.bar[1], 10 + PL.bar[0], 58 + PL.bar[1], 13.5, 3.5, '#A16207'); // the bar's thatch, over wherever the bar is
     } else { // black marble with gold veins, chandeliers
       x.strokeStyle = LK.theme === 'vein' ? 'rgba(236,72,153,0.3)' : 'rgba(212,175,55,0.22)'; x.lineWidth = 1; // the marble's veins
       for (let k = 0; k < 18; k++) { const R2 = rnd(k * 31 + 3); let px = R2() * R.w, pz = R2() * R.d; const p = P(px, 0.02, pz); x.beginPath(); x.moveTo(p[0], p[1]); for (let q = 0; q < 4; q++) { px += (R2() - 0.5) * 12; pz += (R2() - 0.5) * 8; const pp = P(px, 0.02, pz); x.lineTo(pp[0], pp[1]); } x.stroke(); }
@@ -3768,6 +3783,7 @@
     // LED strips along the walls, low and high
     const strip = (x0, z0, x1, z1, h) => { const p = P(x0, 0.4, z0), q = P(x1, 0.4, z1); const g = x.createLinearGradient(p[0], p[1], q[0], q[1]); g.addColorStop(0, `hsl(${hue},100%,60%)`); g.addColorStop(1, `hsl(${(hue + 120) % 360},100%,60%)`); x.strokeStyle = g; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); if (h) { const p2 = P(x0, h, z0), q2 = P(x1, h, z1); x.beginPath(); x.moveTo(p2[0], p2[1]); x.lineTo(q2[0], q2[1]); x.stroke(); } };
     strip(0, 0.2, R.w, 0.2, 15); strip(0.2, 0, 0.2, R.d, 15);
+    shift(PL.st[0], PL.st[1], () => { // the stage, booth and DJ, where this club puts them
     // the stage and its LED wall
     box(cx - 18, 0, 1, cx + 18, 2.4, 13, '#18122B'); box(cx - 18, 2.4, 1, cx + 18, 2.7, 13, `hsl(${hue},90%,55%)`);
     for (const sx of [cx - 18, cx + 15]) box(sx, 0, 13, sx + 3, 1.2, 16, '#18122B'); // steps
@@ -3832,6 +3848,7 @@
     glow.push(() => { const p = P(cx, by + 1.8, bz0 - 0.4), r = K * 2.6; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(165,243,252,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
     // the booth monitors either side, cones pumping with the bass
     for (const sx of [cx - 9.4, cx + 7.4]) { box(sx, 2.7, bz0, sx + 2, 7.2, bz0 + 2, '#111827'); for (const [cy2, cr] of [[4.2, 0.75], [6.3, 0.4]]) { const p = P(sx + 1, cy2, bz0 + 2.02), rr = K * cr * (1 + beat * 0.12); x.fillStyle = '#27272A'; x.beginPath(); x.arc(p[0], p[1], rr, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#52525B'; x.lineWidth = 1; x.stroke(); } }
+    });
     // two trusses of moving heads
     for (const tz of [15, 44]) {
       box(16, 18, tz, 74, 18.6, tz + 0.8, '#4B5563');
@@ -3845,10 +3862,12 @@
       }
       x.restore();
     }
+    shift(PL.bar[0], PL.bar[1], () => { // the bar, where this club keeps it
     // the main bar along the left wall: backlit bottles, a gold-edged counter
     box(0.2, 0, 12, 2.4, 14, 56, '#1A1426');
     for (let r = 0; r < 3; r++) { box(0.4, 3.5 + r * 3, 12, 1.8, 3.8 + r * 3, 56, '#F5C542'); for (let k = 0; k < 28; k++) { const z = 13 + k * 1.5, p = P(1.1, 4 + r * 3, z), q = P(1.1, 5.6 + r * 3, z); x.strokeStyle = STALLS[(k + r * 3) % STALLS.length]; x.lineWidth = Math.max(1.5, K * 0.4); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } }
     box(6, 0, 12, 8.4, 4.2, 56, '#2A1D3A'); box(5.6, 4.2, 11.6, 8.8, 4.6, 56.4, '#F5C542');
+    });
     // the champagne bar, front right, in gold and white
     box(58, 0, 58, 78, 4, 60.4, '#F8FAFC'); box(57.6, 4, 57.6, 78.4, 4.4, 60.8, '#F5C542');
     for (let k = 0; k < 6; k++) { const bx = 60 + k * 3.2; cyl(bx, 59.2, 0.6, 1.4, '#E5E7EB'); const p = P(bx, 4.4, 59.2), q = P(bx, 6.6, 59.2); x.strokeStyle = '#166534'; x.lineWidth = Math.max(1.5, K * 0.45); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
@@ -4533,6 +4552,19 @@
       const look = clubLook(title); R.theme = look.theme; R.look = look;
       let k = 0; for (const it of R.layout) if (it.k === 'booth') it.c = look.pal[k++ % look.pal.length]; else if (it.k === 'couch2') it.c = look.couch;
       R.floor = look.floor; R.wall = look.wall; R.trim = look.trim;
+      // the furniture follows the club's plan (see drawClubShell's PL): the stage's speakers move with the stage, the dance
+      // floor goes where that club dances, the podiums and bar stools where they fit
+      const plan = { lekki: { st: [24, 0], bar: [26, 6], dance: [[52, 30], [68, 30]], pod: [[50, 22], [86, 22], [50, 42], [86, 42]] },
+        quilox: { st: [0, 18], bar: [0, 0], dance: [[38, 48], [58, 48]], pod: [[24, 24], [72, 24], [24, 50], [72, 50]] },
+        secret: { st: [-16, 0], bar: [0, 8], dance: [[48, 32], [64, 32]], pod: [[44, 22], [76, 22], [44, 44], [76, 44]] },
+        vein: { st: [0, 8], bar: [0, 0], dance: [[40, 34], [56, 34]], pod: [[30, 24], [66, 24], [30, 46], [66, 46]] } }[look.theme];
+      if (plan) { let d = 0, p = 0;
+        for (const it of R.layout) {
+          if (it.k === 'speaker') { it.x += plan.st[0]; it.z += plan.st[1]; }
+          else if (it.k === 'dance' && plan.dance[d]) [it.x, it.z] = plan.dance[d++];
+          else if (it.k === 'podium' && plan.pod[p]) [it.x, it.z] = plan.pod[p++];
+          else if (it.k === 'stool' && it.x < 12) { it.x += plan.bar[0]; it.z += plan.bar[1]; }
+        } }
     }
     if (signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
       try {
