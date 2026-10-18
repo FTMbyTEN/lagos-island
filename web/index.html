@@ -375,6 +375,20 @@
   .mday { align-self: center; margin: 6px 0 2px; padding: 2px 10px; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 1px; text-transform: uppercase; color: #8FB6C2; background: rgba(255,255,255,.06); }
   .msg time { display: block; margin-top: 2px; font-size: 10.5px; opacity: .55; text-align: right; } .msg.cont { margin-top: -3px; }
   .qrep { display: flex; gap: 6px; overflow-x: auto; margin: 10px -16px 0; padding: 0 16px 2px; } .qrep button { flex: none; padding: 6px 10px; border: 1px solid rgba(255,0,60,.45); background: rgba(255,0,60,.1); color: #FFD6DE; font: 700 13px 'Rajdhani', sans-serif; cursor: pointer; }
+  /* WYRD OS 2: the live wallpaper under everything, the Dynamic Island, the new widgets */
+  #pwall { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; } #pbar, #pbody, #pnav { position: relative; z-index: 1; }
+  #island { display: flex !important; align-items: center; gap: 6px; padding: 0 8px; overflow: hidden; z-index: 4; cursor: pointer; transition: width .35s cubic-bezier(.2,.9,.3,1.2), margin-left .35s cubic-bezier(.2,.9,.3,1.2), height .3s; color: #fff; font: 700 11px 'Rajdhani', sans-serif; }
+  #island img { width: 18px; height: 18px; border-radius: 5px; object-fit: cover; flex: none; } #island .il-t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } #island .il-eq { display: none; align-items: flex-end; gap: 2px; height: 12px; flex: none; } #island .il-eq s { width: 2.5px; background: #22C55E; border-radius: 1px; animation: eqb .8s ease-in-out infinite; } #island .il-eq s:nth-child(2) { animation-delay: -.3s; } #island .il-eq s:nth-child(3) { animation-delay: -.55s; }
+  #island.il-live { width: 168px !important; margin-left: -84px !important; } #island.il-live .il-eq { display: flex; } #island.il-dj { color: #F0ABFC; } #island.il-ride { color: #FDE68A; }
+  #island.il-toast { width: 230px !important; margin-left: -115px !important; height: 34px !important; box-shadow: 0 0 0 1px rgba(0,240,255,.4), 0 0 18px rgba(0,240,255,.25) !important; animation: islPop .35s cubic-bezier(.2,.9,.3,1.3); } @keyframes islPop { from { transform: scale(.85); } }
+  .osq { display: flex; align-items: center; gap: 8px; margin: 6px 0 8px; padding: 6px 6px 6px 12px; border-radius: 999px; background: rgba(7,7,13,.55); border: 1px solid rgba(0,240,255,.35); backdrop-filter: blur(8px); } .osq i { font-style: normal; } .osq input { flex: 1; min-width: 0; border: none; background: none; color: #E6F9FF; font: 600 14px 'Rajdhani', sans-serif; outline: none; } .osq button { width: 30px; height: 30px; border: none; border-radius: 50%; background: #00F0FF; color: #07070D; font-weight: 900; cursor: pointer; }
+  .wxw .wr { display: flex; flex-direction: column; align-items: flex-end; } .wxw .wxi { font-size: 26px; line-height: 1; } .wxw small { font-size: 10.5px; color: #8FB6C2; margin-top: 2px; }
+  .mw, .lmus { display: flex; align-items: center; gap: 10px; margin: 8px 0; padding: 10px; border-radius: 16px; background: rgba(7,7,13,.6); border: 1px solid rgba(34,197,94,.35); backdrop-filter: blur(8px); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; }
+  .mwa { width: 46px; height: 46px; flex: none; border-radius: 10px; background: linear-gradient(135deg, #22C55E, #0EA5E9) center / cover; display: grid; place-items: center; font-size: 22px; box-shadow: 0 6px 14px rgba(0,0,0,.4); }
+  .mwt { flex: 1; min-width: 0; } .mwt small { display: block; font: 700 10px 'Rajdhani', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; color: #4ADE80; } .mwt b { display: block; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mwt span { display: block; font-size: 11.5px; color: #8FB6C2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mwc { display: flex; gap: 4px; flex: none; } .mwc button { width: 30px; height: 30px; border: none; border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; cursor: pointer; } .mwc button.big { background: #22C55E; color: #07070D; }
+  .tw { display: flex; align-items: center; gap: 10px; width: 100%; margin: 0 0 8px; padding: 10px 12px; border: 1px solid rgba(236,72,153,.4); border-radius: 16px; background: linear-gradient(120deg, rgba(59,7,100,.6), rgba(7,7,13,.6)); color: #E6F9FF; font-family: 'Rajdhani', sans-serif; text-align: left; cursor: pointer; backdrop-filter: blur(8px); } .tw > div { flex: 1; min-width: 0; } .tw small { display: block; font: 700 10px 'Rajdhani', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; color: #F0ABFC; } .tw b { display: block; font-size: 13.5px; } .tw span { display: block; font-size: 11.5px; color: #FDE68A; } .tw i { font-style: normal; font-size: 24px; }
+  #lockscr { background: rgba(7,7,13,.35) !important; } .lmus { width: 100%; }
   /* the new citizen's welcome: cyberpunk, glitching */
   #cyberwel { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: radial-gradient(120% 90% at 50% 40%, rgba(40,6,60,.92), rgba(5,4,12,.97)); color: #E6F9FF; font-family: 'Orbitron', 'Rajdhani', sans-serif; cursor: pointer; animation: cwIn .5s steps(6) both; overflow: hidden; }
   #cyberwel.out { animation: cwOut .6s steps(5) forwards; }
@@ -2546,7 +2560,7 @@
     p.x = px; p.z = pz; p.t = now;
     // what they're doing
     const inWater = inside && inside.kind === 'beach' && pz < SHORE - 3, partying = inside && (inside.kind === 'club' || partyAt(inside.key));
-    const want = pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : speed > 22 ? 'Sprint_Loop' : speed > 13 ? 'Jog_Fwd_Loop' : speed > 1 ? 'Walk_Loop' : partying ? 'Dance_Loop' : 'Idle_Loop';
+    const want = pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : speed > 22 ? 'Sprint_Loop' : speed > 13 ? 'Jog_Fwd_Loop' : speed > 1 ? 'Walk_Loop' : partying && pose !== 'stand' ? 'Dance_Loop' : 'Idle_Loop';
     if (p.cur !== want && p.acts[want]) { const next = p.acts[want].reset().play(); if (p.cur && p.acts[p.cur]) p.acts[p.cur].crossFadeTo(next, 0.25, false); p.cur = want; }
     p.mixer.update(dt);
     p.root.position.set(px, pose === 'sit' ? Math.max(0, (seatY || 2) - 1.9) : inWater ? -3 : standY, pz); p.root.rotation.y = p.ang;
@@ -3716,6 +3730,7 @@
     if (R.kind === 'arena') drawStage(now);
     const items = [];
     for (const it of R.layout) items.push({ d: P(it.x, 0, it.z)[2], f: () => furnDraw(it, now) });
+    for (const c of R._crowd || []) items.push({ who: 1, d: P(c.x, 0, c.z)[2] + 0.02, f: c.f }); // a club's crowd
     for (const [pid, o] of others) items.push({ who: 1, d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
     if (R.kind === 'beach') for (const o of [...others.values(), me]) if (o.z < SHORE) items.push({ d: P(o.x, 0, o.z)[2] + 0.015, f: () => wade(o.x, o.z, now) }); // the sea over whoever's in it
     items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind + ',' + pose.y : '')) });
@@ -3996,6 +4011,20 @@
       neon('THE STAGE', (WX + R.w) / 2, 15, 0.15, true, '#EC4899', 2.4);
       const sp2 = () => { const tt = performance.now() / 1000, fire = beat > 0.6 || Math.sin(tt * 1.3) > 0.97; if (!fire) return; for (const fx of [WX + 9, R.w - 9]) for (let k = 0; k < 14; k++) { const u = Math.random(), p = P(fx + (Math.random() - 0.5) * 1.2, 2.2 + u * 9, 9 + (Math.random() - 0.5)); x.fillStyle = Math.random() < 0.5 ? '#FFFFFF' : '#FDE68A'; x.fillRect(p[0], p[1], 2, 2); } };
       sp2(); glow.push(sp2);
+    }
+    // ---- the people: a crowd dancing on every dance floor, dressed for this club; a bartender behind the bar; two bouncers in
+    // black at the doorway from the foyer
+    R._crowd = [];
+    if (PEOPLE.ok) {
+      const WEAR = { quilox: ['gucci_track', 'versace_silk', 'balenciaga_set', 'fendi_set', 'lv_jacket', 'dior_gown'], secret: ['dior_gown', 'versace_silk', 'ralph_suit', 'atafo_agbada', 'fendi_set', 'zara_dress'], vein: ['zara_dress', 'offwhite_set', 'dior_gown', 'nike_tech', 'hm_hoodie', 'lv_jacket'], lekki: ['st_tee', 'puma_run', 'zara_linen', 'st_ankara', 'folawiyo_ankara', 'nike_dri'], ozumba: ['levis_denim', 'offwhite_set', 'zara_dress', 'lanre_buba', 'balenciaga_set', 'orange_kaftan'] }[LK.theme] || ['st_tee'];
+      const R4 = rnd(R.key.length * 31 + 7); let k = 0;
+      for (const it of R.layout.filter((v) => v.k === 'dance')) for (const [ox, oz] of [[-4.5, -2.5], [3.5, -1.5], [-1, 2.5], [5, 3], [-5.5, 3]]) {
+        const g = R4() < 0.5 ? 'f' : 'm', look = `${g},${Math.floor(R4() * 6)},${Math.floor(R4() * 4)},${Math.floor(R4() * 4)},${Math.floor(R4() * 5)},${WEAR[k % WEAR.length]}`;
+        const px = it.x + ox + Math.sin(t * 0.4 + k) * 0.6, pz = it.z + oz + Math.cos(t * 0.33 + k) * 0.4, key = 'crowd:' + R.key + ':' + k, L = parseLook(look, 'crowd' + k);
+        R._crowd.push({ x: px, z: pz, f: () => person3d(px, pz, '#FFFFFF', key, now, L, null, 0) }); k++; // drawn with the furniture, in depth order, so the floor is under them
+      }
+      person3d(5 + PL.bar[0], 34 + PL.bar[1], '#FFFFFF', 'barkeep:' + R.key, now, parseLook(`m,2,1,0,0,${LK.theme === 'lekki' ? 'st_polo' : 'ralph_suit'}`, 'barkeep'), 'stand', 0);
+      for (const [bx, bz, s] of [[39, 68, 0], [53, 68, 1]]) person3d(bx, bz, '#FFFFFF', 'bouncer:' + R.key + s, now, parseLook(`m,${s ? 0 : 1},1,${s ? 2 : 0},0,ralph_suit`, 'bouncer' + s), 'stand', 0);
     }
     // ---- more of each club's own character: its ceiling rig, its walls, a signature piece or two
     const glowAt = (gx, gy, gz, r, col) => { const p = P(gx, gy, gz), rr = K * r; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], rr); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], rr, 0, Math.PI * 2); x.fill(); x.restore(); };
@@ -5556,13 +5585,68 @@
   }
   document.getElementById('pbar').onclick = () => { buildShade(); shadeEl.classList.toggle('on'); };
   shadeEl.onclick = () => shadeEl.classList.remove('on');
+  // ================= WYRD OS 2 =================
+  // ---- the live wallpaper: Lagos at the hour it is on the island, drawn behind everything on the phone: the sky (dawn,
+  // day, dusk, night with stars), the skyline with lit windows and WYRD Tower's LED crown, the lagoon reflecting it, and the
+  // real weather over it (rain streaks, Harmattan haze)
+  const WALL = { cv: document.createElement('canvas'), seed: 7 };
+  WALL.cv.id = 'pwall'; document.getElementById('screen').prepend(WALL.cv);
+  const WALL_B = (() => { const R = rnd(91), far = [], near = []; let px = -10; while (px < 400) { const w = 14 + R() * 26; far.push([px, w, 60 + R() * 120]); px += w + 2; } px = -6; while (px < 400) { const w = 18 + R() * 30; near.push([px, w, 40 + R() * 150, R()]); px += w + 4; } return { far, near, stars: Array.from({ length: 70 }, () => [R(), R() * 0.55, R()]) }; })();
+  function drawWall(now) {
+    const cv = WALL.cv, scr = cv.parentElement, w = scr.clientWidth, h = scr.clientHeight; if (!w || !h) return;
+    if (cv.width !== w * 2) { cv.width = w * 2; cv.height = h * 2; }
+    const g = cv.getContext('2d'); g.setTransform(2, 0, 0, 2, 0, 0);
+    const d = new Date(Date.now() + 3600e3), hr = d.getUTCHours() + d.getUTCMinutes() / 60, t = now / 1000;
+    const dayness = Math.max(0, Math.min(1, (Math.sin((hr - 6) / 12 * Math.PI) + 0.2) * 1.4)), dusk = Math.max(0, 1 - Math.abs(hr - 18.6) / 1.4) + Math.max(0, 1 - Math.abs(hr - 6.4) / 1.2);
+    const sky = g.createLinearGradient(0, 0, 0, h * 0.72);
+    const mix = (a, b, u) => `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * u)).join(',')})`;
+    sky.addColorStop(0, mix([10, 6, 30], [56, 149, 220], dayness)); sky.addColorStop(0.6, mix([46, 16, 80], [140, 205, 245], dayness)); sky.addColorStop(1, dusk > 0.05 ? mix([90, 30, 90], [255, 150, 90], Math.min(1, dusk)) : mix([60, 20, 90], [200, 230, 250], dayness));
+    g.fillStyle = sky; g.fillRect(0, 0, w, h);
+    if (dayness < 0.4) { for (const [sx, sy, s] of WALL_B.stars) { g.globalAlpha = (0.4 + 0.6 * Math.abs(Math.sin(t * (0.5 + s) + s * 9))) * (1 - dayness * 2.5); g.fillStyle = '#FFFFFF'; g.fillRect(sx * w, sy * h, 1.2, 1.2); } g.globalAlpha = 1; }
+    // the sun or the moon
+    { const up = dayness > 0.3, cx = w * (0.15 + ((hr % 12) / 12) * 0.7), cy = h * (0.5 - 0.35 * Math.sin(((hr % 12) / 12) * Math.PI)); const gr = g.createRadialGradient(cx, cy, 0, cx, cy, up ? 60 : 40); gr.addColorStop(0, up ? 'rgba(255,240,200,0.95)' : 'rgba(230,230,255,0.9)'); gr.addColorStop(0.25, up ? 'rgba(255,200,120,0.5)' : 'rgba(200,200,255,0.25)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, up ? 60 : 40, 0, Math.PI * 2); g.fill(); }
+    // the skyline, far then near, windows lit after dark; WYRD Tower in the middle with its LED crown
+    const base = h * 0.72, sc = w / 380;
+    g.fillStyle = mix([28, 14, 54], [90, 110, 140], dayness); for (const [bx, bw, bh] of WALL_B.far) g.fillRect(bx * sc, base - bh * sc * 0.8, bw * sc, bh * sc * 0.8);
+    for (const [bx, bw, bh, r] of WALL_B.near) { g.fillStyle = mix([14, 8, 30], [60, 75, 100], dayness); g.fillRect(bx * sc, base - bh * sc, bw * sc, bh * sc);
+      if (dayness < 0.6) { g.fillStyle = r < 0.5 ? 'rgba(254,240,170,0.75)' : 'rgba(165,243,252,0.6)'; for (let wy = base - bh * sc + 6; wy < base - 4; wy += 7) for (let wx = bx * sc + 3; wx < (bx + bw) * sc - 3; wx += 6) if (((wx * 13 + wy * 7) | 0) % 5 === 0) g.fillRect(wx, wy, 2.4, 3); } }
+    { const tx = w * 0.5, th = h * 0.5; g.fillStyle = mix([40, 20, 90], [70, 60, 140], dayness); g.beginPath(); g.moveTo(tx - 16, base); g.lineTo(tx - 7, base - th); g.lineTo(tx + 7, base - th); g.lineTo(tx + 16, base); g.fill(); for (let k = 0; k < 14; k++) { const y = base - 8 - k * (th - 14) / 14, hue = (t * 40 + k * 22) % 360; g.fillStyle = `hsl(${hue},95%,60%)`; g.fillRect(tx - 14 + k * 0.5, y, 28 - k, 2); } g.strokeStyle = '#E0E7FF'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(tx, base - th); g.lineTo(tx, base - th - 26); g.stroke(); g.fillStyle = Math.floor(t * 1.5) % 2 ? '#EF4444' : '#7F1D1D'; g.beginPath(); g.arc(tx, base - th - 27, 2.2, 0, Math.PI * 2); g.fill(); }
+    // the lagoon: the sky and the lights reflected, rippling
+    const wg = g.createLinearGradient(0, base, 0, h); wg.addColorStop(0, mix([20, 10, 50], [40, 120, 180], dayness)); wg.addColorStop(1, mix([5, 4, 14], [10, 50, 90], dayness)); g.fillStyle = wg; g.fillRect(0, base, w, h - base);
+    for (let k = 0; k < 40; k++) { const ry = base + 6 + (k * 7) % (h - base - 8), rx = ((k * 97 + t * 12 * (1 + (k % 3))) % (w + 40)) - 20; g.fillStyle = k % 4 ? 'rgba(254,240,170,0.18)' : 'rgba(236,72,153,0.22)'; g.fillRect(rx, ry, 16 + (k % 5) * 6, 1.2); }
+    // the weather on it
+    if (WX.cur.rain > 0.05) { g.strokeStyle = 'rgba(226,232,240,0.35)'; g.lineWidth = 1; g.beginPath(); const n = Math.round(90 * WX.cur.rain); for (let k = 0; k < n; k++) { const ry = ((k * 53 + t * 520) % (h + 20)) - 10, rx = (k * 37) % w; g.moveTo(rx, ry); g.lineTo(rx - 3, ry - 12); } g.stroke(); }
+    if (WX.cur.haze > 0.05) { g.fillStyle = `rgba(214,160,95,${0.35 * WX.cur.haze})`; g.fillRect(0, 0, w, h); }
+    // keep it calm under the apps: a soft dark wash
+    const sh = g.createLinearGradient(0, 0, 0, h); sh.addColorStop(0, 'rgba(7,7,13,0.15)'); sh.addColorStop(0.4, 'rgba(7,7,13,0.35)'); sh.addColorStop(1, 'rgba(7,7,13,0.55)'); g.fillStyle = sh; g.fillRect(0, 0, w, h);
+  }
+  (function wallLoop(now) { if (phone.style.display === 'block') drawWall(now); requestAnimationFrame(wallLoop); })(performance.now());
+  // ---- the Dynamic Island: the camera notch, alive. Music playing: the cover and a moving equaliser; the city DJ out at night;
+  // a ride on its way. A notification grows out of it for a moment. Tap it to open what it shows.
+  const ISL = document.querySelector('#pbar .cam'); ISL.id = 'island'; ISL.innerHTML = '<img alt=""><span class="il-t"></span><i class="il-eq"><s></s><s></s><s></s></i>';
+  let islToastUntil = 0, islOpen = null;
+  function islandSet(kind, img, text) { ISL.className = 'cam ' + kind; const im = ISL.querySelector('img'); if (img) { if (im.src !== img) im.src = img; im.style.display = ''; } else im.style.display = 'none'; ISL.querySelector('.il-t').textContent = text || ''; }
+  setInterval(() => {
+    if (performance.now() < islToastUntil) return;
+    const s = MP.q[MP.i];
+    if (s && !MP.a.paused) { islandSet('il-live', s.art, s.title); islOpen = ['music', { tab: 'now' }]; }
+    else if (CITY.mix && CITY.mix.playing && CITY.mix.now && !inside) { islandSet('il-live il-dj', null, '🎧 ' + (CITY.mix.now.title || 'DJ Eko Nights')); islOpen = ['music']; }
+    else if (typeof trip !== 'undefined' && trip) { islandSet('il-live il-ride', null, trip.phase === 'ontrip' ? '🛵 On the way' : '🛵 Your ride is coming'); islOpen = ['ride']; }
+    else { islandSet('', null, ''); islOpen = null; }
+  }, 600);
+  ISL.onclick = (e) => { e.stopPropagation(); if (islOpen) go(...islOpen); };
+  function islandToast(text, kind) { islToastUntil = performance.now() + 3200; islandSet('il-toast', null, ({ music: '🎧 ', store: '🛋️ ', fashion: '👔 ', island: '✨ ' }[kind] || '🔔 ') + text); }
+  { const n0 = notify; notify = (text, kind) => { n0(text, kind); if (phone.style.display === 'block') islandToast(text, kind); }; }
   function lockScreen() {
     return new Promise((done) => {
       const L = document.getElementById('lockscr'), d = new Date(Date.now() + 3600e3), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
       document.getElementById('lockw').textContent = `${wx.icon} ${wx.temp}°C · ${wx.text} · Lagos`;
-      document.getElementById('lockn').innerHTML = notes.slice(0, 3).map(noteHtml).join('') + (notes.length > 3 ? `<div class="lmore">+${notes.length - 3} more</div>` : '');
+      // what's playing, with its controls, above the notifications
+      const s = MP.q[MP.i], lm = s ? `<div class="lmus" onclick="event.stopPropagation()"><div class="mwa" style="background-image:url('${esc(s.art)}')"></div><div class="mwt"><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><div class="mwc"><button data-lm="prev">⏮</button><button data-lm="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-lm="next">⏭</button></div></div>` : '';
+      document.getElementById('lockn').innerHTML = lm + notes.slice(0, 3).map(noteHtml).join('') + (notes.length > 3 ? `<div class="lmore">+${notes.length - 3} more</div>` : '');
+      document.getElementById('lockn').querySelectorAll('[data-lm]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); audioCtx(); const k = b.dataset.lm; if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); b.closest('.lmus').querySelector('[data-lm=play]').textContent = MP.a.paused ? '▶' : '⏸'; }));
       L.style.display = 'flex'; L.onclick = () => { L.style.display = 'none'; done(); };
       L.querySelectorAll('[data-lq]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); lockGo = b.dataset.lq; L.style.display = 'none'; done(); })); // straight into an app
     });
@@ -5597,13 +5681,18 @@
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
         show(`<div class="hhead"><div class="hgreet">${hi},<b>${esc(me$.handle)}</b></div><div class="hwx">${wx.icon}<b>${wx.temp}°</b></div></div>
-          <div class="widget"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wd">${wx.text}</div><div class="wn">${wx.temp}°C</div></div></div>
+          <form class="osq" id="osQ"><i>✨</i><input id="osQi" placeholder="Ask WYRD anything…" autocomplete="off"><button aria-label="Ask">➤</button></form>
+          <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
+          ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
+          ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🪩</i></button>`; })()}
           <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>${naira(me$.earnedToday || 0)} of ${naira(cap)} today</small></button>
             <button class="wmini" data-app="homes"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${notes.length ? notes.length + ' new on your phone' : 'All quiet'}</small></button></div>
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
+        $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
+        pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => render('home'), 250); }));
         { const im = pbody.querySelector('.wfit img'); const u = im ? fitShot(im.dataset.shot) : null; if (u) im.src = u; else if (im) im.remove(); }
         return;
       }
