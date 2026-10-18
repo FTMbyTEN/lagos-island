@@ -1358,9 +1358,8 @@
       const sg = () => faceText('W Y R D', cx, 5.2, d - 0.55, '#FFFFFF', 1.8, 10);
       sg(); glow.push(sg);
     },
-    // ---- the airport: a runway with numbers, edge lights and a windsock, a taxiway, the private hangars, a glass
-    // terminal under a wave roof with jet bridges out to airliners at the gates, the control tower, a drop-off
-    // and car park out front, and an airliner taking off every forty seconds
+    // ---- the airport (private aviation): a runway with edge lights and a windsock, a taxiway, the hangars, private
+    // jets parked on the apron, a glass terminal under a wave roof, the control tower, a drop-off and car park out front
     airport(a, b, c, d) {
       flat(a, b, c, d, 0.05, '#C7CDD5');
       flat(a + 1, b + 1, c - 1, b + 7, 0.06, '#9CC87F'); // grass along the runway
@@ -1377,16 +1376,13 @@
       // the taxiway, a yellow centre line from the runway to the apron
       flat(c - 16, rz1, c - 10, d - 22, 0.07, '#4B5563'); flat(c - 13.15, rz1, c - 12.85, d - 22, 0.09, '#FACC15');
       flat(a + 3, d - 36, c - 10, d - 21, 0.07, '#9CA3AF'); // the apron
-      for (let k = 0; k < 3; k++) { const gx = a + 12 + k * 22; flat(gx - 0.15, d - 36, gx + 0.15, d - 21, 0.09, '#FACC15'); }
+      for (let k = 0; k < 2; k++) { const gx = a + 18 + k * 32; flat(gx - 0.15, d - 36, gx + 0.15, d - 21, 0.09, '#FACC15'); }
       // the private aviation side: hangars, a jet in each doorway
       for (let k = 0; k < 2; k++) hangar(a + 6 + k * 30, b + 24, 26, 18, k);
-      // airliners at the gates (the third gate's away), with fuel trucks and baggage carts
-      for (let k = 0; k < 3; k++) {
-        const gx = a + 12 + k * 22; if (k === 1) continue;
-        plane(gx, d - 30, 0);
-        box(gx - 0.8, 2.6, d - 28.5, gx + 0.8, 4.4, d - 20, '#CBD5E1'); box(gx - 0.2, 0, d - 25, gx + 0.2, 2.6, d - 24.6, '#64748B'); // the jet bridge
-        box(gx + 9.5, 0, d - 25.5, gx + 13.5, 1.8, d - 24, '#FACC15'); for (let j = 0; j < 3; j++) box(gx - 8 - j * 2.2, 0, d - 25.2, gx - 6.4 - j * 2.2, 0.9, d - 24.2, '#E5E7EB');
-      }
+      // private jets parked on the apron, a fuel truck beside one
+      for (let k = 0; k < 2; k++) jet(a + 18 + k * 32, d - 29, k + 1);
+      flush3d(); // the jets before the terminal goes up in front of them
+      box(a + 22, 0, d - 25.5, a + 26, 1.8, d - 24, '#FACC15');
       // the terminal: glass walls, a white wave roof, the name along the front
       const t0 = a + 4, t1 = c - 14, f0 = d - 20, f1 = d - 8;
       box(t0, 0, f0, t1, 9, f1, '#9CC9E8', '#E0F2FE', 2);
@@ -1405,9 +1401,6 @@
       const bcn = () => { if (Math.floor(t * 1.5) % 2) return; const p = P(c - 6, 30.2, d - 12); x.fillStyle = '#EF4444'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.45), 0, Math.PI * 2); x.fill(); };
       bcn(); glow.push(bcn);
       groundText('LAGOS ISLAND', (a + c) / 2, b + 4.2, 4, 'rgba(255,255,255,0.75)');
-      // the departure: rolls down the runway, lifts off, climbs away to the east
-      const ph = (t % 40) / 40;
-      if (ph < 0.6) { const u = ph / 0.6, px = a + 12 + u * u * (c - a + 40), alt = u < 0.55 ? 0 : (u - 0.55) * 70; plane(px, rm, alt); }
     },
     // ---- the station: the Blue Line on two electrified tracks, a long island platform under a glass canopy,
     // trains both ways, a ticket hall with an arched glass front and a clock, a forecourt with a bus stop
@@ -1618,7 +1611,7 @@
     flat(hx + 0.6, hz + 0.6, hx + w - 0.6, hz + d, 0.07, '#F5F0E6');
     const glowIn = () => { const p = P(hx + w / 2, 4, hz + d / 2); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * w * 0.6); g.addColorStop(0, 'rgba(255,236,200,0.45)'); g.addColorStop(1, 'rgba(255,236,200,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * w * 0.6, 0, Math.PI * 2); x.fill(); x.restore(); };
     glow.push(glowIn);
-    jet(hx + w / 2, hz + d / 2 + 2, k);
+    jet(hx + w / 2, hz + d / 2 + 2, k); flush3d();
     // the arched roof, in ribs
     const ribs = 7;
     for (let r = 0; r <= ribs; r++) {
@@ -1632,7 +1625,9 @@
     const sg = P(hx + w / 2, 10.5, hz + d); x.save(); x.font = `800 ${Math.max(7, K * 1.3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#B08A43'; x.fillText(['EKO JET CLUB', 'ATLANTIC AVIATION', 'ISLAND PRIVATE'][k % 3], sg[0], sg[1]); x.restore();
   }
   // a private jet: a slim white fuselage with a gold cheatline, swept wings with winglets, a T-tail, engines at the back
+  let JET_TURN = 0; // which way the model's nose points (checked in the preview)
   function jet(px, pz, k) {
+    if (car3d(px, pz, 'jet', JET_TURN, 24)) return; // the real model, 24 m nose to tail; the drawn one below until it loads
     const S = 1.55, y = 1.6 * S, accent = ['#B08A43', '#1E3A8A', '#111827'][k % 3];
     const X = (v) => px + v * S, Z = (v) => pz + v * S, Y = (v) => y + v * S;
     x.fillStyle = 'rgba(20,40,60,0.22)'; const sh = P(X(1), 0, Z(0.6)); x.beginPath(); x.ellipse(sh[0], sh[1], K * 8 * S, K * 4 * S * sp, 0, 0, Math.PI * 2); x.fill();
@@ -1751,6 +1746,7 @@
   // ---- real 3D car models (CC BY, credited in the phone's Credits)
   const GLB_FOR = { rangerover: 'range-rover', cullinan: 'rolls-royce', cybertruck: 'cybertruck', corolla: 'corolla', camry: 'camry', highlander: 'highlander', landcruiser: 'landcruiser', gwagon: 'gwagon', urus: 'urus', ferrari: 'roma', porsche911: 'porsche911' };
   const CAR_BASE = location.pathname.startsWith('/lagos-island') ? '/lagos-island/cars/' : 'cars/';
+  const JET_BASE = location.pathname.startsWith('/lagos-island') ? '/lagos-island/jets/' : 'jets/';
   const G3 = { ok: false, queue: [], protos: {}, pool: {}, on: true };
   function initThree() {
     const T = window.__three; if (!T || G3.ok) return;
@@ -1773,6 +1769,14 @@
         G3.protos[model] = norm; G3.pool[model] = [];
       }, undefined, () => {});
     }
+    // the private jet (Poly by Google, CC BY): on the ground, centred, nose towards +x, one unit long (the caller scales it)
+    loader.load(JET_BASE + 'jet.glb', (gltf) => {
+      const inner = gltf.scene, box = new THREE.Box3().setFromObject(inner), size = new THREE.Vector3(), ctr = new THREE.Vector3(); box.getSize(size); box.getCenter(ctr);
+      inner.position.set(-ctr.x, -box.min.y, -ctr.z);
+      const pivot = new THREE.Group(); pivot.add(inner); if (size.z > size.x) pivot.rotation.y = Math.PI / 2;
+      const norm = new THREE.Group(); norm.add(pivot); norm.scale.setScalar(1 / Math.max(size.x, size.z));
+      G3.protos.jet = norm; G3.pool.jet = [];
+    }, undefined, () => {});
     G3.ok = true; setTimeout(initPeople, 0); // the people start loading straight away (the sign-up picture shows them)
   }
   window.addEventListener('three-ready', initThree); initThree();
@@ -4405,7 +4409,7 @@
         return;
       }
       if (app === 'credits') {
-        return show(`${ahead('credits', 'Credits', 'The people whose work is in the game')}<div class="pcard"><h3>3D people</h3><div class="row"><span>Universal Base Characters, Universal Animation Library</span><b>Quaternius · CC0</b></div></div><div class="pcard"><h3>3D furniture</h3><div class="row"><span>Furniture Kit (Eko Home Store)</span><b>Kenney · CC0</b></div></div><div class="pcard"><h3>3D car models</h3>
+        return show(`${ahead('credits', 'Credits', 'The people whose work is in the game')}<div class="pcard"><h3>3D people</h3><div class="row"><span>Universal Base Characters, Universal Animation Library</span><b>Quaternius · CC0</b></div></div><div class="pcard"><h3>3D private jet</h3><div class="row"><span>Jet</span><b>Poly by Google · CC BY 3.0</b></div></div><div class="pcard"><h3>3D furniture</h3><div class="row"><span>Furniture Kit (Eko Home Store)</span><b>Kenney · CC0</b></div></div><div class="pcard"><h3>3D car models</h3>
           <div class="row"><span>Range Rover</span><b>IvOfficial</b></div>
           <div class="row"><span>Rolls-Royce</span><b>David Sirera</b></div>
           <div class="row"><span>Tesla Cybertruck</span><b>Mobolaji</b></div>
