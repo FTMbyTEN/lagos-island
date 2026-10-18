@@ -884,6 +884,11 @@
     quad(p, '#F8FAFC', '#94A3B8');
     box(bx - 1.6, 0.4, bz - 0.9, bx + 1.6, 2, bz + 0.9, '#0EA5E9');
   }
+  // the Arena's shows (fetched with the phone's Arena app, and every couple of minutes when you're signed in): its
+  // searchlights and the LIVE sign only come on while one is actually happening
+  let arenaShows = [];
+  const arenaLive = () => { const now = Date.now(); return arenaShows.some((s) => s.live || (s.startsAt && now >= Date.parse(s.startsAt) && now < Date.parse(s.startsAt) + (s.minutes || 60) * 60000)); };
+  setTimeout(function poll() { if (typeof signedIn === 'function' && signedIn()) my('shows').then((l) => { if (Array.isArray(l)) arenaShows = l; }).catch(() => {}); setTimeout(poll, 120000); }, 4000);
   // a flat disc on the ground (or at height y)
   function disk(cx, cz, y, r, col) { const p = P(cx, y, cz); x.fillStyle = col; x.beginPath(); x.ellipse(p[0], p[1], r * K, r * K * sp, 0, 0, Math.PI * 2); x.fill(); }
   // a cone (a minaret cap): shaded across its width
@@ -1821,10 +1826,10 @@
         const q = [P(cx - 10, 8.4, cz + R + 1.2), P(cx + 10, 8.4, cz + R + 1.2), P(cx + 10, 15, cz + R + 1.2), P(cx - 10, 15, cz + R + 1.2)];
         const g = x.createLinearGradient(q[0][0], 0, q[1][0], 0); g.addColorStop(0, `hsl(${(t * 25) % 360},85%,35%)`); g.addColorStop(1, `hsl(${(t * 25 + 140) % 360},85%,28%)`);
         quad(q, g, '#0F172A');
-        faceText('THE ARENA', cx, 12.7, cz + R + 1.25, '#FFFFFF', 2.2, 8); faceText('live shows · tickets on your phone', cx, 10, cz + R + 1.25, '#FDE68A', 0.85, 0, 700);
+        faceText('THE ARENA', cx, 12.7, cz + R + 1.25, '#FFFFFF', 2.2, 8); faceText(arenaLive() ? '● LIVE NOW · come in' : 'live shows · tickets on your phone', cx, 10, cz + R + 1.25, '#FDE68A', 0.85, 0, 700);
       };
       scr(); glow.push(scr);
-      if (night > 0.3) { beams(cx - R * 0.7, 16, cz, 200, t); beams(cx + R * 0.7, 16, cz, 300, t + 2); }
+      if (night > 0.3 && arenaLive()) { beams(cx - R * 0.7, 16, cz, 200, t); beams(cx + R * 0.7, 16, cz, 300, t + 2); } // the searchlights only while a show is on
       palm(a + 4, b + 4, 10); palm(c - 4, b + 4, 10); palm(a + 4, cz, 9); palm(c - 4, cz, 9);
       for (const [lx, lz] of [[cx - 15, d - 3], [cx + 15, d - 3]]) lamp(lx, lz, 8);
     },
@@ -5142,10 +5147,41 @@
     }
     function airhorn() { for (const [f, dt] of [[466, 0], [466, 0.16], [466, 0.32], [440, 0.5]]) { const o = c.createOscillator(), o2 = c.createOscillator(), og = c.createGain(); o.type = o2.type = 'sawtooth'; o.frequency.value = f; o2.frequency.value = f * 1.5; og.gain.setValueAtTime(0, c.currentTime + dt); og.gain.linearRampToValueAtTime(0.07, c.currentTime + dt + 0.02); og.gain.linearRampToValueAtTime(0, c.currentTime + dt + 0.14); o.connect(og); o2.connect(og); og.connect(out); for (const x2 of [o, o2]) { x2.start(c.currentTime + dt); x2.stop(c.currentTime + dt + 0.16); } } }
     const label = (trick) => { if (M.now) { M.now.dj = 'DJ Eko Nights · ' + trick; later(2600, () => { if (M.now) M.now.dj = 'DJ Eko Nights · live remix'; }); } };
+    // ---- the Amapiano engine under the set: log drum, shakers, rim and a soft kick, made live and locked to the beat of the
+    // song that's playing, so the groove carries straight through every change. A log-drum fill at the end of every 16
+    // bars, and now and then the drums drop out for a bar and come back in on a riser.
+    const bed = c.createGain(); bed.gain.value = 0.42; bed.connect(out);
+    const sat = c.createWaveShaper(); { const cv = new Float32Array(1024); for (let k = 0; k < 1024; k++) { const v = k / 512 - 1; cv[k] = Math.tanh(v * 2.2); } sat.curve = cv; } sat.connect(bed);
+    const noiseBuf = (() => { const b = c.createBuffer(1, c.sampleRate * 0.5, c.sampleRate), d = b.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = Math.random() * 2 - 1; return b; })();
+    const logDrum = (t, f, len) => { const o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o2.type = 'triangle'; o.frequency.setValueAtTime(f * 2.1, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.06); o2.frequency.setValueAtTime(f * 4.2, t); o2.frequency.exponentialRampToValueAtTime(f * 2, t + 0.05); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.9, t + 0.006); g.gain.exponentialRampToValueAtTime(0.001, t + len); const g2 = c.createGain(); g2.gain.value = 0.18; o.connect(g); o2.connect(g2); g2.connect(g); g.connect(sat); o.start(t); o2.start(t); o.stop(t + len + 0.05); o2.stop(t + len + 0.05); };
+    const hit = (t, type, vol, dec, f) => { const s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain(); s.buffer = noiseBuf; fl.type = type; fl.frequency.value = f; fl.Q.value = type === 'bandpass' ? 4 : 0.7; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dec); s.connect(fl); fl.connect(g); g.connect(bed); s.start(t); s.stop(t + dec + 0.02); };
+    const kick = (t, v) => { const o = c.createOscillator(), g = c.createGain(); o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.28); o.connect(g); g.connect(bed); o.start(t); o.stop(t + 0.3); };
+    // the log drum's patterns over a bar of sixteenths [step, pitch in semitones, length in steps]; a fill for the 16th bar
+    const LOGS = [[[0, 0, 3], [3, 0, 2], [6, 3, 3], [10, 0, 2], [12, 5, 2], [14, 3, 2]], [[0, 0, 2], [3, 7, 2], [7, 5, 3], [10, 3, 2], [13, 0, 3]], [[2, 0, 2], [5, 0, 3], [8, 3, 2], [11, 5, 2], [14, 7, 2]]];
+    const FILL = [[0, 0, 1], [2, 3, 1], [4, 5, 1], [6, 7, 1], [8, 10, 1], [10, 12, 1], [12, 10, 1], [13, 12, 1], [14, 14, 1], [15, 15, 1]];
+    const G = { next: 0, step: 0, bar: 0, root: 43.65, pat: 0, drop: -1 };
+    function playing() { const D = M.decks[M.cur]; return D && D.song && !D.a.paused ? D : null; }
+    setInterval(() => {
+      if (!M.playing) return; const D = playing(); if (!D) return;
+      const gr = M.grid.get(D.song.id) || { bpm: 112, phase: 0 }, rate = D.a.playbackRate || 1, beat = 60 / gr.bpm, s16 = beat / 4 / rate;
+      // stay locked: resync to the deck at the top of every bar (its own clock drifts from ours)
+      if (G.step % 16 === 0 || !G.next || G.next < c.currentTime - 0.2) { const pos = D.a.currentTime - gr.phase, beats = pos / beat, toBeat = (Math.ceil(beats + 0.02) - beats) * beat / rate; const bars = Math.ceil(beats / 4 + 0.005); G.next = c.currentTime + toBeat + ((4 - (Math.ceil(beats + 0.02) % 4)) % 4) * beat / rate; G.step = 0; if (bars !== G.lastBar) { G.lastBar = bars; G.bar++; if (G.bar % 8 === 0) G.pat = Math.floor(Math.random() * LOGS.length); G.drop = Math.random() < 0.12 && G.bar % 4 === 3 ? G.bar : -1; if (G.drop === G.bar) riser(4 * beat / rate); } }
+      while (G.next < c.currentTime + 0.12) {
+        const t = G.next, st = G.step % 16, quiet = G.drop === G.bar, fill = G.bar % 16 === 15, swing = st % 2 ? s16 * 0.12 : 0, tt = t + swing;
+        if (!quiet) {
+          for (const [ps, semi, len] of fill ? FILL : LOGS[G.pat]) if (ps === st) logDrum(t, G.root * Math.pow(2, semi / 12), len * s16 * 1.4);
+          hit(tt, 'highpass', st % 4 === 2 ? 0.11 : 0.05, 0.05, 7500); // shakers, swung, the offbeats pushed
+          if (st === 4 || st === 12) hit(t, 'bandpass', 0.22, 0.09, 1800); // the rim on 2 and 4
+          if (st % 4 === 0) kick(t, st === 0 ? 0.55 : 0.32);
+          if (st === 14 && Math.random() < 0.3) hit(t, 'highpass', 0.08, 0.25, 9000); // an open hat into the next bar
+        }
+        G.next += s16; G.step++;
+      }
+    }, 25);
     // ---- the transitions
     function transition(outD, inD, song) {
       const now = c.currentTime, b = beatSec(outD), bar = 4 * b;
-      const kinds = ['blend', 'blend', 'echo', 'spinback', 'roll', 'filter'], kind = outD.a.src && !outD.a.paused ? kinds[Math.floor(Math.random() * kinds.length)] : 'cut';
+      const tricks = ['echo', 'spinback', 'roll', 'filter'], kind = !(outD.a.src && !outD.a.paused) ? 'cut' : Math.random() < 0.8 ? 'blend' : tricks[Math.floor(Math.random() * tricks.length)]; // mostly long smooth blends; a trick now and then
       const startIn = (delay, fadeIn, bassIn) => later(delay * 1000, () => {
         const t1 = c.currentTime; inD.a.play().catch(() => {});
         ramp(inD.g.gain, 1, t1, fadeIn); if (bassIn != null) { inD.bass.gain.setValueAtTime(-24, t1); later(bassIn * 1000, () => ramp(inD.bass.gain, 2, c.currentTime, 0.05)); }
@@ -5154,11 +5190,11 @@
       const stopOut = (delay) => later(delay * 1000, () => { outD.a.pause(); outD.g.gain.value = 0; outD.send.gain.value = 0; outD.hp.frequency.value = 20; outD.lp.frequency.value = 20000; outD.bass.gain.value = 2; outD.a.playbackRate = 1; });
       for (const p of [inD.hp.frequency, inD.lp.frequency]) p.cancelScheduledValues(now); inD.hp.frequency.value = 20; inD.lp.frequency.value = 20000; inD.g.gain.value = 0; inD.send.gain.value = 0;
       if (kind === 'cut') { startIn(0, 0.05); return; }
-      label({ blend: 'bass swap', echo: 'echo out', spinback: 'spinback!', roll: 'loop roll', filter: 'filter build' }[kind]);
-      if (kind === 'blend') { // 8 bars of both, the bass swapped on the one halfway
-        startIn(0, 4 * b, 4 * b);
-        later(4 * b * 1000, () => ramp(outD.bass.gain, -24, c.currentTime, 0.05));
-        later(4 * b * 1000, () => { ramp(outD.g.gain, 0, c.currentTime, 4 * b); }); stopOut(8 * b + 0.2);
+      if (kind !== 'blend') label({ echo: 'echo out', spinback: 'spinback!', roll: 'loop roll', filter: 'filter build' }[kind]);
+      if (kind === 'blend') { // four bars of both: the new one rises for two bars, the bass swaps on the one, the old one fades over two more
+        startIn(0, 8 * b, 8 * b);
+        later(8 * b * 1000, () => ramp(outD.bass.gain, -24, c.currentTime, 0.05));
+        later(8 * b * 1000, () => { ramp(outD.g.gain, 0, c.currentTime, 8 * b); }); stopOut(16 * b + 0.2);
       } else if (kind === 'echo') { // the outgoing echoes away on dotted eighths while the next slams in on the bar
         echo.delayTime.setValueAtTime(Math.min(1.9, b * 0.75), now); ramp(outD.send.gain, 1, now, b); ramp(outD.hp.frequency, 1200, now, bar, true); ramp(outD.g.gain, 0, now + b * 0.5, b * 1.5);
         startIn(bar, 0.02); later(bar * 1000, airhorn); stopOut(bar + 0.3);
@@ -5194,9 +5230,9 @@
         if (!M.playing) return;
         transition(live ? outD : { a: { src: '', paused: true } }, inD, song);
         M.cur = 1 - M.cur;
-        // play 8 bars of it (the preview is 30 s), then go again
-        const left = Math.max(10, ((inD.a.duration || 30) - inD.a.currentTime) / (inD.a.playbackRate || 1) - 7);
-        later(Math.min(left, 32 * 60 / grid.bpm / (inD.a.playbackRate || 1)) * 1000, next);
+        // play it nearly to the end of its preview: the next song is cued so its four-bar blend finishes as this one runs out
+        const rateIn = inD.a.playbackRate || 1, blendSec = 16 * 60 / grid.bpm / rateIn, left = Math.max(12, ((inD.a.duration || 30) - inD.a.currentTime) / rateIn - blendSec - 0.6);
+        later(left * 1000, next);
       });
     }
     M.play = async () => { if (M.playing) return; M.playing = true; if (!M.list.length) { if (!M.loading) M.loading = load(); await M.loading; } if (M.playing && M.list.length) next(); };
@@ -5515,7 +5551,7 @@
         return;
       }
       if (app === 'arena') {
-        await loadMe(); const list = await my('shows');
+        await loadMe(); const list = await my('shows'); arenaShows = list; // kept for the arena's lights
         const when = (s) => new Date(s.startsAt).toLocaleString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
         // what's live (or next) up top, then every show as a card: the artist, when, the price, how full it is
         const lead = list.find((s) => s.live) || list[0];
