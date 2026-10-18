@@ -5071,14 +5071,67 @@
       CITY.srcs.push(s);
       residentSet(s).then((set) => { if (!s.now || s.now.resident) deckPlay(s, set); });
     }
-    // the city's own DJ: one mix over the whole island at night (the clubs keep their sound inside, so they never clash)
-    { const s = { spot: { name: 'Lagos Nights', dj: 'DJ Eko Nights', q: ['afrobeats amapiano mix 2025', 'afrobeats mix 2025', 'naija party mix'] }, a: new Audio(), now: null };
-      s.a.crossOrigin = 'anonymous'; s.a.preload = 'none';
-      const el = c.createMediaElementSource(s.a), bass = c.createBiquadFilter(); s.g = c.createGain(); s.g.gain.value = 0;
-      bass.type = 'lowshelf'; bass.frequency.value = 100; bass.gain.value = 3;
-      el.connect(bass); bass.connect(s.g); s.g.connect(CITY.master);
-      CITY.mix = s; residentSet(s).then((set) => deckPlay(s, set)); }
+    // the city's own DJ, DJ Eko Nights, mixing live: the newest Afro releases (Deezer's New Afro) and Nigeria's chart right
+    // now, newest first, on two decks. Each song comes in on a filter sweep with its bass cut and takes over, the last one
+    // sweeps out on an echo; now and then a riser builds into the drop and an airhorn goes off. Clubs keep their own sound inside.
+    CITY.mix = liveMix(c);
     if (CITY.pendingDecks) cityDecks(CITY.pendingDecks);
+  }
+  function liveMix(c) {
+    const out = c.createGain(); out.gain.value = 0; out.connect(CITY.master);
+    const echo = c.createDelay(1.5), efb = c.createGain(); echo.delayTime.value = 0.375; efb.gain.value = 0.45;
+    echo.connect(efb); efb.connect(echo); echo.connect(out);
+    const deck = () => { const a = new Audio(); a.crossOrigin = 'anonymous'; a.preload = 'auto'; const el = c.createMediaElementSource(a), hp = c.createBiquadFilter(), lo = c.createBiquadFilter(), g = c.createGain();
+      hp.type = 'highpass'; hp.frequency.value = 20; hp.Q.value = 0.8; lo.type = 'lowshelf'; lo.frequency.value = 120; lo.gain.value = 3; g.gain.value = 0;
+      el.connect(hp); hp.connect(lo); lo.connect(g); g.connect(out); return { a, hp, lo, g, send: null }; };
+    const M = { out, decks: [deck(), deck()], cur: 0, list: [], i: -1, playing: false, timer: 0, now: null, spot: { name: 'Lagos Nights', dj: 'DJ Eko Nights' }, loading: null };
+    M.a = { get paused() { return !M.playing; } }; // so the top bar can ask, like any other source
+    const PLAY = 21, XF = 4.5; // seconds of each song, seconds of the blend
+    async function load() {
+      // Deezer's Afro editors' New Afro (the week's new Afrobeats, Amapiano and Afro-pop releases), interleaved with
+      // Nigeria's chart right now, then their Afro Hits to keep it going
+      const pull = async (id) => { try { return (await dz('/playlist/' + id + '/tracks?limit=50')).data; } catch { return []; } };
+      const [fresh, top, hits] = await Promise.all([pull(1257036831), pull(1362516565), pull(1440614715)]), got = [];
+      for (let k = 0; k < Math.max(fresh.length, top.length); k++) { if (fresh[k]) got.push(fresh[k]); if (k % 2 && top[k]) got.push(top[k]); }
+      got.push(...hits);
+      const seen = new Set(), list = [];
+      for (const t of got) { const s = fromDz(t); if (!s || seen.has(s.id)) continue; seen.add(s.id); list.push(s); }
+      // newest first where the catalogue says when (charts keep their order), lightly shuffled in fours so it isn't the same set twice
+      for (let k = 0; k < list.length; k += 4) { const part = list.slice(k, k + 4).sort(() => Math.random() - 0.5); list.splice(k, part.length, ...part); }
+      M.list = list; return list.length;
+    }
+    function riser() { // white noise swept up through a band-pass, then a little airhorn on the drop
+      const len = 2.6, buf = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = buf.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = (Math.random() * 2 - 1) * (k / d.length);
+      const n = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(); n.buffer = buf; bp.type = 'bandpass'; bp.Q.value = 2; bp.frequency.setValueAtTime(400, c.currentTime); bp.frequency.exponentialRampToValueAtTime(6000, c.currentTime + len); g.gain.value = 0.18;
+      n.connect(bp); bp.connect(g); g.connect(out); n.start(); n.stop(c.currentTime + len);
+      setTimeout(() => { for (const [f, dt] of [[466, 0], [466, 0.18], [440, 0.36]]) { const o = c.createOscillator(), og = c.createGain(); o.type = 'sawtooth'; o.frequency.value = f; og.gain.setValueAtTime(0, c.currentTime + dt); og.gain.linearRampToValueAtTime(0.09, c.currentTime + dt + 0.02); og.gain.linearRampToValueAtTime(0, c.currentTime + dt + 0.16); o.connect(og); og.connect(out); o.start(c.currentTime + dt); o.stop(c.currentTime + dt + 0.2); } }, len * 1000);
+    }
+    function next() { // bring the next song in on the other deck and hand over to it
+      if (!M.playing || !M.list.length) return;
+      M.i = (M.i + 1) % M.list.length;
+      const song = M.list[M.i], inD = M.decks[1 - M.cur], outD = M.decks[M.cur], t0 = c.currentTime;
+      inD.a.src = song.url; inD.a.currentTime = 0;
+      const go = () => {
+        const t1 = c.currentTime;
+        inD.a.currentTime = Math.min(4, Math.max(0, (inD.a.duration || 30) - PLAY - 2)); inD.a.play().catch(() => {});
+        // in: bass cut and a high-pass that opens up as it rises; out: the high-pass closes in, it fades on an echo
+        inD.g.gain.cancelScheduledValues(t1); inD.g.gain.setValueAtTime(0, t1); inD.g.gain.linearRampToValueAtTime(1, t1 + XF);
+        inD.hp.frequency.cancelScheduledValues(t1); inD.hp.frequency.setValueAtTime(700, t1); inD.hp.frequency.exponentialRampToValueAtTime(20, t1 + XF);
+        if (outD.a.src && !outD.a.paused) {
+          outD.hp.frequency.cancelScheduledValues(t1); outD.hp.frequency.setValueAtTime(20, t1); outD.hp.frequency.exponentialRampToValueAtTime(1500, t1 + XF);
+          outD.g.gain.cancelScheduledValues(t1); outD.g.gain.setValueAtTime(outD.g.gain.value, t1); outD.g.gain.linearRampToValueAtTime(0, t1 + XF + 0.5);
+          try { outD.g.disconnect(echo); } catch {} outD.g.connect(echo); setTimeout(() => { try { outD.g.disconnect(echo); } catch {} outD.a.pause(); }, (XF + 3) * 1000);
+        }
+        M.cur = 1 - M.cur; M.now = { title: `${song.title} — ${song.artist}`, dj: 'DJ Eko Nights · live remix', art: song.art, resident: true };
+        if (Math.random() < 0.35) setTimeout(riser, (PLAY - XF - 2.6) * 1000);
+        clearTimeout(M.timer); M.timer = setTimeout(next, (PLAY - XF) * 1000);
+      };
+      const ready = () => { inD.a.removeEventListener('canplay', ready); go(); };
+      if (inD.a.readyState >= 3) go(); else { inD.a.addEventListener('canplay', ready); setTimeout(() => { if (M.decks[1 - M.cur] === inD && inD.a.readyState < 3) { inD.a.removeEventListener('canplay', ready); next(); } }, 8000); } // a song that won't load: skip it
+    }
+    M.play = async () => { if (M.playing) return; M.playing = true; if (!M.list.length) { if (!M.loading) M.loading = load(); await M.loading; } if (M.playing && M.list.length) next(); };
+    M.pause = () => { if (!M.playing) return; M.playing = false; clearTimeout(M.timer); for (const d of M.decks) d.a.pause(); };
+    return M;
   }
   // what the island server says each club's DJ is playing (from tick): switch to it, or back to the resident
   function cityDecks(decks) {
@@ -5115,7 +5168,7 @@
   setInterval(() => {
     if (CITY.dj && (!inside || inside.key !== CITY.dj)) djLeave(); // you walked out: the resident takes over
     const inClub = inside && inside.kind === 'club';
-    if (!CITY.on || (night < 0.2 && !inClub)) { djChip(); if (CITY.master) { CITY.master.gain.value *= 0.8; if (CITY.master.gain.value < 0.01) for (const s of CITY.srcs) if (!s.a.paused) s.a.pause(); } return; }
+    if (!CITY.on || (night < 0.2 && !inClub)) { djChip(); if (CITY.master) { CITY.master.gain.value *= 0.8; if (CITY.master.gain.value < 0.01) { for (const s of CITY.srcs) if (!s.a.paused) s.a.pause(); if (CITY.mix) CITY.mix.pause(); } } return; }
     if (!AX.ctx) return; if (!CITY.master) { cityStart(); return; }
     const duck = MP.a.paused ? 1 : 0.18, nf = inClub ? 1 : Math.min(1, (night - 0.2) / 0.4);
     CITY.master.gain.value += (nf * duck - CITY.master.gain.value) * 0.25;
@@ -5125,7 +5178,7 @@
       s.g.gain.value += (vol - s.g.gain.value) * 0.3; s.muff.frequency.value = here ? 16000 : 600; if (s.pan) s.pan.pan.value = 0;
       if (vol > 0.01 && s.a.paused && s.a.src) s.a.play().catch(() => {}); if (vol <= 0.01 && !s.a.paused && s.g.gain.value < 0.01) s.a.pause();
     }
-    if (CITY.mix) { const s = CITY.mix, vol = !inside && night >= 0.2 ? 0.6 : 0; s.g.gain.value += (vol - s.g.gain.value) * 0.25; if (vol > 0.01 && s.a.paused && s.a.src) s.a.play().catch(() => {}); if (vol <= 0.01 && !s.a.paused && s.g.gain.value < 0.01) s.a.pause(); }
+    if (CITY.mix) { const M = CITY.mix, vol = !inside && night >= 0.2 ? 0.6 : 0; M.out.gain.value += (vol - M.out.gain.value) * 0.25; if (vol > 0.01) M.play(); else if (M.out.gain.value < 0.01) M.pause(); } // the city DJ's live set
     djChip();
   }, 250);
   { const tc = document.getElementById('tCity'), tm = document.getElementById('tMusic');
