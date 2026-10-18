@@ -2600,6 +2600,7 @@
     beach: { w: 110, d: 72, floor: '#F3DE9C', wall: '#F3DE9C', trim: '#F3DE9C', cam: { yaw: -0.4, pitch: 0.85, zoom: 1.0 } }, // no walls: the sea at the back
     home: { w: 56, d: 40, floor: '#D6C3A5', wall: '#F7F3EC', trim: '#B08A43', cam: { yaw: -0.55, pitch: 0.9, zoom: 1.85 } }, // sized by its style on the way in
     store: { w: 124, d: 112, floor: '#E7E5E4', wall: '#FAFAF9', trim: '#0F766E', cam: { yaw: -0.55, pitch: 0.86, zoom: 0.8 } },
+    boutique: { w: 84, d: 56, floor: '#F5F5F4', wall: '#FAFAF9', trim: '#111827', cam: { yaw: -0.55, pitch: 0.86, zoom: 1.2 } }, // its stock and colours on the way in
     arena: { w: 120, d: 88, floor: '#111827', wall: '#0B1020', trim: '#38BDF8', cam: { yaw: -0.3, pitch: 0.8, zoom: 0.95 } },
   };
   // the Home Store's floor: every piece on its own plinth, room by room, cheapest first
@@ -2609,6 +2610,7 @@
     store: storeSorted().map((s, k) => ({ k: s.id, x: 9 + (k % 10) * 11.4, z: 18 + Math.floor(k / 10) * 11.2 })),
     hq: [], // a new home comes empty: you furnish it from the Eko Home Store
     home: [],
+    boutique: [], // the mannequins are the stock (see BOUTIQUES)
     // a yacht: loungers on the foredeck, a bar along the side, seats at the stern (the party boat swaps the loungers for a DJ and a dance floor on the way in)
     yacht: [
       ...[0, 1, 2, 3].map((k) => ({ k: 'lounger', x: 46 + k * 5.5, z: 10, c: '#F8FAFC' })), ...[0, 1, 2, 3].map((k) => ({ k: 'lounger', x: 46 + k * 5.5, z: 24, c: '#F8FAFC' })),
@@ -2744,6 +2746,7 @@
     if (R.kind === 'tower') drawTowerShell(R, now);
     if (R.kind === 'dealer') { drawShowroom(R, now); if (R.dealer === 'polanco') drawMezzanine(R); }
     if (R.kind === 'store') drawStoreShell(R);
+    if (R.kind === 'boutique') drawBoutique(R, now);
     if (R.kind === 'home') drawHomeShell(R);
     if ((R.kind === 'hq' || R.kind === 'home') && partyAt(R.key)) drawParty(R, partyAt(R.key), now);
     if (R.kind === 'office') drawOffice(R, now);
@@ -3122,6 +3125,31 @@
     }
     if (s === 'mansion' || s === 'villa') { const p = P(R.w / 2, 16, R.d / 2), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,236,190,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }
   }
+  // ---- the boutiques: Idumota (native and easy on the pocket), Falomo (sportswear and tailoring), Circle Mall (streetwear
+  // and luxury). Each outfit on a 3D mannequin on a plinth, the brand on a plate, the price on your phone when you tap it.
+  const BOUTIQUES = {
+    shops: ['Idumota', '#B45309', '#FEF3C7', ['puma_run', 'hm_hoodie', 'lanre_buba', 'orange_kaftan', 'folawiyo_ankara', 'ize_asooke', 'atafo_agbada', 'zara_dress']],
+    arcade: ['Falomo', '#1D4ED8', '#E0F2FE', ['puma_run', 'nike_dri', 'adidas_jersey', 'adidas_track', 'nike_tech', 'zara_linen', 'levis_denim', 'ralph_suit']],
+    mall: ['Circle Mall', '#111827', '#F5F5F4', ['offwhite_set', 'zara_dress', 'balenciaga_set', 'gucci_track', 'versace_silk', 'fendi_set', 'lv_jacket', 'dior_gown', 'atafo_agbada']],
+  };
+  // where each mannequin stands: two rows facing you, men and women in turn
+  function boutiqueSpots(R) {
+    const stock = (BOUTIQUES[R.shop] || BOUTIQUES.mall)[3], n = Math.ceil(stock.length / 2);
+    return stock.map((id, k) => ({ id, x: 12 + (k % n) * ((R.w - 24) / Math.max(1, n - 1)), z: k < n ? 16 : 34, g: k % 2 ? 'f' : 'm' }));
+  }
+  function drawBoutique(R, now) {
+    const [label, acc, soft] = BOUTIQUES[R.shop] || BOUTIQUES.mall;
+    faceText(label.toUpperCase(), R.w / 2, 14, 0.15, acc, 3.4, 0); faceText('tap an outfit to see it · try it · buy it', R.w / 2, 10.6, 0.15, '#78716C', 1.3, 0, 700);
+    flat(4, 44, R.w - 4, 52, 0.02, soft); // the runway to the door
+    box(R.w - 22, 0, 4, R.w - 6, 4, 8, acc); box(R.w - 22.2, 4, 3.8, R.w - 5.8, 4.4, 8.2, '#F5F5F4'); // the till
+    for (const m of boutiqueSpots(R)) {
+      cylLit(m.x, m.z, 3.2, 0, 0.3, soft); { const p = P(m.x, 0.32, m.z), r = 3.2 * K; x.strokeStyle = acc; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
+      const L = parseLook(`${m.g},${(m.x | 0) % 6},${m.g === 'f' ? 0 : 1},${m.g === 'f' ? 1 : 0},0,${m.id}`, 'mq:' + m.id);
+      if (PEOPLE.ok) person3d(m.x, m.z, '#FFFFFF', 'mq:' + m.id, now, L, null, 0);
+      const o = OUTFITS[m.id], near = Math.hypot(m.x - me.x, m.z - me.z) < 14;
+      afterCars.push(() => { const p = P(m.x, 0, m.z + 4.2); x.save(); x.font = `800 ${near ? 10 : 9}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; const t = near ? `${o.brand} · ${o.name}` : o.brand, w = x.measureText(t).width + 14; x.fillStyle = acc; x.beginPath(); x.roundRect(p[0] - w / 2, p[1] - 8, w, 16, 8); x.fill(); x.fillStyle = '#FFFFFF'; x.fillText(t, p[0], p[1] + 0.5); x.restore(); });
+    }
+  }
   // the Home Store: a plinth under each piece in its tier's colour, the rooms' names on the floor, a name plate (the price is on your phone)
   const TIER_COL = { Basic: '#A8A29E', Comfort: '#14B8A6', Premium: '#8B5CF6', Luxury: '#D4AF37' };
   function drawStoreShell(R) {
@@ -3322,9 +3350,10 @@
     if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
     decoEl.style.display = 'flex';
     if (!deco) {
-      decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>' + (isHome() ? `<button class="dbtn" id="dParty">🎉 ${partyAt(inside.key) ? 'Your party' : 'Throw a party'}</button>` : '');
+      decoEl.innerHTML = '<button class="dbtn main" id="dOn">🛋️ Arrange furniture</button>' + (isHome() ? `<button class="dbtn" id="dParty">🎉 ${partyAt(inside.key) ? 'Your party' : 'Throw a party'}</button><button class="dbtn" id="dWard">👔 Wardrobe</button>` : '');
       document.getElementById('dOn').onclick = () => { deco = { sel: isHome() ? null : 'sofa', colour: null, pick: null }; setDeco(); };
       if (isHome()) document.getElementById('dParty').onclick = () => { partyDraft.key = inside.key; openPhone('parties', { key: inside.key }); };
+      if (isHome()) document.getElementById('dWard').onclick = () => openPhone('fashion', { tab: 'wardrobe' }); // change into anything you own
       return;
     }
     if (deco.pick) {
@@ -3359,6 +3388,11 @@
     return [cam.x + rx * co + rz * si, cam.z - rx * si + rz * co];
   }
   function tapInside(sx, sy) {
+    if (inside.kind === 'boutique') { // the mannequin you tapped (its body, not its feet): the outfit's page on your phone
+      let best = null, bd = K * 9;
+      for (const m of boutiqueSpots(inside)) { const q = P(m.x, 5, m.z), d = Math.hypot(q[0] - sx, q[1] - sy); if (d < bd) { bd = d; best = m; } }
+      if (best) openPhone('fashion', { id: best.id }); return;
+    }
     if (inside.kind === 'store') { // the piece you see under your finger: its real 3D size on screen, the nearest one in front
       let it = null, best = -Infinity;
       for (const v of inside.layout) {
@@ -3474,7 +3508,7 @@
     if (best) { placeCard(best); return; }
     card.style.display = 'none';
   }
-  const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena', 'dealer', 'homestore']);
+  const ENTERABLE = new Set(['club', 'casino', 'wyrdtower', 'arena', 'dealer', 'homestore', 'mall', 'shops', 'arcade']);
   // what each place offers when you tap its tag: a question, and what happens if you say yes (null: coming soon)
   const OFFERS = {
     airport: ['✈️ Fly somewhere?', 'Abuja, Accra, Dubai, London… private jets from the hangars.', null],
@@ -3530,6 +3564,7 @@
     if (p[0] === 'casino') return enterRoom('casino', 'place:casino', 'Island Casino');
     if (p[0] === 'dealer') { const dl = /lekki/i.test(p[5]) ? 'lekkiluxury' : 'polanco'; return enterRoom('dealer', 'place:dealer:' + dl, p[5], { dealer: dl }); }
     if (p[0] === 'homestore') return enterRoom('store', 'place:homestore', p[5]);
+    if (BOUTIQUES[p[0]]) return enterRoom('boutique', 'place:boutique:' + p[0] + ':' + p[1], p[5], { shop: p[0] });
     const n = p[5].replace(' (open every night)', '');
     return enterRoom('club', 'place:club:' + p[1], n);
   }
@@ -3755,13 +3790,13 @@
 
   // ---- the phone's screens
   const phone = document.getElementById('phone'), pbody = document.getElementById('pbody'), pnaira = document.getElementById('pnaira');
-  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', jobsTab = 'all', rideFind = '', casinoStake = 500, partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
+  let me$ = null, stack = [], chatTimer = 0, storeRoom = 'Living', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
@@ -4088,6 +4123,43 @@
           ${list.length ? `<div class="rsec">YOUR CARS</div><div class="lst">${list.map((c2) => `<div class="li"><span class="ic" style="background:${esc(c2.color)};box-shadow:0 0 0 2px rgba(255,255,255,.25)"></span><span class="lt"><b>${esc(c2.name)}</b><small>${naira(c2.price)}</small></span>${c2.active ? '<span class="lr" style="color:var(--y)">DRIVING</span>' : `<button class="pbtn alt" data-drive="${c2.id}" style="margin:0">Drive</button>`}</div>`).join('')}</div>` : ''}`);
         pbody.querySelectorAll('[data-dealer]').forEach((b) => (b.onclick = () => { const p = PLACES.find((v) => v[5] === b.dataset.dealer); const t = nearestRoad(p[1] + p[3] / 2, p[2] + p[4] / 2); go('rideq', { i: t[0], j: t[1], name: p[5], emoji: p[6], peek: 'p' + PLACES.indexOf(p) }); }));
         pbody.querySelectorAll('[data-drive]').forEach((b) => (b.onclick = async () => { try { await my('driveCar', { carId: Number(b.dataset.drive) }); const c2 = list.find((v) => v.id === Number(b.dataset.drive)); myCar = c2.model + ':' + c2.color; render('garage'); } catch (e) { fail(e); } }));
+        return;
+      }
+      if (app === 'fashion') {
+        // Shop (by department, cheapest first) and your Wardrobe (what you own: wear it); an outfit's page shows it on a figure
+        let owned = [], live = true;
+        try { owned = await my('myOutfits'); } catch (e) { if (e.message === 'signin') throw e; live = false; }
+        const have = new Set([...STARTERS, ...owned]), cur = parseLook(myLook, myName).outfit, a = arg || {};
+        const fig = (o) => { const l = o.look, sk = SKINS[parseLook(myLook, myName).skin] || SKINS[2], pat = (c1, c2, p, id) => p === 1 ? `<pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="3" fill="${c1}"/><rect y="3" width="6" height="3" fill="${c2}"/></pattern>` : p === 3 ? `<pattern id="${id}" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="${c1}"/><circle cx="4" cy="4" r="2.2" fill="${c2}"/></pattern>` : '', top2 = l.top2 || l.top, bot = l.bot || '#1F2A44', bot2 = l.bot2 || bot, tf = [1, 3].includes(l.topPat) ? 'url(#pt)' : l.top, bf = [1, 3].includes(l.botPat) ? 'url(#pb)' : bot, arm = [14, 30, 52][l.sleeve ?? 1];
+          return `<svg viewBox="0 0 100 150" width="110" height="165" aria-hidden="true"><defs>${pat(l.top, top2, l.topPat, 'pt')}${pat(bot, bot2, l.botPat, 'pb')}</defs>
+            <rect x="14" y="40" width="14" height="56" rx="7" fill="${sk}"/><rect x="72" y="40" width="14" height="56" rx="7" fill="${sk}"/><rect x="14" y="40" width="14" height="${arm}" rx="7" fill="${tf}"/><rect x="72" y="40" width="14" height="${arm}" rx="7" fill="${tf}"/>
+            <rect x="33" y="88" width="15" height="52" rx="6" fill="${sk}"/><rect x="52" y="88" width="15" height="52" rx="6" fill="${sk}"/>
+            ${l.robe ? `<path d="M28 40 H72 L80 140 H20 Z" fill="${tf}"/>` : `<rect x="33" y="86" width="15" height="${[52, 26, 18][l.botLen || 0]}" rx="5" fill="${bf}"/><rect x="52" y="86" width="15" height="${[52, 26, 18][l.botLen || 0]}" rx="5" fill="${bf}"/>${l.botLen === 1 ? `<path d="M30 84 H70 L74 114 H26 Z" fill="${bf}"/>` : ''}`}
+            ${l.robe ? '' : `<rect x="28" y="38" width="44" height="52" rx="10" fill="${tf}"/>${l.topPat === 2 ? `<rect x="28" y="70" width="44" height="20" fill="${top2}"/>` : ''}`}
+            <rect x="31" y="138" width="18" height="8" rx="4" fill="${l.shoe || '#111827'}"/><rect x="51" y="138" width="18" height="8" rx="4" fill="${l.shoe || '#111827'}"/><circle cx="50" cy="22" r="15" fill="${sk}"/></svg>`; };
+        const wear = async (id) => { const q = myLook.split(','); while (q.length < 6) q.push(''); q[5] = id; myLook = q.join(','); store.set('li.look', myLook); try { await my('setLook', { look: myLook }); } catch (e) { if (!/\((404|500)\)/.test(e.message)) return fail(e); } notify(`Now wearing: ${OUTFITS[id].brand === 'Starter' ? '' : OUTFITS[id].brand + ' '}${OUTFITS[id].name}`, 'fashion'); };
+        if (a.id && OUTFITS[a.id]) {
+          const o = OUTFITS[a.id], mine = have.has(o.id);
+          show(`${ahead('fashion', o.brand, o.dept)}
+            <div class="hero" style="--ac:${o.look.top};text-align:center"><div style="display:flex;justify-content:center">${fig(o)}</div><div class="hv" style="font-size:18px">${esc(o.name)}</div><small>${o.brand === 'Starter' ? 'Free for everyone' : esc(o.brand) + ' · not affiliated, the name only'}</small></div>
+            ${mine ? `<button class="pbtn big2" id="fWear">${cur === o.id ? '✓ Wearing it' : 'Wear it'}</button>` : `<div class="big" style="text-align:center;margin:6px 0">${naira(o.price)}</div><button class="pbtn big2" id="fBuy">Buy · ${naira(o.price)}</button><div class="dim">${live ? 'Paid from your wallet. It goes in your wardrobe; wear it any time.' : 'The boutiques open when the server update goes live.'}</div>`}
+            <button class="pbtn alt" id="fBack2">${a.from === 'wardrobe' ? 'Your wardrobe' : 'All outfits'}</button>`);
+          if ($('fWear')) $('fWear').onclick = async () => { await wear(o.id); render('fashion', a); };
+          if ($('fBuy')) $('fBuy').onclick = async () => { try { const v = await my('buyOutfit', { item: o.id }); pnaira.textContent = naira(v.naira); notify('Bought: ' + o.brand + ' ' + o.name, 'fashion'); await wear(o.id); render('fashion', a); } catch (e) { fail(/\((404|500)\)/.test(e.message) ? new Error('The boutiques open when the server update goes live.') : e); } };
+          $('fBack2').onclick = () => go('fashion', { tab: a.from === 'wardrobe' ? 'wardrobe' : 'shop' });
+          return;
+        }
+        const tab = a.tab || 'shop', DEPTS = ['Sportswear', 'Streetwear', 'Native', 'Formal', 'Luxury'], dept = a.dept || fashionDept;
+        const card = (o, from) => `<button class="sitem" data-fit="${o.id}" data-from="${from}" style="padding-top:4px">${fig(o)}<b>${esc(o.brand === 'Starter' ? o.name : o.brand)}</b><span>${o.brand === 'Starter' ? 'Free' : from === 'wardrobe' ? esc(o.name) : naira(o.price)}</span>${cur === o.id ? '<i>ON</i>' : have.has(o.id) && from === 'shop' ? '<i>✓</i>' : ''}</button>`;
+        show(`${ahead('fashion', 'Fashion', 'Brands from Idumota to Circle Mall')}
+          <div class="chips" style="--ac:#F59E0B"><button data-tab="shop" class="${tab === 'shop' ? 'on' : ''}">🛍️ Shop</button><button data-tab="wardrobe" class="${tab === 'wardrobe' ? 'on' : ''}">👔 Wardrobe · ${have.size}</button></div>
+          ${tab === 'shop' ? `<div class="chips" style="--ac:#F59E0B">${DEPTS.map((d) => `<button data-dept="${d}" class="${d === dept ? 'on' : ''}">${d}</button>`).join('')}</div>
+            <div class="sgrid">${OUTFIT_LIST.map((r) => OUTFITS[r[0]]).filter((o) => o.dept === dept).sort((p, q) => p.price - q.price).map((o) => card(o, 'shop')).join('')}</div>
+            <div class="lock" style="margin-top:8px">Brand names only, no logos; the game isn't affiliated with the brands. Try them on at Idumota, Falomo and Circle Mall.</div>`
+          : `<div class="sgrid">${[...have].filter((id) => OUTFITS[id]).map((id) => card(OUTFITS[id], 'wardrobe')).join('')}</div>`}`);
+        pbody.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => render('fashion', { tab: b.dataset.tab })));
+        pbody.querySelectorAll('[data-dept]').forEach((b) => (b.onclick = () => { fashionDept = b.dataset.dept; render('fashion', { tab: 'shop' }); }));
+        pbody.querySelectorAll('[data-fit]').forEach((b) => (b.onclick = () => go('fashion', { id: b.dataset.fit, from: b.dataset.from })));
         return;
       }
       if (app === 'parties') {
@@ -4493,6 +4565,7 @@
       if (inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
       if (!next && inside.kind === 'store') { const it = inside.layout.find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 7); if (it && STORE[it.k]) next = { label: `🛒 ${STORE[it.k].name}`, run: () => openPhone('store', it.k) }; }
+      if (!next && inside.kind === 'boutique') { const m = boutiqueSpots(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 8); if (m) next = { label: `👔 ${OUTFITS[m.id].brand} · ${OUTFITS[m.id].name}`, run: () => openPhone('fashion', { id: m.id }) }; }
       if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 See the ${c.v[0]}`, run: () => openShowcase(c.id) }; }
       if (next) { /* a car to buy comes first */ } else if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
