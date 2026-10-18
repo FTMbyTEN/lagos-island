@@ -1803,24 +1803,27 @@
         rbox(cx, cz, s.hw, s.hd, s.an, s.y0, s.y1, col, '#C7D2FE');
         corners.push(s);
       }
-      // the digital façade: on each floor band, the face turned most towards you is an LED panel. Together they run ads
-      // down the tower, one letter a band, on a colour that sweeps up; a new ad every eight seconds, a wipe between
+      // the digital façade: every face of every floor band is an LED panel, all four running as one screen. The same ad
+      // runs down every side, one letter a band, so whichever side you see reads the same; the colour wave travels round
+      // the tower from face to face, and a bright sweep circles it; a new ad every eight seconds, a wipe between
       const facade = (lit) => {
-        const tt = performance.now() / 1000, slot = Math.floor(tt / 8), ad = ADS[slot % ADS.length], txt = (ad[0] + '  ').toUpperCase(), wipe = Math.min(1, (tt % 8) / 0.6), hue0 = (slot * 67) % 360;
+        const tt = performance.now() / 1000, slot = Math.floor(tt / 8), ad = ADS[slot % ADS.length], txt = (ad[0] + '  ').toUpperCase(), wipe = Math.min(1, (tt % 8) / 0.6), hue0 = (slot * 67) % 360, sweep = (tt * 0.35) % 4;
         for (let k = 3; k < N - 2; k++) {
           const s = corners[k], ca = Math.cos(s.an), sa = Math.sin(s.an);
-          // the four faces' normals; pick the one facing you most
-          const faces = [[0, 1], [1, 0], [0, -1], [-1, 0]].map(([lx, lz]) => { const nx = lx * ca - lz * sa, nz = lx * sa + lz * ca; return { lx, lz, d: viewDot(nx, 0, nz) }; }).sort((p, q) => q.d - p.d);
-          const f = faces[0]; if (f.d < 0.05) continue;
-          const corner = (u, v) => { const lx = f.lz ? u * s.hw : f.lx * s.hw * 1.003, lz = f.lz ? f.lz * s.hd * 1.003 : u * s.hd; return [cx + lx * ca - lz * sa, cz + lx * sa + lz * ca]; };
-          const inset = 0.86, y0 = s.y0 + 0.5, y1 = s.y1 - 0.5, sgn = f.lz ? f.lz : -f.lx;
-          const [ax, az] = corner(-inset * sgn, 0), [bx2, bz2] = corner(inset * sgn, 0);
-          const p0 = P(ax, y0, az), p1 = P(bx2, y0, bz2), p2 = P(bx2, y1, bz2), p3 = P(ax, y1, az);
-          const band = (k - 3) / (N - 5), shown = 1 - band < wipe, hue = (hue0 + band * 80 - tt * 30) % 360;
-          quad([p0, p1, p2, p3], shown ? `hsl(${hue},85%,${lit ? 52 : 42}%)` : '#0B1020');
-          const ch = txt[(k - 3) % txt.length], wpx = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), hpx = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]);
-          if (shown && ch.trim() && hpx > 6) { x.save(); x.transform((p1[0] - p0[0]) / wpx, (p1[1] - p0[1]) / wpx, (p0[0] - p3[0]) / hpx, (p0[1] - p3[1]) / hpx, p0[0], p0[1]); x.fillStyle = '#FFFFFF'; if (lit) { x.shadowColor = '#FFFFFF'; x.shadowBlur = 8; } x.font = `900 ${Math.round(hpx * 0.8)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(ch, wpx / 2, -hpx / 2); x.restore(); }
-          if (wpx > 40) { x.strokeStyle = 'rgba(0,0,0,0.2)'; x.lineWidth = 1; x.beginPath(); for (let m = 1; m < 8; m++) { const u = m / 8; x.moveTo(p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u); x.lineTo(p3[0] + (p2[0] - p3[0]) * u, p3[1] + (p2[1] - p3[1]) * u); } x.stroke(); } // LED tiles
+          // the four faces, the ones facing away dropped, the far one drawn first
+          const faces = [[0, 1], [1, 0], [0, -1], [-1, 0]].map(([lx, lz], fi) => { const nx = lx * ca - lz * sa, nz = lx * sa + lz * ca; return { lx, lz, fi, d: viewDot(nx, 0, nz) }; }).filter((v) => v.d > 0.02).sort((p, q) => p.d - q.d);
+          for (const f of faces) {
+            const corner = (u) => { const lx = f.lz ? u * s.hw : f.lx * s.hw * 1.003, lz = f.lz ? f.lz * s.hd * 1.003 : u * s.hd; return [cx + lx * ca - lz * sa, cz + lx * sa + lz * ca]; };
+            const inset = 0.86, y0 = s.y0 + 0.5, y1 = s.y1 - 0.5, sgn = f.lz ? f.lz : -f.lx;
+            const [ax, az] = corner(-inset * sgn), [bx2, bz2] = corner(inset * sgn);
+            const p0 = P(ax, y0, az), p1 = P(bx2, y0, bz2), p2 = P(bx2, y1, bz2), p3 = P(ax, y1, az);
+            const band = (k - 3) / (N - 5), shown = 1 - band < wipe, hue = (hue0 + band * 80 - tt * 30 + f.fi * 90 * 0.4 + 720) % 360;
+            const near = Math.min(Math.abs(sweep - f.fi), 4 - Math.abs(sweep - f.fi)), boost = Math.max(0, 1 - near) * 18;
+            quad([p0, p1, p2, p3], shown ? `hsl(${hue},85%,${(lit ? 50 : 40) + boost}%)` : '#0B1020');
+            const ch = txt[(k - 3) % txt.length], wpx = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), hpx = Math.hypot(p3[0] - p0[0], p3[1] - p0[1]);
+            if (shown && ch.trim() && hpx > 6 && wpx > 6) { x.save(); x.transform((p1[0] - p0[0]) / wpx, (p1[1] - p0[1]) / wpx, (p0[0] - p3[0]) / hpx, (p0[1] - p3[1]) / hpx, p0[0], p0[1]); x.fillStyle = '#FFFFFF'; if (lit) { x.shadowColor = '#FFFFFF'; x.shadowBlur = 8; } x.font = `900 ${Math.round(Math.min(hpx * 0.8, wpx * 0.9))}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(ch, wpx / 2, -hpx / 2); x.restore(); }
+            if (wpx > 40) { x.strokeStyle = 'rgba(0,0,0,0.2)'; x.lineWidth = 1; x.beginPath(); for (let m = 1; m < 8; m++) { const u = m / 8; x.moveTo(p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u); x.lineTo(p3[0] + (p2[0] - p3[0]) * u, p3[1] + (p2[1] - p3[1]) * u); } x.stroke(); } // LED tiles
+          }
         }
       };
       facade(false); glow.push(() => facade(true));
@@ -4814,14 +4817,20 @@
   const CITY_SPOTS = [['Club Ozumba', 'afrobeats mix'], ['Club Lekki', 'amapiano mix'], ['Elegushi Beach', 'afro party mix']];
   async function cityStart() {
     const c = audioCtx(); if (!c || CITY.master) return;
-    CITY.master = c.createGain(); CITY.master.gain.value = 0; CITY.master.connect(c.destination);
+    // the city's mix bus: the clubs, then an echo off the buildings (two delays feeding back through a low-pass, so the
+    // repeats come back dark and boomy), then a compressor so the bass can hit hard without clipping
+    CITY.master = c.createGain(); CITY.master.gain.value = 0;
+    const comp = c.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 4; comp.attack.value = 0.005; comp.release.value = 0.25; comp.connect(c.destination);
+    CITY.master.connect(comp);
+    for (const [dt, fb, wet] of [[0.33, 0.45, 0.55], [0.71, 0.35, 0.4]]) { const dl = c.createDelay(2), fbk = c.createGain(), lp = c.createBiquadFilter(), out = c.createGain(); dl.delayTime.value = dt; fbk.gain.value = fb; lp.type = 'lowpass'; lp.frequency.value = 850; out.gain.value = wet; CITY.master.connect(dl); dl.connect(lp); lp.connect(fbk); fbk.connect(dl); lp.connect(out); out.connect(comp); }
     for (const [name, q] of CITY_SPOTS) {
       const p = PLACES.find((v) => v[5].startsWith(name)); if (!p) continue;
       const s = { name, x: (p[1] + p[3] / 2) * T, z: (p[2] + p[4] / 2) * T, room: p[0] === 'club' ? 'place:club:' + p[1] : '', a: new Audio() };
       s.a.crossOrigin = 'anonymous'; s.a.loop = true; s.a.preload = 'none';
       const el = c.createMediaElementSource(s.a), bass = c.createBiquadFilter(), muff = c.createBiquadFilter(); s.g = c.createGain(); s.pan = c.createStereoPanner ? c.createStereoPanner() : null;
-      bass.type = 'lowshelf'; bass.frequency.value = 110; bass.gain.value = 9; muff.type = 'lowpass'; muff.frequency.value = 600; muff.Q.value = 0.7; s.muff = muff; s.g.gain.value = 0;
-      el.connect(bass); bass.connect(muff); muff.connect(s.g); if (s.pan) { s.g.connect(s.pan); s.pan.connect(CITY.master); } else s.g.connect(CITY.master);
+      bass.type = 'lowshelf'; bass.frequency.value = 120; bass.gain.value = 14; muff.type = 'lowpass'; muff.frequency.value = 600; muff.Q.value = 0.7; s.muff = muff; s.g.gain.value = 0;
+      const sub = c.createBiquadFilter(); sub.type = 'peaking'; sub.frequency.value = 55; sub.Q.value = 1.1; sub.gain.value = 9; // the sub: the thump you feel streets away
+      el.connect(bass); bass.connect(sub); sub.connect(muff); muff.connect(s.g); if (s.pan) { s.g.connect(s.pan); s.pan.connect(CITY.master); } else s.g.connect(CITY.master);
       try { const list = (await au('/tracks/search?query=' + encodeURIComponent(q) + '&limit=12')).filter((t) => t.is_streamable !== false && t.duration > 600).sort((x1, x2) => x2.duration - x1.duration); const tr = list[Math.floor(Math.random() * Math.min(3, list.length))]; if (tr) { s.a.src = `${MUSIC.au}/tracks/${tr.id}/stream?app_name=${MUSIC.app}`; s.a.addEventListener('loadedmetadata', () => { s.a.currentTime = Math.random() * s.a.duration * 0.8; }, { once: true }); } } catch {}
       CITY.srcs.push(s);
     }
@@ -4831,11 +4840,11 @@
     if (!AX.ctx) return; if (!CITY.master) { cityStart(); return; }
     const duck = MP.a.paused ? 1 : 0.18, nf = Math.min(1, (night - 0.2) / 0.4);
     CITY.master.gain.value += (nf * duck - CITY.master.gain.value) * 0.25;
-    const lx = me.x, lz = me.z, R = 240;
+    const lx = me.x, lz = me.z, R = 520; // heard right across the district
     for (const s of CITY.srcs) {
       let vol, cut;
       if (inside) { const here = !!s.room && inside.key === s.room; vol = here ? 0.9 : 0; cut = here ? 14000 : 600; } // in that club: the full sound; any other room: nothing
-      else { const d = Math.hypot(s.x - lx, s.z - lz), u = Math.max(0, 1 - d / R); vol = u * u * 0.85; cut = 380 + 2600 * u * u; }
+      else { const d = Math.hypot(s.x - lx, s.z - lz), u = Math.max(0, 1 - d / R); vol = Math.pow(u, 1.6) * 0.9; cut = 180 + 3200 * u * u * u; } // far off it's only the bass, the rest comes in as you get close
       s.g.gain.value += (vol - s.g.gain.value) * 0.3; s.muff.frequency.value = cut;
       if (s.pan) { const sp2 = P(s.x, 0, s.z)[0] - W / 2; s.pan.pan.value = Math.max(-0.9, Math.min(0.9, sp2 / (W * 0.45))); }
       if (vol > 0.01 && s.a.paused && s.a.src) s.a.play().catch(() => {}); if (vol <= 0.01 && !s.a.paused && s.g.gain.value < 0.01) s.a.pause();
