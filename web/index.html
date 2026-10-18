@@ -1086,10 +1086,39 @@
       }
       palm(a + 2, b + 2, 10); palm(c - 3, b + 3, 9); palm((a + c) / 2, d - 2, 9);
     },
+    // ---- Eko Atlantic: glass towers of different heights and shapes (setbacks, crowns, twin Pearl towers with
+    // a sky bridge, a helipad), on a podium, a palm-lined promenade along the front, windows lit at night
     skyline(a, b, c, d) {
-      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      const hs = [60, 85, 48, 70], n = Math.max(2, Math.round((c - a) / 9)), w = (c - a - 2) / n;
-      for (let i = 0; i < n; i++) { const x0 = a + 1 + i * w + 0.8; box(x0, 0, b + 4, x0 + w - 1.6, hs[i % 4], b + 12, i % 2 ? '#93C5FD' : '#BAE6FD', '#E0F2FE'); }
+      flat(a, b, c, d, 0.05, '#DCE3EA', C.plotEdge);
+      flat(a + 0.5, d - 4, c - 0.5, d - 0.5, 0.07, '#EDE6D6'); // the promenade
+      const pearl = a >= 20 * T, R = rnd(a * 3 + b), t = performance.now() / 1000;
+      box(a + 1, 0, b + 2, c - 1, 2.2, d - 5, '#CBD5E1', '#0F172A', 1); // the podium: shops and lobbies
+      const glassC = ['#7FB3D9', '#5B9BD5', '#9CC9E8', '#3E7CB1', '#A5D8F3'], lit = [];
+      const tower = (x0, z0, x1, z1, h, col, kind) => {
+        box(x0, 2.2, z0, x1, h, z1, col, shadeHex(col, 1.3));
+        const m = 0.5;
+        // a light streak down the glass
+        const s0 = P(x0 + (x1 - x0) * 0.2, 2.2, z1 + 0.01), s1 = P(x0 + (x1 - x0) * 0.35, 2.2, z1 + 0.01), s2 = P(x0 + (x1 - x0) * 0.35, h, z1 + 0.01), s3 = P(x0 + (x1 - x0) * 0.2, h, z1 + 0.01);
+        quad([s0, s1, s2, s3], 'rgba(255,255,255,0.16)');
+        if (kind === 0) { box(x0 + m * 2, h, z0 + m * 2, x1 - m * 2, h + 6, z1 - m * 2, '#A5D8F3', '#E0F2FE'); box(x0 + 2, h + 6, z0 + 2, x1 - 2, h + 7, z1 - 2, '#475569'); } // a setback
+        else if (kind === 1) { pyramid(x0, z0, x1, z1, h, 8, '#BFDBFE'); box((x0 + x1) / 2 - 0.15, h + 7, (z0 + z1) / 2 - 0.15, (x0 + x1) / 2 + 0.15, h + 15, (z0 + z1) / 2 + 0.15, '#CBD5E1'); } // a crown and spire
+        else { box(x0 - 0.3, h, z0 - 0.3, x1 + 0.3, h + 0.6, z1 + 0.3, '#334155'); disk((x0 + x1) / 2, (z0 + z1) / 2, h + 0.62, Math.min(x1 - x0, z1 - z0) * 0.35, '#1F2937'); disk((x0 + x1) / 2, (z0 + z1) / 2, h + 0.64, Math.min(x1 - x0, z1 - z0) * 0.22, '#FACC15'); } // a helipad
+        for (let k = 0; k < 14; k++) lit.push([x0 + 0.6 + R() * (x1 - x0 - 1.2), 4 + R() * (h - 6), z1 + 0.02]);
+      };
+      if (pearl) {
+        // Eko Pearl: two slim twin towers joined by a sky bridge, and a lower one beside them
+        const w = (c - a - 6) / 3;
+        tower(a + 2, b + 5, a + 2 + w, b + 12, 38, '#9CC9E8', 2);
+        tower(a + 4 + w, b + 4, a + 4 + 2 * w - 1, b + 11, 78, '#5B9BD5', 1);
+        tower(a + 4 + 2 * w + 1, b + 4, c - 2, b + 11, 78, '#5B9BD5', 1);
+        box(a + 4 + 2 * w - 1, 54, b + 6, a + 4 + 2 * w + 1, 57, b + 9, '#E0F2FE', '#38BDF8', 1); // the sky bridge
+      } else {
+        const n = 4, w = (c - a - 3) / n, hs = [56, 88, 46, 70];
+        for (let i = 0; i < n; i++) { const x0 = a + 2 + i * w, h = hs[i], dz = (i % 2) * 1.5; tower(x0, b + 3 + dz, x0 + w - 1.4, b + 11 + dz, h, glassC[i % glassC.length], i % 3); }
+      }
+      for (let k = 0; k < Math.round((c - a) / 7); k++) palm(a + 3 + k * 7, d - 2.2, 8 + (k % 2));
+      for (let k = 0; k < Math.round((c - a) / 14); k++) lamp(a + 6.5 + k * 14, d - 1, 5);
+      glow.push(() => { x.fillStyle = 'rgba(254,240,170,0.9)'; for (const [px, py, pz] of lit) { if ((px * 7 + py) % 3 < 1 && Math.sin(t * 0.2 + px) < 0.6) continue; const p = P(px, py, pz); x.fillRect(p[0] - K * 0.35, p[1] - K * 0.3, K * 0.7, K * 0.6); } });
     },
     tollgate(a, b, c, d) {
       const z = (b + d) / 2;
@@ -2332,17 +2361,46 @@
     if (false) { const a = P(FERRY[0] * T + T / 2, 0.1, FERRY[1] * T), b = P(FERRY[0] * T + T / 2, 0.1, (FERRY[3] + 1) * T);
       x.setLineDash([6, 6]); x.strokeStyle = 'rgba(255,255,255,0.7)'; x.lineWidth = 2; x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); x.setLineDash([]); }
     // roads, with a dashed centre line
+    // roads, tile by tile: asphalt, pavements and kerbs where a road meets land, lane lines (white dashes
+    // between yellow edge lines) on the straights, zebra crossings at every junction, a manhole now and then
+    const isRoad = (i, j) => i >= 0 && j >= 0 && i < BOARD.w && j < BOARD.h && at(i, j) === ROAD;
+    const line = (x0, z0, x1, z1, y) => { const p = P(x0, y, z0), q = P(x1, y, z1); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); };
     for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) {
-      if (at(i, j) !== ROAD || !visible(i, j)) continue;
-      flat(i * T, j * T, (i + 1) * T, (j + 1) * T, 0.06, C.road);
+      if (!isRoad(i, j) || !visible(i, j)) continue;
+      const xa = i * T, za = j * T, xb = xa + T, zb = za + T;
+      const E = isRoad(i + 1, j), Wr = isRoad(i - 1, j), N = isRoad(i, j - 1), S = isRoad(i, j + 1), horiz = E || Wr, vert = N || S, cross = horiz && vert;
+      flat(xa, za, xb, zb, 0.06, '#4B535E');
+      // pavements and kerbs on every side that isn't road (and on the corners of a junction)
+      const pv = 1.6, pave = '#C9CED6', kerb = '#E5E7EB';
+      if (!N) { flat(xa, za, xb, za + pv, 0.14, pave); flat(xa, za + pv - 0.25, xb, za + pv, 0.16, kerb); }
+      if (!S) { flat(xa, zb - pv, xb, zb, 0.14, pave); flat(xa, zb - pv, xb, zb - pv + 0.25, 0.16, kerb); }
+      if (!Wr) { flat(xa, za, xa + pv, zb, 0.14, pave); flat(xa + pv - 0.25, za, xa + pv, zb, 0.16, kerb); }
+      if (!E) { flat(xb - pv, za, xb, zb, 0.14, pave); flat(xb - pv, za, xb - pv + 0.25, zb, 0.16, kerb); }
+      if (cross) for (const [cx0, cz0] of [[xa, za], [xb - pv, za], [xa, zb - pv], [xb - pv, zb - pv]]) flat(cx0, cz0, cx0 + pv, cz0 + pv, 0.14, pave);
+      if (K < 1.4) continue; // too far out for the markings
+      if (cross) {
+        // zebra crossings on each arm that leads on
+        x.fillStyle = 'rgba(248,250,252,0.85)';
+        for (let k = 0; k < 5; k++) {
+          const u = pv + 0.4 + k * ((T - 2 * pv - 0.8) / 5), u1 = u + 0.7;
+          if (N) flat(xa + u, za + 0.2, xa + u1, za + 1.4, 0.1, 'rgba(248,250,252,0.85)');
+          if (S) flat(xa + u, zb - 1.4, xa + u1, zb - 0.2, 0.1, 'rgba(248,250,252,0.85)');
+          if (Wr) flat(xa + 0.2, za + u, xa + 1.4, za + u1, 0.1, 'rgba(248,250,252,0.85)');
+          if (E) flat(xb - 1.4, za + u, xb - 0.2, za + u1, 0.1, 'rgba(248,250,252,0.85)');
+        }
+        continue;
+      }
+      x.lineWidth = Math.max(1, K * 0.18);
+      x.strokeStyle = 'rgba(250,204,21,0.75)'; x.beginPath();
+      if (horiz) { line(xa, za + pv + 0.5, xb, za + pv + 0.5, 0.1); line(xa, zb - pv - 0.5, xb, zb - pv - 0.5, 0.1); }
+      else { line(xa + pv + 0.5, za, xa + pv + 0.5, zb, 0.1); line(xb - pv - 0.5, za, xb - pv - 0.5, zb, 0.1); }
+      x.stroke();
+      x.strokeStyle = 'rgba(248,250,252,0.9)'; x.beginPath();
+      if (horiz) { line(xa + 1, za + T / 2, xa + 4, za + T / 2, 0.1); line(xa + 6, za + T / 2, xa + 9, za + T / 2, 0.1); }
+      else { line(xa + T / 2, za + 1, xa + T / 2, za + 4, 0.1); line(xa + T / 2, za + 6, xa + T / 2, za + 9, 0.1); }
+      x.stroke();
+      if ((i * 7 + j * 13) % 9 === 0) disk(xa + T * 0.3, za + T * 0.32, 0.09, 0.5, '#374151'); // a manhole cover
     }
-    x.strokeStyle = C.roadLine; x.lineWidth = 1; x.setLineDash([4, 5]);
-    for (const s of SECTORS) {
-      const [i0, j0, i1, j1] = s.rect;
-      for (const r of s.rows) { const a = P(i0 * T, 0.08, r * T + T / 2), b = P((i1 + 1) * T, 0.08, r * T + T / 2); x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); }
-      for (const c of s.cols) { const a = P(c * T + T / 2, 0.08, j0 * T), b = P(c * T + T / 2, 0.08, (j1 + 1) * T); x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); }
-    }
-    x.setLineDash([]);
     // the water's names, laid on the water
     x.textAlign = 'center'; x.textBaseline = 'middle';
     for (const [name, i, j] of WATER_NAMES) {
