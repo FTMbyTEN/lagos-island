@@ -724,6 +724,7 @@
       screens: 'M3 5h18v12H3zM8 21h8M12 17v4M7 9l3 2-3 2',
       station: 'M7 3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3zM4 10h16M8 13.5h.01M16 13.5h.01M8 21l2-4M16 21l-2-4',
       welcome: 'M7 11V6a1.5 1.5 0 0 1 3 0v4M10 9V4.5a1.5 1.5 0 0 1 3 0V10M13 9.5V6a1.5 1.5 0 0 1 3 0v6M16 9a1.5 1.5 0 0 1 3 0v4a8 8 0 0 1-8 8 7 7 0 0 1-6-3.5L3 13.5a1.5 1.5 0 0 1 2.5-1.5L7 14',
+      bank: 'M3 21h18M5 18h14M12 3l9 5H3zM6 10v6M10 10v6M14 10v6M18 10v6M12 6.2h.01',
       pin: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 10h.01',
     };
   })();
@@ -734,7 +735,7 @@
     g.save(); g.translate(cx - size / 2, cy - size / 2); g.scale(size / 24, size / 24); g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(p); g.restore();
   }
   // each landmark's colour, for its pin
-  const PIN_COL = { mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
+  const PIN_COL = { bank: '#B8860B', mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
   // the landmarks: [type, i, j, wi, dj, name, emoji]
   const PLACES = [
     // Lagos Island
@@ -800,7 +801,7 @@
     ['airport', 53, 20, 8, 9, 'Lagos Island Airport', '✈️'],
     ['soon', 46, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 55, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 11, 25, 3, 2, 'Reclaimed land: coming soon', '🚧'],
+    ['bank', 11, 25, 3, 2, 'Island Reserve Bank', '🏦'], // on the reclaimed land by Eko Atlantic
     ['soon', 1, 0, 4, 2, 'Reclaimed land: coming soon', '🚧'],
     ['dealer', 64, 2, 10, 11, 'Polanco', '🚘'],
     ['dealer', 64, 16, 12, 13, 'Lekki Luxury Cars', '🏎️'],
@@ -2342,6 +2343,59 @@
       for (const px of [a + 4, gx - 11, gx + 11, c - 4]) lamp(px, d - 2, 6);
       glow.push(() => { const p = P(gx, 12.5, d - 1.5), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(80,255,170,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.5, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
+    // ---- Island Reserve Bank, on the reclaimed land by Eko Atlantic: a classical banking hall in pale stone with a
+    // colonnade, reflecting pools either side of the steps, and out of it a glass tower in three setbacks, gold fins running
+    // up every face, gold ledges at each step, a glass crown lit gold after dark with a beacon on its spire. Tall, but it
+    // stays under WYRD Tower.
+    bank(a, b, c, d) {
+      const cx = (a + c) / 2, t = performance.now() / 1000, R = rnd(a * 7 + b), dark = night > 0.35;
+      flat(a, b, c, d, 0.05, '#E7E1D3', C.plotEdge); // granite plaza
+      flat(a + 1.5, d - 5, cx - 4, d - 1.5, 0.08, dark ? '#0E3A5C' : '#5BB8E8'); flat(cx + 4, d - 5, c - 1.5, d - 1.5, 0.08, dark ? '#0E3A5C' : '#5BB8E8'); // the pools
+      for (const px of [a + 2.5, c - 2.5]) for (const pz of [d - 4, d - 2.5]) { box(px - 0.4, 0, pz - 0.4, px + 0.4, 0.9, pz + 0.4, '#D6CFC0'); } // bollards
+      box(a + 2.6, 0, b + 2.2, c - 2.6, 1, d - 5.4, '#D6CFC0'); // the plinth and steps
+      box(cx - 4, 0, d - 5.6, cx + 4, 0.5, d - 4.6, '#E2DCCD');
+      box(a + 3.4, 1, b + 2.8, c - 3.4, 9.4, d - 6.6, '#EDE8DC', '#B9A27A', 2); // the banking hall
+      // the tower: three tiers of dark blue glass, stepping back as it rises
+      const tz = b + 7.4, tiers = [[9.4, 52, 7.2, 4.6], [52, 74, 6, 3.9], [74, 86, 4.7, 3.1]];
+      const fins = (y0, y1, hw, hd, bright) => {
+        x.save(); x.lineCap = 'round';
+        if (bright) { x.shadowColor = '#FCD34D'; x.shadowBlur = 8; }
+        x.strokeStyle = bright ? 'rgba(253,224,71,0.9)' : '#B08A2E'; x.lineWidth = Math.max(1, K * 0.18);
+        const faces = [[0, 1], [1, 0], [-1, 0]].filter(([nx, nz]) => viewDot(nx, 0, nz) > 0);
+        x.beginPath();
+        for (const [nx, nz] of faces) {
+          const n = nz ? 9 : 6, span = nz ? hw : hd;
+          for (let k = 0; k <= n; k++) { const u = -span + (2 * span * k) / n, wx = nz ? cx + u : cx + nx * hw, wz = nz ? tz + hd : tz + u, p0 = P(wx, y0, wz), p1 = P(wx, y1, wz); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); }
+        }
+        x.stroke(); x.restore();
+      };
+      for (const [y0, y1, hw, hd] of tiers) {
+        box(cx - hw, y0, tz - hd, cx + hw, y1, tz + hd, '#1E3A5F', dark ? '#FDE68A' : '#7FA7D1', 1);
+        // the sky in the glass: a soft streak down the front
+        const s0 = P(cx - hw * 0.6, y0, tz + hd + 0.01), s1 = P(cx - hw * 0.25, y0, tz + hd + 0.01), s2 = P(cx - hw * 0.25, y1, tz + hd + 0.01), s3 = P(cx - hw * 0.6, y1, tz + hd + 0.01);
+        quad([s0, s1, s2, s3], dark ? 'rgba(253,224,71,0.06)' : 'rgba(255,255,255,0.14)');
+        fins(y0, y1, hw, hd, false);
+        box(cx - hw - 0.35, y1, tz - hd - 0.35, cx + hw + 0.35, y1 + 0.7, tz + hd + 0.35, '#C9A227'); // the gold ledge at each step
+      }
+      // the crown: a gold glass pyramid, a spire and a beacon
+      pyramid(cx - 3.8, tz - 2.6, cx + 3.8, tz + 2.6, 86.7, 10, dark ? '#FCD34D' : '#E9C46A');
+      box(cx - 0.18, 96, tz - 0.18, cx + 0.18, 108, tz + 0.18, '#E5E7EB');
+      // the bank's name over the colonnade, and its mark high on the tower
+      const sign = (bright) => { faceText('ISLAND RESERVE BANK', cx, 10.4, d - 5.98, bright ? '#FDE68A' : '#7C5E10', 1.05, bright ? 8 : 0); faceText('IRB', cx, 80, tz + 3.12, bright ? '#FEF3C7' : '#E9C46A', 3.2, bright ? 14 : 0); };
+      // the colonnade: eight stone columns, the entablature over them with a gold band
+      for (let k = 0; k < 8; k++) { const px = a + 4.6 + k * ((c - a - 9.2) / 7); cylLit(px, d - 6.1, 0.5, 1, 7.6, '#F5F1E8'); box(px - 0.7, 8.5, d - 6.8, px + 0.7, 8.7, d - 5.4, '#E2DCCD'); }
+      box(a + 3.2, 8.7, d - 7, c - 3.2, 10.2, d - 5.3, '#F5F1E8'); box(a + 3.2, 10.2, d - 7, c - 3.2, 11, d - 5.3, '#C9A227');
+      sign(false);
+      glow.push(() => {
+        if (!dark) return;
+        for (const [y0, y1, hw, hd] of tiers) fins(y0, y1, hw, hd, true);
+        const cp = P(cx, 92, tz), g = x.createRadialGradient(cp[0], cp[1], 0, cp[0], cp[1], K * 16); g.addColorStop(0, 'rgba(253,224,71,0.55)'); g.addColorStop(1, 'rgba(253,224,71,0)');
+        x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(cp[0], cp[1], K * 16, 0, Math.PI * 2); x.fill(); x.restore();
+        for (const px of [a + 4.6, c - 4.6]) { const lp = P(px, 0.6, d - 4.2), lg = x.createRadialGradient(lp[0], lp[1] - K * 3, 0, lp[0], lp[1] - K * 3, K * 7); lg.addColorStop(0, 'rgba(254,240,138,0.35)'); lg.addColorStop(1, 'rgba(254,240,138,0)'); x.fillStyle = lg; x.beginPath(); x.arc(lp[0], lp[1] - K * 3, K * 7, 0, Math.PI * 2); x.fill(); } // uplights on the columns
+        sign(true);
+      });
+      const bp = P(cx, 108.4, tz); x.fillStyle = Math.floor(t * 1.2) % 2 ? '#EF4444' : '#7F1D1D'; x.beginPath(); x.arc(bp[0], bp[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill(); // the beacon
+    },
     soon(a, b, c, d) {
       for (let k = 0; k < 4; k++) { const px = a + 4 + k * ((c - a - 8) / 3); box(px - 0.8, 0, d - 3, px + 0.8, 2.4, d - 1.4, k % 2 ? '#F8FAFC' : '#F97316'); }
       box(a + 3, 2.4, d - 2.6, c - 3, 3, d - 1.8, '#FACC15');
@@ -3128,7 +3182,7 @@
   // the footprints you walk round
   for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station', 'dealer'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
