@@ -175,8 +175,8 @@
   /* the wallpaper: a slow neon grid */
   #screen { background: linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(0,240,255,.07) 0) 0 0 / 100% 26px, linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), rgba(255,0,60,.06) 0) 0 0 / 26px 100%, radial-gradient(90% 60% at 100% 0%, rgba(255,0,60,.25), transparent 60%), radial-gradient(80% 60% at 0% 100%, rgba(0,240,255,.2), transparent 60%), linear-gradient(180deg, #0B0B14, #07070D) !important; animation: grid 18s linear infinite; }
   @keyframes grid { to { background-position: 0 260px, 260px 0, 0 0, 0 0, 0 0; } }
-  #pbody > * { animation: appIn .22s ease-out both; }
-  #pbody > *:nth-child(2) { animation-delay: .03s; } #pbody > *:nth-child(3) { animation-delay: .06s; } #pbody > *:nth-child(4) { animation-delay: .09s; }
+  #pbody.enter > * { animation: appIn .22s ease-out both; }
+  #pbody.enter > *:nth-child(2) { animation-delay: .03s; } #pbody.enter > *:nth-child(3) { animation-delay: .06s; } #pbody.enter > *:nth-child(4) { animation-delay: .09s; }
   @keyframes appIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .app:hover i { filter: brightness(1.25); }
   .app:active i { transform: scale(.9); filter: brightness(1.5); }
@@ -248,6 +248,8 @@
   #shade.on { transform: none; }
   #shade .n { padding: 8px 10px; margin-bottom: 6px; border-left: 2px solid var(--c); background: rgba(0,240,255,.07); font: 600 14px 'Rajdhani', sans-serif; color: #E6F9FF; }
   #shade .n small { display: block; color: #8FB6C2; font-size: 11px; letter-spacing: 1px; }
+  #shade .n { display: flex; gap: 10px; align-items: flex-start; border-radius: 12px; transition: background .2s; } #shade .n > i { font-style: normal; font-size: 18px; line-height: 22px; } #shade .n > div { flex: 1; min-width: 0; } #shade .n b { display: block; font-size: 13px; color: #fff; } #shade .n span { display: block; overflow-wrap: anywhere; } #shade .n > small { flex: none; } #shade .n.new { background: rgba(0,240,255,.16); box-shadow: inset 0 0 0 1px rgba(0,240,255,.35); } #shade .n.tap { cursor: pointer; } #shade .n.tap:active { transform: scale(.98); } #shade .n.quiet { opacity: .7; }
+  #shade .nhead { display: flex; justify-content: space-between; align-items: center; margin: 12px 2px 6px; font: 800 14px "Plus Jakarta Sans", sans-serif; color: #fff; } #shade .nhead button { background: rgba(255,255,255,.12); color: #fff; border: 0; border-radius: 10px; padding: 4px 10px; font: 700 11px "Plus Jakarta Sans", sans-serif; cursor: pointer; } #shade .ngrp { margin: 10px 2px 4px; font: 700 10px "Plus Jakarta Sans", sans-serif; letter-spacing: 1.5px; text-transform: uppercase; color: #8FB6C2; }
   /* Ride: a look at each place before you go */
   .peek { position: relative; display: block; width: 100%; margin-bottom: 12px; padding: 0; border: 1px solid rgba(0,240,255,.35); background: #000; cursor: pointer; clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px)); }
   .peek img, .peek .ph { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: linear-gradient(90deg, #0B0B14, #141428, #0B0B14); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
@@ -314,8 +316,8 @@
   #lockscr .lmore { text-align: center; font: 700 11px 'Rajdhani', sans-serif; letter-spacing: 2px; color: #8FB6C2; }
   #lockscr .lbot { width: 100%; display: flex; align-items: center; justify-content: space-between; }
   #lockscr .lq { width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); backdrop-filter: blur(8px); font-size: 20px; cursor: pointer; transition: transform .12s, background .12s; } #lockscr .lq:hover { background: rgba(255,255,255,.18); } #lockscr .lq:active { transform: scale(.9); }
-  #pbody.zoomin { animation: appZoom .3s cubic-bezier(.2,.9,.3,1.1); }
-  @keyframes appZoom { from { transform: scale(.9); opacity: .2; filter: blur(3px); } to { transform: none; opacity: 1; filter: none; } }
+  #pbody.zoomin { animation: appZoom .24s cubic-bezier(.2,.8,.3,1); will-change: transform, opacity; }
+  @keyframes appZoom { from { transform: scale(.96) translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
   /* WYRD OS apps: a shared look. The header (icon tile in the app's colour), a hero card, lists with round icons, chips, avatars */
   .ahead { position: sticky; top: -6px; z-index: 2; display: flex; align-items: center; gap: 12px; margin: 0 -16px 10px; padding: 10px 16px 10px; background: linear-gradient(180deg, rgba(7,7,13,.97) 75%, rgba(7,7,13,0)); }
   .ahead > i { flex: none; width: 40px; height: 40px; display: grid; place-items: center; font-style: normal; font-size: 21px; background: rgba(0,0,0,.6); border: 1px solid var(--ac); box-shadow: 0 0 14px color-mix(in srgb, var(--ac) 45%, transparent), inset 0 0 12px color-mix(in srgb, var(--ac) 25%, transparent); clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
@@ -3004,8 +3006,8 @@
   const hqIndex = new Map();
   { let k = 0; for (const l of lots) if (l.kind === 'hq') hqIndex.set(l.i + ',' + l.j, k++); }
   // the Lagos clock: night from 7.30 pm to 5.30 am, with an hour's dusk and dawn
-  const forcedNight = new URLSearchParams(location.search).get('night');
-  let nightPref = null; // the phone's Sky toggle: null (Lagos time), 1 (night), 0 (day)
+  const forcedNight = /^(localhost|127.0.0.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('night') : null; // ?night= is for local previews only: players live on Lagos time
+  const nightPref = null; // the sky always follows Lagos time: nobody can change it from the phone
   function nightNow() {
     if (nightPref != null) return nightPref;
     if (forcedNight) return Number(forcedNight);
@@ -4982,6 +4984,7 @@
         if (l.seq <= since) continue;
         bubbles.set(l.id === id ? 'me' : l.id, { text: l.text, until: now + 7000 });
         if (since > 0 || l.id === id) addLog(l.id === id ? 'You' : l.name, l.color, l.text);
+        if (since > 0 && l.id !== id) notify(l.text, "chat", null, l.name); // other players talking on the island
       }
       since = Math.max(since, r.seq);
       parkedNow = r.parked || {};
@@ -5134,7 +5137,7 @@
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     const m = innerWidth <= 560 ? 8 : 16, vh = (window.visualViewport && visualViewport.height) || innerHeight;
-    phone.style.setProperty('--ps', Math.min(1, (innerWidth - 2 * m) / 372, (vh - 2 * m) / 780).toFixed(4));
+    phone.style.setProperty('--ps', Math.min(0.8, (innerWidth - 2 * m) / 372, (vh - 2 * m) * 0.84 / 780).toFixed(4)); // compact: never more than 80% size or 84% of the window's height
   }
   addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
   // ---- Island Music: songs from two open catalogues. Deezer for what's charting and new (Nigeria's top 100, new releases,
@@ -5462,13 +5465,16 @@
   // Link: the last message seen in each conversation (kept on this device), and a short time for the list
   const linkSeen = () => { try { return JSON.parse(store.get('li.seen') || '{}') || {}; } catch { return {}; } };
   const chatTime = (iso) => { const d = new Date(iso), now = new Date(); return d.toDateString() === now.toDateString() ? d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : now - d < 6 * 864e5 ? d.toLocaleDateString(undefined, { weekday: 'short' }) : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }); };
-  function show(html) { pbody.innerHTML = html; pbody.scrollTop = 0; }
+  // a screen's first draw starts at the top and animates in; a refresh of the same screen (new data, a button) keeps your
+  // place and doesn't flicker
+  function show(html) { pbody.innerHTML = html; if (pbody.dataset.fresh) { pbody.scrollTop = 0; delete pbody.dataset.fresh; } }
   // the shared app header: the app's icon in its colour, a title, a line under it
   const ahead = (k, title, sub) => { const a = APPS.find((v) => v[0] === k); return `<div class="ahead" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${a ? a[1] : '✨'}</i><div><h2>${esc(title)}</h2>${sub ? `<span>${sub}</span>` : ''}</div></div>`; };
   // a round avatar with someone's initials, in a colour that's always theirs
   const avatar = (name) => { let h = 0; for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) % 360; return `<span class="av2" style="background:hsl(${h},75%,62%)">${esc(String(name).replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '?')}</span>`; };
-  function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); pbody.classList.remove('zoomin'); void pbody.offsetWidth; pbody.classList.add('zoomin'); render(app, arg); } // apps zoom open
-  function back() { clearInterval(chatTimer); stack.pop(); const [a, g] = stack[stack.length - 1] || ['home']; if (!stack.length) stack.push(['home']); render(a, g); }
+  function go(app, arg) { clearInterval(chatTimer); stack.push([app, arg]); enterFx(); render(app, arg); }
+  function enterFx() { pbody.dataset.fresh = '1'; pbody.classList.remove('zoomin', 'enter'); void pbody.offsetWidth; pbody.classList.add('zoomin', 'enter'); clearTimeout(enterFx.t); enterFx.t = setTimeout(() => pbody.classList.remove('enter'), 450); } // apps zoom open
+  function back() { clearInterval(chatTimer); stack.pop(); const [a, g] = stack[stack.length - 1] || ['home']; if (!stack.length) stack.push(['home']); pbody.dataset.fresh = '1'; render(a, g); }
   const $ = (id) => document.getElementById(id);
   function fail(e) {
     if (e.message === 'signin') { me$ = null; return render('signin'); }
@@ -5567,24 +5573,61 @@
   applyTheme();
   // WYRD OS: it boots once, then each time you pick it up it's on the lock screen until you tap
   let booted = false, lockGo = null;
-  const notes = []; // the notification shade
-  function notify(text, kind = 'island') { notes.unshift({ text, kind, at: new Date() }); notes.length = Math.min(notes.length, 30); }
+  const notes = []; // the notification centre: every note keeps where it leads (tap to open) and whether you've seen it
+  const NOTE_ICON = { chat: '💬', link: '🔗', music: '🎧', store: '🛋️', fashion: '👔', island: '✨', hq: '🏠', ride: '🛵', money: '👛' };
+  const NOTE_GROUP = { chat: 'Island chat', link: 'Messages' };
+  let hqReqs = 0;
+  function notify(text, kind = 'island', open = null, from = '') {
+    notes.unshift({ text, kind, open, from, at: new Date(), seen: false }); notes.length = Math.min(notes.length, 60); updBadge();
+    if (shadeEl && shadeEl.classList.contains('on')) buildShade();
+  }
+  // the red dot on the phone: unread notes plus anyone waiting at your HQ door
+  function updBadge() { const n = notes.filter((m) => !m.seen).length + hqReqs, b = document.getElementById('pbadge'); if (!b) return; b.textContent = n > 99 ? '99+' : n; b.style.display = n ? 'block' : 'none'; }
   const shadeEl = document.getElementById('shade');
-  // the control centre: pull it down from the status bar. Toggles for the 3D models and the sky, the OS theme, then notifications
-  const noteHtml = (n) => '<div class="n">' + esc(n.text) + '<small>' + n.kind.toUpperCase() + ' · ' + n.at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</small></div>';
+  const ago = (d) => { const s = (Date.now() - d) / 1000; return s < 60 ? 'now' : s < 3600 ? Math.floor(s / 60) + 'm' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
+  const noteHtml = (n, i) => `<div class="n${n.seen ? '' : ' new'}${n.open ? ' tap' : ''}" data-ni="${i}"><i>${NOTE_ICON[n.kind] || '🔔'}</i><div>${n.from ? `<b>${esc(n.from)}</b>` : ''}<span>${esc(n.text)}</span></div><small>${ago(n.at)}</small></div>`;
+  // the control centre: pull it down from the status bar. Toggles for the 3D models and the sky, the OS theme, then
+  // notifications grouped (messages from other players, island chat, the rest), each one tappable
   function buildShade() {
-    const sky = nightPref === 1 ? ['🌙', 'Night'] : nightPref === 0 ? ['☀️', 'Day'] : ['🕒', 'Lagos time'], wx = lagosWeather();
+    const wx = lagosWeather();
+    const groups = new Map(); notes.forEach((n, i) => { const g = NOTE_GROUP[n.kind] || 'WYRD OS'; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(noteHtml(n, i)); });
+    const order = ['Messages', 'Island chat', 'WYRD OS'].filter((g) => groups.has(g));
     shadeEl.innerHTML = `<div class="cc"><button class="cct${G3.on ? ' on' : ''}" data-cc="3d"><b>🧊</b><span>3D models</span><small>${G3.on ? 'On' : 'Off'}</small></button>
-      <button class="cct${nightPref != null ? ' on' : ''}" data-cc="sky"><b>${sky[0]}</b><span>Sky</span><small>${sky[1]}</small></button>
       <div class="cct wide"><b>${wx.icon}</b><span>${wx.temp}°C · ${wx.text}</span><small>Lagos</small></div>
       <div class="ccth"><span>Theme</span>${Object.entries(OS_THEMES).map(([k, c]) => `<button data-th="${k}" class="${k === osTheme ? 'on' : ''}" style="background:linear-gradient(135deg,${c[0]},${c[1]} 55%,${c[2]})" aria-label="${k}"></button>`).join('')}</div></div>
-      <div class="ptitle" style="font-size:14px">Notifications</div>${notes.map(noteHtml).join('') || '<div class="n">All quiet on the island.</div>'}`;
+      <div class="nhead"><span>Notifications</span>${notes.length ? '<button data-cc="clear">Clear</button>' : ''}</div>
+      ${hqReqs ? `<div class="n new tap" data-hq="1"><i>🏠</i><div><b>Your HQ</b><span>${hqReqs} waiting at your door</span></div><small>now</small></div>` : ''}
+      ${order.map((g) => `<div class="ngrp">${g}</div>${groups.get(g).slice(0, 12).join('')}`).join('') || (hqReqs ? '' : '<div class="n quiet">All quiet on the island.</div>')}`;
     shadeEl.querySelector('[data-cc="3d"]').onclick = (e) => { e.stopPropagation(); G3.on = !G3.on; buildShade(); };
-    shadeEl.querySelector('[data-cc="sky"]').onclick = (e) => { e.stopPropagation(); nightPref = nightPref == null ? 1 : nightPref === 1 ? 0 : null; buildShade(); };
+    const cl = shadeEl.querySelector('[data-cc="clear"]'); if (cl) cl.onclick = (e) => { e.stopPropagation(); notes.length = 0; updBadge(); buildShade(); };
     shadeEl.querySelectorAll('[data-th]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); osTheme = b.dataset.th; store.set('li.os', osTheme); applyTheme(); buildShade(); }));
+    shadeEl.querySelectorAll('[data-ni]').forEach((el) => (el.onclick = (e) => { e.stopPropagation(); const n = notes[+el.dataset.ni]; if (!n) return; n.seen = true; updBadge(); shadeEl.classList.remove('on');
+      if (n.open) openPhone(...n.open); else if (n.kind === 'chat') { phone.style.display === 'block' && closePhone(); openSay(); } }));
+    const hqb = shadeEl.querySelector('[data-hq]'); if (hqb) hqb.onclick = (e) => { e.stopPropagation(); shadeEl.classList.remove('on'); openPhone('hq'); };
   }
-  document.getElementById('pbar').onclick = () => { buildShade(); shadeEl.classList.toggle('on'); };
+  // opening the shade marks what you can see as seen (after a moment, so the "new" glow shows first)
+  document.getElementById('pbar').onclick = () => { buildShade(); const on = shadeEl.classList.toggle('on'); if (on) setTimeout(() => { notes.forEach((n) => (n.seen = true)); updBadge(); }, 900); };
   shadeEl.onclick = () => shadeEl.classList.remove('on');
+  // Link: new messages from other players reach you anywhere on the island, opened on this device like the app does
+  let linkBase = null;
+  setInterval(async () => {
+    if (!signedIn() || !me$ || !keyed) return;
+    try {
+      const gs = await my('groups'), seen = linkSeen(), first = !linkBase; linkBase = linkBase || {};
+      for (const g of gs) {
+        const ms = await my('messages', { groupId: g.id, since: linkBase[g.id] || seen[g.id] || 0 });
+        for (const m of ms) {
+          if (m.mine || first || m.id <= (seen[g.id] || 0)) continue;
+          const viewing = phone.style.display === 'block' && stack.length && stack[stack.length - 1][0] === 'thread' && stack[stack.length - 1][1] && stack[stack.length - 1][1].id === g.id;
+          if (viewing) continue;
+          let t; try { t = JSON.parse(dec.decode(await open(await groupKey(g), m.ct))).t; } catch { t = '🔒 New message'; }
+          let nm = ''; try { nm = dec.decode(await open(await groupKey(g), g.nameCt)); } catch {}
+          notify(t, 'link', ['thread', { ...g, name: nm }], m.from);
+        }
+        if (ms.length) linkBase[g.id] = ms[ms.length - 1].id;
+      }
+    } catch {}
+  }, 25000);
   // ================= WYRD OS 2 =================
   // ---- the live wallpaper: Lagos at the hour it is on the island, drawn behind everything on the phone: the sky (dawn,
   // day, dusk, night with stars), the skyline with lit windows and WYRD Tower's LED crown, the lagoon reflecting it, and the
@@ -5594,8 +5637,8 @@
   const WALL_B = (() => { const R = rnd(91), far = [], near = []; let px = -10; while (px < 400) { const w = 14 + R() * 26; far.push([px, w, 60 + R() * 120]); px += w + 2; } px = -6; while (px < 400) { const w = 18 + R() * 30; near.push([px, w, 40 + R() * 150, R()]); px += w + 4; } return { far, near, stars: Array.from({ length: 70 }, () => [R(), R() * 0.55, R()]) }; })();
   function drawWall(now) {
     const cv = WALL.cv, scr = cv.parentElement, w = scr.clientWidth, h = scr.clientHeight; if (!w || !h) return;
-    if (cv.width !== w * 2) { cv.width = w * 2; cv.height = h * 2; }
-    const g = cv.getContext('2d'); g.setTransform(2, 0, 0, 2, 0, 0);
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1); if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
     const d = new Date(Date.now() + 3600e3), hr = d.getUTCHours() + d.getUTCMinutes() / 60, t = now / 1000;
     const dayness = Math.max(0, Math.min(1, (Math.sin((hr - 6) / 12 * Math.PI) + 0.2) * 1.4)), dusk = Math.max(0, 1 - Math.abs(hr - 18.6) / 1.4) + Math.max(0, 1 - Math.abs(hr - 6.4) / 1.2);
     const sky = g.createLinearGradient(0, 0, 0, h * 0.72);
@@ -5620,7 +5663,7 @@
     // keep it calm under the apps: a soft dark wash
     const sh = g.createLinearGradient(0, 0, 0, h); sh.addColorStop(0, 'rgba(7,7,13,0.15)'); sh.addColorStop(0.4, 'rgba(7,7,13,0.35)'); sh.addColorStop(1, 'rgba(7,7,13,0.55)'); g.fillStyle = sh; g.fillRect(0, 0, w, h);
   }
-  (function wallLoop(now) { if (phone.style.display === 'block') drawWall(now); requestAnimationFrame(wallLoop); })(performance.now());
+  (function wallLoop(now) { if (phone.style.display === 'block' && now - (WALL.last || 0) > 33) { WALL.last = now; drawWall(now); } requestAnimationFrame(wallLoop); })(performance.now()); // ~30 frames a second is plenty for a wallpaper
   // ---- the Dynamic Island: the camera notch, alive. Music playing: the cover and a moving equaliser; the city DJ out at night;
   // a ride on its way. A notification grows out of it for a moment. Tap it to open what it shows.
   const ISL = document.querySelector('#pbar .cam'); ISL.id = 'island'; ISL.innerHTML = '<img alt=""><span class="il-t"></span><i class="il-eq"><s></s><s></s><s></s></i>';
@@ -5635,8 +5678,8 @@
     else { islandSet('', null, ''); islOpen = null; }
   }, 600);
   ISL.onclick = (e) => { e.stopPropagation(); if (islOpen) go(...islOpen); };
-  function islandToast(text, kind) { islToastUntil = performance.now() + 3200; islandSet('il-toast', null, ({ music: '🎧 ', store: '🛋️ ', fashion: '👔 ', island: '✨ ' }[kind] || '🔔 ') + text); }
-  { const n0 = notify; notify = (text, kind) => { n0(text, kind); if (phone.style.display === 'block') islandToast(text, kind); }; }
+  function islandToast(text, kind) { islToastUntil = performance.now() + 3200; islandSet('il-toast', null, ((NOTE_ICON[kind] ? NOTE_ICON[kind] + ' ' : '🔔 ')) + text); }
+  { const n0 = notify; notify = (text, kind, open, from) => { n0(text, kind, open, from); if (phone.style.display === "block") islandToast(from ? from + ": " + text : text, kind); }; }
   function lockScreen() {
     return new Promise((done) => {
       const L = document.getElementById('lockscr'), d = new Date(Date.now() + 3600e3), wx = lagosWeather();
@@ -5692,7 +5735,7 @@
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
         $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
-        pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => render('home'), 250); }));
+        pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => { const s = MP.q[MP.i], w = pbody.querySelector('.mw'); if (!s || !w) return; w.querySelector('.mwa').style.backgroundImage = `url('${s.art}')`; w.querySelector('.mwt b').textContent = s.title; w.querySelector('.mwt span').textContent = s.artist; w.querySelector('.mwt small').textContent = MP.a.paused ? 'Paused' : 'Now playing'; const pb = w.querySelector('[data-mw=play]'); if (pb) pb.textContent = MP.a.paused ? '▶' : '⏸'; }, 150); })); // update the widget in place
         { const im = pbody.querySelector('.wfit img'); const u = im ? fitShot(im.dataset.shot) : null; if (u) im.src = u; else if (im) im.remove(); }
         return;
       }
@@ -6576,7 +6619,7 @@
     if (!signedIn()) return;
     try {
       const v = await my('me'); me$ = me$ ? Object.assign(me$, v) : v; pnaira.textContent = naira(v.naira);
-      pbadge.textContent = v.requests; pbadge.style.display = v.requests ? 'block' : 'none';
+      hqReqs = v.requests; updBadge();
       if (v.requests > lastReq) showJoin('🔔 Someone asked to enter your HQ', '#EF4444');
       lastReq = v.requests;
       await loadHqRow();
