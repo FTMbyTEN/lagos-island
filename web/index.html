@@ -535,9 +535,9 @@
     ['shops', 5, 4, 3, 2, 'Idumota', '🛍️'],
     ['palace', 10, 4, 4, 2, "Iga Idunganran (Oba's Palace)", '👑'],
     ['fountain', 2, 7, 2, 3, 'Tinubu Square', '⛲'],
-    ['cathedral', 2, 11, 2, 3, 'Cathedral Church of Christ', '⛪'],
+    ['cathedral', 10, 11, 4, 3, 'Cathedral Church of Christ', '⛪'],
     ['field', 5, 11, 4, 3, 'Tafawa Balewa Square', '⭐'],
-    ['towers', 10, 11, 4, 3, 'The Marina & NECOM House', '🏢'],
+    ['towers', 2, 11, 2, 3, 'The Marina & NECOM House', '🏢'],
     ['park', 5, 15, 4, 1, 'Freedom Park', '🎷'],
     ['hospital', 10, 15, 4, 1, 'General Hospital', '🏥'],
     ['jetty', 2, 15, 2, 1, 'Marina Jetty', '⛴️'],
@@ -978,12 +978,53 @@
         box(x0 + 0.3, 2.6, d - 2, x0 + w - 0.3, 3.2, d - 0.6, STALLS[i + 2]); // a shop awning
       }
     },
+    // ---- Iga Idunganran, the Oba of Lagos's palace: an ochre compound wall with capped piers, the gatehouse with its
+    // two-tier red roof and carved doors, bronze leopards either side, a courtyard of red earth, the old palace with its
+    // long veranda of carved posts, the new palace rising in three tiers of red roof to a gold crown, royal umbrellas,
+    // a thatched shrine, palms, lanterns lit at night
     palace(a, b, c, d) {
+      const t = performance.now() / 1000, mid = (a + c) / 2, ochre = '#D9A066', red = '#B91C1C', gold = '#D4AF37';
       flat(a, b, c, d, 0.05, '#E9E2D0');
-      const m = 0.6;
-      for (const [x0, z0, x1, z1] of [[a + m, b + m, c - m, b + m + 0.6], [a + m, d - m - 0.6, c - m, d - m], [a + m, b + m, a + m + 0.6, d - m], [c - m - 0.6, b + m, c - m, d - m]]) box(x0, 0, z0, x1, 2.4, z1, '#E5D3B3');
-      box(a + 6, 0, b + 4, c - 6, 6, d - 4, '#FFF7E6');
-      gable(a + 5.5, b + 3.5, c - 5.5, d - 3.5, 6, 4, '#B91C1C');
+      flat(a + 1, b + 1, c - 1, d - 1, 0.06, '#C2703D'); // the courtyard: red earth
+      flat(mid - 1.6, b + 11, mid + 1.6, d - 1, 0.07, '#E7D8B2'); // the path from the gate
+      // the back and side walls (the front one goes up after the courtyard)
+      const wall = (x0, z0, x1, z1) => { box(x0, 0, z0, x1, 3, z1, ochre); box(x0 - 0.1, 3, z0 - 0.1, x1 + 0.1, 3.3, z1 + 0.1, '#7C2D12'); };
+      wall(a + 0.5, b + 0.5, c - 0.5, b + 1.1); wall(a + 0.5, b + 0.5, a + 1.1, d - 0.5); wall(c - 1.1, b + 0.5, c - 0.5, d - 0.5);
+      for (let px = a + 0.8; px < c; px += 5) box(px - 0.4, 0, b + 0.4, px + 0.4, 3.8, b + 1.2, '#E8B77C'); // capped piers
+      // the thatched shrine in the back corner, palms
+      cylLit(c - 4, b + 4, 1.6, 0, 2.6, '#E8D5B0'); cone(c - 4, b + 4, 2.6, 2.4, 2.6, '#A16207');
+      palm(a + 2.5, b + 3, 9); palm(c - 2.5, d - 4, 8);
+      // the old palace: long and low, a hipped red roof, a veranda of carved posts
+      const o0 = a + 3, o1 = a + 17;
+      box(o0, 0, b + 2.5, o1, 4.5, b + 8, '#F5E6C8', '#7C2D12', 1);
+      gable(o0 - 0.5, b + 2, o1 + 0.5, b + 10.6, 4.5, 2.4, red);
+      for (let px = o0 + 0.5; px <= o1; px += 2) { box(px - 0.2, 0, b + 10, px + 0.2, 4.5, b + 10.4, '#78350F'); box(px - 0.3, 2, b + 10, px + 0.3, 2.3, b + 10.4, gold); }
+      // the new palace: two white storeys, gold bands, then the roof stepping up in three red tiers to the crown
+      const n0 = c - 20, n1 = c - 7, nz0 = b + 2.5, nz1 = b + 10;
+      box(n0, 0, nz0, n1, 8, nz1, '#FFFBF2', '#7C2D12', 2);
+      box(n0 - 0.2, 4, nz0 - 0.2, n1 + 0.2, 4.4, nz1 + 0.2, gold);
+      arch((n0 + n1) / 2, nz1 + 0.02, 1.4, 3.8, '#78350F');
+      pyramid(n0 - 1, nz0 - 1, n1 + 1, nz1 + 1, 8, 2.6, red);
+      box(n0 + 2.5, 9.4, nz0 + 1.8, n1 - 2.5, 12, nz1 - 1.8, '#FFFBF2'); pyramid(n0 + 1.6, nz0 + 1, n1 - 1.6, nz1 - 1, 12, 2.2, red);
+      box(n0 + 4.4, 13, nz0 + 2.6, n1 - 4.4, 15, nz1 - 2.6, '#FFFBF2'); pyramid(n0 + 3.8, nz0 + 2.2, n1 - 3.8, nz1 - 2.2, 15, 2.4, red);
+      const cx = (n0 + n1) / 2, cz = (nz0 + nz1) / 2;
+      cylLit(cx, cz, 0.5, 17.2, 0.8, gold); dome(cx, cz, 18, 0.55, gold); // the crown on top
+      for (let k = 0; k < 5; k++) { const an = k / 5 * Math.PI * 2, p = P(cx + Math.cos(an) * 0.5, 18.4, cz + Math.sin(an) * 0.5); x.fillStyle = gold; x.beginPath(); x.arc(p[0], p[1], Math.max(0.8, K * 0.18), 0, Math.PI * 2); x.fill(); }
+      // royal umbrellas in the courtyard, white and red, fringed in gold
+      for (const [ux, uz, col] of [[mid - 5, d - 6, '#F8FAFC'], [mid + 5, d - 6, red]]) { box(ux - 0.08, 0, uz - 0.08, ux + 0.08, 4.4, uz + 0.08, '#78350F'); const tp = P(ux, 4.6, uz), rr = 2 * K; x.fillStyle = col; x.beginPath(); x.ellipse(tp[0], tp[1], rr, rr * sp * 0.75, 0, 0, Math.PI * 2); x.fill(); x.strokeStyle = gold; x.lineWidth = Math.max(1, K * 0.25); x.stroke(); }
+      // the front wall and the gatehouse: two-tier roof, carved doors with gold studs, the leopards outside
+      wall(a + 0.5, d - 1.1, mid - 4.5, d - 0.5); wall(mid + 4.5, d - 1.1, c - 0.5, d - 0.5);
+      for (let px = a + 0.8; px < c; px += 5) if (Math.abs(px - mid) > 5) box(px - 0.4, 0, d - 1.2, px + 0.4, 3.8, d - 0.4, '#E8B77C');
+      box(mid - 4.5, 0, d - 2.2, mid + 4.5, 6, d - 0.2, ochre); box(mid - 4.7, 6, d - 2.4, mid + 4.7, 6.4, d, '#7C2D12');
+      pyramid(mid - 5.2, d - 2.9, mid + 5.2, d + 0.5, 6.4, 1.6, red); box(mid - 2.8, 7.6, d - 1.9, mid + 2.8, 8.6, d - 0.5, ochre); pyramid(mid - 3.4, d - 2.4, mid + 3.4, d, 8.6, 1.8, red);
+      arch(mid, d - 0.18, 1.8, 4.6, '#5B3A1A');
+      for (let k = 0; k < 8; k++) { const p = P(mid - 1.2 + (k % 4) * 0.8, 1 + Math.floor(k / 4) * 1.6, d - 0.16); x.fillStyle = gold; x.beginPath(); x.arc(p[0], p[1], Math.max(0.7, K * 0.14), 0, Math.PI * 2); x.fill(); }
+      faceText('IGA IDUNGANRAN', mid, 5.2, d - 0.17, gold, 0.75, 0);
+      for (const lx of [mid - 7, mid + 7]) { box(lx - 0.9, 0, d + 0.3, lx + 0.9, 1.4, d + 2, '#A8A29E'); box(lx - 0.35, 1.4, d + 0.6, lx + 0.35, 2.4, d + 1.9, '#7C4A1E'); box(lx - 0.3, 2, d + 1.6, lx + 0.3, 2.9, d + 2.2, '#7C4A1E'); } // the bronze leopards
+      // lanterns on the gatehouse and along the wall, lit at night
+      const lan = () => { for (const [lx, ly, lz] of [[mid - 4.6, 4.6, d - 0.1], [mid + 4.6, 4.6, d - 0.1], [a + 5.8, 3.6, d - 0.3], [c - 5.8, 3.6, d - 0.3], [o0 + 1, 3.6, b + 10.5], [o1 - 1, 3.6, b + 10.5]]) { const p = P(lx, ly, lz); x.fillStyle = '#FDE68A'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.3), 0, Math.PI * 2); x.fill(); if (night > 0.3) { x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 4); g.addColorStop(0, 'rgba(255,200,120,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 4, 0, Math.PI * 2); x.fill(); x.restore(); } } };
+      lan(); glow.push(lan);
+      glow.push(() => { const p = P(cx, 18.4, cz), r = K * 6 * (0.85 + Math.sin(t * 1.5) * 0.15); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,215,120,0.6)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     // ---- Tinubu Square: a paved plaza in rings, flower beds, the flag, benches, and the three-tier fountain
     // with its jets playing (lit up at night)
@@ -1020,6 +1061,21 @@
     // ---- the Cathedral Church of Christ, Marina: a Gothic stone nave with buttresses and stained glass,
     // a transept, and the tower at the front with its belfry, a rose window, a slate spire and a gold cross
     cathedral(a, b, c, d) {
+      if (c - a > 30) {
+        // a wider lot: the cathedral in the middle of its close, the parish hall on one side, a memorial garden on the
+        // other, a low railing round it all and a path from each gate
+        const m = (a + c) / 2;
+        flat(a, b, c, d, 0.05, C.grassLot);
+        for (const [x0, z0, x1, z1] of [[a + 0.4, b + 0.4, c - 0.4, b + 0.7], [a + 0.4, b + 0.4, a + 0.7, d - 0.4], [c - 0.7, b + 0.4, c - 0.4, d - 0.4], [a + 0.4, d - 0.7, m - 3, d - 0.4], [m + 3, d - 0.7, c - 0.4, d - 0.4]]) box(x0, 0, z0, x1, 1.2, z1, '#1F2937'); // the railing
+        box(a + 2, 0, b + 4, a + 9, 6, b + 14, '#EDE4D0', '#3B4A8A', 1); gable(a + 1.7, b + 3.7, a + 9.3, b + 14.3, 6, 3, '#5B2C2C'); // the parish hall
+        faceText('HALL', a + 5.5, 4.6, b + 14.05, '#5B2C2C', 0.9, 0);
+        flat(a + 2, d - 4, m - 9, d - 2, 0.07, '#D6CFC0'); flat(m + 9, d - 4, c - 2, d - 2, 0.07, '#D6CFC0'); // paths across the close
+        // the memorial garden: a stone cross on a plinth, flower beds, benches
+        box(c - 7, 0, b + 8, c - 4, 1, b + 11, '#D6D3D1'); box(c - 5.7, 1, b + 9.3, c - 5.3, 6, b + 9.7, '#E7E5E4'); box(c - 6.8, 4, b + 9.3, c - 4.2, 4.4, b + 9.7, '#E7E5E4');
+        for (const [fx, fz] of [[c - 8.5, b + 15], [c - 4, b + 15]]) { flat(fx - 1.5, fz - 1, fx + 1.5, fz + 1, 0.08, '#4D9A4A'); const R = rnd(fx + fz); for (let k = 0; k < 5; k++) { const p = P(fx - 1.2 + R() * 2.4, 0.3, fz - 0.7 + R() * 1.4); x.fillStyle = ['#F472B6', '#FACC15', '#F8FAFC'][k % 3]; x.beginPath(); x.arc(p[0], p[1], Math.max(0.8, K * 0.3), 0, Math.PI * 2); x.fill(); } }
+        bench(c - 8, b + 19); tree(a + 4, d - 7, 2.4); tree(c - 3, b + 3, 2.4); tree(c - 3, d - 7, 2.2, C.treeLight);
+        return MODELS.cathedral(m - 10, b, m + 10, d);
+      }
       flat(a, b, c, d, 0.05, C.grassLot);
       flat((a + c) / 2 - 1.6, d - 4, (a + c) / 2 + 1.6, d, 0.07, '#D6CFC0'); // the path to the door
       tree(a + 2.5, b + 3, 2.6); tree(c - 2.5, b + 4, 2.4);
@@ -1059,24 +1115,19 @@
     // dishes and the red-and-white mast on top), a dark glass office tower and a bank's tower either side, on a podium
     // with a plaza, palms and flags along Marina Road
     towers(a, b, c, d) {
-      if (c - a < 30) { // a plain block of towers elsewhere
-        flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-        const hs = [34, 52, 26], n = Math.max(2, Math.round((c - a) / 13)), w = (c - a - 2) / n;
-        for (let i = 0; i < n; i++) { const x0 = a + 1 + i * w + 1, h = hs[i % 3]; box(x0, 0, b + 3, x0 + w - 2, h, d - 3, i % 2 ? '#94A3B8' : '#7FB3D9', i % 2 ? '#334155' : '#DCEBF7'); box(x0 + 2, h, b + 6, x0 + w - 4, h + 3, d - 6, '#64748B'); }
-        return;
-      }
-      const t = performance.now() / 1000, mid = (a + c) / 2;
+      // on a wide lot the towers stand side by side; on a narrow one the glass tower stands behind NECOM House
+      const t = performance.now() / 1000, mid = (a + c) / 2, wide = c - a >= 30;
       flat(a, b, c, d, 0.05, '#DCDFE4', C.plotEdge);
       flat(a + 1, d - 6, c - 1, d - 0.5, 0.06, '#EDE6D6'); // the plaza along Marina Road
       box(a + 2, 0, b + 2, c - 2, 3, d - 8, '#CBD5E1', '#1E293B', 1); // the podium: banks' halls and a lobby
       box(a + 1.8, 3, b + 1.8, c - 1.8, 3.4, d - 7.8, '#94A3B8');
       // the glass office tower (west), dark blue with gold fins
-      const g0 = a + 4, g1 = a + 13;
-      box(g0, 3.4, b + 5, g1, 46, b + 15, '#1E3A5F', '#60A5FA');
-      for (let px = g0 + 1.5; px < g1; px += 2.5) box(px - 0.12, 3.4, b + 15, px + 0.12, 46, b + 15.25, '#D4AF37');
-      box(g0 + 1, 46, b + 6, g1 - 1, 49, b + 14, '#0F172A'); box(g0 + 2, 49, b + 7, g1 - 2, 49.4, b + 13, '#334155');
+      const g0 = wide ? a + 4 : a + 3, g1 = wide ? a + 13 : c - 3, gz0 = wide ? b + 5 : b + 1, gz1 = wide ? b + 15 : b + 8;
+      box(g0, 3.4, gz0, g1, 46, gz1, '#1E3A5F', '#60A5FA');
+      for (let px = g0 + 1.5; px < g1; px += 2.5) box(px - 0.12, 3.4, gz1, px + 0.12, 46, gz1 + 0.25, '#D4AF37');
+      box(g0 + 1, 46, gz0 + 1, g1 - 1, 49, gz1 - 1, '#0F172A'); box(g0 + 2, 49, gz0 + 2, g1 - 2, 49.4, gz1 - 2, '#334155');
       // NECOM House: tall, white, a ribbed face of vertical piers and dark slot windows, setbacks near the top
-      const n0 = mid - 5, n1 = mid + 5, z0 = b + 4, z1 = b + 16;
+      const n0 = mid - 5, n1 = mid + 5, z0 = wide ? b + 4 : b + 10, z1 = wide ? b + 16 : b + 20;
       box(n0, 3.4, z0, n1, 64, z1, '#F1F5F9');
       for (let px = n0 + 1; px < n1; px += 1.6) quad([P(px, 4, z1 + 0.02), P(px + 0.7, 4, z1 + 0.02), P(px + 0.7, 63, z1 + 0.02), P(px, 63, z1 + 0.02)], '#334155'); // the slot windows between the piers
       for (let pz = z0 + 1; pz < z1; pz += 1.6) quad([P(n1 + 0.02, 4, pz), P(n1 + 0.02, 4, pz + 0.7), P(n1 + 0.02, 63, pz + 0.7), P(n1 + 0.02, 63, pz)], '#475569');
@@ -1091,14 +1142,17 @@
       if (K > 2) { const p = P(mid, 2.4, d - 7.95); x.save(); x.font = `800 ${Math.round(K * 0.95)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#1E293B'; x.fillText('NECOM HOUSE', p[0], p[1]); x.restore(); }
       // the bank's tower (east): pale stone with a band of green glass every few floors, a crown
       const s0 = c - 13, s1 = c - 4;
-      box(s0, 3.4, b + 6, s1, 38, b + 16, '#E7E2D6', '#0F766E');
-      for (let y = 10; y < 38; y += 7) box(s0 - 0.1, y, b + 5.9, s1 + 0.1, y + 0.6, b + 16.1, '#0F766E');
-      pyramid(s0, b + 6, s1, b + 16, 38, 5, '#0F766E');
+      if (wide) {
+        box(s0, 3.4, b + 6, s1, 38, b + 16, '#E7E2D6', '#0F766E');
+        for (let y = 10; y < 38; y += 7) box(s0 - 0.1, y, b + 5.9, s1 + 0.1, y + 0.6, b + 16.1, '#0F766E');
+        pyramid(s0, b + 6, s1, b + 16, 38, 5, '#0F766E');
+      }
       // flags, palms and lamps along the plaza; office lights at night
-      for (let k = 0; k < 3; k++) flagpole(mid - 8 + k * 8, d - 4, 9, k === 1 ? ['#1D4ED8', '#FACC15', '#B91C1C'] : ['#008751', '#FFFFFF', '#008751'], t + k);
-      for (const px of [a + 3, c - 3]) palm(px, d - 2, 9);
-      lamp(a + 9, d - 1.5, 5); lamp(c - 9, d - 1.5, 5);
-      glow.push(() => { const R2 = rnd(a + b); x.fillStyle = 'rgba(254,240,170,0.85)'; for (let k = 0; k < 40; k++) { const tw = R2() < 0.5, px = tw ? g0 + 0.6 + R2() * (g1 - g0 - 1.2) : s0 + 0.6 + R2() * (s1 - s0 - 1.2), py = 6 + R2() * (tw ? 38 : 30), p = P(px, py, b + (tw ? 15.3 : 16.2)); x.fillRect(p[0] - K * 0.3, p[1] - K * 0.25, K * 0.6, K * 0.5); } });
+      const fs = wide ? 8 : 5.5;
+      for (let k = 0; k < 3; k++) flagpole(mid - fs + k * fs, d - 4, 9, k === 1 ? ['#1D4ED8', '#FACC15', '#B91C1C'] : ['#008751', '#FFFFFF', '#008751'], t + k);
+      for (const px of [a + 2, c - 2]) palm(px, d - 2, 9);
+      lamp(wide ? a + 9 : a + 5, d - 1.5, 5); lamp(wide ? c - 9 : c - 5, d - 1.5, 5);
+      glow.push(() => { const R2 = rnd(a + b); x.fillStyle = 'rgba(254,240,170,0.85)'; for (let k = 0; k < 40; k++) { const tw = !wide || R2() < 0.5, px = tw ? g0 + 0.6 + R2() * (g1 - g0 - 1.2) : s0 + 0.6 + R2() * (s1 - s0 - 1.2), py = 6 + R2() * (tw ? 38 : 30), p = P(px, py, tw ? gz1 + 0.3 : b + 16.2); x.fillRect(p[0] - K * 0.3, p[1] - K * 0.25, K * 0.6, K * 0.5); } });
     },
     park(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.grassLot);
