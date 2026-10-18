@@ -796,24 +796,43 @@
     const hw = 10, y0 = 10, y1 = 21;
     for (const ox of [-6, 6]) { box(bx + ox - 0.5, 0, bz - 0.5, bx + ox + 0.5, y0, bz + 0.5, '#6B7280'); box(bx + ox - 1.2, 0, bz - 1.2, bx + ox + 1.2, 0.8, bz + 1.2, '#9CA3AF'); }
     box(bx - hw, y0 - 0.6, bz - 0.2, bx + hw, y0, bz + 1.6, '#4B5563'); // the catwalk
-    const draw1 = () => {
-      const a = P(bx - hw, y0, bz), b = P(bx + hw, y0, bz), c = P(bx + hw, y1, bz), d = P(bx - hw, y1, bz);
-      quad([a, b, c, d], '#0B1020', '#E5E7EB');
-      const t = performance.now() / 1000, slot = Math.floor(t / 6 + bx * 0.01), ad = slot % 3 === 0 ? [title, line] : ADS[(slot + Math.round(bx)) % ADS.length], hue = (slot * 53 + bx) % 360;
-      const ins = (p, q, u) => [p[0] + (q[0] - p[0]) * u, p[1] + (q[1] - p[1]) * u];
-      const g = x.createLinearGradient(a[0], a[1], c[0], c[1]); g.addColorStop(0, `hsl(${hue},85%,50%)`); g.addColorStop(1, `hsl(${(hue + 70) % 360},85%,38%)`);
-      quad([ins(a, c, 0.04), ins(b, d, 0.04), ins(c, a, 0.04), ins(d, b, 0.04)], g);
-      const wpx = Math.hypot(b[0] - a[0], b[1] - a[1]);
-      // the lights along the top
-      for (let k = 0; k <= 6; k++) { const p = P(bx - hw + k * hw / 3, y1 + 0.6, bz); x.fillStyle = (k + Math.floor(t * 2)) % 2 ? '#FDE68A' : '#FFFFFF'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.35), 0, Math.PI * 2); x.fill(); }
-      if (wpx < 34) return;
-      x.save(); x.translate((a[0] + c[0]) / 2, (a[1] + c[1]) / 2); x.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]));
-      x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = 'rgba(0,0,0,.35)'; x.shadowBlur = 4;
-      x.font = `800 ${Math.round(wpx * 0.09)}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[0], 0, -wpx * 0.045);
-      x.font = `600 ${Math.round(wpx * 0.05)}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[1], 0, wpx * 0.07);
+    box(bx - hw - 0.5, y0 - 0.5, bz - 0.9, bx + hw + 0.5, y1 + 0.5, bz - 0.05, '#1F2937'); // the cabinet behind the screen
+    for (const ox of [-hw * 0.6, hw * 0.6]) box(bx + ox - 0.12, y1 + 0.5, bz - 0.3, bx + ox + 0.12, y1 + 0.8, bz + 2.4, '#4B5563'); // the floodlights' arms
+    // an LED screen: the ads slide in from the right every six seconds, each with its icon, a pixel grid over it, a ticker
+    // running along the bottom, floodlights over the top, the screen's light spilling out at night
+    const draw1 = (lit) => {
+      const t = performance.now() / 1000, a = P(bx - hw, y0, bz), b = P(bx + hw, y0, bz), c = P(bx + hw, y1, bz), d = P(bx - hw, y1, bz);
+      quad([a, b, c, d], '#05070D', '#9CA3AF');
+      const per = 6, slot = Math.floor(t / per + bx * 0.01), ph = (t / per + bx * 0.01) % 1, wipe = Math.min(1, ph * 6);
+      const adOf = (s) => (s % 3 === 0 ? [title, line] : ADS[(s + Math.round(bx)) % ADS.length]);
+      const wpx = Math.hypot(b[0] - a[0], b[1] - a[1]), hpx = Math.hypot(d[0] - a[0], d[1] - a[1]);
+      // the screen in its own flat frame, mapped onto the panel's corners: x across (0 to wpx), y up (0 to -hpx)
+      x.save(); x.transform((b[0] - a[0]) / wpx, (b[1] - a[1]) / wpx, (a[0] - d[0]) / hpx, (a[1] - d[1]) / hpx, a[0], a[1]);
+      const pw = wpx * 0.96, phh = hpx * 0.92, ox = wpx * 0.02, oy = -hpx * 0.04;
+      const panel = (s, dx) => {
+        const ad = adOf(s), hue = (s * 53 + bx) % 360, g = x.createLinearGradient(0, 0, pw, -phh);
+        g.addColorStop(0, `hsl(${hue},85%,${lit ? 52 : 46}%)`); g.addColorStop(1, `hsl(${(hue + 70) % 360},85%,${lit ? 40 : 34}%)`);
+        x.fillStyle = g; x.fillRect(ox + dx, oy - phh, pw, phh);
+        x.fillStyle = 'rgba(255,255,255,0.12)'; x.beginPath(); x.arc(ox + dx + pw * 0.85, oy - phh * 0.75, phh * 0.55, 0, Math.PI * 2); x.fill(); // a light shape behind
+        if (wpx < 34) return;
+        const icon = { WYRD: '✨', 'THE ARENA': '🎤', 'ISLAND CASINO': '🎰', 'CLUB OZUMBA': '🪩', 'YOUR HQ': '🏠', 'LEKKI FREE ZONE': '🏭', 'JOBS ON THE ISLAND': '💼', 'EKO O NI BAJE': '🇳🇬', WELCOME: '👋' }[ad[0]] || '📣';
+        x.fillStyle = '#fff'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.shadowColor = 'rgba(0,0,0,.35)'; x.shadowBlur = 4;
+        x.font = `${Math.round(phh * 0.34)}px sans-serif`; x.fillText(icon, ox + dx + pw * 0.05, oy - phh * 0.56);
+        x.font = `900 ${Math.round(Math.min(phh * 0.26, pw * 0.08))}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[0], ox + dx + pw * 0.22, oy - phh * 0.66);
+        x.font = `600 ${Math.round(Math.min(phh * 0.15, pw * 0.05))}px "Plus Jakarta Sans", sans-serif`; x.fillText(ad[1], ox + dx + pw * 0.22, oy - phh * 0.42); x.shadowBlur = 0;
+      };
+      x.beginPath(); x.rect(ox, oy - phh, pw, phh); x.clip();
+      panel(slot - 1, -pw * wipe); panel(slot, pw * (1 - wipe));
+      // the ticker along the bottom
+      if (wpx >= 34) { const th = phh * 0.17; x.fillStyle = 'rgba(0,0,0,0.55)'; x.fillRect(ox, oy - th, pw, th); x.fillStyle = '#FDE68A'; x.font = `800 ${Math.round(th * 0.62)}px "Plus Jakarta Sans", sans-serif`; x.textBaseline = 'middle'; const msg = '  EKO O NI BAJE  •  JOBS ON YOUR PHONE  •  LIVE AT THE ARENA TONIGHT  •  ', mw = x.measureText(msg).width, off = (t * 40) % mw; for (let k = -1; k < Math.ceil(pw / mw) + 1; k++) x.fillText(msg, ox + k * mw - off, oy - th / 2); }
+      // the LED pixel grid
+      if (wpx > 60) { x.strokeStyle = 'rgba(0,0,0,0.18)'; x.lineWidth = 1; x.beginPath(); for (let px = ox; px < ox + pw; px += 3) { x.moveTo(px, oy); x.lineTo(px, oy - phh); } for (let py = oy; py > oy - phh; py -= 3) { x.moveTo(ox, py); x.lineTo(ox + pw, py); } x.stroke(); }
       x.restore();
+      // the floodlights: lamps on the arms, a wash of light down the screen at night
+      for (const sx of [-hw * 0.6, hw * 0.6]) { const p = P(bx + sx, y1 + 0.7, bz + 2.4); x.fillStyle = lit ? '#FEF9C3' : '#9CA3AF'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.4), 0, Math.PI * 2); x.fill(); }
+      if (lit) { x.save(); x.globalCompositeOperation = 'lighter'; const m = P(bx, (y0 + y1) / 2, bz + 1), r = K * hw * 1.4, g = x.createRadialGradient(m[0], m[1], 0, m[0], m[1], r); g.addColorStop(0, 'rgba(255,255,255,0.12)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(m[0], m[1], r, r * 0.55, 0, 0, Math.PI * 2); x.fill(); x.restore(); }
     };
-    draw1(); glow.push(draw1);
+    draw1(false); glow.push(() => draw1(true));
   }
   // letters laid flat on the ground (a word engraved in the land)
   function groundText(text, cx, cz, size, fill, shadow) {
@@ -1087,11 +1106,46 @@
       x.strokeStyle = '#E7D8B2'; x.lineWidth = Math.max(2, K * 1.4); x.beginPath(); x.moveTo(pth[0][0], pth[0][1]); x.lineTo(pth[1][0], pth[1][1]); x.stroke();
       for (let i = 0; i < Math.round((c - a) * (d - b) / 60); i++) { const R = rnd(a * 31 + b * 17 + i); tree(a + 2 + R() * (c - a - 4), b + 2 + R() * (d - b - 4), 2.4 + R() * 1.4, R() < 0.5 ? C.tree : C.treeLight); }
     },
+    // ---- Lagos General Hospital: the wards in a long white block, a taller tower in the middle with the helipad on its
+    // roof and a red cross on its face, the Emergency bay under a canopy with ambulances (lights flashing), the pharmacy's
+    // green cross, a garden with benches out front
     hospital(a, b, c, d) {
-      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      box(a + 3, 0, b + 1.5, c - 3, 12, d - 1.5, '#FFFFFF', '#93C5FD', 3);
-      const cx = (a + c) / 2, cz = (b + d) / 2;
-      flat(cx - 2.6, cz - 0.8, cx + 2.6, cz + 0.8, 12.05, '#EF4444'); flat(cx - 0.8, cz - 2.6, cx + 0.8, cz + 2.6, 12.06, '#EF4444');
+      const t = performance.now() / 1000;
+      flat(a, b, c, d, 0.05, '#E5E7EB', C.plotEdge);
+      flat(a + 1, d - 2.6, c - 12, d - 0.4, 0.06, C.grassLot); // the front garden
+      const w1 = c - 12;
+      box(a + 2, 0, b + 1, w1, 11, d - 3, '#FFFFFF', '#93C5FD', 3); // the wards
+      box(a + 1.8, 11, b + 0.8, w1 + 0.2, 11.6, d - 2.8, '#0EA5E9');
+      const t0 = a + 9, t1 = a + 19;
+      box(t0, 0, b + 0.5, t1, 20, d - 2.6, '#F8FAFC', '#60A5FA'); // the tower
+      // the red cross on the tower's face
+      const fz = d - 2.58, cx = (t0 + t1) / 2;
+      quad([P(cx - 0.8, 13, fz), P(cx + 0.8, 13, fz), P(cx + 0.8, 18, fz), P(cx - 0.8, 18, fz)], '#DC2626'); quad([P(cx - 2.5, 14.7, fz), P(cx + 2.5, 14.7, fz), P(cx + 2.5, 16.3, fz), P(cx - 2.5, 16.3, fz)], '#DC2626');
+      // the helipad on the roof
+      disk(cx, (b + d - 2) / 2, 20.05, 3.6, '#374151'); disk(cx, (b + d - 2) / 2, 20.06, 3.1, '#4B5563');
+      { const o = P(cx, 20.08, (b + d - 2) / 2); if (K > 2) { x.save(); x.translate(o[0], o[1]); x.scale(1, sp); x.fillStyle = '#F8FAFC'; x.font = `900 ${Math.round(K * 3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('H', 0, 0); x.restore(); } }
+      const pad = () => { for (let k = 0; k < 8; k++) { const an = k / 8 * Math.PI * 2, p = P(cx + Math.cos(an) * 3.4, 20.1, (b + d - 2) / 2 + Math.sin(an) * 3.4); x.fillStyle = (k + Math.floor(t * 2)) % 2 ? '#FACC15' : '#22C55E'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.25), 0, Math.PI * 2); x.fill(); } };
+      pad(); glow.push(pad);
+      // Emergency: a canopy on posts over the drop-off, the sign lit red, two ambulances
+      flat(w1 + 1, b + 1, c - 1, d - 0.5, 0.06, '#9CA3AF');
+      box(w1 + 1, 0, b + 1, c - 1, 7, b + 3, '#F8FAFC'); // the A&E entrance
+      for (const px of [w1 + 1.5, c - 1.5]) box(px - 0.2, 0, d - 2, px + 0.2, 4.6, d - 1.6, '#94A3B8');
+      box(w1 + 1, 4.6, b + 3, c - 1, 5, d - 1.4, '#DC2626');
+      const er = () => { const p = P((w1 + c) / 2, 6, b + 3.02); if (K < 2) return; x.save(); x.font = `900 ${Math.max(7, K * 1.1)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#DC2626'; x.shadowColor = '#F87171'; x.shadowBlur = 8; x.fillText('EMERGENCY', p[0], p[1]); x.restore(); };
+      er(); glow.push(er);
+      const amb = (ax, az, k) => {
+        box(ax - 2.2, 0.4, az - 1, ax + 2.2, 2.8, az + 1, '#F8FAFC'); box(ax + 1.2, 0.4, az - 1.01, ax + 2.2, 2, az + 1.01, '#E5E7EB');
+        box(ax - 2.21, 1.2, az - 1.02, ax + 2.21, 1.6, az + 1.02, '#DC2626'); // the stripe
+        const lt = () => { const on = Math.floor(t * 4 + k) % 2; for (const [ox, col] of [[-0.6, on ? '#3B82F6' : '#1E3A8A'], [0.6, on ? '#7F1D1D' : '#EF4444']]) { const p = P(ax + ox, 3, az); x.fillStyle = col; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.35), 0, Math.PI * 2); x.fill(); } };
+        lt(); glow.push(lt);
+      };
+      amb(w1 + 4, d - 4.5, 0); amb(c - 4, d - 4.5, 1);
+      // the pharmacy's green cross on a post, benches and trees in the garden
+      box(a + 2.5, 0, d - 1.2, a + 2.7, 4.4, d - 1, '#94A3B8');
+      const ph = () => { const p = P(a + 2.6, 5.2, d - 1.1), s = Math.max(2, K * 0.9); x.fillStyle = '#16A34A'; x.shadowColor = '#4ADE80'; x.shadowBlur = night > 0.4 ? 8 : 0; x.fillRect(p[0] - s * 0.35, p[1] - s, s * 0.7, s * 2); x.fillRect(p[0] - s, p[1] - s * 0.35, s * 2, s * 0.7); x.shadowBlur = 0; };
+      ph(); glow.push(ph);
+      for (const px of [a + 6, t1 + 4]) bench(px, d - 2.2);
+      for (const px of [a + 23, w1 - 2]) tree(px, d - 1.5, 1.8, C.treeLight);
     },
     // ---- Marina Jetty: a plank deck on piles out over the water, a ticket kiosk, railings and bollards,
     // and the ferry and a water taxi rocking at the landing (the ferry comes and goes)
@@ -1173,17 +1227,71 @@
         if (R() < 0.7) tree(cx + 4.5, cz + 3, 2);
       }
     },
+    // ---- the hotels. Eko Hotel: the long white slab with its blue crown, the Eko Suites tower beside it, a porte-cochère,
+    // the big free-form pool with loungers and umbrellas, palms. Federal Palace: a slim white tower on an arched base,
+    // flags out front, a round pool and fountain in the garden. Both light their windows at night.
     hotel(a, b, c, d) {
-      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      box(a + 2, 0, b + 2, c - 2, 38, b + 8, '#F8FAFC', '#60A5FA');
-      box(a + 2, 38, b + 2, c - 2, 40, b + 8, '#0EA5E9');
-      flat(a + 3, b + 10, c - 8, d - 2, 0.1, '#38BDF8'); // the pool
-      palm(c - 3, d - 3, 9); palm(c - 6, b + 11, 8);
+      const t = performance.now() / 1000, eko = c - a > 35, R = rnd(a + b);
+      flat(a, b, c, d, 0.05, '#E7E5E4', C.plotEdge);
+      const name = (txt, px, py, pz, col) => { const sg = () => { const p = P(px, py, pz); if (K < 1.6) return; x.save(); x.font = `900 ${Math.max(7, K * 1.3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = col; x.shadowColor = col; x.shadowBlur = night > 0.4 ? 10 : 0; x.fillText(txt, p[0], p[1]); x.restore(); }; sg(); glow.push(sg); };
+      const lit = [];
+      if (eko) {
+        flat(a + 2, b + 11, c - 2, d - 1, 0.06, C.grassLot);
+        // the pool: a free-form lagoon of a pool with a deck
+        { const p = P(a + 16, 0.08, b + 15.5), rx = 11 * K, rz = 3.4 * K * sp; x.fillStyle = '#D6CFC0'; x.beginPath(); x.ellipse(p[0], p[1], rx + K * 1.4, rz + K * sp * 1.4, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = '#22B8E6'; x.beginPath(); x.ellipse(p[0], p[1], rx, rz, 0, 0, Math.PI * 2); x.fill(); x.strokeStyle = 'rgba(255,255,255,0.55)'; x.lineWidth = 1; for (let k = 0; k < 3; k++) { x.beginPath(); x.ellipse(p[0] + Math.sin(t + k) * K, p[1], rx * (0.3 + k * 0.22), rz * (0.3 + k * 0.22), 0, 0, Math.PI * 2); x.stroke(); } }
+        for (let k = 0; k < 4; k++) { const ux = a + 30 + (k % 2) * 4, uz = b + 12.5 + Math.floor(k / 2) * 4; umbrella(ux, uz, ['#0EA5E9', '#F8FAFC'][k % 2]); box(ux + 1, 0, uz - 0.5, ux + 3.4, 0.5, uz + 0.5, '#F8FAFC'); }
+        // the slab: white, banded floors, the blue crown with the name
+        box(a + 2, 0, b + 2, a + 27, 4, b + 9, '#E2E8F0', '#1E293B', 1); // the lobby floors
+        box(a + 3, 4, b + 3, a + 26, 36, b + 8, '#F8FAFC', '#7DD3FC');
+        for (let y = 7; y < 36; y += 3.2) box(a + 2.9, y, b + 7.95, a + 26.1, y + 0.35, b + 8.15, '#E2E8F0'); // balconies
+        box(a + 2.8, 36, b + 2.8, a + 26.2, 39, b + 8.2, '#0369A1');
+        name('EKO HOTEL', a + 14.5, 37.5, b + 8.25, '#FFFFFF');
+        // Eko Suites: a tower of dark glass beside it
+        box(a + 29, 0, b + 2, c - 3, 30, b + 9, '#334155', '#93C5FD'); box(a + 29.5, 30, b + 2.5, c - 3.5, 32, b + 8.5, '#0F172A');
+        name('SUITES', (a + 29 + c - 3) / 2, 31, b + 9.05, '#7DD3FC');
+        // the porte-cochère and the flags
+        box(a + 8, 3.6, b + 9, a + 21, 4.2, b + 12, '#F8FAFC'); for (const px of [a + 8.5, a + 20.5]) box(px - 0.2, 0, b + 11.4, px + 0.2, 3.6, b + 11.8, '#CBD5E1');
+        for (let k = 0; k < 3; k++) flagpole(a + 4 + k * 2.2, b + 10.5, 8, ['#008751', '#FFFFFF', '#008751'], t + k);
+        for (const [px, pz] of [[c - 3, d - 3], [a + 3, d - 2], [a + 28, d - 2], [c - 3, b + 11]]) palm(px, pz, 9);
+        for (let k = 0; k < 36; k++) lit.push([a + 3.5 + R() * 22, 6 + R() * 28, b + 8.2]);
+        for (let k = 0; k < 16; k++) lit.push([a + 29.5 + R() * (c - a - 33), 3 + R() * 25, b + 9.05]);
+      } else {
+        // Federal Palace: the garden, a round pool and a fountain, the slim tower on its arcade
+        flat(a + 1.5, b + 11, c - 1.5, d - 1, 0.06, C.grassLot);
+        { const p = P(c - 8, 0.08, b + 15), r = 3.6 * K; x.fillStyle = '#D6CFC0'; x.beginPath(); x.ellipse(p[0], p[1], r + K, (r + K) * sp, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = '#38BDF8'; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); }
+        cylLit(a + 8, b + 15, 2.2, 0, 0.8, '#E7E5E4'); disk(a + 8, b + 15, 0.82, 1.8, '#60A5FA'); const fj = () => { const p = P(a + 8, 0.9, b + 15), q = P(a + 8, 4 + Math.sin(t * 3) * 0.4, b + 15); x.strokeStyle = 'rgba(224,242,254,0.9)'; x.lineWidth = Math.max(1, K * 0.25); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }; fj(); glow.push(fj);
+        box(a + 3, 0, b + 2, c - 3, 5, b + 10, '#F5F5F4'); // the arcade
+        for (let k = 0; k < 6; k++) arch(a + 5 + k * ((c - a - 10) / 5), b + 10.02, 0.9, 4, '#475569');
+        box(a + 6, 5, b + 3, c - 6, 34, b + 9, '#FFFFFF', '#93C5FD');
+        for (const px of [a + 6, c - 6.6]) box(px, 5, b + 8.9, px + 0.6, 34, b + 9.2, '#D4AF37'); // gold piers at the corners
+        box(a + 5.6, 34, b + 2.6, c - 5.6, 36, b + 9.4, '#B08A43');
+        name('FEDERAL PALACE', (a + c) / 2, 35, b + 9.45, '#FFFFFF');
+        for (let k = 0; k < 4; k++) flagpole(a + 4 + k * 3, d - 2, 8, k % 2 ? ['#1D4ED8', '#FACC15', '#B91C1C'] : ['#008751', '#FFFFFF', '#008751'], t + k);
+        palm(c - 2, d - 2, 9); palm(a + 2, b + 12, 8);
+        for (let k = 0; k < 30; k++) lit.push([a + 6.5 + R() * (c - a - 13), 7 + R() * 26, b + 9.2]);
+      }
+      glow.push(() => { x.fillStyle = 'rgba(254,240,170,0.85)'; for (const [px, py, pz] of lit) { if (Math.sin(t * 0.1 + px * 3 + py) > 0.75) continue; const p = P(px, py, pz); x.fillRect(p[0] - K * 0.3, p[1] - K * 0.25, K * 0.6, K * 0.5); } });
     },
+    // ---- Lagos Civic Centre: the curved white hall with a full-height glass front onto the lagoon, its wave roof, a wide
+    // plaza with steps and a water feature, the flags
     glass(a, b, c, d) {
-      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      box(a + 4, 0, b + 3, c - 4, 14, d - 3, '#7FB3D9', '#DCEBF7', 4);
-      box(a + 6, 14, b + 5, c - 6, 16, d - 5, '#E2E8F0');
+      const t = performance.now() / 1000, cx = (a + c) / 2;
+      flat(a, b, c, d, 0.05, '#E7E5E4', C.plotEdge);
+      flat(a + 2, d - 6, c - 2, d - 0.5, 0.06, '#F5F5F4');
+      for (let k = 0; k < 3; k++) flat(a + 6, d - 7 - k * 0.8, c - 6, d - 6.2 - k * 0.8, 0.08 + k * 0.2, '#E7E5E4'); // the steps
+      box(a + 3, 0, b + 2, c - 3, 13, d - 9, '#F8FAFC');
+      quad([P(a + 5, 0.5, d - 8.98), P(c - 5, 0.5, d - 8.98), P(c - 5, 12, d - 8.98), P(a + 5, 12, d - 8.98)], '#7DB8E0', '#E5E7EB'); // the glass front
+      x.strokeStyle = 'rgba(255,255,255,0.7)'; x.lineWidth = 1; x.beginPath(); for (let px = a + 7; px < c - 5; px += 2) { const p = P(px, 0.5, d - 8.97), q = P(px, 12, d - 8.97); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } for (const y of [4, 8]) { const p = P(a + 5, y, d - 8.97), q = P(c - 5, y, d - 8.97); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
+      // the wave roof, overhanging the front
+      for (let k = 0; k < 10; k++) { const x0 = a + 2 + k * (c - a - 4) / 10, x1 = x0 + (c - a - 4) / 10, h0 = 13.5 + Math.sin(k / 10 * Math.PI) * 2.5, h1 = 13.5 + Math.sin((k + 1) / 10 * Math.PI) * 2.5; quad([P(x0, h0, b + 1.5), P(x1, h1, b + 1.5), P(x1, h1, d - 7.5), P(x0, h0, d - 7.5)], k % 2 ? '#F1F5F9' : '#FFFFFF', 'rgba(100,116,139,0.25)'); }
+      const nm = () => { const p = P(cx, 1.6, d - 6); if (K < 2) return; x.save(); x.font = `800 ${Math.max(7, K * 1.1)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#0F766E'; x.fillText('LAGOS CIVIC CENTRE', p[0], p[1]); x.restore(); };
+      box(cx - 8, 0, d - 6.2, cx + 8, 1, d - 5.8, '#E7E5E4'); nm(); glow.push(nm);
+      // a long water feature with jets across the plaza
+      flat(a + 5, d - 4.2, c - 5, d - 2.6, 0.09, '#38BDF8');
+      const jets = () => { x.strokeStyle = 'rgba(224,242,254,0.85)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); for (let px = a + 6; px < c - 5; px += 2) { const p = P(px, 0.1, d - 3.4), q = P(px, 1.5 + Math.abs(Math.sin(t * 2 + px)) * 1.2, d - 3.4); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke(); };
+      jets(); glow.push(jets);
+      for (let k = 0; k < 3; k++) flagpole(a + 3 + k * 2.4, d - 1.5, 8, ['#008751', '#FFFFFF', '#008751'], t + k);
+      glow.push(() => { const p = P(cx, 6, d - 9), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,236,190,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.ellipse(p[0], p[1], r, r * 0.5, 0, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
     // ---- a beach: wet sand and foam along whichever side meets the sea, loungers in pairs under umbrellas,
     // a thatched bar, a volleyball net, palms; tap it to spend the day there
@@ -1356,17 +1464,30 @@
         };
         neon(); glow.push(neon);
       } else {
-        // Club Ozumba: black glass and gold, a marquee canopy and a red carpet
-        box(a + 2, 0, b + 2, bx1 - 1, 12, d - 4, '#0C0A09', '#B08A43', 3);
-        box(a + 2, 12, b + 2, bx1 - 1, 12.6, d - 4, '#D4AF37');
-        box(a + 3, 4, d - 4, bx1 - 2, 4.5, d - 1.5, '#D4AF37'); // the canopy
-        flat(a + 5, d - 4, bx1 - 5, d, 0.08, '#B91C1C'); // the red carpet
-        for (const px of [a + 4.5, bx1 - 4.5]) box(px - 0.15, 0, d - 1.8, px + 0.15, 3, d - 1.5, '#D4AF37');
+        // Club Ozumba: two floors of black glass behind gold fins, LED bands chasing round, a rooftop lounge with umbrellas
+        // and a glowing rail, a gold marquee over the door, the red carpet between velvet ropes
+        const m0 = a + 2, m1 = bx1 - 1, z0 = b + 2, z1 = d - 4;
+        box(m0, 0, z0, m1, 12, z1, '#0C0A09', '#B08A43', 3);
+        for (let px = m0 + 1; px < m1; px += 1.4) box(px - 0.1, 0.4, z1, px + 0.1, 11.6, z1 + 0.3, '#D4AF37'); // the gold fins
+        box(m0, 12, z0, m1, 12.6, z1, '#D4AF37');
+        // the rooftop lounge
+        box(m0 + 1, 12.6, z0 + 1, m1 - 1, 12.8, z1 - 1, '#292524');
+        for (let k = 0; k < 3; k++) { const ux = m0 + 3 + k * ((m1 - m0 - 6) / 2); box(ux - 0.08, 12.8, (z0 + z1) / 2 - 0.08, ux + 0.08, 15, (z0 + z1) / 2 + 0.08, '#A8A29E'); const tp = P(ux, 15.2, (z0 + z1) / 2), rr = 1.1 * K; x.fillStyle = k % 2 ? '#F5F5F4' : '#B08A43'; x.beginPath(); x.ellipse(tp[0], tp[1], rr, rr * sp * 0.7, 0, 0, Math.PI * 2); x.fill(); }
+        box(a + 3, 4, z1, m1 - 1, 4.5, d - 1.5, '#D4AF37'); // the marquee canopy
+        flat(a + 5, z1, m1 - 3, d, 0.08, '#B91C1C'); // the red carpet
+        for (const px of [a + 4.5, m1 - 2.5]) for (let pz = z1 + 0.6; pz < d - 0.2; pz += 1.6) box(px - 0.12, 0, pz - 0.12, px + 0.12, 1.4, pz + 0.12, '#D4AF37'); // rope posts
         const neon = () => {
-          const sg = P((a + bx1) / 2, 8, d - 4);
-          x.save(); x.font = `900 ${Math.max(8, K * 2.2)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
-          x.shadowColor = '#FDE68A'; x.shadowBlur = 14; x.fillStyle = '#FDE68A'; x.fillText('OZUMBA', sg[0], sg[1]); x.restore();
-          if (night > 0.3) beams((a + bx1) / 2, 13, (b + d) / 2, 45, t);
+          // the LED bands round the building, gold light chasing along them
+          for (const y of [4.2, 8.3]) { x.save(); x.lineWidth = Math.max(1.5, K * 0.3); for (let k = 0; k < 16; k++) { const u0 = k / 16, u1 = (k + 1) / 16, p = P(m0 + (m1 - m0) * u0, y, z1 + 0.32), q = P(m0 + (m1 - m0) * u1, y, z1 + 0.32), on = (k + Math.floor(t * 8)) % 6 < 2; x.strokeStyle = on ? '#FDE68A' : 'rgba(180,140,60,0.6)'; x.shadowColor = '#FBBF24'; x.shadowBlur = on && night > 0.3 ? 10 : 0; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } x.restore(); }
+          // the velvet ropes, sagging between the posts
+          x.strokeStyle = '#7F1D1D'; x.lineWidth = Math.max(1, K * 0.2); for (const px of [a + 4.5, m1 - 2.5]) { x.beginPath(); for (let pz = z1 + 0.6; pz < d - 1.8; pz += 1.6) { const p = P(px, 1.2, pz), q = P(px, 1.2, pz + 1.6), m = P(px, 0.8, pz + 0.8); x.moveTo(p[0], p[1]); x.quadraticCurveTo(m[0], m[1], q[0], q[1]); } x.stroke(); }
+          // the rooftop rail glowing, the name over the marquee
+          { const p0 = P(m0 + 0.6, 13.6, z1 - 0.6), p1 = P(m1 - 0.6, 13.6, z1 - 0.6); x.save(); x.strokeStyle = '#FDE68A'; x.shadowColor = '#FDE68A'; x.shadowBlur = night > 0.3 ? 12 : 0; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); x.restore(); }
+          const sg = P((a + bx1) / 2, 6.3, z1 + 0.35);
+          x.save(); x.font = `900 ${Math.max(8, K * 2.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+          x.shadowColor = '#FDE68A'; x.shadowBlur = 16; x.fillStyle = '#FEF3C7'; x.fillText('OZUMBA', sg[0], sg[1]);
+          x.font = `700 ${Math.max(6, K * 0.9)}px "Plus Jakarta Sans", sans-serif`; x.fillStyle = '#FDE68A'; x.fillText('V I C T O R I A   I S L A N D', sg[0], sg[1] + K * 1.8); x.restore();
+          if (night > 0.3) beams((a + bx1) / 2, 15, (b + d) / 2, 45, t);
         };
         neon(); glow.push(neon);
       }
@@ -1377,14 +1498,32 @@
       flat(a, b, c, d, 0.05, '#3F1D1D');
       const bz1 = b + (d - b) * 0.58;
       parking(a + 1, bz1 + 1.5, c - 1, d - 1, 'place:casino');
-      box(a + 2, 0, b + 2, c - 2, 13, bz1 - 1, '#F5C542', '#7C2D12', 3);
-      dome((a + c) / 2, (b + bz1) / 2, 13, 5.5, '#FBBF24');
+      // the building: gold and deep red, a colonnade along the front, a portico with a gold pediment, the ribbed dome
+      // ringed with bulbs, a sign of bulbs and card suits, a fountain on the forecourt, searchlights at night
+      const cx = (a + c) / 2, fz = bz1 - 1, tt = performance.now() / 1000;
+      box(a + 2, 0, b + 2, c - 2, 13, fz, '#F5C542', '#7C2D12', 3);
+      box(a + 1.8, 13, b + 1.8, c - 1.8, 14, fz + 0.2, '#7C2D12');
+      for (let px = a + 3; px <= c - 3; px += 2.4) cylLit(px, fz + 1, 0.45, 0, 10, '#FEF3C7'); // the colonnade
+      box(a + 2.6, 10, fz, c - 2.6, 11, fz + 1.8, '#FEF3C7');
+      box(cx - 5, 0, fz, cx + 5, 11.5, fz + 3.4, '#7C2D12'); gable(cx - 5.4, fz - 0.2, cx + 5.4, fz + 3.6, 11.5, 2.6, '#D4AF37'); // the portico
+      arch(cx, fz + 3.42, 2.4, 7, '#FDE68A'); arch(cx, fz + 3.44, 2, 6.5, '#451A03');
+      cylLit(cx, (b + fz) / 2, 6.2, 14, 1.4, '#7C2D12');
+      dome(cx, (b + fz) / 2, 15.4, 5.8, '#FBBF24');
+      for (let k = 0; k < 8; k++) { const an = k / 8 * Math.PI; const p0 = P(cx + Math.cos(an) * 5.8, 15.4, (b + fz) / 2 + Math.sin(an) * 0.1), p1 = P(cx, 21.2, (b + fz) / 2); x.strokeStyle = 'rgba(180,83,9,0.55)'; x.lineWidth = 1; x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(p0[0] + (p1[0] - p0[0]) * 0.2, p1[1], p1[0], p1[1]); x.stroke(); } // the dome's ribs
+      cylLit(cx, (b + fz) / 2, 0.2, 21.2, 2, '#D4AF37');
+      // the forecourt fountain between the doors and the car park
+      cylLit(cx, bz1 + 0.3, 2, 0, 0.6, '#FEF3C7');
       const sign = () => {
-        const t = performance.now() / 300, sg = P((a + c) / 2, 9, bz1 - 1);
-        x.save(); x.font = `800 ${Math.max(9, K * 2.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
-        x.shadowColor = '#FDE047'; x.shadowBlur = 12; x.fillStyle = '#FFF7CC'; x.fillText('CASINO', sg[0], sg[1]);
-        for (let k = 0; k < 10; k++) { const p = P(a + 2 + k * (c - a - 4) / 9, 13.2, bz1 - 1); x.fillStyle = (k + Math.floor(t)) % 2 ? '#FDE047' : '#F97316'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.35), 0, Math.PI * 2); x.fill(); }
-        x.restore();
+        const t = performance.now() / 300, sg = P(cx, 12.6, fz + 3.5);
+        // bulbs round the dome and along the top
+        for (let k = 0; k < 14; k++) { const pp = P(cx + Math.cos(k / 13 * Math.PI) * 6.3, 15.5, (b + fz) / 2 + Math.sin(k / 13 * Math.PI) * 6.3); x.fillStyle = (k + Math.floor(t)) % 2 ? '#FDE047' : '#F97316'; x.beginPath(); x.arc(pp[0], pp[1], Math.max(1.2, K * 0.3), 0, Math.PI * 2); x.fill(); }
+        for (let k = 0; k < 14; k++) { const p = P(a + 2 + k * (c - a - 4) / 13, 14.2, fz + 0.2); x.fillStyle = (k + Math.floor(t)) % 3 ? '#FDE047' : '#F97316'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.35), 0, Math.PI * 2); x.fill(); }
+        x.save(); x.font = `900 ${Math.max(9, K * 2.2)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+        x.shadowColor = '#FDE047'; x.shadowBlur = 14; x.fillStyle = '#FFF7CC'; x.fillText('♠ CASINO ♥', sg[0], sg[1]);
+        x.font = `800 ${Math.max(6, K * 0.9)}px "Plus Jakarta Sans", sans-serif`; x.fillStyle = '#FDE68A'; x.fillText('ISLAND  ·  PLAY MONEY', sg[0], sg[1] + K * 2); x.restore();
+        // the fountain's jets
+        x.strokeStyle = 'rgba(254,243,199,0.85)'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); for (let k = 0; k < 6; k++) { const an = k / 6 * Math.PI * 2, p0 = P(cx, 0.6, bz1 + 0.3), p1 = P(cx + Math.cos(an) * 0.8, 3.4 + Math.sin(tt * 3 + k) * 0.3, bz1 + 0.3 + Math.sin(an) * 0.8), p2 = P(cx + Math.cos(an) * 1.8, 0.6, bz1 + 0.3 + Math.sin(an) * 1.8); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(p1[0], p1[1] - K, p2[0], p2[1]); } x.stroke();
+        if (night > 0.3) beams(cx, 21, (b + fz) / 2, 120, tt);
       };
       sign(); glow.push(sign);
       palm(a + 1.5, bz1, 9); palm(c - 1.5, bz1, 9);
@@ -1689,6 +1828,17 @@
       const cx = (a + c) / 2, cz = (b + d) / 2;
       groundText('WELCOME TO', cx, cz - 9, 5.5, '#B08A43', 'rgba(60,40,10,0.35)');
       groundText('LAGOS ISLAND', cx, cz + 1, 10, '#F8FAFC', 'rgba(60,40,10,0.45)');
+      // after dark the letters light up: brighter the darker it gets, the colour drifting slowly between green, white
+      // and gold, a soft pulse running through them
+      glow.push(() => {
+        if (night < 0.05) return;
+        const tt = performance.now() / 1000, hue = 140 + Math.sin(tt * 0.25) * 50, pulse = 0.75 + Math.sin(tt * 1.6) * 0.25;
+        x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = Math.min(1, night * 1.2) * pulse;
+        x.shadowColor = `hsl(${hue},90%,60%)`; x.shadowBlur = 18;
+        groundText('WELCOME TO', cx, cz - 9, 5.5, `hsl(${45 + Math.sin(tt * 0.3) * 10},95%,65%)`);
+        groundText('LAGOS ISLAND', cx, cz + 1, 10, `hsl(${hue},85%,${70 + pulse * 10}%)`);
+        x.restore();
+      });
       const t = performance.now() / 1000;
       for (let k = 0; k < 5; k++) palm(a + 8 + k * 16, b + 3, 9 + (k % 2) * 2);
       // flags along the back: Nigeria and Lagos State, flying
