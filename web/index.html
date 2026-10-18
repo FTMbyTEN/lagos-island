@@ -503,12 +503,15 @@
     { id: 'vi', name: 'Victoria Island', rect: [16, 14, 27, 21], rows: [16, 19], cols: [19, 23], cam: { yaw: -0.5, pitch: 0.95, zoom: 0.95 } },
     { id: 'atlantic', name: 'Eko Atlantic', rect: [15, 24, 24, 27], rows: [25], cols: [19, 23], cam: { yaw: 0.15, pitch: 0.85, zoom: 0.95 } },
     { id: 'lekki', name: 'Lekki', rect: [30, 8, 41, 21], rows: [9, 15, 19], cols: [33, 37], cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
+    // the beachfront: sand down to the water, the coast road behind it (row 19), nothing between the beaches and the sea
+    { id: 'vi', name: 'Victoria Island', rect: [20, 22, 22, 22], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.5, pitch: 0.95, zoom: 0.95 } },
+    { id: 'lekki', name: 'Lekki', rect: [24, 22, 36, 22], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
     { id: 'ajah', name: 'Ajah', rect: [44, 10, 49, 18], rows: [15], cols: [46], cam: { yaw: 0.55, pitch: 0.9, zoom: 1.05 } },
     { id: 'ilashe', name: 'Ilashe', rect: [3, 22, 10, 26], rows: [24], cols: [4], sand: true, cam: { yaw: -0.6, pitch: 0.85, zoom: 1.05 } },
     { id: 'banana', name: 'Banana Island', rect: [27, 1, 29, 7], rows: [6], cols: [], fill: 'palm', cam: { yaw: 0.4, pitch: 0.9, zoom: 1.15 } }, // its own island off Ikoyi, gated
     { id: 'ads', name: 'Ad Island', rect: [31, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
     { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
-    { id: 'arena', name: 'The Arena', rect: [26, 23, 36, 28], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
+    { id: 'arena', name: 'The Arena', rect: [26, 24, 36, 29], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
     { id: 'station', name: 'Blue Line Station', rect: [38, 23, 42, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 1.0 } },
     { id: 'airport', name: 'Lagos Island Airport', rect: [53, 20, 60, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.35, pitch: 0.8, zoom: 0.85 } },
     { id: 'fill3', name: 'Reclaimed land', rect: [43, 1, 52, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.1, pitch: 0.85, zoom: 0.9 } },
@@ -586,19 +589,19 @@
     ['glass', 20, 14, 3, 2, 'Lagos Civic Centre', '🏛️'],
     ['park', 16, 17, 3, 2, 'Muri Okunola Park', '🌳'],
     ['hotel', 16, 14, 3, 2, 'Federal Palace Hotel', '🏨'],
-    ['beach', 20, 20, 3, 2, 'Bar Beach', '🏖️'],
-    ['beach', 24, 20, 4, 2, 'Kuramo Beach', '🏖️'],
+    ['beach', 20, 20, 3, 3, 'Bar Beach', '🏖️'],
+    ['beach', 24, 20, 4, 3, 'Kuramo Beach', '🏖️'],
     ['wyrdtower', 24, 14, 4, 2, 'WYRD Tower', '⚛️'],
     // Eko Atlantic
     ['skyline', 15, 26, 4, 2, 'Eko Atlantic City', '🏙️'],
     ['skyline', 20, 26, 3, 2, 'Eko Pearl Towers', '🏙️'],
     // Lekki
-    ['tollgate', 33, 22, 2, 1, 'Lekki Toll Gate', '🚧'], // across the Coastal Road
+    ['tollgate', 33, 19, 2, 1, 'Lekki Toll Gate', '🚧'], // across the coast road behind the beaches
     ['gallery', 34, 10, 3, 3, 'Nike Art Gallery', '🎨'],
     ['forest', 38, 10, 4, 4, 'Lekki Conservation Centre', '🌿'],
     ['mall', 38, 16, 4, 3, 'Circle Mall', '🛍️'],
-    ['beach', 34, 20, 3, 2, 'Elegushi Beach', '🏖️'],
-    ['beach', 30, 20, 3, 2, 'Landmark Beach', '🏖️'],
+    ['beach', 34, 20, 3, 3, 'Elegushi Beach', '🏖️'],
+    ['beach', 30, 20, 3, 3, 'Landmark Beach', '🏖️'],
     ['houses', 30, 10, 3, 3, 'Lekki Phase 1', '🏠'],
     ['houses', 34, 16, 3, 3, 'Lekki estates', '🏠'],
     // Ajah
@@ -637,7 +640,7 @@
     ['soon', 62, 43, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['welcome', 6, 17, 9, 4, 'Welcome to Lagos Island', '👋'],
     // the arena: shows with tickets, and the biggest screens on the island
-    ['arena', 27, 23, 10, 6, 'The Arena (live shows)', '🎤'],
+    ['arena', 27, 24, 10, 6, 'The Arena (live shows)', '🎤'],
     // Ad Island and HQ Row
     ['screens', 31, 1, 4, 2, 'Ad Island (digital billboards)', '📺'],
     ['hqgate', 47, 21, 2, 2, "HQ Row: everyone's own HQ", '🏠'],
@@ -653,7 +656,7 @@
 
   // ---- the ground, tile by tile: water, land, sand, road, bridge, ferry
   const W0 = 0, LAND = 1, SAND = 2, ROAD = 3, BRIDGE = 4, FERRYLANE = 5;
-  const COAST = [24, 43, 22]; // from column, to column, on row
+  const COAST = [37, 43, 22]; // from column, to column, on row
   const tile = new Uint8Array(BOARD.w * BOARD.h);
   const sectorAt = new Int8Array(BOARD.w * BOARD.h).fill(-1);
   const at = (i, j) => (i < 0 || j < 0 || i >= BOARD.w || j >= BOARD.h ? W0 : tile[j * BOARD.w + i]);
