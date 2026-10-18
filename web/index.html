@@ -436,6 +436,16 @@
   .cw-tap { margin-top: 16px; font: 800 12px 'Orbitron', sans-serif; letter-spacing: 4px; color: #00F0FF; animation: cwBlink 1.2s steps(2) infinite 4s; opacity: .9; }
   /* no backdrop: the words float over the island, lit like neon, readable on anything */
   #cyberwel { background: none !important; } .cw-scan, .cw-noise { display: none; } .cw-box { background: none; border: none; box-shadow: none; clip-path: none; }
+  /* WYRD OS, smooth: no cut corners or square boxes on the phone; every panel, button, card and bubble rounded, the neon kept */
+  #phone .pcard, #phone .widget, #phone .dock, #phone .glass, #phone .peek, #phone .wmini, #phone .hero, #phone .jc, #phone #pnav, #phone .mw, #phone .lockw { clip-path: none !important; border-radius: 20px !important; }
+  #phone .pcard { box-shadow: inset 0 0 0 1px rgba(0,240,255,.12), 0 6px 18px rgba(0,0,0,.25) !important; }
+  #phone .pbtn, #phone .chips button, #phone .qrep button, #phone .nhead button { clip-path: none !important; border-radius: 14px !important; }
+  #phone .pcard input, #phone .pcard textarea, #phone .pcard select, #phone .comp input, #phone input { border-radius: 14px !important; }
+  #phone .msg { border-radius: 18px 18px 18px 6px !important; border-left: 0 !important; box-shadow: inset 0 0 0 1px rgba(0,240,255,.18); }
+  #phone .msg.me { border-radius: 18px 18px 6px 18px !important; }
+  #phone .app i, #phone .ahead > i, #phone .av2 { border-radius: 16px !important; clip-path: none !important; }
+  #phone ::-webkit-scrollbar-thumb { border-radius: 6px !important; }
+  #phone .grade { display: inline-grid; place-items: center; width: 26px; height: 26px; margin-right: 6px; border-radius: 9px; font: 900 14px 'Plus Jakarta Sans', sans-serif; color: #07070D; background: #FCEE0A; vertical-align: middle; } #phone .grade.gA { background: #22C55E; } #phone .grade.gB { background: #00F0FF; } #phone .grade.gD, #phone .grade.gF { background: #FF003C; color: #fff; }
   .cw-tag { color: #FF2A6D; text-shadow: 0 0 10px rgba(255,42,109,.8), 0 1px 3px #000; font-size: 13px; }
   .cw-glitch { text-shadow: 3px 0 #FF003C, -3px 0 #00F0FF, 0 0 22px rgba(252,238,10,.55), 0 6px 22px rgba(0,0,0,.8); }
   h2.cw-name { color: #FFFFFF; text-shadow: 3px 0 #FF003C, -3px 0 #00F0FF, 0 0 26px rgba(0,240,255,.75), 0 6px 24px rgba(0,0,0,.85); letter-spacing: 6px; }
@@ -5280,6 +5290,70 @@
     CITY.mix = liveMix(c);
     if (CITY.pendingDecks) cityDecks(CITY.pendingDecks);
   }
+  // ---- the DJ's brain: DJ Eko Nights is an agent of its own that keeps learning, every night, on every device it plays on.
+  // It remembers each song, each artist and each of its transitions, and how they landed: how much of a song you stayed to
+  // hear, whether you were still listening after a trick. It picks the next song from what's charting and newest, never one
+  // from its last stretch, weighing the energy (the vibe), the tempo flow from the song playing, how fresh it is and what
+  // it has learned, and still tries something new now and then so it never stops discovering. WYRD inspects it (below)
+  // and its notes change how it plays.
+  const DJB = (() => {
+    const B = Object.assign({ songs: {}, artists: {}, tricks: {}, recent: [], log: [], reports: [], dir: { energy: 1, fresh: 1, variety: 1, flow: 1 }, learned: 0, since: Date.now() }, (() => { try { return JSON.parse(store.get('li.djbrain') || '{}'); } catch { return {}; } })());
+    const save = () => { B.log = B.log.slice(-120); B.reports = B.reports.slice(-20); for (const k of Object.keys(B.songs)) if (Object.keys(B.songs).length > 600) delete B.songs[k]; else break; store.set('li.djbrain', JSON.stringify(B)); };
+    const learn = (tab, key, r, rate = 0.25) => { const v = tab[key] || (tab[key] = { n: 0, s: 0.5 }); v.n++; v.s += (r - v.s) * Math.max(rate, 1 / v.n); B.learned++; };
+    const listening = () => !!(CITY.mix && CITY.mix.out.gain.value > 0.25 && document.visibilityState === 'visible');
+    // the next song: the best of what's left by vibe, flow, freshness and memory, with a little exploration
+    function pick(M, curBpm) {
+      const recent = new Set(B.recent.slice(-Math.round(24 * B.dir.variety)));
+      const pool = M.list.map((s, i) => [s, i]).filter(([s]) => !recent.has(s.id)); if (!pool.length) { B.recent = []; return M.list[Math.floor(Math.random() * M.list.length)]; }
+      const scored = pool.map(([s, i]) => {
+        const g = M.grid.get(s.id), mem = B.songs[s.id], art = B.artists[s.artist];
+        const energy = g && g.energy != null ? g.energy : 0.5, flow = curBpm && g ? 1 - Math.min(1, Math.abs(1 - g.bpm / curBpm) * 4) : 0.5;
+        const fresh = 1 - i / M.list.length, known = (mem ? mem.s - 0.5 : 0) + (art ? (art.s - 0.5) * 0.6 : 0), curious = mem ? 0 : 0.25;
+        return [s, energy * 1.2 * B.dir.energy + flow * 0.8 * B.dir.flow + fresh * B.dir.fresh + known * 1.5 + curious + Math.random() * 0.6];
+      }).sort((a, b) => b[1] - a[1]);
+      return (Math.random() < 0.12 ? scored[Math.floor(Math.random() * Math.min(10, scored.length))] : scored[0])[0];
+    }
+    let cur = null;
+    // a song goes on: score the last one by how much of it was heard, and start counting for this one
+    function played(song, trick, energy) {
+      if (cur) { const r = cur.heard / Math.max(1, cur.ticks); learn(B.songs, cur.song.id, r); if (cur.song.artist) learn(B.artists, cur.song.artist, r, 0.15); }
+      cur = { song, ticks: 0, heard: 0, at: Date.now() };
+      B.recent.push(song.id); B.recent = B.recent.slice(-60);
+      B.log.push({ t: song.title, a: song.artist, trick, e: energy == null ? null : Math.round(energy * 100) / 100, at: Date.now() });
+      if (trick && trick !== 'cut') setTimeout(() => { learn(B.tricks, trick, listening() ? 1 : 0.2); save(); }, 20000); // still with it after the trick?
+      save();
+    }
+    setInterval(() => { if (cur && CITY.mix && CITY.mix.playing) { cur.ticks++; if (listening()) cur.heard++; } }, 2000);
+    // the transition: mostly long blends, the tricks weighted by how they've gone down
+    function trick(kinds) { const w = kinds.map((k) => Math.max(0.05, (B.tricks[k] ? B.tricks[k].s : 0.5) * (B.tricks[k] && B.tricks[k].n > 3 ? 1 : 1.2))); let r = Math.random() * w.reduce((a, b) => a + b, 0); for (let k = 0; k < kinds.length; k++) if ((r -= w[k]) <= 0) return kinds[k]; return kinds[0]; }
+    return { B, pick, played, trick, save };
+  })();
+  // ---- WYRD inspects the DJs. They're NPCs, so WYRD keeps an eye on them: every ten minutes of music it looks at the set the
+  // city DJ has played since its last visit (did people stay to listen, did it hit hard enough, did it repeat itself, did it
+  // vary its transitions) and at what each club's resident has on, grades it and gives notes. The notes go into the DJ's
+  // brain and change how it plays from the next song on. The reports are in the WYRD app.
+  function wyrdInspect(force) {
+    const B = DJB.B, last = B.reports[B.reports.length - 1], from = last ? last.at : 0, set = B.log.filter((l) => l.at > from);
+    if (!force && set.length < 4) return null;
+    const n = set.length || 1, titles = set.map((l) => l.t), repeats = titles.length - new Set(titles).size;
+    const es = set.map((l) => l.e).filter((e) => e != null), energy = es.length ? es.reduce((a, b) => a + b, 0) / es.length : 0.5;
+    const tricks = new Set(set.map((l) => l.trick).filter((k) => k && k !== 'cut')), variety = Math.min(1, tricks.size / 3);
+    const heard = Object.values(B.songs).filter((v) => v.n).map((v) => v.s), listen = heard.length ? heard.slice(-n).reduce((a, b) => a + b, 0) / Math.min(n, heard.length) : 0.5;
+    const score = Math.round(40 * listen + 30 * energy + 15 * variety + 15 * (1 - Math.min(1, repeats / n)));
+    const grade = score >= 85 ? 'A' : score >= 72 ? 'B' : score >= 58 ? 'C' : score >= 45 ? 'D' : 'F';
+    const notes = [], d = B.dir, nudge = (k, v) => (d[k] = Math.max(0.6, Math.min(2, d[k] + v)));
+    if (energy < 0.45) { nudge('energy', 0.15); notes.push('Too soft. Harder-hitting records, keep the floor moving.'); } else if (energy > 0.8) { nudge('energy', -0.05); notes.push('Big energy. Give the crowd a breather now and then.'); }
+    if (repeats) { nudge('variety', 0.2); notes.push(`Played ${repeats} song${repeats > 1 ? 's' : ''} twice. Keep the rotation moving.`); }
+    if (variety < 0.5 && set.length >= 4) { notes.push('Same moves every time. Mix up the transitions.'); for (const k of ['echo', 'spinback', 'roll', 'filter']) if (!tricks.has(k) && B.tricks[k]) B.tricks[k].s = Math.min(1, B.tricks[k].s + 0.1); }
+    if (listen < 0.5) { nudge('fresh', 0.15); notes.push('People drift off. Newer releases, what Lagos is playing this week.'); } else if (listen > 0.75) notes.push('The island is locked in. Keep doing this.');
+    if (!notes.length) notes.push('Clean set. Nothing to fix.');
+    const clubs = CITY.srcs.filter((s) => s.room && s.now).map((s) => `${s.spot.dj || s.spot.name}: ${s.now.title || 'a set'}`);
+    const rep = { at: Date.now(), dj: 'DJ Eko Nights', grade, score, songs: set.length, energy: Math.round(energy * 100), listen: Math.round(listen * 100), repeats, tricks: [...tricks], notes, clubs, learned: B.learned };
+    B.reports.push(rep); DJB.save();
+    notify(`Inspected DJ Eko Nights: ${grade} (${score}). ${notes[0]}`, 'wyrd', ['djinspect']);
+    return rep;
+  }
+  setInterval(() => { if (CITY.mix && CITY.mix.playing) wyrdInspect(); }, 10 * 60000);
   // DJ Eko Nights, playing like a pro. Every song is analysed before it goes on (its tempo and where its beats fall, from the
   // low end of the audio), the next one is pitch-held and sped or slowed to the playing song's tempo, and dropped in on the
   // bar. Then a transition, picked to keep it moving: a bass-swap blend, a tempo-timed echo-out, a spinback, a loop roll that
@@ -5311,7 +5385,8 @@
         const fps = sr / hop; let best = 0, bestLag = 0;
         for (let bpm = 80; bpm <= 170; bpm += 0.5) { const lag = fps * 60 / bpm, L = Math.floor(lag); let s = 0; for (let k = 0; k + lag + 1 < n; k++) { const f = lag - L; s += env[k] * (env[k + L] * (1 - f) + env[k + L + 1] * f); } const pref = bpm >= 95 && bpm <= 135 ? 1.12 : 1; if (s * pref > best) { best = s * pref; bestLag = lag; } }
         const P = bestLag; let bestO = 0, bestS = -1; for (let o = 0; o < P; o++) { let s = 0; for (let t = o; t < n; t += P) s += env[Math.round(t)] || 0; if (s > bestS) { bestS = s; bestO = o; } }
-        res = { bpm: 60 * fps / P, phase: bestO / fps, ok: true };
+        let rms = 0; for (let k = 0; k < d.length; k += 64) rms += d[k] * d[k]; rms = Math.sqrt(rms / (d.length / 64));
+        res = { bpm: 60 * fps / P, phase: bestO / fps, ok: true, energy: Math.min(1, rms * 3.2) }; // energy: how hard it hits, the brain's sense of the vibe
       } catch {}
       M.grid.set(song.id, res); return res;
     }
@@ -5370,7 +5445,7 @@
     // ---- the transitions
     function transition(outD, inD, song) {
       const now = c.currentTime, b = beatSec(outD), bar = 4 * b;
-      const tricks = ['echo', 'spinback', 'roll', 'filter'], kind = !(outD.a.src && !outD.a.paused) ? 'cut' : Math.random() < 0.8 ? 'blend' : tricks[Math.floor(Math.random() * tricks.length)]; // mostly long smooth blends; a trick now and then
+      const tricks = ['echo', 'spinback', 'roll', 'filter'], kind = !(outD.a.src && !outD.a.paused) ? 'cut' : Math.random() < 0.72 ? 'blend' : DJB.trick(tricks); // mostly long blends; the tricks it has learned land best // mostly long smooth blends; a trick now and then
       const startIn = (delay, fadeIn, bassIn) => later(delay * 1000, () => {
         const t1 = c.currentTime; inD.a.play().catch(() => {});
         ramp(inD.g.gain, 1, t1, fadeIn); if (bassIn != null) { inD.bass.gain.setValueAtTime(-24, t1); later(bassIn * 1000, () => ramp(inD.bass.gain, 2, c.currentTime, 0.05)); }
@@ -5378,7 +5453,7 @@
       });
       const stopOut = (delay) => later(delay * 1000, () => { outD.a.pause(); outD.g.gain.value = 0; outD.send.gain.value = 0; outD.hp.frequency.value = 20; outD.lp.frequency.value = 20000; outD.bass.gain.value = 2; outD.a.playbackRate = 1; });
       for (const p of [inD.hp.frequency, inD.lp.frequency]) p.cancelScheduledValues(now); inD.hp.frequency.value = 20; inD.lp.frequency.value = 20000; inD.g.gain.value = 0; inD.send.gain.value = 0;
-      if (kind === 'cut') { startIn(0, 0.05); return; }
+      if (kind === 'cut') { startIn(0, 0.05); return kind; }
       if (kind !== 'blend') label({ echo: 'echo out', spinback: 'spinback!', roll: 'loop roll', filter: 'filter build' }[kind]);
       if (kind === 'blend') { // four bars of both: the new one rises for two bars, the bass swaps on the one, the old one fades over two more
         startIn(0, 8 * b, 8 * b);
@@ -5399,12 +5474,13 @@
         inD.lp.frequency.value = 200; startIn(0, bar * 0.5); later(10, () => ramp(inD.lp.frequency, 20000, c.currentTime, 2 * bar, true));
         ramp(outD.g.gain, 0, now + bar, bar); riser(2 * bar); later(2 * bar * 1000, airhorn); stopOut(2 * bar + 0.3);
       }
+      return kind;
     }
     // ---- the set: analyse the next song, match its tempo, cue it to its first downbeat, wait for the playing song's bar
     async function next() {
       if (!M.playing || !M.list.length) return;
-      M.i = (M.i + 1) % M.list.length;
-      const song = M.list[M.i], inD = M.decks[1 - M.cur], outD = M.decks[M.cur];
+      const od = M.decks[M.cur], curBpm = od.song && !od.a.paused ? (M.grid.get(od.song.id) || {}).bpm : null;
+      const song = DJB.pick(M, curBpm), inD = M.decks[1 - M.cur], outD = M.decks[M.cur];
       const grid = await analyse(song); if (!M.playing) return;
       inD.song = song; inD.a.src = song.url;
       await new Promise((res) => { const ok = () => { inD.a.removeEventListener('canplay', ok); res(); }; if (inD.a.readyState >= 3) res(); else { inD.a.addEventListener('canplay', ok); setTimeout(res, 8000); } });
@@ -5417,7 +5493,7 @@
       const wait = live ? toNextBar(outD) : 0;
       later(Math.max(0, wait - 0.02) * 1000, () => {
         if (!M.playing) return;
-        transition(live ? outD : { a: { src: '', paused: true } }, inD, song);
+        const kind = transition(live ? outD : { a: { src: '', paused: true } }, inD, song); DJB.played(song, kind, grid.energy);
         M.cur = 1 - M.cur;
         // play it nearly to the end of its preview: the next song is cued so its four-bar blend finishes as this one runs out
         const rateIn = inD.a.playbackRate || 1, blendSec = 16 * 60 / grid.bpm / rateIn, left = Math.max(12, ((inD.a.duration || 30) - inD.a.currentTime) / rateIn - blendSec - 0.6);
@@ -5425,6 +5501,8 @@
       });
     }
     M.play = async () => { if (M.playing) return; M.playing = true; if (!M.list.length) { if (!M.loading) M.loading = load(); await M.loading; } if (M.playing && M.list.length) next(); };
+    setInterval(() => { if (M.playing) load().catch(() => {}); }, 20 * 60000); // the charts move: it re-reads them every 20 minutes so the rotation stays new
+    M.brain = DJB;
     M.pause = () => { if (!M.playing) return; M.playing = false; clearAll(); for (const d of M.decks) { d.a.pause(); d.g.gain.value = 0; } };
     return M;
   }
@@ -5594,7 +5672,7 @@
   // WYRD OS: it boots once, then each time you pick it up it's on the lock screen until you tap
   let booted = false, lockGo = null;
   const notes = []; // the notification centre: every note keeps where it leads (tap to open) and whether you've seen it
-  const NOTE_ICON = { chat: '💬', link: '🔗', music: '🎧', store: '🛋️', fashion: '👔', island: '✨', hq: '🏠', ride: '🛵', money: '👛' };
+  const NOTE_ICON = { wyrd: '✨', chat: '💬', link: '🔗', music: '🎧', store: '🛋️', fashion: '👔', island: '✨', hq: '🏠', ride: '🛵', money: '👛' };
   const NOTE_GROUP = { chat: 'Island chat', link: 'Messages' };
   let hqReqs = 0;
   function notify(text, kind = 'island', open = null, from = '') {
@@ -6299,14 +6377,26 @@
         };
         return;
       }
+      if (app === 'djinspect') {
+        // WYRD's reports on the DJs, newest first, and what the city DJ's brain has learned so far
+        const B = DJB.B, reps = [...B.reports].reverse(), top = Object.entries(B.artists).filter(([, v]) => v.n >= 2).sort((a, b) => b[1].s - a[1].s).slice(0, 5), tr = Object.entries(B.tricks).sort((a, b) => b[1].s - a[1].s);
+        show(`<div class="ahead" style="--ac:#00F0FF"><span class="av2" style="background:radial-gradient(circle at 35% 30%,#fff,#A78BFA 45%,#0EA5E9)"></span><div><h2>DJ inspections</h2><span>WYRD keeps an eye on the island's DJs</span></div></div>
+          <div class="pcard"><h3>🎧 DJ Eko Nights' brain</h3><div class="dim">${B.learned} lessons learned · ${Object.keys(B.songs).length} songs remembered · learning since ${new Date(B.since).toLocaleDateString()}</div>
+          ${top.length ? `<p>Crowd favourites: ${top.map(([a]) => esc(a)).join(', ')}</p>` : ''}${tr.length ? `<p>Best moves: ${tr.slice(0, 3).map(([k, v]) => `${esc(k)} ${Math.round(v.s * 100)}%`).join(' · ')}</p>` : ''}
+          <div class="dim">Leaning: energy ×${B.dir.energy.toFixed(2)} · fresh ×${B.dir.fresh.toFixed(2)} · variety ×${B.dir.variety.toFixed(2)}</div><button class="pbtn" id="djNow">Inspect now</button></div>
+          ${reps.map((r) => `<div class="pcard"><h3><span class="grade g${r.grade}">${r.grade}</span> ${esc(r.dj)} · ${r.score}</h3><div class="dim">${new Date(r.at).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })} · ${r.songs} songs · energy ${r.energy}% · held ${r.listen}%${r.repeats ? ` · ${r.repeats} repeats` : ''}</div>${r.notes.map((t) => `<p>✨ ${esc(t)}</p>`).join('')}${r.clubs && r.clubs.length ? `<div class="dim">In the clubs: ${r.clubs.map(esc).join(' · ')}</div>` : ''}</div>`).join('') || '<div class="pcard dim">No inspections yet. WYRD checks in after a few songs.</div>'}`);
+        $('djNow').onclick = () => { wyrdInspect(true); render('djinspect'); };
+        return;
+      }
       if (app === 'wyrd') {
         // a chat with WYRD: it says hello, a few things to ask to get you going, the composer pinned at the bottom
         const IDEAS = ['Where can I earn naira today?', "What's on at the Arena?", 'Which beach should I go to?', 'How do I buy a home?'];
         show(`<div class="ahead" style="--ac:#00F0FF"><span class="av2" style="background:radial-gradient(circle at 35% 30%,#fff,#A78BFA 45%,#0EA5E9)"></span><div><h2>WYRD</h2><span>Hears only what you type here, and your district</span></div></div>
           <div class="msgs" id="wMsgs"><div class="msg"><b>WYRD</b>${esc(myName ? `Hello ${myName}.` : 'Hello.')} You're in ${esc(sector.name)}. Ask me anything about the island.</div></div>
-          <div class="chips" id="wIdeas" style="--ac:#00F0FF;margin-top:10px">${IDEAS.map((q) => `<button data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+          <div class="chips" id="wIdeas" style="--ac:#00F0FF;margin-top:10px"><button id="wDj">🎧 DJ inspections</button>${IDEAS.map((q) => `<button data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
           <div class="comp"><input id="wText" maxlength="600" placeholder="Ask WYRD anything"><button class="pbtn" id="wGo">Ask</button></div>`);
         pbody.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { $('wText').value = b.dataset.q; ask(); }));
+        $('wDj').onclick = (e) => { e.stopPropagation(); go('djinspect'); };
         const ask = async () => {
           const t = $('wText').value.trim(); if (!t) return; $('wText').value = ''; if ($('wIdeas')) $('wIdeas').remove();
           const add = (who, s, mine) => { const d = document.createElement('div'); d.className = 'msg' + (mine ? ' me' : ''); d.innerHTML = `<b>${who}</b>${esc(s)}`; $('wMsgs').append(d); pbody.scrollTop = pbody.scrollHeight; };
