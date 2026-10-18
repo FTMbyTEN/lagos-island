@@ -1518,11 +1518,38 @@
       for (let k = 0; k < 5; k++) { const z0 = b + 3 + k * ((d - b - 6) / 5); box(c - 3, 1, z0 + 0.3, c - 2.7, 8, z0 + (d - b - 6) / 5 - 0.3, st[k]); }
       tree(a + 2, d - 2, 2.4); tree(c - 1.5, b + 2, 2.2);
     },
+    // ---- Lekki Conservation Centre: wetland forest with dark ponds and reeds, a raised boardwalk winding through, the
+    // round thatched visitor centre at the gate, the giant chessboard in the family park, and the canopy walkway high in
+    // the trees: rope bridges zigzagging between wooden platforms, a monkey or two, lanterns on the platforms at night
     forest(a, b, c, d) {
-      flat(a, b, c, d, 0.05, '#7FB86A');
-      for (let i = 0; i < Math.round((c - a) * (d - b) / 26); i++) { const R = rnd(a * 13 + b * 7 + i * 3); tree(a + 2 + R() * (c - a - 4), b + 2 + R() * (d - b - 4), 2.2 + R() * 1.6, R() < 0.6 ? '#2F7D3F' : C.tree); }
-      const w0 = P(a + 2, 6, b + 4), w1 = P((a + c) / 2, 7, (b + d) / 2), w2 = P(c - 2, 6, d - 4);
-      x.strokeStyle = '#A16207'; x.lineWidth = Math.max(2, K * 0.8); x.beginPath(); x.moveTo(w0[0], w0[1]); x.lineTo(w1[0], w1[1]); x.lineTo(w2[0], w2[1]); x.stroke();
+      const t = performance.now() / 1000, R0 = rnd(a * 13 + b * 7);
+      flat(a, b, c, d, 0.05, '#6FA85A');
+      for (const [px, pz, rx, rz] of [[a + 10, b + 12, 5, 3], [c - 12, b + 20, 6, 3.5], [a + 16, d - 14, 4.5, 2.6]]) { const p = P(px, 0.06, pz); x.fillStyle = '#2F5D50'; x.beginPath(); x.ellipse(p[0], p[1], rx * K, rz * K * sp, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = 'rgba(160,200,180,0.25)'; x.beginPath(); x.ellipse(p[0] - rx * K * 0.3, p[1] - rz * K * sp * 0.3, rx * K * 0.4, rz * K * sp * 0.3, 0, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#4D7C0F'; x.lineWidth = 1; x.beginPath(); for (let k = 0; k < 8; k++) { const an = k / 8 * Math.PI * 2, q = P(px + Math.cos(an) * rx * 1.05, 0, pz + Math.sin(an) * rz * 1.05), q2 = P(px + Math.cos(an) * rx * 1.05, 1.4, pz + Math.sin(an) * rz * 1.05); x.moveTo(q[0], q[1]); x.lineTo(q2[0], q2[1]); } x.stroke(); } // ponds and reeds
+      // the boardwalk: a raised plank path winding from the gate into the trees
+      const bw = [[(a + c) / 2, d - 6], [(a + c) / 2 - 6, d - 12], [a + 8, b + 22], [a + 14, b + 6], [c - 10, b + 8], [c - 6, d - 10]];
+      for (let k = 0; k < bw.length - 1; k++) { const [x0, z0] = bw[k], [x1, z1] = bw[k + 1], L = Math.hypot(x1 - x0, z1 - z0), nx = -(z1 - z0) / L * 1.1, nz = (x1 - x0) / L * 1.1; quad([P(x0 + nx, 0.5, z0 + nz), P(x1 + nx, 0.5, z1 + nz), P(x1 - nx, 0.5, z1 - nz), P(x0 - nx, 0.5, z0 - nz)], '#A0672E', 'rgba(70,40,15,0.4)'); }
+      // the trees, thick, kept off the boardwalk's line and the gate
+      const spots = [];
+      for (let i = 0; i < Math.round((c - a) * (d - b) / 30); i++) { const R = rnd(a * 13 + b * 7 + i * 3), tx = a + 2 + R() * (c - a - 4), tz = b + 2 + R() * (d - b - 10); spots.push([tx, tz, 2.2 + R() * 1.6, R() < 0.6 ? '#2F7D3F' : C.tree]); }
+      spots.sort((p, q) => p[1] - q[1]);
+      // the canopy walkway's platforms (round decks around trunks) and the rope bridges between them
+      const plats = [[a + 7, b + 8], [a + 17, b + 14], [c - 14, b + 9], [c - 8, b + 19], [c - 16, d - 15], [a + 9, d - 18]], PY = 11;
+      for (const s of spots) tree(...s);
+      for (const [px, pz] of plats) { box(px - 0.25, 0, pz - 0.25, px + 0.25, PY, pz + 0.25, '#5B3A1A'); cylLit(px, pz, 2, PY - 0.4, 0.4, '#8B5E3C'); }
+      const bridge = (p, q) => { const [x0, z0] = p, [x1, z1] = q; for (const side of [-0.8, 0.8]) { x.strokeStyle = '#D6B98C'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); for (let k = 0; k <= 10; k++) { const u = k / 10, sag = Math.sin(u * Math.PI) * 1.4, L = Math.hypot(x1 - x0, z1 - z0), nx = -(z1 - z0) / L * side, nz = (x1 - x0) / L * side, pt = P(x0 + (x1 - x0) * u + nx, PY + 1.2 - sag, z0 + (z1 - z0) * u + nz); k ? x.lineTo(pt[0], pt[1]) : x.moveTo(pt[0], pt[1]); } x.stroke(); }
+        x.strokeStyle = '#8B5E3C'; x.lineWidth = Math.max(1.5, K * 0.35); x.setLineDash([2, 2]); x.beginPath(); for (let k = 0; k <= 10; k++) { const u = k / 10, sag = Math.sin(u * Math.PI) * 1.4, pt = P(x0 + (x1 - x0) * u, PY - sag, z0 + (z1 - z0) * u); k ? x.lineTo(pt[0], pt[1]) : x.moveTo(pt[0], pt[1]); } x.stroke(); x.setLineDash([]); };
+      for (let k = 0; k < plats.length - 1; k++) bridge(plats[k], plats[k + 1]);
+      // monkeys on the walkway now and then
+      for (let k = 0; k < 2; k++) { const seg = Math.floor((t * 0.08 + k * 0.5) * (plats.length - 1)) % (plats.length - 1), u = ((t * 0.08 + k * 0.5) * (plats.length - 1)) % 1, [x0, z0] = plats[seg], [x1, z1] = plats[seg + 1], sag = Math.sin(u * Math.PI) * 1.4, p = P(x0 + (x1 - x0) * u, PY + 0.6 - sag, z0 + (z1 - z0) * u); x.fillStyle = '#6B4423'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.45), 0, Math.PI * 2); x.fill(); x.beginPath(); x.arc(p[0] + K * 0.35, p[1] - K * 0.5, Math.max(0.8, K * 0.3), 0, Math.PI * 2); x.fill(); }
+      // the family park: the giant chessboard
+      { const gx = c - 12, gz = d - 7; for (let i = 0; i < 6; i++) for (let j = 0; j < 4; j++) flat(gx + i * 1.2, gz + j * 1.2, gx + (i + 1) * 1.2, gz + (j + 1) * 1.2, 0.08, (i + j) % 2 ? '#F5F5F4' : '#1F2937'); for (const [i, j, col] of [[1, 0, '#F5F5F4'], [4, 3, '#111827'], [2, 2, '#F5F5F4']]) cylLit(gx + i * 1.2 + 0.6, gz + j * 1.2 + 0.6, 0.35, 0, 1.4, col); }
+      // the visitor centre at the gate: round, thatched, the name on a board
+      const vx = (a + c) / 2, vz = d - 4;
+      cylLit(vx, vz, 3.4, 0, 3.6, '#E8D5B0'); cone(vx, vz, 3.6, 4.6, 3.4, '#A16207');
+      box(vx - 6, 0, d - 1.2, vx - 5.7, 3.2, d - 0.9, '#5B3A1A'); box(vx + 5.7, 0, d - 1.2, vx + 6, 3.2, d - 0.9, '#5B3A1A'); box(vx - 6.2, 2.4, d - 1.2, vx + 6.2, 3.6, d - 0.9, '#3F6212');
+      faceText('LEKKI CONSERVATION CENTRE', vx, 3, d - 0.88, '#FEF3C7', 0.5, 0);
+      // lanterns on the platforms after dark
+      glow.push(() => { if (night < 0.3) return; for (const [px, pz] of plats) { const p = P(px, PY + 1.5, pz), r = K * 3.5 * (0.9 + Math.sin(t * 2 + px) * 0.1); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,214,140,0.7)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); } });
     },
     mall(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
