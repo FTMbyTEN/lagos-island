@@ -643,18 +643,18 @@
     { id: 'ilashe', name: 'Ilashe', rect: [3, 22, 10, 26], rows: [24], cols: [4], sand: true, cam: { yaw: -0.6, pitch: 0.85, zoom: 1.05 } },
     { id: 'banana', name: 'Banana Island', rect: [27, 0, 30, 7], rows: [6], cols: [], fill: 'palm', cam: { yaw: 0.4, pitch: 0.9, zoom: 1.15 } }, // its own island off Ikoyi, gated
     { id: 'ads', name: 'Ad Island', rect: [31, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
-    { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
+    { id: 'freezone', name: 'Lekki Free Zone', rect: [64, 0, 85, 12], rows: [], cols: [], fill: 'none', cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
     { id: 'arena', name: 'The Arena', rect: [26, 24, 36, 29], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
     { id: 'airport', name: 'Lagos Island Airport', rect: [39, 0, 62, 7], rows: [], cols: [], fill: 'none', cam: { yaw: 0.35, pitch: 0.8, zoom: 0.85 } },
     { id: 'fill3', name: 'Reclaimed land', rect: [38, 26, 57, 29], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.1, pitch: 0.85, zoom: 0.9 } }, // sandfill south of HQ Row
     { id: 'welcome', name: 'Welcome Point', rect: [6, 17, 14, 20], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.35, pitch: 0.9, zoom: 1.0 } },
     { id: 'fill5', name: 'Reclaimed land', rect: [11, 23, 13, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.2, pitch: 0.85, zoom: 1.0 } },
     { id: 'fill6', name: 'Reclaimed land', rect: [0, 0, 6, 2], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.3, pitch: 0.85, zoom: 1.0 } },
-    { id: 'polanco', name: 'Polanco', rect: [64, 0, 73, 10], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.9 } },
-    { id: 'lekkiluxury', name: 'Lekki Luxury Cars', rect: [74, 0, 85, 12], rows: [], cols: [], fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.85 } },
+    { id: 'polanco', name: 'Polanco', rect: [52, 8, 61, 18], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.9 } },
+    { id: 'lekkiluxury', name: 'Lekki Luxury Cars', rect: [62, 8, 73, 18], rows: [], cols: [], fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill9', name: 'Reclaimed land', rect: [1, 31, 13, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill10', name: 'Reclaimed land', rect: [18, 31, 33, 38], rows: [36], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
-    { id: 'homestore', name: 'Eko Home Store', rect: [64, 17, 75, 29], rows: [22], cols: [], fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
+    { id: 'homestore', name: 'Eko Home Store', rect: [64, 19, 75, 29], rows: [22], cols: [], fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill13', name: 'Reclaimed land', rect: [88, 2, 93, 14], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill14', name: 'Reclaimed land', rect: [81, 18, 94, 30], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill15', name: 'Reclaimed land', rect: [81, 34, 94, 45], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
@@ -684,8 +684,8 @@
     [50, 15, 51, 15, 'To the Free Zone'],
     [46, 19, 46, 22, 'To HQ Row'],
     // the new links
-    [61, 15, 69, 15, 'Free Zone Bridge'],
-    [68, 11, 68, 14, 'To Polanco'],
+    [63, 4, 63, 4, 'To the Free Zone'],
+    [52, 19, 52, 19, 'To Polanco'],
     [58, 22, 63, 22, 'Coastal Road Bridge'], // the coastal road, on east past the Home Store
     [76, 22, 80, 22, 'East Bridge'],
     [5, 18, 5, 18, 'To Welcome Point'],
@@ -827,16 +827,16 @@
     ['club', 16, 10, 3, 2, 'VEIN Lagos (open every night)', '🪩'],
     ['casino', 30, 16, 3, 3, 'Island Casino', '🎰'],
     // the refinery, always running
-    ['refinery', 52, 8, 9, 7, 'Lekki Free Zone Refinery', '🛢️'],
-    ['refinery', 52, 16, 9, 3, 'Tank farm', '🛢️'],
+    ['refinery', 66, 1, 9, 7, 'Lekki Free Zone Refinery', '🛢️'], // up where the car dealers stood
+    ['refinery', 66, 9, 9, 3, 'Tank farm', '🛢️'],
     ['station', 40, 31, 38, 5, 'Blue Line · Lagos Island Station', '🚆'], // on the old airport land, the tracks the whole way along
     ['airport', 39, 0, 24, 8, 'Lagos Island Airport', '✈️'], // behind Banana Island, across the top of the map
     ['houses', 40, 26, 4, 3, 'Atlantic Gardens', '🏠'], // on the sandfill south of HQ Row
     ['houses', 47, 26, 4, 3, 'Ocean Crest', '🏠'], // on the sandfill south of HQ Row
     ['bank', 11, 25, 3, 2, 'Island Reserve Bank', '🏦'], // on the reclaimed land by Eko Atlantic
     ['soon', 1, 0, 4, 2, 'Reclaimed land: coming soon', '🚧'],
-    ['dealer', 64, 0, 10, 11, 'Polanco', '🚘'],
-    ['dealer', 74, 0, 12, 13, 'Lekki Luxury Cars', '🏎️'], // beside Polanco
+    ['dealer', 52, 8, 10, 11, 'Polanco', '🚘'], // in the Free Zone's old place
+    ['dealer', 62, 8, 12, 11, 'Lekki Luxury Cars', '🏎️'], // beside Polanco
     ['houses', 18, 32, 6, 4, 'Marina Court', '🏠'], // 24 homes, beside Harbour View behind the Arena
     ['houses', 24, 32, 6, 4, 'Harbour View', '🏠'], // 24 homes
     ['soon', 5, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -880,11 +880,12 @@
   for (const [i0, j0, i1, j1] of BRIDGES) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) tile[j * BOARD.w + i] = BRIDGE;
   for (let i = COAST[0]; i <= COAST[1]; i++) if (tile[COAST[2] * BOARD.w + i] === W0) tile[COAST[2] * BOARD.w + i] = BRIDGE;
   // where the new bridges land: a stretch of road on each side
-  for (const [i, j] of [[68, 10], [69, 16], [64, 22], [81, 22], [82, 22], [6, 18], [4, 41], [30, 41], [46, 41], [70, 28], [70, 41]]) tile[j * BOARD.w + i] = ROAD;
+  for (const [i, j] of [[64, 4], [69, 19], [64, 22], [81, 22], [82, 22], [6, 18], [4, 41], [30, 41], [46, 41], [70, 28], [70, 41]]) tile[j * BOARD.w + i] = ROAD;
   // lanes through the places the bridges reach (under the buildings: they carry rides, they don't show)
   for (let i = 39; i <= 62; i++) tile[4 * BOARD.w + i] = ROAD;             // the airport's service road, on from Ad Island
   for (let j = 21; j <= 22; j++) tile[j * BOARD.w + 37] = ROAD;          // Lekki's coast road down onto the coastal road
-  for (let j = 16; j <= 28; j++) tile[j * BOARD.w + 69] = ROAD;            // Lekki Luxury Cars, north to south
+  for (let j = 19; j <= 28; j++) tile[j * BOARD.w + 69] = ROAD;            // the Home Store's yard, north to south
+  for (let i = 64; i <= 70; i++) tile[4 * BOARD.w + i] = ROAD;             // the refinery's gate road, on from the airport
   for (let i = 69; i <= 75; i++) tile[22 * BOARD.w + i] = ROAD;            // and across to the east bridge
   for (let i = 27; i <= 30; i++) tile[28 * BOARD.w + i] = ROAD;            // the arena's front, to its causeway
   // the airport's and the station's gates onto the roads
