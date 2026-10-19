@@ -4835,7 +4835,7 @@
       parkOrder(R.cars).slice(0, 3).forEach((c2, k) => drawCar(bx + 32 / 6 + k * 32 / 3, R.d - 14, c2.model, c2.color, Math.PI / 2, 2.4));
       afterCars.push(() => { for (let k = 1; k < 4; k++) box(k * R.w / 4 - 0.6, 17, 0, k * R.w / 4 + 0.6, 18, R.d, '#1F2937'); });
     }
-    homeFitout(R); if (s !== 'loft') parkBay(R);
+    homeFitout(R); if (s !== 'loft') parkBay(R); devFx(R);
     if (s === 'mansion' || s === 'villa') { const p = P(R.w / 2, 16, R.d / 2), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,236,190,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }
   }
   // ---- the boutiques: Idumota (native and easy on the pocket), Falomo (sportswear and tailoring), Circle Mall (streetwear
@@ -4979,14 +4979,15 @@
       box(24, 0, cz - 0.6, 38, 2, cz + 0.6, '#3F2A1D'); box(24, 2, cz - 0.6, 38, 2.2, cz + 0.6, '#A16207'); // the console
       for (const px of [27, 31, 35]) box(px - 0.05, 0.3, cz + 0.6, px + 0.05, 1.8, cz + 0.62, '#78350F');
       box(30.6, 2.2, cz - 0.15, 31.4, 2.8, cz + 0.15, '#111827'); box(25.5, 2.8, cz - 0.15, 36.5, 9.4, cz + 0.05, '#0B0F19'); // the TV
-      { const s0 = P(25.9, 3.2, cz + 0.07), s1 = P(36.1, 3.2, cz + 0.07), s2 = P(36.1, 9, cz + 0.07), s3 = P(25.9, 9, cz + 0.07), hue = (t * 12) % 360, g = x.createLinearGradient(s3[0], s3[1], s1[0], s1[1]); g.addColorStop(0, `hsl(${hue},70%,45%)`); g.addColorStop(1, `hsl(${(hue + 60) % 360},75%,30%)`); quad([s0, s1, s2, s3], g); }
+      { const s0 = P(25.9, 3.2, cz + 0.07), s1 = P(36.1, 3.2, cz + 0.07), s2 = P(36.1, 9, cz + 0.07), s3 = P(25.9, 9, cz + 0.07), hue = (t * 12) % 360, g = x.createLinearGradient(s3[0], s3[1], s1[0], s1[1]); g.addColorStop(0, `hsl(${hue},70%,45%)`); g.addColorStop(1, `hsl(${(hue + 60) % 360},75%,30%)`); quad([s0, s1, s2, s3], devState(R).tv ? g : '#05070D'); if (devState(R).tv) glow.push(() => { const p = P(31, 6, cz + 2), gg = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 9); gg.addColorStop(0, `hsla(${hue},80%,60%,0.35)`); gg.addColorStop(1, 'rgba(0,0,0,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = gg; x.beginPath(); x.arc(p[0], p[1], K * 9, 0, Math.PI * 2); x.fill(); x.restore(); }); }
       for (const px of [21.5, 40.5]) { cylLit(px, cz, 0.9, 0, 1.6, '#E7E5E4'); for (let k = 0; k < 5; k++) { const an = k * 1.26 + 0.4, p0 = P(px, 1.6, cz), p1 = P(px + Math.cos(an) * 1.6, 4.4 + (k % 2) * 1.2, cz + Math.sin(an) * 0.8); x.strokeStyle = k % 2 ? '#15803D' : '#22C55E'; x.lineWidth = Math.max(1.5, K * 0.5); x.lineCap = 'round'; x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); } } // plants
       box(0, 13, 25, 1.3, 15.2, 31, '#F8FAFC'); box(1.3, 13.3, 25.4, 1.35, 13.6, 30.6, '#CBD5E1'); { const l = P(1.36, 14.6, 30.2); x.fillStyle = '#22C55E'; x.beginPath(); x.arc(l[0], l[1], Math.max(1, K * 0.18), 0, Math.PI * 2); x.fill(); } // the split AC
       { const hub = [31, 16.5, 25]; box(hub[0] - 0.12, hub[1], hub[2] - 0.12, hub[0] + 0.12, 18, hub[2] + 0.12, '#A8A29E'); const h = P(...hub); x.save(); x.lineCap = 'round'; x.strokeStyle = '#78350F'; x.lineWidth = Math.max(2, K * 0.7);
-        for (let k = 0; k < 3; k++) { const an = t * 5 + k * Math.PI * 2 / 3, e = P(hub[0] + Math.cos(an) * 4.2, hub[1], hub[2] + Math.sin(an) * 4.2); x.beginPath(); x.moveTo(h[0], h[1]); x.lineTo(e[0], e[1]); x.stroke(); }
+        for (let k = 0; k < 3; k++) { const an = (devState(R).fan ? t * 5 : 0.4) + k * Math.PI * 2 / 3, e = P(hub[0] + Math.cos(an) * 4.2, hub[1], hub[2] + Math.sin(an) * 4.2); x.beginPath(); x.moveTo(h[0], h[1]); x.lineTo(e[0], e[1]); x.stroke(); }
         x.fillStyle = '#D6D3D1'; x.beginPath(); x.arc(h[0], h[1], Math.max(2, K * 0.6), 0, Math.PI * 2); x.fill(); x.restore(); } // the ceiling fan
       box(20, 0, R.d - 3.6, 23, 3.4, R.d - 2.2, '#1F2937'); box(23.4, 0, R.d - 3.4, 26, 2.2, R.d - 2.4, '#334155'); { const l = P(21.5, 2.6, R.d - 2.18); x.fillStyle = Math.floor(t) % 2 ? '#22C55E' : '#166534'; x.beginPath(); x.arc(l[0], l[1], Math.max(1, K * 0.2), 0, Math.PI * 2); x.fill(); } // the inverter and battery
       if (dark) glow.push(() => { x.save(); x.globalCompositeOperation = 'lighter'; x.lineCap = 'round'; x.strokeStyle = 'rgba(255,190,110,0.5)'; x.shadowColor = '#FDBA74'; x.shadowBlur = 14; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); const a0 = P(0.2, 17.6, R.d), a1 = P(0.2, 17.6, 0.2), a2 = P(R.w, 17.6, 0.2); x.moveTo(a0[0], a0[1]); x.lineTo(a1[0], a1[1]); x.lineTo(a2[0], a2[1]); x.stroke(); x.restore(); }); }
+    devFx(R);
     // by the door: a shoe rack and a mirror on a stand
     box(R.w / 2 + 6, 0, R.d - 2.2, R.w / 2 + 9, 1.4, R.d - 1.2, '#78350F'); for (let k = 0; k < 3; k++) box(R.w / 2 + 6.3 + k * 0.9, 1.4, R.d - 2, R.w / 2 + 6.9 + k * 0.9, 1.8, R.d - 1.4, ['#111827', '#F8FAFC', '#B91C1C'][k]);
   }
@@ -5102,7 +5103,7 @@
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
     }
     if (!keepOutside) outside = { x: me.x, z: me.z, cam: { ...cam } };
-    if (R.mine && !extra.tour && (kind === 'hq' || kind === 'home')) setTimeout(() => homeCheck(R), 1800); // WYRD looks round
+    if (R.mine && !extra.tour && (kind === 'hq' || kind === 'home')) setTimeout(async () => { await homeCheck(R); homeTour(R); }, 1800); // WYRD looks round, then shows you what works
     inside = R; me.x = R.w / 2; me.z = R.d - 3; cam.x = R.w / 2; cam.z = R.d / 2; cam.user = 1; cam.follow = false;
     others.clear(); updateWhere(); setDeco();
     if (kind === 'arena') { stageLines = []; stagePoll(); }
@@ -7155,6 +7156,7 @@
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
       if (!next && inside.kind === 'store') { const it = inside.layout.find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 7); if (it && STORE[it.k]) next = { label: `🛒 ${STORE[it.k].name}`, run: () => openPhone('store', it.k) }; }
       if (!next && inside.kind === 'boutique') { const m = boutiqueSpots(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 8); if (m) next = { label: `👔 ${OUTFITS[m.id].brand} · ${OUTFITS[m.id].name}`, run: () => openPhone('fashion', { id: m.id }) }; }
+      if (!next && (inside.kind === 'hq' || inside.kind === 'home')) { const dv = devNear(inside); if (dv) next = devAction(inside, dv); }
       if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 See the ${c.v[0]}`, run: () => openShowcase(c.id) }; }
       if (next) { /* a car to buy comes first */ } else if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
@@ -7493,7 +7495,69 @@
     const what = missing.map((m) => m[1]), list = what.length > 1 ? what.slice(0, -1).join(', ') + ' and ' + what[what.length - 1] : what[0], first = missing[0], it = STORE[first[3]];
     const place = R.kind === 'hq' ? 'Your BQ' : 'This home';
     const why = first[0] === 'bed' ? 'You\'ll want somewhere to sleep.' : first[0] === 'seat' ? 'Guests will want somewhere to sit.' : 'It makes a place a home.';
-    coachSay(`${place} has no ${list} yet. ${why} The Eko Home Store has ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'what you need'}, delivered straight here.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
+    return coachSay(`${place} has no ${list} yet. ${why} The Eko Home Store has ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'what you need'}, delivered straight here.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
+  }
+  // ---- a home that works: its devices and fittings, each one something you can use. Walk up to it and the button says
+  // what: the TV, the ceiling fan and the AC switch on and off, the inverter shows its battery, the cooker cooks a pot of
+  // jollof, the fridge has something cold, the bathroom freshens you up, lamps and speakers you've bought work too. What's
+  // on stays on (kept for each home on this device). WYRD shows you round them the first time you're in a home of yours.
+  function devState(R) {
+    if (!R.dev) { let saved = null; try { saved = JSON.parse(store.get('li.dev.' + R.key) || 'null'); } catch {} R.dev = Object.assign({ tv: false, fan: true, ac: false, lamps: true, cook: 0, fresh: 0, focus: null }, saved || {}); }
+    return R.dev;
+  }
+  const devSave = (R) => store.set('li.dev.' + R.key, JSON.stringify({ tv: R.dev.tv, fan: R.dev.fan, ac: R.dev.ac, lamps: R.dev.lamps }));
+  // where each one is in this home: the BQ's fittings, the fitted kitchen and bathroom every home has, then what you've placed
+  function roomDevices(R) {
+    const out = [], F = FITOUT[R.kind === 'hq' ? 'bq' : R.style];
+    if (R.kind === 'hq') out.push({ k: 'tv', x: 31, z: 18, name: 'TV' }, { k: 'fan', x: 31, z: 25, name: 'ceiling fan' }, { k: 'ac', x: 3, z: 28, name: 'AC' }, { k: 'inverter', x: 21.5, z: R.d - 1, name: 'inverter' });
+    if (F) { const [kx, kl] = F.k; out.push({ k: 'cooker', x: kx + kl * 0.65, z: 4.5, name: 'cooker' }, { k: 'fridge', x: kx + kl + 2, z: 5, name: 'fridge' }, { k: 'shower', x: R.w - 3, z: F.b[1] + 1.5, name: 'bathroom' }); }
+    for (const it of R.layout || []) { const kd = kindOf(it); if (['tv', 'lamp', 'speaker', 'fridge'].includes(kd)) out.push({ k: kd, x: it.x, z: it.z, name: (STORE[it.k] ? STORE[it.k].name : kd).toLowerCase(), it }); }
+    return out;
+  }
+  const SNACKS = ['A cold Malt. Perfect.', 'Chilled zobo.', 'Leftover jollof. Score.', 'A bottle of Chapman, already mixed.', 'Cold water in a sachet. Classic.', 'Suya from last night. Still good.'];
+  // what you can do at each one
+  function devAction(R, dv) {
+    const D = devState(R), say = (text) => bubbles.set('me', { text, until: performance.now() + 4000 }), tog = (key, on, off) => ({ label: D[key] ? off : on, run: () => { D[key] = !D[key]; devSave(R); } });
+    switch (dv.k) {
+      case 'tv': { const a = tog('tv', '📺 Watch TV', '📺 Turn the TV off'); const r0 = a.run; a.run = () => { r0(); if (D.tv) say(['NTA News, then Nollywood.', 'Big Brother Naija reruns.', 'Super Eagles highlights!', 'Africa Magic, all night.'][Math.floor(Math.random() * 4)]); }; return a; }
+      case 'fan': return tog('fan', '🌀 Switch the fan on', '🌀 Switch the fan off');
+      case 'ac': { const a = tog('ac', '❄️ Turn the AC on', '❄️ Turn the AC off'); const r0 = a.run; a.run = () => { r0(); if (D.ac) say('Ahh. 18°C. Lagos heat, defeated.'); }; return a; }
+      case 'inverter': return { label: '🔋 Check the inverter', run: () => { const h = new Date(lagosMs()).getUTCHours(), nepa = (h * 7 + new Date(lagosMs()).getUTCDate()) % 3 !== 0; say(nepa ? `NEPA has power. Battery charging: ${70 + (h * 3) % 30}%.` : `NEPA took light. Inverter on, battery ${40 + (h * 5) % 50}%.`); } };
+      case 'cooker': return D.cook > Date.now() ? { label: '🍳 The jollof is cooking…', run: () => say('Patience. Good jollof takes time.') } : { label: '🍳 Cook some jollof', run: () => { D.cook = Date.now() + 20000; say('Jollof on the fire…'); setTimeout(() => { if (inside === R) say('Jollof ready. Party jollof, smoky bottom and all.'); }, 20000); } };
+      case 'fridge': return { label: '🧊 Open the fridge', run: () => say(SNACKS[Math.floor(Math.random() * SNACKS.length)]) };
+      case 'shower': return { label: '🚿 Freshen up', run: () => { D.fresh = Date.now() + 5000; say('Fresh. Ready for the island.'); } };
+      case 'lamp': return tog('lamps', '💡 Switch the lamps on', '💡 Switch the lamps off');
+      case 'speaker': return { label: MP.q.length && !MP.a.paused ? '🔊 Pause the music' : '🔊 Play music', run: () => { if (MP.q.length) mpToggle(); else openPhone('music'); } };
+    }
+    return null;
+  }
+  function devNear(R) { let best = null, bd = 6.5; for (const dv of roomDevices(R)) { const d = Math.hypot(dv.x - me.x, dv.z - me.z); if (d < bd) { bd = d; best = dv; } } return best; }
+  // what you see when they're on: a TV's flicker, a lamp's glow, cold air from the AC, steam off the pot and the shower,
+  // notes from a speaker, and WYRD's ring on the floor round whatever it's showing you
+  function devFx(R) {
+    const D = devState(R), t = performance.now() / 1000, halo = (gx, gy, gz, r, col) => { const p = P(gx, gy, gz), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * r, 0, Math.PI * 2); x.fill(); x.restore(); };
+    for (const dv of roomDevices(R)) {
+      if (dv.k === 'tv' && D.tv && dv.it) halo(dv.x, 3, dv.z, 5 + Math.sin(t * 9) * 0.6, `hsla(${(t * 40) % 360},80%,60%,0.45)`);
+      if (dv.k === 'lamp' && D.lamps) glow.push(() => halo(dv.x, 6, dv.z, 9, 'rgba(255,214,150,0.45)'));
+      if (dv.k === 'speaker' && MP.q.length && !MP.a.paused) for (let k = 0; k < 3; k++) { const u = (t * 0.5 + k / 3) % 1, p = P(dv.x + Math.sin(u * 6 + k) * 1.2, 3 + u * 6, dv.z); x.save(); x.globalAlpha = 1 - u; x.fillStyle = '#A78BFA'; x.font = `${Math.max(9, K * 1.4)}px sans-serif`; x.fillText('♪', p[0], p[1]); x.restore(); }
+      if (dv.k === 'ac' && D.ac) for (let k = 0; k < 6; k++) { const u = (t * 0.6 + k / 6) % 1, p0 = P(dv.x - 1 + u * 4, 13 - u * 7, dv.z - 3 + k), p1 = P(dv.x - 1 + u * 4 + 1.2, 13 - u * 7 - 0.6, dv.z - 3 + k); x.strokeStyle = `rgba(147,197,253,${0.6 * (1 - u)})`; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
+      if ((dv.k === 'cooker' && D.cook > Date.now()) || (dv.k === 'shower' && D.fresh > Date.now())) for (let k = 0; k < 5; k++) { const u = (t * 0.4 + k / 5) % 1, p = P(dv.x + Math.sin(t + k) * 0.8, (dv.k === 'cooker' ? 3.6 : 4) + u * 6, dv.z - (dv.k === 'cooker' ? 3 : 1)); x.fillStyle = `rgba(241,245,249,${0.55 * (1 - u)})`; x.beginPath(); x.arc(p[0], p[1], K * (0.6 + u * 1.2), 0, Math.PI * 2); x.fill(); }
+    }
+    if (D.focus && D.focus.until > performance.now()) { const p = P(D.focus.x, 0.1, D.focus.z), r = K * (3 + Math.sin(t * 4) * 0.5); x.save(); x.strokeStyle = 'rgba(167,139,250,0.95)'; x.shadowColor = '#A78BFA'; x.shadowBlur = 14; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); const top = P(D.focus.x, 9 + Math.sin(t * 4), D.focus.z); x.fillStyle = '#A78BFA'; x.beginPath(); x.moveTo(top[0], top[1] + K * 1.4); x.lineTo(top[0] - K, top[1]); x.lineTo(top[0] + K, top[1]); x.closePath(); x.fill(); x.restore(); }
+  }
+  // WYRD's walk round your home's devices, the first time you're in each home of yours
+  const DEV_TIP = { tv: 'Walk up to it and tap Watch TV. NTA, Africa Magic, the Super Eagles.', fan: 'Tap to switch it on or off. Lagos heat is no joke.', ac: 'Cold air, when NEPA allows. Switch it on from here.', inverter: 'When NEPA takes light, the inverter keeps you on. Check its battery here.', cooker: 'Stand at the hob and cook a pot of jollof. Twenty seconds, smoky bottom included.', fridge: 'Something cold is always inside. Open it.', shower: 'Freshen up after a long day on the island.', lamp: 'Your lamp. Switch it on for the evening.', speaker: 'It plays your music. Tap to play or pause.' };
+  async function homeTour(R) {
+    if (touring || !R || !R.mine || inside !== R || store.get('li.devtour.' + R.key)) return;
+    store.set('li.devtour.' + R.key, '1'); touring = true;
+    const D = devState(R), list = roomDevices(R).filter((dv, k, all) => all.findIndex((v) => v.k === dv.k) === k).slice(0, 7);
+    const r0 = await coachSay(`Welcome home. Everything in here works. Let me show you round: ${list.length} things you can use.`, [['Show me', null, true], ['Not now', () => 'stop']]);
+    if (r0 !== 'stop') for (let k = 0; k < list.length; k++) {
+      const dv = list[k]; D.focus = { x: dv.x, z: dv.z, until: performance.now() + 60000 };
+      const r = await coachSay(`Your ${dv.name}. ${DEV_TIP[dv.k] || ''}`, [[k === list.length - 1 ? 'Done' : 'Next', null, true], ['Skip', () => 'stop']], `${k + 1} of ${list.length}`);
+      if (r === 'stop' || inside !== R) break;
+    }
+    D.focus = null; touring = false; coachHide();
   }
   document.getElementById('guest').onclick = () => { myName = store.get('li.name') || 'Guest'; start(); };
   for (const el of [emailIn, nameIn, passIn, pass2In]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('go').click(); });
