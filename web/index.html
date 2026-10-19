@@ -653,7 +653,7 @@
     { id: 'polanco', name: 'Polanco', rect: [52, 8, 61, 18], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.9 } },
     { id: 'lekkiluxury', name: 'Lekki Luxury Cars', rect: [62, 8, 73, 18], rows: [], cols: [], fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill9', name: 'Reclaimed land', rect: [1, 31, 13, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
-    { id: 'fill10', name: 'Reclaimed land', rect: [18, 31, 33, 38], rows: [36], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
+    { id: 'fill10', name: 'Reclaimed land', rect: [18, 36, 33, 40], rows: [36], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'homestore', name: 'Eko Home Store', rect: [64, 19, 75, 29], rows: [22], cols: [], fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill13', name: 'Reclaimed land', rect: [88, 2, 93, 14], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill14', name: 'Reclaimed land', rect: [81, 18, 94, 30], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
@@ -664,7 +664,7 @@
     // HQ Row: two rows of HQs either side of the coastal road (row 22), from Lekki's edge all the way along, cross streets up to Ajah
     { id: 'hqrow', name: 'HQ Row', rect: [38, 20, 57, 24], rows: [22], cols: [46, 52], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
     // the Blue Line station on the old airport land, its tracks running the whole length
-    { id: 'station', name: 'Blue Line Station', rect: [40, 31, 77, 35], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.85 } },
+    { id: 'station', name: 'Blue Line Station', rect: [11, 31, 77, 35], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.85 } },
     // the beaches in one straight line: one strip of sand along the coast from Bar Beach to Club Lekki, the roads across it kept
     { id: 'vi', name: 'Victoria Island', rect: [20, 20, 27, 22], rows: [], cols: [23], sand: true, fill: 'none', cam: { yaw: -0.5, pitch: 0.95, zoom: 0.95 } },
     { id: 'lekki', name: 'Lekki', rect: [28, 20, 37, 22], rows: [], cols: [33, 37], sand: true, fill: 'none', cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
@@ -829,7 +829,7 @@
     // the refinery, always running
     ['refinery', 65, 0, 9, 7, 'Lekki Free Zone Refinery', '🛢️'], // along the top, clear of the car dealers below
     ['refinery', 75, 1, 9, 3, 'Tank farm', '🛢️'], // beside the refinery
-    ['station', 40, 31, 38, 5, 'Blue Line · Lagos Island Station', '🚆'], // on the old airport land, the tracks the whole way along
+    ['station', 11, 31, 67, 5, 'Blue Line · Lagos Island Station', '🚆'], // the line runs behind the bank and the Arena, all the way to the Home Store
     ['airport', 39, 0, 24, 8, 'Lagos Island Airport', '✈️'], // behind Banana Island, across the top of the map
     ['houses', 40, 26, 4, 3, 'Atlantic Gardens', '🏠'], // on the sandfill south of HQ Row
     ['houses', 47, 26, 4, 3, 'Ocean Crest', '🏠'], // on the sandfill south of HQ Row
@@ -837,8 +837,8 @@
     ['soon', 1, 0, 4, 2, 'Reclaimed land: coming soon', '🚧'],
     ['dealer', 52, 8, 10, 11, 'Polanco', '🚘'], // in the Free Zone's old place
     ['dealer', 62, 8, 12, 11, 'Lekki Luxury Cars', '🏎️'], // beside Polanco
-    ['houses', 18, 32, 6, 4, 'Marina Court', '🏠'], // 24 homes, beside Harbour View behind the Arena
-    ['houses', 24, 32, 6, 4, 'Harbour View', '🏠'], // 24 homes
+    ['houses', 18, 37, 6, 4, 'Marina Court', '🏠'], // 24 homes, beside Harbour View behind the Arena
+    ['houses', 24, 37, 6, 4, 'Harbour View', '🏠'], // 24 homes
     ['soon', 5, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['homestore', 64, 23, 7, 6, 'Eko Home Store', '🛋️'], // just south of the coastal road
     ['soon', 89, 7, 4, 3, 'Reclaimed land: coming soon', '🚧'],
