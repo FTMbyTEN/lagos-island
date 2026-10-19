@@ -632,7 +632,7 @@
   const BOARD = { w: 96, h: 48 };
   const SECTORS = [
     { id: 'lagos', name: 'Lagos Island', rect: [2, 4, 13, 15], rows: [6, 10, 14], cols: [4, 9], cam: { yaw: -0.32, pitch: 0.95, zoom: 1.0 } },
-    { id: 'ikoyi', name: 'Ikoyi', rect: [16, 3, 25, 11], rows: [6, 9], cols: [19, 23], cam: { yaw: 0.35, pitch: 0.9, zoom: 1.0 } },
+    { id: 'ikoyi', name: 'Ikoyi', rect: [16, 1, 25, 11], rows: [6, 9], cols: [19, 23], cam: { yaw: 0.35, pitch: 0.9, zoom: 1.0 } },
     { id: 'vi', name: 'Victoria Island', rect: [16, 14, 27, 21], rows: [16, 19], cols: [19, 23], cam: { yaw: -0.5, pitch: 0.95, zoom: 0.95 } },
     { id: 'atlantic', name: 'Eko Atlantic', rect: [15, 24, 24, 27], rows: [25], cols: [19, 23], cam: { yaw: 0.15, pitch: 0.85, zoom: 0.95 } },
     { id: 'lekki', name: 'Lekki', rect: [30, 8, 41, 21], rows: [9, 15, 19], cols: [33, 37], cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
@@ -641,12 +641,12 @@
     { id: 'lekki', name: 'Lekki', rect: [24, 22, 36, 22], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
     { id: 'ajah', name: 'Ajah', rect: [44, 10, 49, 18], rows: [15], cols: [46], cam: { yaw: 0.55, pitch: 0.9, zoom: 1.05 } },
     { id: 'ilashe', name: 'Ilashe', rect: [3, 22, 10, 26], rows: [24], cols: [4], sand: true, cam: { yaw: -0.6, pitch: 0.85, zoom: 1.05 } },
-    { id: 'banana', name: 'Banana Island', rect: [27, 1, 29, 7], rows: [6], cols: [], fill: 'palm', cam: { yaw: 0.4, pitch: 0.9, zoom: 1.15 } }, // its own island off Ikoyi, gated
+    { id: 'banana', name: 'Banana Island', rect: [27, 0, 30, 7], rows: [6], cols: [], fill: 'palm', cam: { yaw: 0.4, pitch: 0.9, zoom: 1.15 } }, // its own island off Ikoyi, gated
     { id: 'ads', name: 'Ad Island', rect: [31, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
     { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
     { id: 'arena', name: 'The Arena', rect: [26, 24, 36, 29], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
-    { id: 'station', name: 'Blue Line Station', rect: [38, 23, 42, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 1.0 } },
-    { id: 'airport', name: 'Lagos Island Airport', rect: [53, 20, 60, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.35, pitch: 0.8, zoom: 0.85 } },
+    { id: 'station', name: 'Blue Line Station', rect: [38, 23, 48, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 1.0 } },
+    { id: 'airport', name: 'Lagos Island Airport', rect: [40, 31, 58, 38], rows: [], cols: [], fill: 'none', cam: { yaw: 0.35, pitch: 0.8, zoom: 0.85 } },
     { id: 'fill3', name: 'Reclaimed land', rect: [43, 1, 52, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.1, pitch: 0.85, zoom: 0.9 } },
     { id: 'welcome', name: 'Welcome Point', rect: [6, 17, 14, 20], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.35, pitch: 0.9, zoom: 1.0 } },
     { id: 'fill4', name: 'Reclaimed land', rect: [54, 1, 60, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.9 } },
@@ -656,7 +656,6 @@
     { id: 'lekkiluxury', name: 'Lekki Luxury Cars', rect: [64, 16, 75, 28], rows: [], cols: [], fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill9', name: 'Reclaimed land', rect: [1, 31, 13, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill10', name: 'Reclaimed land', rect: [18, 31, 33, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
-    { id: 'fill11', name: 'Reclaimed land', rect: [40, 31, 58, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'homestore', name: 'Eko Home Store', rect: [63, 31, 77, 38], rows: [], cols: [], fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill13', name: 'Reclaimed land', rect: [81, 2, 93, 14], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill14', name: 'Reclaimed land', rect: [81, 18, 94, 30], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
@@ -664,7 +663,7 @@
     { id: 'fill16', name: 'Reclaimed land', rect: [1, 41, 20, 46], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill17', name: 'Reclaimed land', rect: [25, 41, 46, 46], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill18', name: 'Reclaimed land', rect: [51, 41, 77, 46], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
-    { id: 'hqrow', name: 'HQ Row', rect: [44, 21, 51, 27], rows: [24], cols: [46], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
+    { id: 'hqrow', name: 'HQ Row', rect: [50, 21, 57, 27], rows: [24], cols: [52], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
   ];
   // bridges and the ferry: [i0, j0, i1, j1, name]
   const BRIDGES = [
@@ -688,7 +687,7 @@
     [5, 18, 5, 18, 'To Welcome Point'],
     [4, 27, 4, 40, 'Ilashe Causeway'],
     [30, 29, 30, 40, 'Arena Causeway'],
-    [46, 28, 46, 40, 'HQ Row Causeway'],
+    [52, 28, 52, 30, 'HQ Row Causeway'], // down to the airport's gate
     [70, 29, 70, 40, 'Dealers Causeway'],
   ];
   const FERRY = [4, 16, 4, 21]; // Lagos Island to Ilashe, by boat
@@ -783,13 +782,13 @@
     ['golf', 24, 7, 2, 2, 'Ikoyi Club 1938', '⛳'],
     ['park', 24, 3, 2, 3, 'Ikoyi waterfront', '🌳'],
     // Banana Island: its own island across the bridge, gated, villas on the water and a marina
-    ['villas', 27, 1, 3, 2, 'Banana Island', '🏡'],
-    ['marina', 27, 3, 3, 2, 'Banana Island Marina', '⛵'],
+    ['villas', 27, 0, 4, 3, 'Banana Island', '🏡'], // 12 villas on the sandfilled land
+    ['marina', 27, 3, 4, 2, 'Banana Island Marina', '⛵'],
     ['bigate', 27, 5, 1, 1, 'Banana Island gate', '🛂'],
     ['arcade', 20, 10, 3, 2, 'Falomo Shopping Centre', '🛍️'],
     ['motorpark', 16, 7, 3, 2, 'Obalende Motor Park', '🚌'],
-    ['houses', 20, 7, 3, 2, 'Ikoyi homes', '🏠'],
-    ['houses', 16, 3, 3, 3, 'Old Ikoyi', '🏠'],
+    ['houses', 20, 1, 3, 5, 'Ikoyi homes', '🏠'], // 15 homes, up on the sandfilled land north of the old ones
+    ['houses', 16, 1, 3, 5, 'Old Ikoyi', '🏠'], // 15 homes, the estate grown north
     // Victoria Island
     ['hotel', 24, 17, 4, 2, 'Eko Hotel', '🏨'],
     ['glass', 20, 14, 3, 2, 'Lagos Civic Centre', '🏛️'],
@@ -826,8 +825,8 @@
     // the refinery, always running
     ['refinery', 52, 8, 9, 7, 'Lekki Free Zone Refinery', '🛢️'],
     ['refinery', 52, 16, 9, 3, 'Tank farm', '🛢️'],
-    ['station', 38, 24, 5, 5, 'Blue Line · Lagos Island Station', '🚆'],
-    ['airport', 53, 20, 8, 9, 'Lagos Island Airport', '✈️'],
+    ['station', 38, 24, 11, 5, 'Blue Line · Lagos Island Station', '🚆'],
+    ['airport', 40, 31, 19, 8, 'Lagos Island Airport', '✈️'], // on the reclaimed land: the runway runs nearly 190 m
     ['houses', 46, 2, 4, 3, 'Atlantic Gardens', '🏠'], // a new estate on the reclaimed land
     ['houses', 55, 2, 4, 3, 'Ocean Crest', '🏠'], // a new estate on the reclaimed land
     ['bank', 11, 25, 3, 2, 'Island Reserve Bank', '🏦'], // on the reclaimed land by Eko Atlantic
@@ -836,7 +835,6 @@
     ['dealer', 64, 16, 12, 13, 'Lekki Luxury Cars', '🏎️'],
     ['houses', 5, 34, 4, 3, 'Marina Court', '🏠'], // a new estate on the reclaimed land
     ['houses', 24, 34, 4, 3, 'Harbour View', '🏠'], // a new estate on the reclaimed land
-    ['soon', 47, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['homestore', 63, 31, 7, 7, 'Eko Home Store', '🛋️'],
     ['soon', 85, 7, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 86, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -849,7 +847,7 @@
     ['arena', 27, 24, 10, 6, 'The Arena (live shows)', '🎤'],
     // Ad Island and HQ Row
     ['screens', 31, 1, 4, 2, 'Ad Island (digital billboards)', '📺'],
-    ['hqgate', 47, 21, 2, 2, "HQ Row: everyone's own HQ", '🏠'],
+    ['hqgate', 53, 21, 2, 2, "HQ Row: everyone's own HQ", '🏠'],
   ];
   const BILLBOARDS = [
     [13, 3.4, 'WYRD', 'Ask me anything'],
@@ -1030,13 +1028,13 @@
     x.fillStyle = 'rgba(255,255,255,0.5)'; x.beginPath(); x.ellipse(top[0], top[1], rr * 0.35, rr * sp * 0.28, 0, 0, Math.PI * 2); x.fill();
   }
   // the yellow danfo minibus: two black stripes along it, a band of windows, wheels, a roof rack with luggage piled on
-  function danfo(dx, dz, along, load = 1) {
+  function danfo(dx, dz, along, load = 1, col = '#F7C81E') {
     const w = along ? 4.4 : 2.2, d = along ? 2.2 : 4.4, x0 = dx - w / 2, x1 = dx + w / 2, z0 = dz - d / 2, z1 = dz + d / 2;
     for (const [wx, wz] of along ? [[x0 + 0.9, z1], [x1 - 0.9, z1]] : [[x1, z1 - 0.9], [x1, z0 + 0.9]]) disk(wx, wz, 0.45, 0.45, '#111827');
-    box(x0, 0.35, z0, x1, 2.3, z1, '#F7C81E');
+    box(x0, 0.35, z0, x1, 2.3, z1, col);
     box(x0 - 0.01, 1.2, z0 - 0.01, x1 + 0.01, 1.8, z1 + 0.01, '#2B3440'); // the windows
     for (const y of [0.75, 2.0]) box(x0 - 0.02, y, z0 - 0.02, x1 + 0.02, y + 0.16, z1 + 0.02, '#111827'); // the stripes
-    flat(x0 + 0.2, z0 + 0.2, x1 - 0.2, z1 - 0.2, 2.32, '#E0B000');
+    flat(x0 + 0.2, z0 + 0.2, x1 - 0.2, z1 - 0.2, 2.32, shadeHex(col, 0.86));
     if (load) { box(dx - w * 0.3, 2.32, dz - d * 0.3, dx + w * 0.3, 2.42, dz + d * 0.3, '#374151'); const R = rnd(Math.round(dx * 3 + dz)); for (let k = 0; k < 3; k++) if (R() < 0.75) box(dx - w * 0.25 + k * w * 0.17, 2.42, dz - d * 0.2, dx - w * 0.25 + k * w * 0.17 + w * 0.14, 2.42 + 0.4 + R() * 0.4, dz + d * 0.2, ['#7C3AED', '#B91C1C', '#2563EB', '#A16207'][Math.floor(R() * 4)]); }
   }
   function billboard(bx, bz, title, line) {
@@ -1537,12 +1535,20 @@
       const boards = () => { if (K < 1.6) return; for (let k = 0; k < n; k++) { box(bx(k) - bw * 0.4, 3.6, b + 5.7, bx(k) + bw * 0.4, 4.3, b + 5.8, '#1D4ED8'); faceText(ROUTES[k], bx(k), 3.95, b + 5.82, '#FFFFFF', 0.55, 0); } };
       // the danfos in their bays, one pulling out and coming back every so often
       const out = Math.floor(t / 9) % n, ph = (t % 9) / 9;
-      for (let k = 0; k < n; k++) { if (k === out && ph > 0.55) { const s = Math.min(1, (ph - 0.55) / 0.3); danfo(bx(k), b + 6.5 + s * 8, false); continue; } danfo(bx(k), b + 6.5, false); }
+      const BUS = ['#F7C81E', '#F7C81E', '#DC2626', '#F7C81E', '#16A34A', '#F8FAFC']; // danfos, a red coaster, a green one, a white staff bus
+      for (let k = 0; k < n; k++) { if (k === out && ph > 0.55) { const s = Math.min(1, (ph - 0.55) / 0.3); danfo(bx(k), b + 6.5 + s * 8, false, 1, BUS[k]); continue; } danfo(bx(k), b + 6.5, false, 1, BUS[k]); }
       roof(); boards();
       // the BRT bus at the east side, the park office beside it
       box(c - 6.4, 0.4, b + 1.5, c - 3.6, 3.2, b + 12.5, '#1D4ED8'); box(c - 6.41, 1.7, b + 1.5, c - 3.59, 2.6, b + 12.5, '#0F172A'); box(c - 6.42, 0.6, b + 1.5, c - 3.58, 1.1, b + 12.5, '#DC2626');
       for (const wz of [b + 3.5, b + 10.5]) disk(c - 3.6, wz, 0.5, 0.5, '#111827');
       box(c - 3, 0, b + 1, c - 0.5, 4, b + 6, '#F5F5F4', '#0F766E', 1); box(c - 3.2, 4, b + 0.8, c - 0.3, 4.4, b + 6.2, '#B91C1C'); faceText('PARK OFFICE', c - 1.75, 2.9, b + 6.02, '#B91C1C', 0.45, 0);
+      // the waiting area along the front: a painted mural on the low wall, benches under shade trees, food stalls under umbrellas
+      { const wz = d - 4.6, MUR = ['#F43F5E', '#F59E0B', '#22C55E', '#0EA5E9', '#A855F7', '#FACC15'];
+        box(a + 1, 0, wz - 0.3, c - 8, 1.6, wz, '#E7E5E4'); for (let k = 0; k < Math.floor((c - a - 9) / 1.5); k++) quad([P(a + 1 + k * 1.5, 0.2, wz + 0.01), P(a + 2.5 + k * 1.5, 0.2, wz + 0.01), P(a + 2.5 + k * 1.5, 1.4, wz + 0.01), P(a + 1 + k * 1.5, 1.4, wz + 0.01)], MUR[k % MUR.length]);
+        for (let k = 0; k < 3; k++) { const tx = a + 4 + k * ((c - a - 14) / 2); box(tx - 1.6, 0, wz + 0.5, tx + 1.6, 0.9, wz + 1.2, ['#1D4ED8', '#F97316', '#16A34A'][k]); tree(tx, wz + 1.6, 4); }
+        const UMB = ['#EF4444', '#F59E0B', '#22C55E', '#3B82F6'];
+        for (let k = 0; k < 2; k++) { const kx = a + 8 + k * ((c - a - 20) / 1), kz = wz + 1.2; box(kx - 1, 0, kz - 0.5, kx + 1, 1.3, kz + 0.5, '#FDE68A'); box(kx - 0.05, 1.3, kz - 0.05, kx + 0.05, 3.6, kz + 0.05, '#57534E'); pyramid(kx - 1.8, kz - 1.8, kx + 1.8, kz + 1.8, 3.6, 0.8, UMB[k]); }
+        if (night > 0.35) glow.push(() => { for (let k = 0; k <= 16; k++) { const u = k / 16, p = P(a + 1 + (c - a - 9) * u, 5.2 - Math.sin(u * Math.PI) * 0.8, b + 2); x.fillStyle = k % 3 ? 'rgba(254,240,138,0.95)' : 'rgba(251,146,60,0.95)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.22), 0, Math.PI * 2); x.fill(); } }); }
       // kekes (yellow-green tricycles) and okadas waiting at the front
       for (let k = 0; k < 3; k++) { const kx = a + 3 + k * 2.6, kz = d - 4; box(kx - 0.8, 0.3, kz - 1, kx + 0.8, 2.2, kz + 1, '#FACC15'); box(kx - 0.81, 1.2, kz - 1.01, kx + 0.81, 1.9, kz + 1.01, '#15803D'); flat(kx - 0.8, kz - 1, kx + 0.8, kz + 1, 2.25, '#166534'); }
       for (let k = 0; k < 4; k++) { const ox = a + 11.5 + k * 1.3, oz = d - 4; box(ox - 0.22, 0.4, oz - 1.1, ox + 0.22, 1.2, oz + 1.1, ['#DC2626', '#111827', '#1D4ED8', '#F97316'][k]); box(ox - 0.3, 1.2, oz - 0.3, ox + 0.3, 1.6, oz + 0.5, '#111827'); }
@@ -2140,9 +2146,9 @@
       const rz0 = b + 8, rz1 = b + 22, rm = (rz0 + rz1) / 2, t = performance.now() / 1000; // the runway
       flat(a + 3, rz0, c - 3, rz1, 0.08, '#374151');
       flat(a + 3, rz0 + 0.5, c - 3, rz0 + 0.8, 0.09, '#F8FAFC'); flat(a + 3, rz1 - 0.8, c - 3, rz1 - 0.5, 0.09, '#F8FAFC');
-      for (let k = 0; k < 10; k++) flat(a + 14 + k * 5.6, rm - 0.3, a + 17 + k * 5.6, rm + 0.3, 0.1, '#F8FAFC');
+      for (let k = 0; k < Math.floor((c - a - 30) / 5.6); k++) flat(a + 14 + k * 5.6, rm - 0.3, a + 17 + k * 5.6, rm + 0.3, 0.1, '#F8FAFC');
       for (let k = 0; k < 4; k++) { flat(a + 4 + k * 1.6, rz0 + 2, a + 5 + k * 1.6, rz1 - 2, 0.1, '#F8FAFC'); flat(c - 5 - k * 1.6, rz0 + 2, c - 4 - k * 1.6, rz1 - 2, 0.1, '#F8FAFC'); }
-      const lights = () => { const tt = performance.now() / 120; for (let k = 0; k < 20; k++) for (const z of [rz0 + 0.4, rz1 - 0.4]) { const p = P(a + 4 + k * 3.6, 0.2, z); x.fillStyle = (k + Math.floor(tt)) % 20 === 0 ? '#FFFFFF' : z === rz0 + 0.4 ? '#60A5FA' : '#FDE68A'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.3), 0, Math.PI * 2); x.fill(); } };
+      const lights = () => { const tt = performance.now() / 120; for (let k = 0; k < Math.floor((c - a - 8) / 3.6); k++) for (const z of [rz0 + 0.4, rz1 - 0.4]) { const p = P(a + 4 + k * 3.6, 0.2, z); x.fillStyle = (k + Math.floor(tt)) % 20 === 0 ? '#FFFFFF' : z === rz0 + 0.4 ? '#60A5FA' : '#FDE68A'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.3), 0, Math.PI * 2); x.fill(); } };
       lights(); glow.push(lights);
       // the windsock
       box(c - 6, 0, b + 3, c - 5.8, 5, b + 3.2, '#E5E7EB');
@@ -2150,11 +2156,12 @@
       // the taxiway, a yellow centre line from the runway to the apron
       flat(c - 16, rz1, c - 10, d - 22, 0.07, '#4B5563'); flat(c - 13.15, rz1, c - 12.85, d - 22, 0.09, '#FACC15');
       flat(a + 3, d - 36, c - 10, d - 21, 0.07, '#9CA3AF'); // the apron
-      for (let k = 0; k < 2; k++) { const gx = a + 18 + k * 32; flat(gx - 0.15, d - 36, gx + 0.15, d - 21, 0.09, '#FACC15'); }
+      const gates = Math.max(2, Math.floor((c - a - 40) / 26));
+      for (let k = 0; k < gates; k++) { const gx = a + 18 + k * 26; flat(gx - 0.15, d - 36, gx + 0.15, d - 21, 0.09, '#FACC15'); }
       // the private aviation side: hangars, a jet in each doorway
-      for (let k = 0; k < 2; k++) hangar(a + 6 + k * 30, b + 24, 26, 18, k);
-      // private jets parked on the apron, a fuel truck beside one
-      for (let k = 0; k < 2; k++) jet(a + 18 + k * 32, d - 29, k + 1);
+      for (let k = 0; k < Math.max(2, Math.floor((c - a - 30) / 30)); k++) hangar(a + 6 + k * 30, b + 24, 26, 18, k);
+      // private jets parked on the apron in their airlines' colours, a fuel truck beside one
+      for (let k = 0; k < gates; k++) jet(a + 18 + k * 26, d - 29, k + 1);
       box(a + 30, 0, d - 25.5, a + 34, 1.8, d - 24, '#FACC15');
       flat(a + 50 - 0.8, d - 26, a + 50 + 0.8, d - 21, 0.1, '#B91C1C'); drawCar(a + 54, d - 23.5, 'cullinan', '#111827', 0, 1.6); // a red carpet and the Rolls waiting
       flush3d(); // the jets before the terminal goes up in front of them
@@ -2168,8 +2175,8 @@
       // the drop-off lane and car park out front
       flat(t0, f1 + 1.8, t1, d - 0.5, 0.07, '#57534E'); flat(t0, f1 + 4.2, t1, f1 + 4.5, 0.09, '#F8FAFC');
       const R = rnd(a + b);
-      for (let k = 0; k < 6; k++) if (R() < 0.7) drawCar(t0 + 6 + k * 8, f1 + 6, ['camry', 'corolla', 'highlander'][k % 3], k % 3 ? '#F7C81E' : CAR_COLORS[Math.floor(R() * CAR_COLORS.length)], 0, 1.4);
-      for (let k = 0; k < 4; k++) palm(t0 + 4 + k * 18, f1 + 3, 8);
+      for (let k = 0; k < Math.floor((t1 - t0 - 8) / 8); k++) if (R() < 0.7) drawCar(t0 + 6 + k * 8, f1 + 6, ['camry', 'corolla', 'highlander'][k % 3], k % 3 ? '#F7C81E' : CAR_COLORS[Math.floor(R() * CAR_COLORS.length)], 0, 1.4);
+      for (let k = 0; k < Math.floor((t1 - t0) / 18) + 1; k++) palm(t0 + 4 + k * 18, f1 + 3, 8);
       // the control tower
       cylLit(c - 6, d - 12, 2.2, 0, 22, '#E5E7EB'); box(c - 8.6, 22, d - 14.6, c - 3.4, 26, d - 9.4, '#1E3A8A', '#93C5FD', 1); box(c - 9, 26, d - 15, c - 3, 26.6, d - 9, '#F8FAFC');
       box(c - 6.1, 26.6, d - 12.1, c - 5.9, 30, d - 11.9, '#CBD5E1');
@@ -2196,11 +2203,11 @@
       const tz = [b + 12, b + 21], pz = (tz[0] + tz[1]) / 2, t = performance.now() / 1000;
       for (const z of tz) {
         flat(a, z - 1.8, c, z + 1.8, 0.06, '#8B8580'); // the ballast
-        for (let k = 0; k < 24; k++) flat(a + k * 2.1, z - 1.4, a + k * 2.1 + 0.6, z + 1.4, 0.07, '#5B4636'); // sleepers
+        for (let k = 0; k < Math.ceil((c - a) / 2.1); k++) flat(a + k * 2.1, z - 1.4, a + k * 2.1 + 0.6, z + 1.4, 0.07, '#5B4636'); // sleepers
         flat(a, z - 1, c, z - 0.75, 0.09, '#E7E5E4'); flat(a, z + 0.75, c, z + 1, 0.09, '#E7E5E4'); // rails
       }
       // overhead line masts and the wires
-      for (let k = 0; k < 4; k++) { const mx = a + 3 + k * ((c - a - 6) / 3); box(mx - 0.2, 0, b + 8.6, mx + 0.2, 8, b + 9, '#6B7280'); box(mx - 0.2, 0, b + 24.6, mx + 0.2, 8, b + 25, '#6B7280'); }
+      const masts = Math.max(4, Math.round((c - a) / 16)); for (let k = 0; k < masts; k++) { const mx = a + 3 + k * ((c - a - 6) / (masts - 1)); box(mx - 0.2, 0, b + 8.6, mx + 0.2, 8, b + 9, '#6B7280'); box(mx - 0.2, 0, b + 24.6, mx + 0.2, 8, b + 25, '#6B7280'); }
       x.strokeStyle = 'rgba(55,65,81,0.6)'; x.lineWidth = 1; for (const z of tz) { const p = P(a, 7.4, z), q = P(c, 7.4, z); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
       // the trains: one in on each track, staggered, each waiting at the platform before it leaves
       const train = (z, dir, off) => {
@@ -2208,7 +2215,7 @@
         let hx = null; // where the nose is
         if (ph < 0.25) hx = dir > 0 ? a - 10 + (ph / 0.25) * (c - 6 - a + 10) : c + 10 - (ph / 0.25) * (c + 10 - a - 6); else if (ph < 0.55) hx = dir > 0 ? c - 6 : a + 6; else if (ph < 0.8) hx = dir > 0 ? c - 6 + ((ph - 0.55) / 0.25) * 70 : a + 6 - ((ph - 0.55) / 0.25) * 70;
         if (hx == null) return;
-        for (let k = 0; k < 3; k++) {
+        for (let k = 0; k < (c - a > 70 ? 5 : 3); k++) {
           const x0 = dir > 0 ? hx - (k + 1) * 11.5 : hx + k * 11.5, x1 = x0 + 10.8, lo = Math.max(a, x0), hi = Math.min(c, x1);
           if (hi - lo < 0.5) continue;
           box(lo, 0.5, z - 1.4, hi, 4.6, z + 1.4, '#F8FAFC', '#1E3A8A', 1);
@@ -2222,12 +2229,13 @@
       // the island platform: yellow safety lines, benches, lamps, the canopy on its columns
       box(a + 3, 0, tz[0] + 2, c - 3, 1, tz[1] - 2, '#E5E7EB');
       flat(a + 3, tz[0] + 2.2, c - 3, tz[0] + 2.6, 1.02, '#FACC15'); flat(a + 3, tz[1] - 2.6, c - 3, tz[1] - 2.2, 1.02, '#FACC15');
-      for (const px of [a + 10, a + 24, a + 38]) { box(px, 1, pz - 0.5, px + 3, 1.8, pz + 0.5, '#1D4ED8'); }
-      for (const px of [a + 6, a + 20, a + 34, c - 6]) box(px - 0.25, 1, pz - 0.25, px + 0.25, 7, pz + 0.25, '#94A3B8');
+      const BENCH = ['#1D4ED8', '#F97316', '#16A34A', '#DB2777', '#FACC15'];
+      for (let px = a + 10, k = 0; px < c - 8; px += 14, k++) box(px, 1, pz - 0.5, px + 3, 1.8, pz + 0.5, BENCH[k % BENCH.length]);
+      for (let px = a + 6; px < c - 4; px += 14) box(px - 0.25, 1, pz - 0.25, px + 0.25, 7, pz + 0.25, '#94A3B8'); box(c - 6.25, 1, pz - 0.25, c - 5.75, 7, pz + 0.25, '#94A3B8');
       quad([P(a + 3, 7, tz[0] + 1), P(c - 3, 7, tz[0] + 1), P(c - 3, 8.2, pz), P(a + 3, 8.2, pz)], 'rgba(147,197,253,0.6)', 'rgba(30,64,175,0.5)');
       quad([P(a + 3, 8.2, pz), P(c - 3, 8.2, pz), P(c - 3, 7, tz[1] - 1), P(a + 3, 7, tz[1] - 1)], 'rgba(191,219,254,0.6)', 'rgba(30,64,175,0.5)');
       box(a + 3, 8.1, pz - 0.2, c - 3, 8.4, pz + 0.2, '#1D4ED8');
-      const plat = () => { for (const px of [a + 13, a + 27, a + 41]) { const p = P(px, 6.8, pz); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 5); g.addColorStop(0, 'rgba(255,240,200,0.6)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 5, 0, Math.PI * 2); x.fill(); x.restore(); } };
+      const plat = () => { for (let px = a + 13; px < c - 6; px += 14) { const p = P(px, 6.8, pz); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 5); g.addColorStop(0, 'rgba(255,240,200,0.6)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 5, 0, Math.PI * 2); x.fill(); x.restore(); } };
       glow.push(plat);
       train(tz[1], 1, 13);
       // the ticket hall: glass front under an arch, the clock, the sign
@@ -2243,8 +2251,18 @@
       // the forecourt: a bus stop, a danfo waiting, palms
       flat(a + 2, d - 4.5, c - 2, d - 0.5, 0.07, '#E7E2D6');
       box(c - 12, 0, d - 3.4, c - 6, 0.25, d - 1.4, '#94A3B8'); box(c - 12, 3, d - 3.6, c - 6, 3.3, d - 1.2, '#1D4ED8'); box(c - 11.8, 0, d - 3.4, c - 11.5, 3, d - 3.1, '#64748B'); box(c - 6.5, 0, d - 3.4, c - 6.2, 3, d - 3.1, '#64748B');
-      for (const px of [a + 4, a + 16]) palm(px, d - 2.5, 8);
+      for (let px = a + 4; px < c - 14; px += 12) palm(px, d - 2.5, 8);
       lamp(mid - 9, d - 2, 5); lamp(mid + 9, d - 2, 5);
+      // planters of bright flowers along the hall, flags on poles, a departures board, kiosks under umbrellas, a taxi rank
+      const FLW = ['#F43F5E', '#F59E0B', '#A855F7', '#22C55E', '#0EA5E9'];
+      for (let px = a + 2, k = 0; px < h0 - 1; px += 2.6, k++) { box(px, 0, hz0 + 1, px + 2, 1, hz0 + 3, '#A8A29E'); flat(px + 0.2, hz0 + 1.2, px + 1.8, hz0 + 2.8, 1.02, FLW[k % FLW.length]); }
+      for (let px = h1 + 1, k = 2; px < c - 2; px += 2.6, k++) { box(px, 0, hz0 + 1, px + 2, 1, hz0 + 3, '#A8A29E'); flat(px + 0.2, hz0 + 1.2, px + 1.8, hz0 + 2.8, 1.02, FLW[k % FLW.length]); }
+      for (const [k, px] of [[0, h0 - 1.5], [1, h1 + 1.5]]) { box(px - 0.12, 0, hz1 + 2, px + 0.12, 12, hz1 + 2.24, '#E5E7EB'); for (let st = 0; st < 3; st++) box(px + 0.12, 9.6 + st * 0.8, hz1 + 2.05, px + 3.6, 10.4 + st * 0.8, hz1 + 2.2, k ? ['#008751', '#FFFFFF', '#008751'][st] : ['#1D4ED8', '#FFFFFF', '#1D4ED8'][st]); }
+      { const bx0 = h1 - 10, bz = hz1 + 0.06; box(bx0, 3.4, bz - 0.02, bx0 + 8, 6.4, bz + 0.3, '#0B1020'); const tt = Math.floor(t / 3); ['MILE 2   4 MIN', 'IGANMU  9 MIN', 'MARINA 14 MIN'].forEach((ln, k) => faceText(ln, bx0 + 4, 5.8 - k * 0.85, bz + 0.32, (k + tt) % 3 ? '#FCD34D' : '#4ADE80', 0.55, night > 0.5 ? 6 : 0, 700)); }
+      const UMB = ['#EF4444', '#F59E0B', '#22C55E', '#3B82F6', '#EC4899'];
+      for (let k = 0; k < Math.floor((c - a - 30) / 9); k++) { const kx = a + 6 + k * 9, kz = d - 7.5; box(kx - 1.2, 0, kz - 0.8, kx + 1.2, 1.6, kz + 0.8, '#F5F5F4'); box(kx - 0.06, 1.6, kz - 0.06, kx + 0.06, 4.2, kz + 0.06, '#57534E'); pyramid(kx - 2, kz - 2, kx + 2, kz + 2, 4.2, 0.9, UMB[k % UMB.length]); }
+      flat(c - 22, d - 9.8, c - 13, d - 5.2, 0.075, '#57534E'); groundText('TAXI', c - 17.5, d - 5.8, 1.4, 'rgba(250,204,21,0.9)');
+      for (let k = 0; k < 2; k++) drawCar(c - 20 + k * 5, d - 7.6, 'corolla', '#F7C81E', 0, 1.3);
     },
     dealer(a, b, c, d) {
       // a two-floor office block at the back, a glass showroom in front of it, an entrance canopy, a brand pylon at the road, the lot
@@ -2500,9 +2518,12 @@
   }
   // a private jet: a slim white fuselage with a gold cheatline, swept wings with winglets, a T-tail, engines at the back
   let JET_TURN = 0; // which way the model's nose points (checked in the preview)
+  // each jet in its own livery: white, navy, red, green, gold, purple, sky blue, black
+  const LIVERY = ['#F8FAFC', '#1E3A8A', '#B91C1C', '#047857', '#D4A017', '#6D28D9', '#0EA5E9', '#111827', '#EA580C', '#DB2777'];
   function jet(px, pz, k) {
-    if (car3d(px, pz, 'jet', JET_TURN, 24)) return; // the real model, 24 m nose to tail; the drawn one below until it loads
-    const S = 1.55, y = 1.6 * S, accent = ['#B08A43', '#1E3A8A', '#111827'][k % 3];
+    const liv = LIVERY[(k * 3 + Math.floor(px / 7)) % LIVERY.length];
+    if (car3d(px, pz, 'jet', JET_TURN, 12, liv)) return; // the real model, 12 m nose to tail, painted in its livery; the drawn one below until it loads
+    const S = 0.78, y = 1.6 * S, accent = liv;
     const X = (v) => px + v * S, Z = (v) => pz + v * S, Y = (v) => y + v * S;
     x.fillStyle = 'rgba(20,40,60,0.22)'; const sh = P(X(1), 0, Z(0.6)); x.beginPath(); x.ellipse(sh[0], sh[1], K * 8 * S, K * 4 * S * sp, 0, 0, Math.PI * 2); x.fill();
     for (const gx of [4.5, -2.5]) { const p = P(X(gx), 0.4, pz); x.fillStyle = '#111827'; x.beginPath(); x.arc(p[0], p[1], K * 0.45 * S, 0, Math.PI * 2); x.fill(); }
@@ -2510,7 +2531,7 @@
       quad([P(X(1.5), Y(0.4), Z(sd * 0.8)), P(X(-1), Y(0.4), Z(sd * 0.8)), P(X(-3.6), Y(0.6), Z(sd * 6.8)), P(X(-2.4), Y(0.6), Z(sd * 6.8))], '#E2E8F0', 'rgba(0,0,0,.18)');
       box(X(-3.6), Y(0.6), Z(sd * 6.8 - 0.1), X(-2.6), Y(2), Z(sd * 6.8 + 0.1), accent);
     }
-    box(X(-5.5), y, Z(-0.85), X(4.5), Y(1.8), Z(0.85), '#FFFFFF');
+    box(X(-5.5), y, Z(-0.85), X(4.5), Y(1.8), Z(0.85), liv === '#F8FAFC' ? '#FFFFFF' : liv);
     box(X(4.5), Y(0.25), Z(-0.6), X(6.3), Y(1.5), Z(0.6), '#F8FAFC');
     box(X(6.3), Y(0.5), Z(-0.3), X(7), Y(1.15), Z(0.3), '#E5E7EB');
     box(X(-5.5), Y(0.75), Z(0.86), X(5), Y(0.95), Z(0.88), accent); box(X(-5.5), Y(0.75), Z(-0.88), X(5), Y(0.95), Z(-0.86), accent);
@@ -2655,9 +2676,9 @@
   }
   window.addEventListener('three-ready', initThree); initThree();
   // queue a car for this frame's 3D pass (false when there's no model for it, or 3D is off)
-  function car3d(cx, cz, model, ang, sc) {
+  function car3d(cx, cz, model, ang, sc, tint) {
     if (!G3.on || !G3.ok || !G3.protos[model]) return false;
-    G3.queue.push({ cx, cz, model, ang, sc }); return true;
+    G3.queue.push({ cx, cz, model, ang, sc, tint }); return true;
   }
   // queue a store piece of furniture; its model loads the first time it's needed (false until then: draw the shape instead)
   const FURN_BASE = location.pathname.startsWith('/lagos-island') ? '/lagos-island/furniture/' : 'furniture/';
@@ -2830,6 +2851,10 @@
       if (!list[k]) { const root = new THREE.Group(); root.add(G3.protos[q.model].clone(true)); list[k] = root; G3.scene.add(root); }
       const o = list[k]; used[q.model]++;
       o.visible = true; o.position.set(q.cx, 0, q.cz); o.rotation.y = -q.ang; o.scale.setScalar(q.sc);
+      if ((q.tint || null) !== (o.userData.tint || null)) {
+        o.traverse((m) => { if (!m.isMesh || !m.material || !m.material.color) return; if (!m.userData.own) { m.material = m.material.clone(); m.userData.own = true; m.userData.base = m.material.color.clone(); } const bc = m.userData.base, lum = 0.3 * bc.r + 0.59 * bc.g + 0.11 * bc.b; m.material.color.copy(q.tint && lum > 0.6 ? new THREE.Color(q.tint) : bc); });
+        o.userData.tint = q.tint || null;
+      }
     }
     for (const [m, list] of Object.entries(G3.pool)) for (let k = used[m] || 0; k < list.length; k++) list[k].visible = false;
     for (const p of PEOPLE.inst.values()) if (!shown.has(p.root)) p.root.visible = false;
@@ -3160,9 +3185,9 @@
     vgc: ['bungalow', 'flat', 'duplex', 'flat', 'bungalow', 'flat', 'bungalow', 'duplex', 'flat'],
     lekki1: ['duplex', 'terrace', 'duplex', 'terrace', 'duplex', 'terrace', 'loft', 'duplex', 'terrace'],
     lekkiest: ['terrace', 'terrace', 'duplex', 'terrace', 'bungalow', 'terrace', 'duplex', 'terrace', 'terrace'],
-    ikoyihomes: ['loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse'],
-    oldikoyi: ['mansion', 'mansion', 'loft', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion'],
-    banana: ['villa', 'villa', 'loft', 'villa', 'villa', 'villa'],
+    ikoyihomes: ['loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse', 'duplex', 'loft'],
+    oldikoyi: ['mansion', 'mansion', 'loft', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion'],
+    banana: ['villa', 'villa', 'loft', 'villa', 'villa', 'villa', 'villa', 'loft', 'villa', 'villa', 'mansion', 'villa'],
     // the new estates on the reclaimed land, 12 homes each (the server has the same lists)
     atlantic: ['flat', 'bungalow', 'flat', 'terrace', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow'],
     oceancrest: ['duplex', 'terrace', 'townhouse', 'duplex', 'terrace', 'duplex', 'townhouse', 'terrace', 'duplex', 'loft', 'townhouse', 'duplex'],
