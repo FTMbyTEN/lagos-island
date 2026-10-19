@@ -1632,6 +1632,11 @@ class IslandMeEndpoint extends Endpoint {
       'mansion',
     ],
     'banana': ['villa', 'villa', 'loft', 'villa', 'villa', 'villa'],
+    // the new estates on the reclaimed land, 12 homes each
+    'atlantic': ['flat', 'bungalow', 'flat', 'terrace', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow'],
+    'oceancrest': ['duplex', 'terrace', 'townhouse', 'duplex', 'terrace', 'duplex', 'townhouse', 'terrace', 'duplex', 'loft', 'townhouse', 'duplex'],
+    'marinacourt': ['flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'flat', 'flat', 'terrace', 'bungalow', 'flat'],
+    'harbourview': ['loft', 'duplex', 'mansion', 'loft', 'townhouse', 'mansion', 'duplex', 'loft', 'villa', 'mansion', 'townhouse', 'villa'],
   };
 
   static String? _styleOf(String plot) {

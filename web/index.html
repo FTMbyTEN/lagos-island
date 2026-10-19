@@ -825,14 +825,14 @@
     ['refinery', 52, 16, 9, 3, 'Tank farm', '🛢️'],
     ['station', 38, 24, 5, 5, 'Blue Line · Lagos Island Station', '🚆'],
     ['airport', 53, 20, 8, 9, 'Lagos Island Airport', '✈️'],
-    ['soon', 46, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 55, 2, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['houses', 46, 2, 4, 3, 'Atlantic Gardens', '🏠'], // a new estate on the reclaimed land
+    ['houses', 55, 2, 4, 3, 'Ocean Crest', '🏠'], // a new estate on the reclaimed land
     ['bank', 11, 25, 3, 2, 'Island Reserve Bank', '🏦'], // on the reclaimed land by Eko Atlantic
     ['soon', 1, 0, 4, 2, 'Reclaimed land: coming soon', '🚧'],
     ['dealer', 64, 2, 10, 11, 'Polanco', '🚘'],
     ['dealer', 64, 16, 12, 13, 'Lekki Luxury Cars', '🏎️'],
-    ['soon', 5, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 24, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['houses', 5, 34, 4, 3, 'Marina Court', '🏠'], // a new estate on the reclaimed land
+    ['houses', 24, 34, 4, 3, 'Harbour View', '🏠'], // a new estate on the reclaimed land
     ['soon', 47, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['homestore', 63, 31, 7, 7, 'Eko Home Store', '🛋️'],
     ['soon', 85, 7, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -2433,22 +2433,45 @@
       box(a + 3, 8, b + 8, c - 3, 10, b + 10, '#A855F7');
     },
   };
-  // the atom: a glowing nucleus, three tilted orbits, an electron racing round each
+  // WYRD Tower's atom: a nucleus of shaded protons and neutrons, three orbits that tilt and turn slowly in 3D (their far
+  // halves behind the nucleus, their near halves in front), electrons trailing light along them, a halo that breathes,
+  // and at night energy rings rising off the spire into it
   function atom(ax, ay, az) {
-    const c = P(ax, ay, az), t = performance.now() / 1000, R = 11 * K;
+    const c = P(ax, ay, az), t = performance.now() / 1000, R = 12 * K, dark = night > 0.35;
+    // the halo
     x.save(); x.globalCompositeOperation = 'lighter';
-    const g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], R * 1.6); g.addColorStop(0, 'rgba(167,139,250,0.55)'); g.addColorStop(1, 'rgba(56,189,248,0)');
-    x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], R * 1.6, 0, Math.PI * 2); x.fill(); x.restore();
-    for (let k = 0; k < 3; k++) {
-      const rot = k * Math.PI / 3 + t * 0.15;
-      x.strokeStyle = ['#38BDF8', '#A78BFA', '#F472B6'][k]; x.lineWidth = Math.max(1.5, K * 0.45);
-      x.beginPath(); x.ellipse(c[0], c[1], R, R * 0.34, rot, 0, Math.PI * 2); x.stroke();
-      const e = t * (2 + k * 0.6) + k, ex = Math.cos(e) * R, ey = Math.sin(e) * R * 0.34;
-      const px = c[0] + ex * Math.cos(rot) - ey * Math.sin(rot), py = c[1] + ex * Math.sin(rot) + ey * Math.cos(rot);
-      x.fillStyle = '#fff'; x.shadowColor = x.strokeStyle; x.shadowBlur = 8; x.beginPath(); x.arc(px, py, Math.max(2, K * 0.7), 0, Math.PI * 2); x.fill(); x.shadowBlur = 0;
-    }
-    const n = x.createRadialGradient(c[0] - K, c[1] - K, 1, c[0], c[1], K * 3); n.addColorStop(0, '#fff'); n.addColorStop(1, '#8B5CF6');
-    x.fillStyle = n; x.beginPath(); x.arc(c[0], c[1], K * 2.6, 0, Math.PI * 2); x.fill();
+    const pulse = 1 + Math.sin(t * 1.6) * 0.08, g = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], R * 1.9 * pulse);
+    g.addColorStop(0, `rgba(167,139,250,${dark ? 0.55 : 0.32})`); g.addColorStop(0.45, `rgba(56,189,248,${dark ? 0.22 : 0.12})`); g.addColorStop(1, 'rgba(56,189,248,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(c[0], c[1], R * 1.9 * pulse, 0, Math.PI * 2); x.fill();
+    if (dark) for (let k = 0; k < 3; k++) { const u = ((t * 0.45 + k / 3) % 1), rr = R * (0.3 + u * 1.5); x.strokeStyle = `rgba(167,139,250,${0.45 * (1 - u)})`; x.lineWidth = Math.max(1, K * 0.3); x.beginPath(); x.ellipse(c[0], c[1] + R * 0.9 * (1 - u), rr, rr * 0.3, 0, 0, Math.PI * 2); x.stroke(); } // energy rising off the spire
+    x.restore();
+    // the three orbits: a ring is a circle tilted by [tilt] and turned by [spin]; points on it in screen space, with depth
+    const COLS = [['#38BDF8', '56,189,248'], ['#A78BFA', '167,139,250'], ['#F472B6', '244,114,182']];
+    const orbit = (k) => ({ tilt: 1.15 + Math.sin(t * 0.3 + k) * 0.08, spin: k * Math.PI / 3 + t * 0.18, col: COLS[k] });
+    const at = (o, a) => { const px = Math.cos(a) * R, py = Math.sin(a) * R * Math.cos(o.tilt), pz = Math.sin(a) * R * Math.sin(o.tilt); return [c[0] + px * Math.cos(o.spin) - py * Math.sin(o.spin), c[1] + px * Math.sin(o.spin) + py * Math.cos(o.spin), pz]; };
+    const ring = (o, front) => {
+      x.save(); x.lineCap = 'round'; x.strokeStyle = o.col[0]; x.globalAlpha = front ? 0.95 : 0.35; x.lineWidth = Math.max(1.2, K * (front ? 0.42 : 0.28)); if (front && dark) { x.shadowColor = o.col[0]; x.shadowBlur = 10; }
+      x.beginPath(); let on = false;
+      for (let s = 0; s <= 64; s++) { const p = at(o, s / 64 * Math.PI * 2), isFront = p[2] >= 0; if (isFront === front) { on ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); on = true; } else on = false; }
+      x.stroke(); x.restore();
+    };
+    const electron = (o, k, front) => {
+      const a0 = t * (1.8 + k * 0.5) + k * 2.1, head = at(o, a0); if ((head[2] >= 0) !== front) return;
+      x.save(); x.globalCompositeOperation = 'lighter';
+      for (let s = 1; s <= 10; s++) { const p = at(o, a0 - s * 0.07), r = Math.max(0.6, K * 0.55 * (1 - s / 11)); x.fillStyle = `rgba(${o.col[1]},${0.5 * (1 - s / 11)})`; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); } // the trail
+      const eg = x.createRadialGradient(head[0], head[1], 0, head[0], head[1], K * 2.2); eg.addColorStop(0, '#FFFFFF'); eg.addColorStop(0.35, o.col[0]); eg.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = eg; x.beginPath(); x.arc(head[0], head[1], K * 2.2, 0, Math.PI * 2); x.fill(); x.restore();
+    };
+    const orbits = [0, 1, 2].map(orbit);
+    orbits.forEach((o) => ring(o, false)); orbits.forEach((o, k) => electron(o, k, false));
+    // the nucleus: protons (magenta) and neutrons (blue), packed, shaded from the top left, turning slowly
+    const NUC = [[0, 0, 0, 1], [0.9, 0.2, 0.3, 0], [-0.8, 0.4, 0.2, 1], [0.2, -0.9, 0.3, 0], [-0.3, 0.8, -0.5, 0], [0.6, 0.7, -0.4, 1], [-0.7, -0.6, -0.2, 1], [0.1, 0.1, 0.95, 0], [0.7, -0.5, -0.6, 1]];
+    const sp = t * 0.5, nr = K * 1.25;
+    NUC.map(([nx, ny, nz, pr]) => { const rx = nx * Math.cos(sp) - nz * Math.sin(sp), rz = nx * Math.sin(sp) + nz * Math.cos(sp); return [c[0] + rx * nr * 1.05, c[1] + ny * nr * 1.05, rz, pr]; })
+      .sort((p, q) => p[2] - q[2])
+      .forEach(([px, py, , pr]) => { const ng = x.createRadialGradient(px - nr * 0.35, py - nr * 0.35, nr * 0.1, px, py, nr); ng.addColorStop(0, '#FFFFFF'); ng.addColorStop(0.35, pr ? '#F472B6' : '#60A5FA'); ng.addColorStop(1, pr ? '#831843' : '#1E3A8A'); x.fillStyle = ng; x.beginPath(); x.arc(px, py, nr, 0, Math.PI * 2); x.fill(); });
+    if (dark) { x.save(); x.globalCompositeOperation = 'lighter'; const cg = x.createRadialGradient(c[0], c[1], 0, c[0], c[1], K * 4); cg.addColorStop(0, 'rgba(255,255,255,0.5)'); cg.addColorStop(1, 'rgba(167,139,250,0)'); x.fillStyle = cg; x.beginPath(); x.arc(c[0], c[1], K * 4, 0, Math.PI * 2); x.fill(); x.restore(); }
+    orbits.forEach((o) => ring(o, true)); orbits.forEach((o, k) => electron(o, k, true));
   }
   // a plane: a white body, swept wings, a blue tail; [alt] lifts it off the ground
   // a hangar: an arched roof over open doors, lit inside, a jet parked in the doorway
@@ -3137,17 +3160,23 @@
     ikoyihomes: ['loft', 'townhouse', 'loft', 'townhouse', 'loft', 'townhouse'],
     oldikoyi: ['mansion', 'mansion', 'loft', 'mansion', 'townhouse', 'mansion', 'loft', 'mansion', 'mansion'],
     banana: ['villa', 'villa', 'loft', 'villa', 'villa', 'villa'],
+    // the new estates on the reclaimed land, 12 homes each (the server has the same lists)
+    atlantic: ['flat', 'bungalow', 'flat', 'terrace', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow'],
+    oceancrest: ['duplex', 'terrace', 'townhouse', 'duplex', 'terrace', 'duplex', 'townhouse', 'terrace', 'duplex', 'loft', 'townhouse', 'duplex'],
+    marinacourt: ['flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'flat', 'flat', 'terrace', 'bungalow', 'flat'],
+    harbourview: ['loft', 'duplex', 'mansion', 'loft', 'townhouse', 'mansion', 'duplex', 'loft', 'villa', 'mansion', 'townhouse', 'villa'],
   };
-  const ESTATE_OF = { 'Victoria Garden City': 'vgc', 'Lekki Phase 1': 'lekki1', 'Lekki estates': 'lekkiest', 'Ikoyi homes': 'ikoyihomes', 'Old Ikoyi': 'oldikoyi', 'Banana Island': 'banana' };
+  const ESTATE_OF = { 'Victoria Garden City': 'vgc', 'Lekki Phase 1': 'lekki1', 'Lekki estates': 'lekkiest', 'Ikoyi homes': 'ikoyihomes', 'Old Ikoyi': 'oldikoyi', 'Banana Island': 'banana', 'Atlantic Gardens': 'atlantic', 'Ocean Crest': 'oceancrest', 'Marina Court': 'marinacourt', 'Harbour View': 'harbourview' };
   let homesLive = {}; // plot -> { style, mine, may, slot, color, owner } for plots someone owns
   // the housing register (kept by WYRD's government): every residential home on the island, by estate and by kind, how
   // many are lived in and how many are free. It's worked out fresh from who owns what each time it's asked, so it's
   // always current (the owners' list refreshes every 15 seconds while you're signed in)
-  const EST_NAME = { vgc: 'Victoria Garden City', lekki1: 'Lekki Phase 1', lekkiest: 'Lekki estates', ikoyihomes: 'Ikoyi homes', oldikoyi: 'Old Ikoyi', banana: 'Banana Island' };
+  const EST_NAME = { vgc: 'Victoria Garden City', lekki1: 'Lekki Phase 1', lekkiest: 'Lekki estates', ikoyihomes: 'Ikoyi homes', oldikoyi: 'Old Ikoyi', banana: 'Banana Island', atlantic: 'Atlantic Gardens', oceancrest: 'Ocean Crest', marinacourt: 'Marina Court', harbourview: 'Harbour View' };
+  let housingBqs = null; // how many Lagosians hold a BQ on HQ Row (the server's count)
   let housingTaken = null; // the server's public register: the set of plots lived in (null until it answers)
   async function housingPoll() {
     try {
-      const v = await call('housing', {}); if (!v || !Array.isArray(v.taken)) return;
+      const v = await call('housing', {}); if (!v || !Array.isArray(v.taken)) return; if (Number.isFinite(v.bqs)) housingBqs = v.bqs;
       const before = housingTaken ? census().taken : null; housingTaken = new Set(v.taken); const now = census();
       if (before != null && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']);
     } catch {} // a server without the public register yet: the count falls back to the owners' list (signed in only)
@@ -3159,7 +3188,9 @@
       est[e] = { name: EST_NAME[e] || e, total: list.length, taken: 0 };
       list.forEach((st, k) => { const occ = housingTaken ? housingTaken.has(e + ':' + k) : !!homesLive[e + ':' + k]; total++; if (occ) { taken++; est[e].taken++; } const v = style[st] || (style[st] = { total: 0, taken: 0 }); v.total++; if (occ) v.taken++; });
     }
-    return { total, taken, free: total - taken, pct: total ? Math.round(taken / total * 100) : 0, est, style };
+    const lots = typeof hqIndex !== 'undefined' ? hqIndex.size : 0, bqTaken = Math.min(lots, housingBqs ?? hqSlots.length);
+    const bq = { total: lots, taken: bqTaken, free: lots - bqTaken }, all = { total: total + lots, taken: taken + bqTaken };
+    return { total, taken, free: total - taken, pct: total ? Math.round(taken / total * 100) : 0, est, style, bq, all };
   }
   const estateAt = (i, j) => PLACES.find((p) => ESTATE_OF[p[5]] && i >= p[1] && i < p[1] + p[3] && j >= p[2] && j < p[2] + p[4]);
   function plotAt(i, j) {
@@ -4765,6 +4796,21 @@
     for (const wz of [9, 15]) { const p0 = P(0.05, 4, wz - 2.5), p1 = P(0.05, 4, wz + 2.5), p2 = P(0.05, 15, wz + 2.5), p3 = P(0.05, 15, wz - 2.5); quad([p0, p1, p2, p3], '#BFE3FF', '#E5E7EB'); }
     box(0, 0, -0.1, R.w, 0.7, 0.15, '#FFFFFF'); box(-0.1, 0, 0, 0.15, 0.7, R.d, '#FFFFFF'); // skirting boards
     homeFitout({ ...R, style: 'bq' }); parkBay({ ...R, style: 'bq' });
+    // a lived-in Lagos BQ: a TV console facing the rug with the screen on, plants either side, a split AC high on the wall,
+    // a ceiling fan turning over the sitting room, the inverter and its battery by the door (NEPA takes light, the
+    // inverter keeps it on), warm cove light round the ceiling after dark
+    { const t = performance.now() / 1000, dark = night > 0.5, cz = 16;
+      box(24, 0, cz - 0.6, 38, 2, cz + 0.6, '#3F2A1D'); box(24, 2, cz - 0.6, 38, 2.2, cz + 0.6, '#A16207'); // the console
+      for (const px of [27, 31, 35]) box(px - 0.05, 0.3, cz + 0.6, px + 0.05, 1.8, cz + 0.62, '#78350F');
+      box(30.6, 2.2, cz - 0.15, 31.4, 2.8, cz + 0.15, '#111827'); box(25.5, 2.8, cz - 0.15, 36.5, 9.4, cz + 0.05, '#0B0F19'); // the TV
+      { const s0 = P(25.9, 3.2, cz + 0.07), s1 = P(36.1, 3.2, cz + 0.07), s2 = P(36.1, 9, cz + 0.07), s3 = P(25.9, 9, cz + 0.07), hue = (t * 12) % 360, g = x.createLinearGradient(s3[0], s3[1], s1[0], s1[1]); g.addColorStop(0, `hsl(${hue},70%,45%)`); g.addColorStop(1, `hsl(${(hue + 60) % 360},75%,30%)`); quad([s0, s1, s2, s3], g); }
+      for (const px of [21.5, 40.5]) { cylLit(px, cz, 0.9, 0, 1.6, '#E7E5E4'); for (let k = 0; k < 5; k++) { const an = k * 1.26 + 0.4, p0 = P(px, 1.6, cz), p1 = P(px + Math.cos(an) * 1.6, 4.4 + (k % 2) * 1.2, cz + Math.sin(an) * 0.8); x.strokeStyle = k % 2 ? '#15803D' : '#22C55E'; x.lineWidth = Math.max(1.5, K * 0.5); x.lineCap = 'round'; x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); } } // plants
+      box(0, 13, 25, 1.3, 15.2, 31, '#F8FAFC'); box(1.3, 13.3, 25.4, 1.35, 13.6, 30.6, '#CBD5E1'); { const l = P(1.36, 14.6, 30.2); x.fillStyle = '#22C55E'; x.beginPath(); x.arc(l[0], l[1], Math.max(1, K * 0.18), 0, Math.PI * 2); x.fill(); } // the split AC
+      { const hub = [31, 16.5, 25]; box(hub[0] - 0.12, hub[1], hub[2] - 0.12, hub[0] + 0.12, 18, hub[2] + 0.12, '#A8A29E'); const h = P(...hub); x.save(); x.lineCap = 'round'; x.strokeStyle = '#78350F'; x.lineWidth = Math.max(2, K * 0.7);
+        for (let k = 0; k < 3; k++) { const an = t * 5 + k * Math.PI * 2 / 3, e = P(hub[0] + Math.cos(an) * 4.2, hub[1], hub[2] + Math.sin(an) * 4.2); x.beginPath(); x.moveTo(h[0], h[1]); x.lineTo(e[0], e[1]); x.stroke(); }
+        x.fillStyle = '#D6D3D1'; x.beginPath(); x.arc(h[0], h[1], Math.max(2, K * 0.6), 0, Math.PI * 2); x.fill(); x.restore(); } // the ceiling fan
+      box(20, 0, R.d - 3.6, 23, 3.4, R.d - 2.2, '#1F2937'); box(23.4, 0, R.d - 3.4, 26, 2.2, R.d - 2.4, '#334155'); { const l = P(21.5, 2.6, R.d - 2.18); x.fillStyle = Math.floor(t) % 2 ? '#22C55E' : '#166534'; x.beginPath(); x.arc(l[0], l[1], Math.max(1, K * 0.2), 0, Math.PI * 2); x.fill(); } // the inverter and battery
+      if (dark) glow.push(() => { x.save(); x.globalCompositeOperation = 'lighter'; x.lineCap = 'round'; x.strokeStyle = 'rgba(255,190,110,0.5)'; x.shadowColor = '#FDBA74'; x.shadowBlur = 14; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); const a0 = P(0.2, 17.6, R.d), a1 = P(0.2, 17.6, 0.2), a2 = P(R.w, 17.6, 0.2); x.moveTo(a0[0], a0[1]); x.lineTo(a1[0], a1[1]); x.lineTo(a2[0], a2[1]); x.stroke(); x.restore(); }); }
     // by the door: a shoe rack and a mirror on a stand
     box(R.w / 2 + 6, 0, R.d - 2.2, R.w / 2 + 9, 1.4, R.d - 1.2, '#78350F'); for (let k = 0; k < 3; k++) box(R.w / 2 + 6.3 + k * 0.9, 1.4, R.d - 2, R.w / 2 + 6.9 + k * 0.9, 1.8, R.d - 1.4, ['#111827', '#F8FAFC', '#B91C1C'][k]);
   }
@@ -6428,7 +6474,7 @@
       }
       if (app === 'homes') {
         // homes: your free BQ, the homes you've bought, and every plot for sale from Ajah to Banana Island
-        const AREA = { vgc: 'Ajah', lekki1: 'Lekki', lekkiest: 'Lekki', ikoyihomes: 'Ikoyi', oldikoyi: 'Ikoyi', banana: 'Banana Island' };
+        const AREA = { vgc: 'Ajah', lekki1: 'Lekki', lekkiest: 'Lekki', ikoyihomes: 'Ikoyi', oldikoyi: 'Ikoyi', banana: 'Banana Island', atlantic: 'Reclaimed land', oceancrest: 'Reclaimed land', marinacourt: 'Reclaimed land', harbourview: 'Reclaimed land' };
         const BLURB = { flat: 'A self-contained mini flat. A start.', bungalow: 'One floor, a compound, a gate.', terrace: 'Two floors in a row of neighbours.', duplex: 'Two floors, a carport, a balcony.', townhouse: 'Three slim floors and a roof terrace.', loft: 'An old brick warehouse, open plan. Your cars park inside.', mansion: 'Columns, a porch, and a BQ at the back.', villa: 'On the water, with a pool.' };
         const placeOf = (est) => PLACES.find((p) => ESTATE_OF[p[5]] === est);
         const showOnMap = (plot) => { const [est, n] = plot.split(':'), p = placeOf(est); closePhone(); cam.x = (p[1] + (n % p[3]) + 0.5) * T; cam.z = (p[2] + Math.floor(n / p[3]) + 0.5) * T; cam.follow = false; };
@@ -6464,6 +6510,8 @@
         ];
         show(`<div class="ahead" style="--ac:#22D3EE"><i>${ico('gov')}</i><div><h2>Lagos Island Government</h2><span>Administered by WYRD</span></div></div>
           <div class="hero" style="--ac:#22D3EE"><div class="hl">Housing register · live</div><div class="hv" style="font-size:26px">${c.taken}<span style="font-size:15px;opacity:.7"> / ${c.total} occupied</span></div>${bar(c.pct, 'linear-gradient(90deg,#22D3EE,#A78BFA)')}<small>${c.free} free · ${c.pct}% occupied · ${online} on the island now</small></div>
+          <div class="pcard"><div class="grow"><span><b>Every home on the island</b><small>${c.all.total} in all: ${c.total} in the estates, ${c.bq.total} BQs on HQ Row</small></span><em>${c.all.taken}/${c.all.total}</em></div>${bar(c.all.total ? Math.round(c.all.taken / c.all.total * 100) : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}
+          <div class="grow"><span><b>BQs on HQ Row</b><small>Free for every Lagosian · ${c.bq.free} lots unclaimed</small></span><em>${c.bq.taken}/${c.bq.total}</em></div>${bar(c.bq.total ? Math.round(c.bq.taken / c.bq.total * 100) : 0, '#A78BFA')}</div>
           <div class="rsec">BY ESTATE</div><div class="pcard">${Object.entries(c.est).map(([k, e]) => `<div class="grow"><span><b>${esc(e.name)}</b><small>${e.taken} lived in · ${e.total - e.taken} free</small></span><em>${e.taken}/${e.total}</em></div>${bar(Math.round(e.taken / e.total * 100), e.taken === e.total ? '#F87171' : '#22D3EE')}`).join('')}</div>
           <div class="rsec">BY KIND OF HOME</div><div class="pcard">${Object.entries(c.style).map(([k, v]) => `<div class="grow"><span><b>${esc(HOME_STYLES[k][0])}</b><small>${naira(HOME_STYLES[k][1])}</small></span><em>${v.taken}/${v.total}</em></div>`).join('')}</div>
           <div class="rsec">NOTICES FROM WYRD</div>${notices.map((t) => `<div class="pcard gnote">✨ ${esc(t)}</div>`).join('')}

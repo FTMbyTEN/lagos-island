@@ -49,6 +49,7 @@ class IslandEndpoint extends Endpoint {
     final rows = await IslandHome.db.find(session, limit: 1000);
     _housing = jsonEncode({
       'taken': [for (final h in rows) h.plot],
+      'bqs': await IslandProfile.db.count(session), // every Lagosian keeps a BQ on HQ Row
       'at': DateTime.now().toUtc().toIso8601String(),
     });
     _housingAt = DateTime.now();
