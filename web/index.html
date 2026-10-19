@@ -540,6 +540,9 @@
   #topR button { background: rgba(15,23,42,.05) !important; color: #0F172A; } #topR button .ic { width: 18px; height: 18px; } #topR button:hover { background: rgba(34,197,94,.16) !important; } #tMusic.playing { background: #22C55E !important; color: #fff; }
   /* the top bar, clean: one even frosted fill, no white rim or highlight laid over it */
   #top.pill { background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(241,245,249,.84)) !important; border: 1px solid rgba(15,23,42,.07) !important; box-shadow: 0 10px 30px rgba(15,23,42,.16) !important; }
+  #topR button.thome { width: auto !important; height: 30px !important; padding: 0 10px; border-radius: 999px !important; display: flex; align-items: center; gap: 4px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: #0F172A; flex: none; }
+  .thome .ic { width: 15px !important; height: 15px !important; color: #0EA5E9; } .thome b { font-weight: 800; } .thome span { color: #64748B; font-weight: 600; } .thome i { width: 1px; height: 14px; margin: 0 3px; background: rgba(15,23,42,.15); }
+  @media (max-width: 640px) { .thome span { display: none; } .thome i { margin: 0 1px; } }
   /* sign up and sign in, in the top bar's language: a frosted card, the palm badge, pill tabs like the "online" chip,
      soft fields, the logo's gradient on the button, compact and centred over the island */
   #hello { place-items: center; padding: 16px; background: radial-gradient(120% 80% at 50% 100%, rgba(15,23,42,.45), rgba(15,23,42,.08) 70%); }
@@ -567,7 +570,7 @@
 <div id="top" class="pill">
   <div id="title"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8"/></svg></span>Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
-  <div id="topR"><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night"></button><button id="tMusic" aria-label="Island Music" title="Island Music"></button></div>
+  <div id="topR"><button id="tHome" class="thome" aria-label="Housing register" title="Housing register"></button><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night"></button><button id="tMusic" aria-label="Island Music" title="Island Music"></button></div>
 
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
@@ -3182,6 +3185,9 @@
     } catch {} // a server without the public register yet: the count falls back to the owners' list (signed in only)
   }
   setTimeout(() => { housingPoll(); setInterval(housingPoll, 20000); }, 1500);
+  // the top bar's housing chip: free homes and lived-in homes, all of them (BQs too), refreshed every two seconds
+  setInterval(() => { const el = document.getElementById('tHome'); if (!el) return; const c = census(), h = `${ico('hq')}<b>${c.all.total - c.all.taken}</b><span>free</span><i></i><b>${c.all.taken}</b><span>lived in</span>`; if (el.innerHTML !== h) el.innerHTML = h; el.title = `Housing register: ${c.all.total} homes, ${c.all.taken} lived in, ${c.all.total - c.all.taken} free`; }, 2000);
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tHome')) openPhone('gov'); });
   function census() {
     const est = {}, style = {}; let total = 0, taken = 0;
     for (const [e, list] of Object.entries(ESTATES)) {
@@ -4917,7 +4923,7 @@
           else if (it.k === 'stool' && it.x < 12) { it.x += plan.bar[0]; it.z += plan.bar[1]; }
         } }
     }
-    if (signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
+    if (!extra.tour && signedIn() && (kind === 'hq' || key.startsWith('home:'))) {
       try {
         const v = await my('room', { key }); if (v.layout) R.layout = v.layout; R.mine = v.mine;
         if (R.mine) { const f = await my('myFurniture', { room: key }).catch(() => ({})); R.owned = f.items || {}; R.elsewhere = f.elsewhere || {}; }
@@ -5197,23 +5203,24 @@
     q.firstChild.textContent = h ? (h.mine ? 'Your home' : h.may ? 'Go in?' : 'Knock?') : naira(st[1]);
     q.lastChild.textContent = h ? (h.mine ? 'Furnish it from the Eko Home Store.' : h.may ? 'The owner has let you in.' : 'The owner sees it on their phone.') : pl.style === 'loft' ? 'Open plan, and room to park your cars inside.' : 'Yours to furnish however you like.';
     const yes = document.createElement('button'); yes.className = 'drivebtn';
-    yes.textContent = h ? (h.mine || h.may ? '🚪 Go in' : '🔔 Knock') : '🏡 See it';
+    yes.textContent = h ? (h.mine || h.may ? '🚪 Go in' : '🔔 Knock') : '👀 Look inside';
+    const tour = () => { card.style.display = 'none'; me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('home', 'tour:home:' + pl.plot, 'Show home · ' + st[0], { style: pl.style, tour: true }); };
     yes.onclick = () => {
       card.style.display = 'none';
-      if (!h) return openPhone('homes', pl.plot);
+      if (!h) return tour();
       if (!signedIn()) return openPhone();
       me.x = i * T + T / 2; me.z = j * T + T - 1;
       if (h.mine || h.may) return enterRoom('home', 'home:' + pl.plot, h.mine ? 'Your ' + st[0].toLowerCase() : (h.owner || 'Someone') + "'s " + st[0].toLowerCase(), { style: pl.style });
       askHq(h);
     };
     card.append(q, yes);
+    if (!h) { const buy = document.createElement('button'); buy.className = 'drivebtn'; buy.style.background = '#0EA5E9'; buy.textContent = '🏡 Buy it'; buy.onclick = () => { card.style.display = 'none'; openPhone('homes', pl.plot); }; card.append(buy); }
     card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 8000);
   }
   function enterHq(k, i, j) {
     const say = (t) => { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = t; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 3500); };
-    if (!signedIn()) return say('🔒 Sign in to visit HQs');
-    const hq = hqSlots[k];
-    if (!hq) return say('🏚️ Unclaimed lot');
+    const hq = signedIn() ? hqSlots[k] : null;
+    if (!hq) { me.x = i * T + T / 2; me.z = j * T + T - 1; return enterRoom('hq', 'tour:hq:' + k, signedIn() ? 'Show BQ · unclaimed lot' : 'Show BQ · sign in to visit people', { tour: true }); }
     me.x = i * T + T / 2; me.z = j * T + T - 1;
     if (hq.mine || hq.may) return enterRoom('hq', 'hq:' + hq.slot, hq.name);
     if (hq.asked === 'pending') return say('⏳ Waiting for the owner to let you in');
