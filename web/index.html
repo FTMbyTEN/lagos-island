@@ -645,10 +645,9 @@
     { id: 'ads', name: 'Ad Island', rect: [31, 1, 38, 5], rows: [3], cols: [33], fill: 'ad', cam: { yaw: 0.0, pitch: 0.8, zoom: 1.0 } },
     { id: 'freezone', name: 'Lekki Free Zone', rect: [52, 8, 60, 18], rows: [15], cols: [], cam: { yaw: 0.45, pitch: 0.85, zoom: 0.9 } },
     { id: 'arena', name: 'The Arena', rect: [26, 24, 36, 29], rows: [], cols: [26], fill: 'plaza', cam: { yaw: 0.3, pitch: 0.8, zoom: 0.85 } },
-    { id: 'airport', name: 'Lagos Island Airport', rect: [40, 31, 77, 38], rows: [], cols: [], fill: 'none', cam: { yaw: 0.35, pitch: 0.8, zoom: 0.85 } },
-    { id: 'fill3', name: 'Reclaimed land', rect: [43, 1, 52, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.1, pitch: 0.85, zoom: 0.9 } },
+    { id: 'airport', name: 'Lagos Island Airport', rect: [39, 0, 62, 7], rows: [], cols: [], fill: 'none', cam: { yaw: 0.35, pitch: 0.8, zoom: 0.85 } },
+    { id: 'fill3', name: 'Reclaimed land', rect: [38, 26, 57, 29], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.1, pitch: 0.85, zoom: 0.9 } }, // sandfill south of HQ Row
     { id: 'welcome', name: 'Welcome Point', rect: [6, 17, 14, 20], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.35, pitch: 0.9, zoom: 1.0 } },
-    { id: 'fill4', name: 'Reclaimed land', rect: [54, 1, 60, 6], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.9 } },
     { id: 'fill5', name: 'Reclaimed land', rect: [11, 23, 13, 28], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.2, pitch: 0.85, zoom: 1.0 } },
     { id: 'fill6', name: 'Reclaimed land', rect: [0, 0, 6, 2], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: -0.3, pitch: 0.85, zoom: 1.0 } },
     { id: 'polanco', name: 'Polanco', rect: [64, 0, 73, 10], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.9 } },
@@ -662,9 +661,10 @@
     { id: 'fill16', name: 'Reclaimed land', rect: [1, 41, 20, 46], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill17', name: 'Reclaimed land', rect: [25, 41, 46, 46], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill18', name: 'Reclaimed land', rect: [51, 41, 77, 46], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
-    { id: 'hqrow', name: 'HQ Row', rect: [50, 21, 57, 27], rows: [24], cols: [52], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
-    { id: 'hqrow', name: 'HQ Row', rect: [38, 23, 49, 28], rows: [24], cols: [46], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } }, // HQ Row's extension, on the station's old land
-    { id: 'station', name: 'Blue Line Station', rect: [19, 31, 29, 35], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 1.0 } }, // behind the Arena
+    // HQ Row: two rows of HQs either side of the coastal road (row 22), from Lekki's edge all the way along, cross streets up to Ajah
+    { id: 'hqrow', name: 'HQ Row', rect: [38, 20, 57, 24], rows: [22], cols: [46, 52], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
+    // the Blue Line station on the old airport land, its tracks running the whole length
+    { id: 'station', name: 'Blue Line Station', rect: [40, 31, 77, 35], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.85 } },
   ];
   // bridges and the ferry: [i0, j0, i1, j1, name]
   const BRIDGES = [
@@ -683,12 +683,12 @@
     // the new links
     [61, 15, 69, 15, 'Free Zone Bridge'],
     [68, 11, 68, 14, 'To Polanco'],
-    [58, 24, 63, 24, 'HQ Row Link'],
+    [58, 22, 63, 22, 'Coastal Road Bridge'], // the coastal road, on east past the Home Store
     [76, 22, 80, 22, 'East Bridge'],
     [5, 18, 5, 18, 'To Welcome Point'],
     [4, 27, 4, 40, 'Ilashe Causeway'],
     [30, 29, 30, 40, 'Arena Causeway'],
-    [52, 28, 52, 30, 'HQ Row Causeway'], // down to the airport's gate
+    [52, 25, 52, 30, 'HQ Row Causeway'], // down to the station
     [70, 28, 70, 30, 'Home Store Causeway'], // down to the airport
   ];
   const FERRY = [4, 16, 4, 21]; // Lagos Island to Ilashe, by boat
@@ -826,10 +826,10 @@
     // the refinery, always running
     ['refinery', 52, 8, 9, 7, 'Lekki Free Zone Refinery', '🛢️'],
     ['refinery', 52, 16, 9, 3, 'Tank farm', '🛢️'],
-    ['station', 19, 31, 11, 5, 'Blue Line · Lagos Island Station', '🚆'], // behind the Arena
-    ['airport', 40, 31, 38, 8, 'Lagos Island Airport', '✈️'], // on the reclaimed land: the runway runs nearly 190 m
-    ['houses', 46, 2, 4, 3, 'Atlantic Gardens', '🏠'], // a new estate on the reclaimed land
-    ['houses', 55, 2, 4, 3, 'Ocean Crest', '🏠'], // a new estate on the reclaimed land
+    ['station', 40, 31, 38, 5, 'Blue Line · Lagos Island Station', '🚆'], // on the old airport land, the tracks the whole way along
+    ['airport', 39, 0, 24, 8, 'Lagos Island Airport', '✈️'], // behind Banana Island, across the top of the map
+    ['houses', 40, 26, 4, 3, 'Atlantic Gardens', '🏠'], // on the sandfill south of HQ Row
+    ['houses', 47, 26, 4, 3, 'Ocean Crest', '🏠'], // on the sandfill south of HQ Row
     ['bank', 11, 25, 3, 2, 'Island Reserve Bank', '🏦'], // on the reclaimed land by Eko Atlantic
     ['soon', 1, 0, 4, 2, 'Reclaimed land: coming soon', '🚧'],
     ['dealer', 64, 0, 10, 11, 'Polanco', '🚘'],
@@ -848,7 +848,7 @@
     ['arena', 27, 24, 10, 6, 'The Arena (live shows)', '🎤'],
     // Ad Island and HQ Row
     ['screens', 31, 1, 4, 2, 'Ad Island (digital billboards)', '📺'],
-    ['hqgate', 53, 21, 2, 2, "HQ Row: everyone's own HQ", '🏠'],
+    ['hqgate', 53, 20, 2, 2, "HQ Row: everyone's own HQ", '🏠'],
   ];
   const BILLBOARDS = [
     [13, 3.4, 'WYRD', 'Ask me anything'],
@@ -876,14 +876,15 @@
   for (const [i0, j0, i1, j1] of BRIDGES) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) tile[j * BOARD.w + i] = BRIDGE;
   for (let i = COAST[0]; i <= COAST[1]; i++) if (tile[COAST[2] * BOARD.w + i] === W0) tile[COAST[2] * BOARD.w + i] = BRIDGE;
   // where the new bridges land: a stretch of road on each side
-  for (const [i, j] of [[68, 10], [69, 16], [64, 24], [81, 22], [82, 22], [6, 18], [4, 41], [30, 41], [46, 41], [70, 28], [70, 41]]) tile[j * BOARD.w + i] = ROAD;
+  for (const [i, j] of [[68, 10], [69, 16], [64, 22], [81, 22], [82, 22], [6, 18], [4, 41], [30, 41], [46, 41], [70, 28], [70, 41]]) tile[j * BOARD.w + i] = ROAD;
   // lanes through the places the bridges reach (under the buildings: they carry rides, they don't show)
-  for (let i = 54; i <= 60; i++) tile[24 * BOARD.w + i] = ROAD;            // the airport, from its gate to the link
+  for (let i = 39; i <= 62; i++) tile[4 * BOARD.w + i] = ROAD;             // the airport's service road, on from Ad Island
+  for (let j = 21; j <= 22; j++) tile[j * BOARD.w + 37] = ROAD;          // Lekki's coast road down onto the coastal road
   for (let j = 16; j <= 28; j++) tile[j * BOARD.w + 69] = ROAD;            // Lekki Luxury Cars, north to south
   for (let i = 69; i <= 75; i++) tile[22 * BOARD.w + i] = ROAD;            // and across to the east bridge
   for (let i = 27; i <= 30; i++) tile[28 * BOARD.w + i] = ROAD;            // the arena's front, to its causeway
   // the airport's and the station's gates onto the roads
-  tile[30 * BOARD.w + 24] = ROAD; // the station's forecourt onto the arena's causeway road
+  tile[4 * BOARD.w + 38] = ROAD; // Ad Island's road on into the airport
   // the beaches' sand
   for (const p of PLACES) if (p[0] === 'beach') for (let j = p[2]; j < p[2] + p[4]; j++) for (let i = p[1]; i < p[1] + p[3]; i++) if (at(i, j) === LAND) tile[j * BOARD.w + i] = SAND;
   const blocked = []; // footprints you walk round: [x0, z0, x1, z1]
@@ -2144,6 +2145,7 @@
     airport(a, b, c, d) {
       flat(a, b, c, d, 0.05, '#C7CDD5');
       flat(a + 1, b + 1, c - 1, b + 7, 0.06, '#9CC87F'); // grass along the runway
+      for (let px = a + 1, k = 0; px < c - 1; px += 6, k++) if (k % 2) flat(px, b + 1, Math.min(c - 1, px + 6), b + 7, 0.062, '#8DBB6E'); // mowing stripes
       const rz0 = b + 8, rz1 = b + 22, rm = (rz0 + rz1) / 2, t = performance.now() / 1000; // the runway
       flat(a + 3, rz0, c - 3, rz1, 0.08, '#374151');
       flat(a + 3, rz0 + 0.5, c - 3, rz0 + 0.8, 0.09, '#F8FAFC'); flat(a + 3, rz1 - 0.8, c - 3, rz1 - 0.5, 0.09, '#F8FAFC');
@@ -2157,17 +2159,24 @@
       // the taxiway, a yellow centre line from the runway to the apron
       flat(c - 16, rz1, c - 10, d - 22, 0.07, '#4B5563'); flat(c - 13.15, rz1, c - 12.85, d - 22, 0.09, '#FACC15');
       flat(a + 3, d - 36, c - 10, d - 21, 0.07, '#9CA3AF'); // the apron
-      const gates = Math.max(2, Math.floor((c - a - 40) / 26));
-      for (let k = 0; k < gates; k++) { const gx = a + 18 + k * 26; flat(gx - 0.15, d - 36, gx + 0.15, d - 21, 0.09, '#FACC15'); }
+      const tA = c - a > 120 ? (a + c) / 2 - 40 : a + 4, gates = c - a > 120 ? 5 : 2, gX = (k) => c - a > 120 ? tA + 12 + k * 14 : a + 18 + k * 32;
+      for (let k = 0; k < gates; k++) { const gx = gX(k); flat(gx - 0.15, d - 36, gx + 0.15, d - 21, 0.09, '#FACC15'); }
       // the private aviation side: hangars, a jet in each doorway
-      for (let k = 0; k < Math.max(2, Math.floor((c - a - 30) / 30)); k++) hangar(a + 6 + k * 30, b + 24, 26, 18, k);
+      for (let k = 0; k < Math.min(3, Math.max(2, Math.floor((c - a - 30) / 30))); k++) hangar(a + 6 + k * 30, b + 24, 26, 18, k);
       // private jets parked on the apron in their airlines' colours, a fuel truck beside one
-      for (let k = 0; k < gates; k++) jet(a + 18 + k * 26, d - 29, k + 5);
+      for (let k = 0; k < gates; k++) jet(gX(k), d - 29, k + 5);
       box(a + 30, 0, d - 25.5, a + 34, 1.8, d - 24, '#FACC15');
       flat(a + 50 - 0.8, d - 26, a + 50 + 0.8, d - 21, 0.1, '#B91C1C'); drawCar(a + 54, d - 23.5, 'cullinan', '#111827', 0, 1.6); // a red carpet and the Rolls waiting
       flush3d(); // the jets before the terminal goes up in front of them
       // the terminal: glass walls, a white wave roof, the name along the front
-      const t0 = a + 4, t1 = c - 14, f0 = d - 20, f1 = d - 8;
+      const t0 = tA, t1 = c - a > 120 ? (a + c) / 2 + 40 : c - 14, f0 = d - 20, f1 = d - 8;
+      if (c - a > 120) { // the car parks: rows of bays, cars in every colour, trees in lines between them
+        const R2 = rnd(a * 3 + 7), PAINT = ['#F8FAFC', '#111827', '#9CA3AF', '#B91C1C', '#1D4ED8', '#065F46', '#F59E0B', '#7C3AED', '#0EA5E9'];
+        for (const [x0, x1] of [[a + 32 + 60, t0 - 6], [t1 + 6, c - 22]]) { if (x1 - x0 < 10) continue;
+          flat(x0, f0 + 1, x1, d - 1, 0.07, '#4B5563');
+          for (let row = 0; row < 3; row++) { const rz = f0 + 3.5 + row * 5.5; x.strokeStyle = 'rgba(248,250,252,0.6)'; x.lineWidth = 1; x.beginPath(); for (let px = x0 + 1; px <= x1 - 1; px += 3) { const p = P(px, 0.08, rz - 2), q = P(px, 0.08, rz + 2); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
+            for (let px = x0 + 2.5; px < x1 - 1; px += 3) if (R2() < 0.6) drawCar(px, rz, ['corolla', 'camry', 'highlander', 'lexusrx'][Math.floor(R2() * 4)], PAINT[Math.floor(R2() * PAINT.length)], Math.PI / 2, 1); }
+          for (let px = x0 + 4; px < x1; px += 12) tree(px, d - 0.8, 2.4); } }
       box(t0, 0, f0, t1, 9, f1, '#9CC9E8', '#E0F2FE', 2);
       for (let k = 0; k <= 12; k++) { const px = t0 + k * (t1 - t0) / 12, h0 = 10 + Math.sin(k / 12 * Math.PI * 2) * 1.2, h1 = 10 + Math.sin((k + 1) / 12 * Math.PI * 2) * 1.2; if (k < 12) quad([P(px, h0, f0 - 1), P(px + (t1 - t0) / 12, h1, f0 - 1), P(px + (t1 - t0) / 12, h1, f1 + 1.5), P(px, h0, f1 + 1.5)], k % 2 ? '#F1F5F9' : '#F8FAFC', 'rgba(100,116,139,0.25)'); }
       for (let k = 0; k < 6; k++) { const px = t0 + 3 + k * (t1 - t0 - 6) / 5; box(px - 0.2, 0, f1 + 1.2, px + 0.2, 10, f1 + 1.5, '#E5E7EB'); }
@@ -2196,6 +2205,19 @@
       x.strokeStyle = 'rgba(100,116,139,0.8)'; x.lineWidth = 1;
       for (const [x0, z0, x1, z1] of [[a + 0.5, b + 0.5, c - 0.5, b + 0.5], [a + 0.5, b + 0.5, a + 0.5, d - 22], [c - 0.5, b + 0.5, c - 0.5, d - 22]]) { const p0 = P(x0, 0, z0), p1 = P(x1, 0, z1), q0 = P(x0, 2, z0), q1 = P(x1, 2, z1); x.beginPath(); x.moveTo(q0[0], q0[1]); x.lineTo(q1[0], q1[1]); x.stroke(); const n = Math.round(Math.hypot(x1 - x0, z1 - z0) / 3); for (let k = 0; k <= n; k++) { const u = k / n; x.beginPath(); x.moveTo(p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u); x.lineTo(q0[0] + (q1[0] - q0[0]) * u, q0[1] + (q1[1] - q0[1]) * u); x.stroke(); } }
       groundText('LAGOS ISLAND', (a + c) / 2, b + 4.2, 4, 'rgba(255,255,255,0.75)');
+      groundText('09', a + 13, rm, 3, 'rgba(248,250,252,0.9)'); groundText('27', c - 13, rm, 3, 'rgba(248,250,252,0.9)');
+      const appr = () => { const tt = performance.now() / 1000; for (const [x0, dir] of [[a + 3, -1], [c - 3, 1]]) for (let k = 1; k <= 3; k++) { const on = Math.floor(tt * 6 - k) % 4 === 0; for (const dz of [-3, 0, 3]) { const p = P(x0 + dir * k * 0.7, 0.2, rm + dz); x.fillStyle = on && dz === 0 ? '#FFFFFF' : '#FDE68A'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.3), 0, Math.PI * 2); x.fill(); } } };
+      appr(); glow.push(appr);
+      if (c - a > 120) {
+        // the fuel farm by the tower: three white tanks on a bunded pad
+        flat(c - 30, d - 19, c - 13, d - 9, 0.07, '#A8A29E'); for (let k = 0; k < 3; k++) { cylLit(c - 26 + k * 5.4, d - 14, 2.2, 0, 4.2, '#F8FAFC'); box(c - 27 + k * 5.4, 3, d - 11.9, c - 25 + k * 5.4, 3.6, d - 11.8, '#16A34A'); }
+        // baggage tugs pulling their carts across the apron
+        for (let k = 0; k < 3; k++) { const u = ((t * 0.04 + k / 3) % 1), bx = tA + u * 80, bz = d - 23 - k * 1.6; box(bx, 0.3, bz - 0.6, bx + 1.6, 1.4, bz + 0.6, '#F59E0B'); for (let q = 1; q <= 3; q++) box(bx - q * 2, 0.3, bz - 0.55, bx - q * 2 + 1.6, 1.1, bz + 0.55, ['#94A3B8', '#1D4ED8', '#94A3B8'][q - 1]); }
+        // a plane on approach: in over the water, down on the threshold, the roll-out, round and off again
+        { const cyc = (t % 40) / 40; let px, alt;
+          if (cyc < 0.3) { px = c + 60 - cyc / 0.3 * 70; alt = 24 * (1 - cyc / 0.3); } else if (cyc < 0.55) { px = c - 10 - (cyc - 0.3) / 0.25 * (c - a - 40); alt = 0; } else if (cyc < 0.7) { px = a + 30; alt = 0; } else { const u = (cyc - 0.7) / 0.3; px = a + 30 + u * (c - a + 40); alt = Math.max(0, (u - 0.45) * 50); }
+          plane(px, rm, alt, 0.55, LIVERY[Math.floor(t / 40) % LIVERY.length]); }
+      }
     },
     // ---- the station: the Blue Line on two electrified tracks, a long island platform under a glass canopy,
     // trains both ways, a ticket hall with an arched glass front and a clock, a forecourt with a bus stop
@@ -2240,7 +2262,7 @@
       glow.push(plat);
       train(tz[1], 1, 13);
       // the ticket hall: glass front under an arch, the clock, the sign
-      const h0 = a + 6, h1 = c - 6, hz0 = d - 15, hz1 = d - 5, mid = (a + c) / 2;
+      const mid = (a + c) / 2, h0 = c - a > 80 ? mid - 26 : a + 6, h1 = c - a > 80 ? mid + 26 : c - 6, hz0 = d - 15, hz1 = d - 5;
       box(h0, 0, hz0, h1, 8, hz1, '#F8FAFC', '#93C5FD', 2); box(h0 - 0.3, 8, hz0 - 0.3, h1 + 0.3, 9, hz1 + 0.3, '#1D4ED8');
       arch(mid, hz1 + 0.02, 6, 12, '#1D4ED8'); arch(mid, hz1 + 0.04, 5.3, 11.3, '#7DB8F0');
       for (let k = -2; k <= 2; k++) { const p0 = P(mid + k * 2, 0, hz1 + 0.05), p1 = P(mid + k * 2, 10.5 - Math.abs(k) * 0.9, hz1 + 0.05); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = 1; x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
@@ -2252,18 +2274,18 @@
       // the forecourt: a bus stop, a danfo waiting, palms
       flat(a + 2, d - 4.5, c - 2, d - 0.5, 0.07, '#E7E2D6');
       box(c - 12, 0, d - 3.4, c - 6, 0.25, d - 1.4, '#94A3B8'); box(c - 12, 3, d - 3.6, c - 6, 3.3, d - 1.2, '#1D4ED8'); box(c - 11.8, 0, d - 3.4, c - 11.5, 3, d - 3.1, '#64748B'); box(c - 6.5, 0, d - 3.4, c - 6.2, 3, d - 3.1, '#64748B');
-      for (let px = a + 4; px < c - 14; px += 12) palm(px, d - 2.5, 8);
+      for (let px = c - a > 80 ? h0 - 30 : a + 4; px < (c - a > 80 ? h1 + 30 : c - 14); px += 12) palm(px, d - 2.5, 8);
       lamp(mid - 9, d - 2, 5); lamp(mid + 9, d - 2, 5);
       // planters of bright flowers along the hall, flags on poles, a departures board, kiosks under umbrellas, a taxi rank
       const FLW = ['#F43F5E', '#F59E0B', '#A855F7', '#22C55E', '#0EA5E9'];
-      for (let px = a + 2, k = 0; px < h0 - 1; px += 2.6, k++) { box(px, 0, hz0 + 1, px + 2, 1, hz0 + 3, '#A8A29E'); flat(px + 0.2, hz0 + 1.2, px + 1.8, hz0 + 2.8, 1.02, FLW[k % FLW.length]); }
-      for (let px = h1 + 1, k = 2; px < c - 2; px += 2.6, k++) { box(px, 0, hz0 + 1, px + 2, 1, hz0 + 3, '#A8A29E'); flat(px + 0.2, hz0 + 1.2, px + 1.8, hz0 + 2.8, 1.02, FLW[k % FLW.length]); }
+      for (let px = Math.max(a + 2, h0 - 16), k = 0; px < h0 - 1; px += 2.6, k++) { box(px, 0, hz0 + 1, px + 2, 1, hz0 + 3, '#A8A29E'); flat(px + 0.2, hz0 + 1.2, px + 1.8, hz0 + 2.8, 1.02, FLW[k % FLW.length]); }
+      for (let px = h1 + 1, k = 2; px < Math.min(c - 2, h1 + 16); px += 2.6, k++) { box(px, 0, hz0 + 1, px + 2, 1, hz0 + 3, '#A8A29E'); flat(px + 0.2, hz0 + 1.2, px + 1.8, hz0 + 2.8, 1.02, FLW[k % FLW.length]); }
       for (const [k, px] of [[0, h0 - 1.5], [1, h1 + 1.5]]) { box(px - 0.12, 0, hz1 + 2, px + 0.12, 12, hz1 + 2.24, '#E5E7EB'); for (let st = 0; st < 3; st++) box(px + 0.12, 9.6 + st * 0.8, hz1 + 2.05, px + 3.6, 10.4 + st * 0.8, hz1 + 2.2, k ? ['#008751', '#FFFFFF', '#008751'][st] : ['#1D4ED8', '#FFFFFF', '#1D4ED8'][st]); }
       { const bx0 = h1 - 10, bz = hz1 + 0.06; box(bx0, 3.4, bz - 0.02, bx0 + 8, 6.4, bz + 0.3, '#0B1020'); const tt = Math.floor(t / 3); ['MILE 2   4 MIN', 'IGANMU  9 MIN', 'MARINA 14 MIN'].forEach((ln, k) => faceText(ln, bx0 + 4, 5.8 - k * 0.85, bz + 0.32, (k + tt) % 3 ? '#FCD34D' : '#4ADE80', 0.55, night > 0.5 ? 6 : 0, 700)); }
       const UMB = ['#EF4444', '#F59E0B', '#22C55E', '#3B82F6', '#EC4899'];
-      for (let k = 0; k < Math.floor((c - a - 30) / 9); k++) { const kx = a + 6 + k * 9, kz = d - 7.5; box(kx - 1.2, 0, kz - 0.8, kx + 1.2, 1.6, kz + 0.8, '#F5F5F4'); box(kx - 0.06, 1.6, kz - 0.06, kx + 0.06, 4.2, kz + 0.06, '#57534E'); pyramid(kx - 2, kz - 2, kx + 2, kz + 2, 4.2, 0.9, UMB[k % UMB.length]); }
-      flat(c - 22, d - 9.8, c - 13, d - 5.2, 0.075, '#57534E'); groundText('TAXI', c - 17.5, d - 5.8, 1.4, 'rgba(250,204,21,0.9)');
-      for (let k = 0; k < 2; k++) drawCar(c - 20 + k * 5, d - 7.6, 'corolla', '#F7C81E', 0, 1.3);
+      for (let k = 0; k < Math.min(8, Math.floor((c - a - 30) / 9)); k++) { const kx = (c - a > 80 ? h0 - 34 : a + 6) + k * 9 + (k >= 4 && c - a > 80 ? h1 - h0 + 32 : 0), kz = d - 7.5; box(kx - 1.2, 0, kz - 0.8, kx + 1.2, 1.6, kz + 0.8, '#F5F5F4'); box(kx - 0.06, 1.6, kz - 0.06, kx + 0.06, 4.2, kz + 0.06, '#57534E'); pyramid(kx - 2, kz - 2, kx + 2, kz + 2, 4.2, 0.9, UMB[k % UMB.length]); }
+      { const tx = c - a > 80 ? h1 + 20 : c - 13; flat(tx - 9, d - 9.8, tx, d - 5.2, 0.075, '#57534E'); groundText('TAXI', tx - 4.5, d - 5.8, 1.4, 'rgba(250,204,21,0.9)'); for (let k = 0; k < 2; k++) drawCar(tx - 7 + k * 5, d - 7.6, 'corolla', '#F7C81E', 0, 1.3); }
+      if (c - a > 80) for (let px = a + 8; px < c - 8; px += 16) if (px < h0 - 36 || px > h1 + 40) { tree(px, d - 3, 3.2); } // trees along the rest of the long forecourt
     },
     dealer(a, b, c, d) {
       // a two-floor office block at the back, a glass showroom in front of it, an entrance canopy, a brand pylon at the road, the lot
@@ -2556,14 +2578,15 @@
     for (const sd of [-1, 1]) box(X(-5), Y(0.9), Z(sd * 1.1 - 0.45), X(-2.8), Y(1.9), Z(sd * 1.1 + 0.45), '#CBD5E1');
     box(X(-6.2), Y(1.6), Z(-0.2), X(-4.4), Y(5), Z(0.2), '#FFFFFF'); box(X(-6.6), Y(4.8), Z(-2.4), X(-5.2), Y(5.2), Z(2.4), accent);
   }
-  function plane(px, pz, alt) {
-    if (alt > 0) { const sh = P(px + alt * 0.4, 0, pz + alt * 0.2); x.fillStyle = 'rgba(20,40,60,' + Math.max(0.05, 0.25 - alt / 200) + ')'; x.beginPath(); x.ellipse(sh[0], sh[1], K * 9, K * 3 * sp, 0, 0, Math.PI * 2); x.fill(); }
-    const y = 1.2 + alt;
-    box(px - 9, y, pz - 1.2, px + 9, y + 2.4, pz + 1.2, '#F8FAFC');
-    quad([P(px - 2, y + 1.2, pz - 1), P(px + 3, y + 1.2, pz - 1), P(px - 1, y + 1.2, pz - 10), P(px - 4, y + 1.2, pz - 10)], '#E5E7EB', 'rgba(0,0,0,.15)');
-    quad([P(px - 2, y + 1.2, pz + 1), P(px + 3, y + 1.2, pz + 1), P(px - 1, y + 1.2, pz + 10), P(px - 4, y + 1.2, pz + 10)], '#E5E7EB', 'rgba(0,0,0,.15)');
-    box(px - 9, y + 2.4, pz - 0.3, px - 6, y + 6.5, pz + 0.3, '#1D4ED8');
-    box(px + 7.5, y + 1.4, pz - 1.25, px + 9, y + 2.2, pz + 1.25, '#1E3A8A');
+  function plane(px, pz, alt, S = 1, liv = '#1D4ED8') {
+    if (alt > 0) { const sh = P(px + alt * 0.4, 0, pz + alt * 0.2); x.fillStyle = 'rgba(20,40,60,' + Math.max(0.05, 0.25 - alt / 200) + ')'; x.beginPath(); x.ellipse(sh[0], sh[1], K * 9 * S, K * 3 * S * sp, 0, 0, Math.PI * 2); x.fill(); }
+    const y = 1.2 * S + alt; // nose to the west (it lands from the east)
+    box(px - 9 * S, y, pz - 1.2 * S, px + 9 * S, y + 2.4 * S, pz + 1.2 * S, '#F8FAFC');
+    box(px - 9 * S, y + 0.9 * S, pz - 1.22 * S, px + 9 * S, y + 1.3 * S, pz + 1.22 * S, liv); // the cheatline
+    quad([P(px - 2 * S, y + 1.2 * S, pz - S), P(px + 3 * S, y + 1.2 * S, pz - S), P(px + 5 * S, y + 1.2 * S, pz - 10 * S), P(px + 2 * S, y + 1.2 * S, pz - 10 * S)], '#E5E7EB', 'rgba(0,0,0,.15)');
+    quad([P(px - 2 * S, y + 1.2 * S, pz + S), P(px + 3 * S, y + 1.2 * S, pz + S), P(px + 5 * S, y + 1.2 * S, pz + 10 * S), P(px + 2 * S, y + 1.2 * S, pz + 10 * S)], '#E5E7EB', 'rgba(0,0,0,.15)');
+    box(px + 6 * S, y + 2.4 * S, pz - 0.3 * S, px + 9 * S, y + 6.5 * S, pz + 0.3 * S, liv); // the tail fin
+    box(px - 9 * S, y + 1.4 * S, pz - 1.25 * S, px - 7.5 * S, y + 2.2 * S, pz + 1.25 * S, '#1E293B'); // the cockpit glass
   }
   const CARS = {
     corolla: ['Toyota Corolla', 'sedan', 450000, 'polanco'], camry: ['Toyota Camry', 'sedan', 900000, 'polanco'], highlander: ['Toyota Highlander', 'suv', 1500000, 'polanco'],
