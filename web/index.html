@@ -440,6 +440,15 @@
   #phone .gbar { height: 6px; margin: 8px 0 4px; border-radius: 6px; background: rgba(255,255,255,.1); overflow: hidden; } #phone .gbar i { display: block; height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.2,.8,.3,1); }
   #phone .grow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0 2px; } #phone .grow span { min-width: 0; } #phone .grow b { display: block; font-size: 14px; } #phone .grow small { display: block; opacity: .65; font-size: 11.5px; } #phone .grow em { font-style: normal; font-weight: 800; font-size: 13px; color: #22D3EE; white-space: nowrap; }
   #phone .grow em.gon { color: #22C55E; } #phone .grow em.gsoon { color: rgba(255,255,255,.45); font-weight: 600; } #phone .gnote { font-size: 13.5px; line-height: 1.4; }
+  #coach { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 60; width: min(440px, calc(100vw - 24px)); display: flex; gap: 12px; align-items: flex-start; padding: 14px 14px 12px; border-radius: 22px; background: linear-gradient(135deg, rgba(15,23,42,.9), rgba(30,27,75,.9)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(167,139,250,.35); box-shadow: 0 18px 50px rgba(15,23,42,.45), 0 0 30px rgba(139,92,246,.25); color: #E2E8F0; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: transform .3s cubic-bezier(.2,.8,.3,1), opacity .3s; }
+  #coach.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  #coach .orb { flex: none; width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 18px rgba(167,139,250,.8); animation: orbBob 2.4s ease-in-out infinite; }
+  @keyframes orbBob { 50% { transform: translateY(-3px); box-shadow: 0 0 26px rgba(167,139,250,1); } }
+  #coach .cbody { flex: 1; min-width: 0; } #coach .chead { display: flex; align-items: center; gap: 8px; } #coach .chead b { font-weight: 800; letter-spacing: .5px; color: #fff; } #coach .chead small { color: #A5B4FC; font-size: 11px; font-weight: 700; }
+  #coach .cx { margin-left: auto; width: 26px; height: 26px; border: 0; border-radius: 50%; background: rgba(255,255,255,.1); color: #fff; cursor: pointer; }
+  #coach p { margin: 6px 0 10px; font-size: 14px; line-height: 1.45; min-height: 2.9em; }
+  #coach .cbtns { display: flex; flex-wrap: wrap; gap: 6px; } #coach .cbtns button { border: 0; border-radius: 999px; padding: 8px 14px; font: 700 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; transition: transform .12s, filter .2s; } #coach .cbtns button:active { transform: scale(.95); }
+  #coach .cbtns button.main { background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1); box-shadow: 0 6px 16px rgba(14,165,233,.35); }
   /* live chat: someone typing (three bouncing dots in a bubble), and read ticks turning blue */
   #phone .typing { display: none; align-items: center; gap: 4px; width: max-content; margin: 2px 0 8px; padding: 9px 13px; border-radius: 18px 18px 18px 6px; background: rgba(0,240,255,.1); box-shadow: inset 0 0 0 1px rgba(0,240,255,.18); color: #8FB6C2; font: 600 12px 'Rajdhani', sans-serif; }
   #phone .typing.on { display: flex; animation: appIn .2s ease; }
@@ -5093,12 +5102,13 @@
       catch (e) { if (kind === 'hq') { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = e.message === 'signin' ? 'Sign in to visit HQs' : e.message; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 4000); return; } }
     }
     if (!keepOutside) outside = { x: me.x, z: me.z, cam: { ...cam } };
+    if (R.mine && !extra.tour && (kind === 'hq' || kind === 'home')) setTimeout(() => homeCheck(R), 1800); // WYRD looks round
     inside = R; me.x = R.w / 2; me.z = R.d - 3; cam.x = R.w / 2; cam.z = R.d / 2; cam.user = 1; cam.follow = false;
     others.clear(); updateWhere(); setDeco();
     if (kind === 'arena') { stageLines = []; stagePoll(); }
     if (kind === 'tower') bubbles.set('wyrd', { text: `Welcome to my tower, ${myName || 'friend'}. Ask me anything.`, until: performance.now() + 6000 });
   }
-  function leaveRoom() {
+  function leaveRoom() { if (!touring) coachHide();
     if (!inside) return;
     pose = null;
     inside = null; deco = null; setDeco();
@@ -6866,10 +6876,11 @@
         const IDEAS = ['Where can I earn naira today?', "What's on at the Arena?", 'Which beach should I go to?', 'How do I buy a home?'];
         show(`<div class="ahead" style="--ac:#00F0FF"><span class="av2" style="background:radial-gradient(circle at 35% 30%,#fff,#A78BFA 45%,#0EA5E9)"></span><div><h2>WYRD</h2><span>Hears only what you type here, and your district</span></div></div>
           <div class="msgs" id="wMsgs"><div class="msg"><b>WYRD</b>${esc(myName ? `Hello ${myName}.` : 'Hello.')} You're in ${esc(sector.name)}. Ask me anything about the island.</div></div>
-          <div class="chips" id="wIdeas" style="--ac:#00F0FF;margin-top:10px"><button id="wDj">🎧 DJ inspections</button>${IDEAS.map((q) => `<button data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+          <div class="chips" id="wIdeas" style="--ac:#00F0FF;margin-top:10px"><button id="wTour">🧭 Show me around</button><button id="wDj">🎧 DJ inspections</button>${IDEAS.map((q) => `<button data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
           <div class="comp"><input id="wText" maxlength="600" placeholder="Ask WYRD anything"><button class="pbtn" id="wGo">Ask</button></div>`);
         pbody.querySelectorAll('[data-q]').forEach((b) => (b.onclick = () => { $('wText').value = b.dataset.q; ask(); }));
         $('wDj').onclick = (e) => { e.stopPropagation(); go('djinspect'); };
+        $('wTour').onclick = (e) => { e.stopPropagation(); closePhone(); wyrdIntro(true); };
         const ask = async () => {
           const t = $('wText').value.trim(); if (!t) return; $('wText').value = ''; if ($('wIdeas')) $('wIdeas').remove();
           const add = (who, s, mine) => { const d = document.createElement('div'); d.className = 'msg' + (mine ? ' me' : ''); d.innerHTML = `<b>${who}</b>${esc(s)}`; $('wMsgs').append(d); pbody.scrollTop = pbody.scrollHeight; };
@@ -7354,7 +7365,7 @@
   tabOld.onclick = () => { isNew = false; tabOld.className = 'on'; tabNew.className = ''; passIn.autocomplete = 'current-password'; showFor(false); };
   function start() {
     store.set('li.color', myColor);
-    hello.style.display = 'none'; nameIn.blur(); passIn.blur(); playing = true;
+    hello.style.display = 'none'; nameIn.blur(); passIn.blur(); playing = true; setTimeout(() => wyrdIntro(), 1500);
     tick(); setInterval(() => { if (!document.hidden) tick(); }, 1000);
     if (signedIn()) poll();
   }
@@ -7429,6 +7440,61 @@
     el.onclick = close; setTimeout(close, 9000);
   }
   { const w = new URLSearchParams(location.search).get('welcome'); if (w) setTimeout(() => cyberWelcome(w), 600); }
+  // ---- WYRD, your guide: a card at the foot of the screen with WYRD's orb, what it says (typed out), and what you can do
+  // about it. It shows a newcomer round the island the first time they play, and it looks round your home when you walk in:
+  // no bed, nowhere to sit, no table, no TV, no lamp, and it says so and takes you to the Home Store for one.
+  const coach = document.createElement('div'); coach.id = 'coach'; coach.setAttribute('role', 'dialog'); coach.setAttribute('aria-live', 'polite'); document.body.append(coach);
+  let coachDone = null;
+  function coachSay(text, buttons = [], step = '') {
+    return new Promise((res) => {
+      coachDone = res; clearInterval(coachSay.t);
+      coach.innerHTML = `<i class="orb"></i><div class="cbody"><div class="chead"><b>WYRD</b>${step ? `<small>${esc(step)}</small>` : ''}<button class="cx" aria-label="Close">✕</button></div><p></p><div class="cbtns"></div></div>`;
+      const p = coach.querySelector('p'), bt = coach.querySelector('.cbtns'); let k = 0;
+      coachSay.t = setInterval(() => { k += 2; p.textContent = text.slice(0, k); if (k >= text.length) clearInterval(coachSay.t); }, 16); // typed out
+      for (const [label, fn, main] of buttons) { const b = document.createElement('button'); b.textContent = label; if (main) b.className = 'main'; b.onclick = () => { clearInterval(coachSay.t); p.textContent = text; const r = fn ? fn() : 'next'; coachHide(); res(r); }; bt.append(b); }
+      coach.querySelector('.cx').onclick = () => { coachHide(); res('stop'); };
+      coach.classList.add('on');
+    });
+  }
+  function coachHide() { coach.classList.remove('on'); }
+  // the tour: a step at a time, each with a way to try it; Skip ends it (and it doesn't come back unless you ask WYRD)
+  let touring = false;
+  async function wyrdIntro(force) {
+    if (touring || (!force && store.get('li.intro'))) return;
+    while (document.getElementById('cyberwel')) await new Promise((r) => setTimeout(r, 400)); // after the welcome
+    touring = true; store.set('li.intro', '1');
+    const who = myName && !/^(Guest|Lagosian)$/.test(myName) ? myName : 'friend';
+    const STEPS = [
+      [`Welcome to Lagos Island, ${who}. I'm WYRD. I run this island, and I'll show you round. It takes a minute.`, []],
+      ['Walking: the arrow keys or WASD on a keyboard, the stick at the bottom on a phone. Drag the map to look about, pinch or use + and − to zoom.', []],
+      ['Your phone is top left. Wallet, jobs, your chats, your HQ, rides, music: it all lives there.', [['Open it', () => { openPhone(); return 'next'; }]]],
+      ['Every Lagosian gets a free BQ on HQ Row. It starts empty: furnish it from the Eko Home Store, and invite people round.', [['See my HQ', () => { openPhone('hq'); return 'next'; }]]],
+      ['Naira: work a shift at the refinery, a market stall or a club at night. Real employers post real jobs in the Jobs app too.', [['See jobs', () => { openPhone('jobs'); return 'next'; }]]],
+      ['Getting about: order a ride on your phone, take the Blue Line, or buy a car at Polanco or Lekki Luxury Cars.', [['Order a ride', () => { openPhone('ride'); return 'next'; }]]],
+      ['Homes are for sale from Ajah to Banana Island. The Government app keeps count of every one, and who lives where.', [['Government', () => { openPhone('gov'); return 'next'; }]]],
+      ['That\'s the island. Ask me anything, any time: the WYRD app on your phone, or find me walking the streets. Eko o ni baje.', []],
+    ];
+    for (let k = 0; k < STEPS.length; k++) {
+      const [text, extra] = STEPS[k], last = k === STEPS.length - 1;
+      const r = await coachSay(text, [...extra, [last ? 'Let\'s go' : 'Next', null, true], ...(last ? [] : [['Skip', () => 'stop']])], `${k + 1} of ${STEPS.length}`);
+      if (r === 'stop') break;
+      if (extra.length && r === 'next' && phone.style.display === 'block') await new Promise((res) => { const w = setInterval(() => { if (phone.style.display !== 'block') { clearInterval(w); res(); } }, 300); setTimeout(() => { clearInterval(w); res(); }, 60000); }); // look round, then carry on
+    }
+    touring = false; coachHide();
+  }
+  // a look round your home when you walk in: the basics a home needs, and the cheapest of each in the Home Store
+  const BASICS = [['bed', 'a bed', ['bed'], 'k:bedSingle'], ['seat', 'anywhere to sit', ['sofa', 'armchair', 'chair', 'couch2', 'stool', 'booth'], 'k:loungeSofa'], ['table', 'a table', ['table', 'coffee', 'desk', 'island'], 'k:tableCoffee'], ['tv', 'a TV', ['tv'], 'k:televisionVintage'], ['lamp', 'a lamp', ['lamp'], 'k:lampRoundFloor']];
+  function homeCheck(R) {
+    if (touring || !R || !R.mine || inside !== R) return;
+    const day = new Date(lagosMs()).toISOString().slice(0, 10), key = 'li.hc.' + R.key; if (store.get(key) === day) return; // once a day for each home
+    const have = new Set((R.layout || []).map(kindOf)), missing = BASICS.filter(([, , kinds]) => !kinds.some((k) => have.has(k)));
+    if (!missing.length) return;
+    store.set(key, day);
+    const what = missing.map((m) => m[1]), list = what.length > 1 ? what.slice(0, -1).join(', ') + ' and ' + what[what.length - 1] : what[0], first = missing[0], it = STORE[first[3]];
+    const place = R.kind === 'hq' ? 'Your BQ' : 'This home';
+    const why = first[0] === 'bed' ? 'You\'ll want somewhere to sleep.' : first[0] === 'seat' ? 'Guests will want somewhere to sit.' : 'It makes a place a home.';
+    coachSay(`${place} has no ${list} yet. ${why} The Eko Home Store has ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'what you need'}, delivered straight here.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
+  }
   document.getElementById('guest').onclick = () => { myName = store.get('li.name') || 'Guest'; start(); };
   for (const el of [emailIn, nameIn, passIn, pass2In]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('go').click(); });
 })();
