@@ -3425,21 +3425,11 @@
       const cx = (p[1] + p[3] / 2) * T, cz = (p[2] + p[4] / 2) * T, top = PIN_H[p[0]] ?? 16;
       const s = P(cx, top, cz);
       if (s[0] < -40 || s[0] > W + 40 || s[1] < -40 || s[1] > H + 40) continue;
-      const r = 15;
-      x.save(); x.shadowColor = 'rgba(20,60,100,0.3)'; x.shadowBlur = 8; x.shadowOffsetY = 2;
-      x.fillStyle = '#fff'; x.beginPath(); x.arc(s[0], s[1] - r - 6, r, 0, Math.PI * 2); x.fill();
-      x.beginPath(); x.moveTo(s[0] - 5, s[1] - 9); x.lineTo(s[0] + 5, s[1] - 9); x.lineTo(s[0], s[1] - 1); x.fill(); x.restore();
-      { const col = PIN_COL[p[0]] || '#0F172A'; x.strokeStyle = col; x.globalAlpha = 0.9; x.lineWidth = 2; x.beginPath(); x.arc(s[0], s[1] - r - 6, r - 2.5, 0, Math.PI * 2); x.stroke(); x.globalAlpha = 1; icoDraw(x, ICONS[p[0]] ? p[0] : 'pin', s[0], s[1] - r - 6, 17, col, 2.1); }
-      const near = Math.hypot(cx - me.x, cz - me.z) < 70;
-      if (near || cam.user > 1.3) {
-        x.font = '700 12px "Plus Jakarta Sans", sans-serif';
-        const w = x.measureText(p[5]).width + 16, bx = s[0] - w / 2, by = s[1] - r * 2 - 36;
-        if (placed.some((q) => bx < q[0] + q[2] + 4 && bx + w + 4 > q[0] && by < q[1] + 24 && by + 24 > q[1])) continue;
-        placed.push([bx, by, w]);
-        x.save(); x.shadowColor = 'rgba(20,60,100,0.2)'; x.shadowBlur = 6;
-        x.fillStyle = '#fff'; x.beginPath(); x.roundRect(bx, by, w, 22, 11); x.fill(); x.restore();
-        x.fillStyle = '#1F2A37'; x.fillText(p[5], s[0], by + 11.5);
-      }
+      const r = 7.5; // the pins, small: no name tags on the map (tap a place for its card)
+      x.save(); x.shadowColor = 'rgba(20,60,100,0.3)'; x.shadowBlur = 4; x.shadowOffsetY = 1;
+      x.fillStyle = '#fff'; x.beginPath(); x.arc(s[0], s[1] - r - 3, r, 0, Math.PI * 2); x.fill();
+      x.beginPath(); x.moveTo(s[0] - 2.5, s[1] - 4.5); x.lineTo(s[0] + 2.5, s[1] - 4.5); x.lineTo(s[0], s[1] - 0.5); x.fill(); x.restore();
+      { const col = PIN_COL[p[0]] || '#0F172A'; x.strokeStyle = col; x.globalAlpha = 0.9; x.lineWidth = 1.2; x.beginPath(); x.arc(s[0], s[1] - r - 3, r - 1.3, 0, Math.PI * 2); x.stroke(); x.globalAlpha = 1; icoDraw(x, ICONS[p[0]] ? p[0] : 'pin', s[0], s[1] - r - 3, 8.5, col, 2.4); }
     }
     x.textBaseline = 'alphabetic';
   }
