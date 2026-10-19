@@ -1215,16 +1215,40 @@
       lamp(cx - 5, d - 2, 5); lamp(cx + 5, d - 2, 5);
       glow.push(() => { const p = P(cx, 16, cz), r = K * 16; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(120,255,170,0.22)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
+    // ---- Balogun Market: the old three-storey shop blocks along the back with their painted signs and awnings, lanes of
+    // stalls under umbrellas and blue tarpaulins, bolts of ankara and lace stacked high, cloth hanging on lines across the
+    // lanes, handcarts, the market's arch at the way in, bulbs strung over it all at night
     market(a, b, c, d) {
       if (a > 400) return ajahMarket(a, b, c, d);
-      flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      const n = Math.max(2, Math.round((c - a) / 6)), mm = Math.max(2, Math.round((d - b) / 6));
-      const sw = (c - a - 2) / n, sd = (d - b - 2) / mm;
-      for (let i = 0; i < n; i++) for (let j = 0; j < mm; j++) {
-        const x0 = a + 1 + i * sw + 0.5, z0 = b + 1 + j * sd + 0.5;
-        box(x0, 0, z0, x0 + sw - 1, 2.6, z0 + sd - 1, '#F3F4F6');
-        flat(x0 - 0.3, z0 - 0.3, x0 + sw - 0.7, z0 + sd - 0.7, 2.7, STALLS[(i * 3 + j * 5) % STALLS.length]);
-      }
+      const t = performance.now() / 1000, R = rnd(a * 5 + b), mid = (a + c) / 2, dark = night > 0.45;
+      const CLOTH = ['#F59E0B', '#DC2626', '#2563EB', '#16A34A', '#9333EA', '#DB2777', '#0D9488', '#EA580C', '#FACC15', '#7C2D12'];
+      flat(a, b, c, d, 0.05, '#C9B99A', C.plotEdge); // the dusty ground
+      // the shop blocks along the back: three storeys, a shop to each bay, signs in every colour, rusty roofs, washing on a balcony
+      const SIGNS = ['ADEX FABRICS', 'MAMA T LACE', 'ANKARA KING', 'GOD IS GOOD', 'OLUWA BLESS', 'JUMBO SHOES'];
+      const bays = Math.max(3, Math.floor((c - a - 2) / 6.5)), bw = (c - a - 2) / bays;
+      for (let k = 0; k < bays; k++) { const x0 = a + 1 + k * bw, h = 9 + (k % 3) * 1.6, wall = ['#F5E6C8', '#E0F2FE', '#FDE68A', '#FCE7F3', '#DCFCE7', '#EDE9FE'][k % 6];
+        box(x0, 0, b + 0.5, x0 + bw - 0.2, h, b + 6, wall, '#475569', 2);
+        box(x0 - 0.1, h, b + 0.3, x0 + bw - 0.1, h + 0.5, b + 6.2, ['#92400E', '#78716C', '#B45309'][k % 3]); // the roof edge
+        quad([P(x0, 3.2, b + 6), P(x0 + bw - 0.2, 3.2, b + 6), P(x0 + bw - 0.2, 2.6, b + 7.8), P(x0, 2.6, b + 7.8)], CLOTH[(k * 3) % CLOTH.length], 'rgba(0,0,0,0.2)'); // the awning
+        box(x0 + 0.4, 3.6, b + 6.02, x0 + bw - 0.6, 4.8, b + 6.12, '#FFFFFF'); faceText(SIGNS[k % SIGNS.length], x0 + bw / 2 - 0.1, 4.2, b + 6.15, CLOTH[(k * 7 + 1) % CLOTH.length], 0.62, 0, 900);
+        for (let w = 0; w < 3; w++) box(x0 + 0.5 + w * (bw - 1) / 3, 6.2, b + 6.05, x0 + 0.5 + w * (bw - 1) / 3 + 0.7, 7.4, b + 6.4, CLOTH[(k + w * 4) % CLOTH.length]); } // washing on the balconies
+      // the lanes of stalls: tables under umbrellas or tarps, cloth stacked on them in bolts
+      const rows = [b + 11, b + 17.5, b + 24], cols = Math.max(3, Math.floor((c - a - 4) / 5.2));
+      rows.forEach((rz, ri) => { if (rz > d - 3) return; for (let k = 0; k < cols; k++) { const sx = a + 3 + k * ((c - a - 6) / (cols - 1)), tarp = (k + ri) % 3 === 0;
+        box(sx - 1.8, 0, rz - 1.1, sx + 1.8, 1.4, rz + 1.1, '#A16207'); // the table
+        for (let q = 0; q < 4; q++) box(sx - 1.6 + q * 0.85, 1.4, rz - 0.8, sx - 0.9 + q * 0.85, 1.4 + 0.5 + R() * 0.8, rz + 0.8, CLOTH[Math.floor(R() * CLOTH.length)]); // bolts of cloth
+        if (tarp) { for (const px of [sx - 2.2, sx + 2.2]) box(px - 0.08, 0, rz - 1.4, px + 0.08, 3.6, rz - 1.25, '#57534E'); quad([P(sx - 2.6, 3.8, rz - 1.6), P(sx + 2.6, 3.8, rz - 1.6), P(sx + 2.6, 3, rz + 1.8), P(sx - 2.6, 3, rz + 1.8)], (k + ri) % 2 ? '#1D4ED8' : '#0EA5E9', 'rgba(0,0,0,0.15)'); }
+        else { box(sx - 0.06, 1.4, rz - 0.06, sx + 0.06, 4.2, rz + 0.06, '#57534E'); pyramid(sx - 2.3, rz - 2.3, sx + 2.3, rz + 2.3, 4.2, 1, CLOTH[(k * 3 + ri * 5) % CLOTH.length]); } } });
+      // cloth hanging on lines across the lanes, swaying
+      for (const lz of [b + 14.3, b + 20.8]) { if (lz > d - 2) continue; const p0 = P(a + 1, 5, lz), p1 = P(c - 1, 5, lz); x.strokeStyle = '#44403C'; x.lineWidth = 1; x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
+        for (let k = 0; k < Math.floor((c - a - 2) / 1.6); k++) { const px = a + 1.6 + k * 1.6, sw = Math.sin(t * 1.5 + k) * 0.15; quad([P(px, 5, lz), P(px + 1.1, 5, lz), P(px + 1.1 + sw, 2.9, lz), P(px + sw, 2.9, lz)], CLOTH[(k * 7 + (lz | 0)) % CLOTH.length], 'rgba(0,0,0,0.12)'); } }
+      // handcarts (truck pushers) in the lanes, loaded
+      for (let k = 0; k < 2; k++) { const hx = a + 6 + k * (c - a - 12), hz = b + 14.3 + k * 6.5; box(hx - 1.4, 0.6, hz - 0.7, hx + 1.4, 1, hz + 0.7, '#78350F'); for (const [wx, wz] of [[hx - 0.9, hz + 0.75], [hx + 0.9, hz + 0.75]]) disk(wx, wz, 0.5, 0.45, '#111827'); box(hx - 1.1, 1, hz - 0.5, hx + 1.1, 2, hz + 0.5, CLOTH[(k * 4 + 2) % CLOTH.length]); }
+      // the way in: an arch over the front lane with the market's name
+      for (const px of [mid - 5, mid + 5]) box(px - 0.4, 0, d - 1.4, px + 0.4, 6.5, d - 0.6, '#B45309');
+      box(mid - 5.6, 6.5, d - 1.5, mid + 5.6, 8, d - 0.5, '#15803D'); faceText('BALOGUN MARKET', mid, 7.25, d - 0.45, '#FDE68A', 0.95, dark ? 6 : 0, 900);
+      // strings of bulbs over the lanes at night
+      if (dark) glow.push(() => { for (const lz of [b + 8.5, b + 14.3, b + 20.8]) for (let k = 0; k <= 14; k++) { const u = k / 14, p = P(a + 1 + (c - a - 2) * u, 6 - Math.sin(u * Math.PI) * 0.6, lz); x.fillStyle = k % 3 ? 'rgba(254,240,138,0.95)' : 'rgba(251,146,60,0.95)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.22), 0, Math.PI * 2); x.fill(); } });
     },
     shops(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
@@ -1358,15 +1382,46 @@
       lamp(cx - 3, d - 1.5, 5); lamp(cx + 3, d - 1.5, 5);
       glow.push(() => { const p = P(cx, 10, z1), r = K * 6; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,200,120,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); });
     },
+    // ---- Tafawa Balewa Square: the parade ground with the white star of the coat of arms on it, a covered grandstand in
+    // green and white along the back with the VIP podium under its arch, Nigerian flags along the front, and at the gate
+    // the square's four white horses rearing on their pillars and the eagle on its plinth; trees round it, floodlit at night
     field(a, b, c, d) {
-      flat(a, b, c, d, 0.05, '#7BC26A');
-      flat(a + 2, b + 2, c - 2, d - 2, 0.1, '#86CC74');
-      x.strokeStyle = 'rgba(255,255,255,0.85)'; x.lineWidth = 1.2;
-      const e = [P(a + 2, 0.12, b + 2), P(c - 2, 0.12, b + 2), P(c - 2, 0.12, d - 2), P(a + 2, 0.12, d - 2)];
-      x.beginPath(); x.moveTo(e[0][0], e[0][1]); for (let i = 1; i < 4; i++) x.lineTo(e[i][0], e[i][1]); x.closePath(); x.stroke();
-      box(a + 3, 0, b - 0.5, c - 3, 4, b + 2, '#F8FAFC'); // the grandstand
-      box(a + 3, 4, b - 0.5, c - 3, 4.4, b + 2.4, '#16A34A');
-      for (const [px, pz] of [[c - 3, d - 4], [a + 3, d - 4]]) { box(px - 0.15, 0, pz - 0.15, px + 0.15, 9, pz + 0.15, '#9CA3AF'); flat(px + 0.15, pz - 0.05, px + 3.2, pz + 0.05, 8.2, '#16A34A'); }
+      const t = performance.now() / 1000, mid = (a + c) / 2, dark = night > 0.5;
+      flat(a, b, c, d, 0.05, '#D6D3D1', C.plotEdge); // the concrete round it
+      flat(a + 3, b + 9, c - 3, d - 6, 0.08, '#6FB85E'); // the parade ground
+      for (let px = a + 3, k = 0; px < c - 3; px += 3, k++) if (k % 2) flat(px, b + 9, Math.min(c - 3, px + 3), d - 6, 0.085, '#7BC26A'); // mown stripes
+      x.strokeStyle = 'rgba(255,255,255,0.9)'; x.lineWidth = Math.max(1, K * 0.18);
+      { const e = [P(a + 3.5, 0.1, b + 9.5), P(c - 3.5, 0.1, b + 9.5), P(c - 3.5, 0.1, d - 6.5), P(a + 3.5, 0.1, d - 6.5)]; x.beginPath(); x.moveTo(e[0][0], e[0][1]); for (let i = 1; i < 4; i++) x.lineTo(e[i][0], e[i][1]); x.closePath(); x.stroke(); }
+      { const cx = mid, cz = (b + 9 + d - 6) / 2, R1 = 5, R2 = 2; x.fillStyle = 'rgba(255,255,255,0.92)'; x.beginPath(); for (let k = 0; k < 10; k++) { const an = -Math.PI / 2 + k * Math.PI / 5, r = k % 2 ? R2 : R1, p = P(cx + Math.cos(an) * r, 0.1, cz + Math.sin(an) * r); k ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); } x.closePath(); x.fill(); } // the star
+      // the grandstand: tiers of green and white seats, a cantilevered canopy, the VIP podium under an arch in the middle
+      for (let k = 0; k < 4; k++) box(a + 3, k * 1.1, b + 1 + k * 1.4, c - 3, (k + 1) * 1.1, b + 2.6 + k * 1.4, k % 2 ? '#F8FAFC' : '#16A34A');
+      box(a + 3, 0, b + 0.4, c - 3, 7.5, b + 1, '#E7E5E4');
+      for (let px = a + 4; px <= c - 4; px += (c - a - 8) / 5) box(px - 0.2, 4.4, b + 0.8, px + 0.2, 7.6, b + 1.2, '#94A3B8');
+      quad([P(a + 2.5, 7.6, b + 0.4), P(c - 2.5, 7.6, b + 0.4), P(c - 2.5, 7, b + 8), P(a + 2.5, 7, b + 8)], 'rgba(22,163,74,0.92)', '#F8FAFC');
+      for (let k = 1; k < 8; k++) { const u = k / 8, p = P(a + 2.5 + (c - a - 5) * u, 7.62, b + 0.4), q = P(a + 2.5 + (c - a - 5) * u, 7.02, b + 8); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = 1; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
+      box(mid - 4, 0, b + 6.2, mid + 4, 2.2, b + 8.6, '#F5F5F4'); box(mid - 4.2, 2.2, b + 6, mid + 4.2, 2.5, b + 8.8, '#B91C1C'); // the VIP podium
+      for (const sx of [-1, 1]) box(mid + sx * 3.6 - 0.25, 2.5, b + 8.2, mid + sx * 3.6 + 0.25, 8.6, b + 8.6, '#F8FAFC');
+      { const pts = []; for (let u = 0; u <= 12; u++) { const an = Math.PI * u / 12; pts.push(P(mid - Math.cos(an) * 3.6, 8.6 + Math.sin(an) * 2.2, b + 8.4)); } x.strokeStyle = '#F8FAFC'; x.lineWidth = Math.max(2, K * 0.45); x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts) x.lineTo(p[0], p[1]); x.stroke(); }
+      // the flags along the front, waving
+      for (let k = 0; k < 7; k++) { const fx = a + 6 + k * ((c - a - 12) / 6), fz = d - 5; box(fx - 0.1, 0, fz - 0.1, fx + 0.1, 9, fz + 0.1, '#CBD5E1');
+        for (let st = 0; st < 3; st++) { const pts = []; for (let sg = 0; sg <= 3; sg++) pts.push([fx + st * 0.9 + sg * 0.3, 8.6 - Math.sin(t * 3 + st + sg * 0.7 + k) * 0.25]); const top = pts.map(([px, py]) => P(px, py, fz)), bot = pts.slice().reverse().map(([px, py]) => P(px, py - 1.8, fz)); quad(top.concat(bot), st === 1 ? '#FFFFFF' : '#008751', 'rgba(0,0,0,0.12)'); } }
+      // the four white horses at the gate, rearing on their pillars, two each side
+      const horse = (hx, hz, dir) => { box(hx - 1.6, 0, hz - 1.2, hx + 1.6, 6, hz + 1.2, '#E7E5E4'); box(hx - 1.8, 6, hz - 1.4, hx + 1.8, 6.4, hz + 1.4, '#D6D3D1');
+        const y = 6.4, W = '#FAFAF9';
+        box(hx - 1.4, y + 2, hz - 0.45, hx + 1.4, y + 3.2, hz + 0.45, W); // the body, rearing
+        for (const sz of [-0.3, 0.3]) box(hx - 1.4 * dir - 0.2, y, hz + sz - 0.18, hx - 1.4 * dir + 0.2, y + 2.2, hz + sz + 0.18, W); // hind legs on the plinth
+        for (const sz of [-0.3, 0.3]) box(hx + 1.3 * dir - 0.18, y + 2.6 + (sz > 0 ? 0.3 : 0), hz + sz - 0.15, hx + 1.9 * dir + 0.18, y + 3.1 + (sz > 0 ? 0.3 : 0), hz + sz + 0.15, W); // forelegs pawing the air
+        box(hx + 0.9 * dir - 0.35, y + 3.1, hz - 0.3, hx + 1.4 * dir + 0.35, y + 4.6, hz + 0.3, W); box(hx + 1.3 * dir - 0.3, y + 4.4, hz - 0.28, hx + 2.1 * dir + 0.3, y + 5, hz + 0.28, W); // neck and head
+        box(hx - 1.6 * dir - 0.12, y + 2.6, hz - 0.1, hx - 1.4 * dir + 0.12, y + 3.6, hz + 0.1, '#E7E5E4'); };
+      horse(mid - 9, d - 2, -1); horse(mid - 5.5, d - 2, -1); horse(mid + 5.5, d - 2, 1); horse(mid + 9, d - 2, 1);
+      // the eagle on its plinth between them, wings spread
+      box(mid - 1.2, 0, d - 3.2, mid + 1.2, 4.5, d - 0.8, '#57534E'); { const e0 = P(mid, 6.2, d - 2); x.fillStyle = '#B91C1C'; x.beginPath(); x.moveTo(e0[0], e0[1] - K * 1.8); for (const [ex, ey] of [[-3.2, -0.6], [-1.6, 0.2], [-0.6, 1.2], [0, 1.6], [0.6, 1.2], [1.6, 0.2], [3.2, -0.6], [0.4, -0.2], [0, -1.8]]) x.lineTo(e0[0] + ex * K, e0[1] + ey * K); x.closePath(); x.fill(); x.fillStyle = '#FDE68A'; x.beginPath(); x.arc(e0[0], e0[1] - K * 1.6, Math.max(1, K * 0.4), 0, Math.PI * 2); x.fill(); }
+      groundText('TAFAWA BALEWA SQUARE', mid, d - 4.4, 1.6, 'rgba(28,25,23,0.75)');
+      for (const [tx, tz] of [[a + 1.5, b + 10], [a + 1.5, b + 17], [a + 1.5, b + 24], [c - 1.5, b + 10], [c - 1.5, b + 17], [c - 1.5, b + 24]]) tree(tx, tz, 2.4);
+      // floodlights on the four corners, lit after dark
+      const fl = [[a + 2, b + 9], [c - 2, b + 9], [a + 2, d - 6], [c - 2, d - 6]];
+      for (const [lx, lz] of fl) { box(lx - 0.15, 0, lz - 0.15, lx + 0.15, 12, lz + 0.15, '#9CA3AF'); box(lx - 0.8, 12, lz - 0.3, lx + 0.8, 13, lz + 0.3, '#E5E7EB'); }
+      if (dark) glow.push(() => { for (const [lx, lz] of fl) { const top = P(lx, 12.5, lz), g = x.createRadialGradient(top[0], top[1], 0, top[0], top[1], K * 14); g.addColorStop(0, 'rgba(255,250,230,0.5)'); g.addColorStop(1, 'rgba(255,250,230,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(top[0], top[1], K * 14, 0, Math.PI * 2); x.fill(); x.restore(); } });
     },
     // ---- The Marina & NECOM House: NECOM House in the middle (the tall white telecoms tower with its ribbed face, its
     // dishes and the red-and-white mast on top), a dark glass office tower and a bank's tower either side, on a podium
