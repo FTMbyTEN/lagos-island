@@ -440,6 +440,18 @@
   #phone .gbar { height: 6px; margin: 8px 0 4px; border-radius: 6px; background: rgba(255,255,255,.1); overflow: hidden; } #phone .gbar i { display: block; height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.2,.8,.3,1); }
   #phone .grow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0 2px; } #phone .grow span { min-width: 0; } #phone .grow b { display: block; font-size: 14px; } #phone .grow small { display: block; opacity: .65; font-size: 11.5px; } #phone .grow em { font-style: normal; font-weight: 800; font-size: 13px; color: #22D3EE; white-space: nowrap; }
   #phone .grow em.gon { color: #22C55E; } #phone .grow em.gsoon { color: rgba(255,255,255,.45); font-weight: 600; } #phone .gnote { font-size: 13.5px; line-height: 1.4; }
+  #inverter { position: fixed; left: 50%; top: 50%; z-index: 61; width: min(380px, calc(100vw - 24px)); max-height: calc(100dvh - 40px); overflow-y: auto; padding: 16px; border-radius: 24px; background: linear-gradient(160deg, rgba(15,23,42,.94), rgba(20,30,48,.94)); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(34,197,94,.3); box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 30px rgba(34,197,94,.15); color: #E2E8F0; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, -46%) scale(.96); opacity: 0; pointer-events: none; transition: transform .25s cubic-bezier(.2,.8,.3,1), opacity .25s; }
+  #inverter.on { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
+  .ivhead { display: flex; align-items: center; gap: 8px; } .ivhead b { font-size: 16px; color: #fff; } .ivhead small { color: #94A3B8; font-size: 12px; font-weight: 600; } .ivx { margin-left: auto; width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(255,255,255,.1); color: #fff; cursor: pointer; }
+  .ivtop { display: flex; gap: 14px; align-items: center; margin: 12px 0 6px; } .ivring { width: 120px; height: 120px; flex: none; } .ivring circle { fill: none; stroke-width: 9; transform: rotate(-90deg); transform-origin: 50% 50%; stroke-linecap: round; transition: stroke-dashoffset .6s; } .ivring circle.bg { stroke: rgba(255,255,255,.08); }
+  .ivring text { fill: #fff; font: 800 20px 'Plus Jakarta Sans', sans-serif; text-anchor: middle; } .ivring text.sm { font-size: 9px; font-weight: 600; fill: #94A3B8; }
+  .ivstats { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .ivs { padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.06); } .ivs span { display: block; font-size: 10.5px; color: #94A3B8; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; } .ivs b { font-size: 14px; color: #fff; } .ivs.ok b { color: #4ADE80; } .ivs.off b { color: #F87171; } .ivs.sun b { color: #FCD34D; }
+  .ivsec { margin: 12px 2px 6px; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #94A3B8; }
+  .ivloads { display: grid; gap: 4px; } .ivl { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.05); cursor: pointer; } .ivl span { font-size: 13.5px; font-weight: 700; } .ivl small { display: block; font-size: 11px; color: #94A3B8; font-weight: 600; } .ivl em { font-style: normal; font-size: 11px; color: #64748B; }
+  .ivl input { display: none; } .ivl i { width: 38px; height: 22px; border-radius: 11px; background: rgba(255,255,255,.15); position: relative; transition: background .2s; } .ivl i::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; } .ivl input:checked + i { background: #22C55E; } .ivl input:checked + i::after { transform: translateX(16px); }
+  .ivhist { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; } .ivhist i, .ivlegend i { height: 16px; border-radius: 4px; background: rgba(239,68,68,.55); } .ivhist i.on, .ivlegend i.on { background: #22C55E; }
+  .ivlegend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: #94A3B8; align-items: center; } .ivlegend span { display: flex; gap: 4px; align-items: center; } .ivlegend i { width: 10px; height: 10px; display: inline-block; }
+  .ivwarn { margin-top: 10px; padding: 9px 11px; border-radius: 12px; background: rgba(245,158,11,.14); color: #FCD34D; font-size: 12.5px; font-weight: 600; }
   #coach { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 60; width: min(440px, calc(100vw - 24px)); display: flex; gap: 12px; align-items: flex-start; padding: 14px 14px 12px; border-radius: 22px; background: linear-gradient(135deg, rgba(15,23,42,.9), rgba(30,27,75,.9)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(167,139,250,.35); box-shadow: 0 18px 50px rgba(15,23,42,.45), 0 0 30px rgba(139,92,246,.25); color: #E2E8F0; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: transform .3s cubic-bezier(.2,.8,.3,1), opacity .3s; }
   #coach.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
   #coach .orb { flex: none; width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 18px rgba(167,139,250,.8); animation: orbBob 2.4s ease-in-out infinite; }
@@ -4785,6 +4797,24 @@
     const sink = kx + kl * 0.3; flat(sink - 1.3, 0.6, sink + 1.3, 2.2, 3.32, '#CBD5E1'); box(sink - 0.1, 3.3, 0.4, sink + 0.1, 4.6, 0.6, '#9CA3AF');
     box(kx, 8, 0.1, kx1, 11.5, 1.6, F.cab); // wall cupboards
     box(kx1 + 0.4, 0, 0.1, kx1 + 3.6, 11, 3, '#D4D4D8'); box(kx1 + 3.3, 4, 3, kx1 + 3.45, 9, 3.05, '#71717A'); // the fridge
+    // the kitchen, lived in: tiles on the floor, a hood over the hob with a pot and a pan on it, a microwave, a kettle and a
+    // blender on the worktop, spices on a rack, a dish rack by the sink, a bowl of fruit, the gas cylinder by the cooker,
+    // pendant lights over the worktop and a strip of light under the cupboards after dark
+    { for (let px = kx - 1, i = 0; px < kx1 + 1; px += 2, i++) for (let pz = 3, j = 0; pz < 7; pz += 2, j++) if ((i + j) % 2) flat(px, pz, px + 2, pz + 2, 0.028, '#D6D3D1');
+      box(hob - 1.7, 7.2, 0.1, hob + 1.7, 8, 2.4, '#A8A29E'); box(hob - 0.6, 8, 0.1, hob + 0.6, 11.4, 1.1, '#A8A29E'); // the hood
+      const cooking = R.dev && R.dev.cook > Date.now();
+      cylLit(hob - 0.6, 1.4, 0.6, 3.34, 1, '#B91C1C'); cylLit(hob - 0.6, 1.4, 0.65, 4.3, 0.12, '#7F1D1D'); box(hob - 0.75, 4.42, 1.33, hob - 0.45, 4.6, 1.47, '#111827'); // the pot
+      disk(hob + 0.65, 1.9, 3.38, 0.55, '#1F2937'); box(hob + 1.15, 3.36, 1.85, hob + 2.1, 3.42, 1.95, '#111827'); // the frying pan
+      if (cooking) for (let k = 0; k < 2; k++) { const p = P(hob - 0.6 + (k ? 0.25 : -0.25), 3.36, 1.4); x.fillStyle = 'rgba(37,99,235,0.85)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.25), 0, Math.PI * 2); x.fill(); } // the flame
+      box(kx + 0.8, 3.3, 0.4, kx + 3.4, 4.8, 2.1, '#1F2937'); quad([P(kx + 1, 3.5, 2.12), P(kx + 2.7, 3.5, 2.12), P(kx + 2.7, 4.6, 2.12), P(kx + 1, 4.6, 2.12)], 'rgba(15,23,42,0.85)', '#64748B'); { const d0 = P(kx + 3, 4.3, 2.12); x.fillStyle = '#22C55E'; x.font = `700 ${Math.max(5, K * 0.5)}px monospace`; x.textAlign = 'center'; x.fillText('12:00', d0[0], d0[1]); } // the microwave
+      cylLit(sink + 2.4, 1.2, 0.38, 3.3, 1, '#E5E7EB'); box(sink + 2.65, 3.7, 1.15, sink + 2.95, 4.1, 1.25, '#111827'); // the kettle
+      box(sink - 2.6, 3.3, 0.9, sink - 1.8, 3.7, 1.7, '#111827'); cylLit(sink - 2.2, 1.3, 0.33, 3.7, 1.2, 'rgba(203,213,225,0.9)'); // the blender
+      for (let k = 0; k < Math.floor(kl / 2.2); k++) { const jx = kx + 1 + k * 2.2; box(jx, 6.2, 0.14, jx + 1.8, 6.35, 0.6, '#A16207'); for (let q = 0; q < 3; q++) cylLit(jx + 0.35 + q * 0.55, 0.38, 0.18, 6.35, 0.5, ['#B91C1C', '#F59E0B', '#16A34A', '#78350F'][(k + q) % 4]); } // the spice rack
+      { const rx = sink + 1.2; x.strokeStyle = '#94A3B8'; x.lineWidth = Math.max(1, K * 0.12); for (let q = 0; q < 4; q++) { const p0 = P(rx + q * 0.3, 3.32, 0.6), p1 = P(rx + q * 0.3, 4.3, 0.6); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); } for (let q = 0; q < 3; q++) disk(rx + 0.15 + q * 0.3, 0.6, 3.6 + q * 0.2, 0.32, '#F8FAFC'); } // the dish rack
+      { const fx = F.island ? kx + kl / 2 : kx + kl - 2, fz = F.island ? 11.5 : 1.4, fy = F.island ? 3.32 : 3.32; disk(fx, fz, fy, 0.75, '#A16207'); for (const [ox, oz, col] of [[-0.3, 0, '#F97316'], [0.25, -0.15, '#FACC15'], [0, 0.25, '#16A34A'], [0.3, 0.2, '#DC2626']]) { const p = P(fx + ox, fy + 0.35, fz + oz); x.fillStyle = col; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.24), 0, Math.PI * 2); x.fill(); } } // the fruit bowl
+      cylLit(kx - 1.4, 1.6, 0.7, 0, 2.2, '#15803D'); cylLit(kx - 1.4, 1.6, 0.25, 2.2, 0.4, '#71717A'); // the gas cylinder
+      for (let k = 0; k < 3; k++) { const lx = kx + kl * (0.2 + k * 0.3), lp = P(lx, 17.5, 3.4), lq = P(lx, 12.5, 3.4); x.strokeStyle = '#44403C'; x.lineWidth = 1; x.beginPath(); x.moveTo(lp[0], lp[1]); x.lineTo(lq[0], lq[1]); x.stroke(); cylLit(lx, 3.4, 0.8, 11.8, 0.7, '#1C1917'); if (dark) glow.push(() => { const p = P(lx, 11.6, 3.4), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 5); g.addColorStop(0, 'rgba(255,214,150,0.5)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 5, 0, Math.PI * 2); x.fill(); x.restore(); }); } // pendant lights
+      if (dark) glow.push(() => { x.save(); x.shadowColor = '#FDE68A'; x.shadowBlur = 10; x.strokeStyle = 'rgba(253,230,138,0.9)'; x.lineWidth = Math.max(1.5, K * 0.25); const p0 = P(kx, 7.9, 1.5), p1 = P(kx1, 7.9, 1.5); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); x.restore(); }); } // the strip under the cupboards
     if (F.island) { const ix = kx + kl / 2; box(ix - kl * 0.32, 0, 10, ix + kl * 0.32, 3, 13, F.cab); box(ix - kl * 0.32 - 0.3, 3, 9.7, ix + kl * 0.32 + 0.3, 3.3, 13.3, F.top); for (let k = -1; k <= 1; k++) { cylLit(ix + k * kl * 0.2, 14.4, 0.6, 0, 2.6, '#1F2937'); disk(ix + k * kl * 0.2, 14.4, 2.62, 0.7, F.acc); } }
     // ---- the bathroom in the far corner (back right), tiled, behind low walls: a shower, a basin, the WC
     const [bwid, bdep] = F.b, x0 = W - bwid;
@@ -5109,7 +5139,7 @@
     if (kind === 'arena') { stageLines = []; stagePoll(); }
     if (kind === 'tower') bubbles.set('wyrd', { text: `Welcome to my tower, ${myName || 'friend'}. Ask me anything.`, until: performance.now() + 6000 });
   }
-  function leaveRoom() { if (!touring) coachHide();
+  function leaveRoom() { if (!touring) coachHide(); closeInverter();
     if (!inside) return;
     pose = null;
     inside = null; deco = null; setDeco();
@@ -7522,7 +7552,7 @@
       case 'tv': { const a = tog('tv', '📺 Watch TV', '📺 Turn the TV off'); const r0 = a.run; a.run = () => { r0(); if (D.tv) say(['NTA News, then Nollywood.', 'Big Brother Naija reruns.', 'Super Eagles highlights!', 'Africa Magic, all night.'][Math.floor(Math.random() * 4)]); }; return a; }
       case 'fan': return tog('fan', '🌀 Switch the fan on', '🌀 Switch the fan off');
       case 'ac': { const a = tog('ac', '❄️ Turn the AC on', '❄️ Turn the AC off'); const r0 = a.run; a.run = () => { r0(); if (D.ac) say('Ahh. 18°C. Lagos heat, defeated.'); }; return a; }
-      case 'inverter': return { label: '🔋 Check the inverter', run: () => { const h = new Date(lagosMs()).getUTCHours(), nepa = (h * 7 + new Date(lagosMs()).getUTCDate()) % 3 !== 0; say(nepa ? `NEPA has power. Battery charging: ${70 + (h * 3) % 30}%.` : `NEPA took light. Inverter on, battery ${40 + (h * 5) % 50}%.`); } };
+      case 'inverter': return { label: '🔋 Check the inverter', run: () => openInverter(R) };
       case 'cooker': return D.cook > Date.now() ? { label: '🍳 The jollof is cooking…', run: () => say('Patience. Good jollof takes time.') } : { label: '🍳 Cook some jollof', run: () => { D.cook = Date.now() + 20000; say('Jollof on the fire…'); setTimeout(() => { if (inside === R) say('Jollof ready. Party jollof, smoky bottom and all.'); }, 20000); } };
       case 'fridge': return { label: '🧊 Open the fridge', run: () => say(SNACKS[Math.floor(Math.random() * SNACKS.length)]) };
       case 'shower': return { label: '🚿 Freshen up', run: () => { D.fresh = Date.now() + 5000; say('Fresh. Ready for the island.'); } };
@@ -7531,6 +7561,44 @@
     }
     return null;
   }
+  // ---- the inverter: NEPA comes and goes (some hours there's light, some not, more outages in the evening), the panels on
+  // the roof charge in daylight, the battery charges off the grid when there's light and carries the house when there
+  // isn't, at the rate of what's switched on. Its screen shows all of it, live: battery, the grid, solar, the draw, how long
+  // the battery will last, a switch for each thing in the house, and the last twelve hours of light.
+  const INV_CAP = 2400; // watt-hours: a 2.4 kWh battery bank
+  const LOADS = [['base', 'Router and lights', 60, null], ['fridge', 'Fridge', 150, null], ['tv', 'TV', 120, 'tv'], ['fan', 'Ceiling fan', 75, 'fan'], ['lamps', 'Lamps', 40, 'lamps'], ['ac', 'AC', 1100, 'ac']];
+  const nepaAt = (ms) => { const lh = Math.floor((ms + 3600e3) / 3600e3), hr = lh % 24, h = (lh * 2654435761) >>> 0, pct = hr >= 18 && hr <= 22 ? 45 : 68; return h % 100 < pct; };
+  const solarAt = (ms) => { const d = new Date(ms + 3600e3), h = d.getUTCHours() + d.getUTCMinutes() / 60; if (h < 7 || h > 18) return 0; const sky = WX && WX.cur ? 1 - Math.min(0.8, WX.cur.cloud * 0.6 + WX.cur.rain) : 1; return Math.round(600 * Math.sin((h - 7) / 11 * Math.PI) * sky); };
+  const invLoad = (D) => LOADS.reduce((w, [, , watts, key]) => w + (!key || D[key] ? watts : 0), 0);
+  function invStep(R) { // bring the battery up to now
+    const D = devState(R), now = lagosMs() - 3600e3; if (D.bat == null) { D.bat = 78; D.batAt = now; }
+    let tms = D.batAt || now; const step = 5 * 60e3;
+    while (tms < now) { const dt = Math.min(step, now - tms), hours = dt / 3600e3, grid = nepaAt(tms), sun = solarAt(tms), net = (grid ? 600 : 0) + sun - (grid ? 0 : invLoad(D)); D.bat = Math.max(0, Math.min(100, D.bat + net * hours / INV_CAP * 100)); tms += dt; if (now - tms > 7 * 864e5) tms = now - 864e5; }
+    D.batAt = now; store.set('li.inv.' + R.key, JSON.stringify({ bat: D.bat, batAt: D.batAt }));
+  }
+  const invEl = document.createElement('div'); invEl.id = 'inverter'; document.body.append(invEl);
+  let invTimer = 0;
+  function openInverter(R) {
+    const D = devState(R); try { const s = JSON.parse(store.get('li.inv.' + R.key) || 'null'); if (s && D.bat == null) Object.assign(D, s); } catch {}
+    const draw = () => {
+      if (inside !== R) return closeInverter();
+      invStep(R);
+      const now = lagosMs() - 3600e3, grid = nepaAt(now), sun = solarAt(now), load = invLoad(D), bat = D.bat, hrsLeft = grid ? null : (bat / 100 * INV_CAP) / Math.max(1, load);
+      const ring = 2 * Math.PI * 42, col = bat > 50 ? '#22C55E' : bat > 20 ? '#F59E0B' : '#EF4444';
+      const hist = Array.from({ length: 12 }, (_, k) => nepaAt(now - (11 - k) * 3600e3));
+      const fmt = (h) => h == null ? '—' : h >= 1 ? `${Math.floor(h)}h ${Math.round((h % 1) * 60)}m` : `${Math.round(h * 60)} min`;
+      invEl.innerHTML = `<div class="ivhead"><b>🔋 Inverter</b><small>${grid ? 'On grid · charging' : 'NEPA took light · on battery'}</small><button class="ivx" aria-label="Close">✕</button></div>
+        <div class="ivtop"><svg viewBox="0 0 100 100" class="ivring"><circle cx="50" cy="50" r="42" class="bg"/><circle cx="50" cy="50" r="42" style="stroke:${col};stroke-dasharray:${ring};stroke-dashoffset:${ring * (1 - bat / 100)}"/><text x="50" y="48">${Math.round(bat)}%</text><text x="50" y="64" class="sm">battery</text></svg>
+          <div class="ivstats"><div class="ivs ${grid ? 'ok' : 'off'}"><span>NEPA</span><b>${grid ? 'Light' : 'No light'}</b></div><div class="ivs ${sun ? 'sun' : ''}"><span>Solar</span><b>${sun} W</b></div><div class="ivs"><span>Drawing</span><b>${load} W</b></div><div class="ivs"><span>Lasts</span><b>${grid ? 'On grid' : fmt(hrsLeft)}</b></div></div></div>
+        <div class="ivsec">What's on</div><div class="ivloads">${LOADS.map(([id, name, watts, key]) => `<label class="ivl"><span>${name}<small>${watts} W</small></span>${key ? `<input type="checkbox" data-k="${key}" ${D[key] ? 'checked' : ''}><i></i>` : '<em>always on</em>'}</label>`).join('')}</div>
+        <div class="ivsec">The last 12 hours</div><div class="ivhist">${hist.map((on, k) => `<i class="${on ? 'on' : ''}" title="${on ? 'Light' : 'No light'}"></i>`).join('')}</div><div class="ivlegend"><span><i class="on"></i>Light</span><span><i></i>No light</span><span>${hist.filter(Boolean).length} of 12 hours</span></div>
+        ${!grid && hrsLeft != null && hrsLeft < 3 ? `<div class="ivwarn">⚠️ Battery low for this load. ${D.ac ? 'The AC alone draws 1,100 W: switch it off and the battery lasts much longer.' : 'Switch something off to make it last.'}</div>` : ''}`;
+      invEl.querySelector('.ivx').onclick = closeInverter;
+      invEl.querySelectorAll('[data-k]').forEach((cb) => (cb.onchange = () => { D[cb.dataset.k] = cb.checked; devSave(R); draw(); }));
+    };
+    draw(); invEl.classList.add('on'); clearInterval(invTimer); invTimer = setInterval(draw, 1000);
+  }
+  function closeInverter() { clearInterval(invTimer); invEl.classList.remove('on'); }
   function devNear(R) { let best = null, bd = 6.5; for (const dv of roomDevices(R)) { const d = Math.hypot(dv.x - me.x, dv.z - me.z); if (d < bd) { bd = d; best = dv; } } return best; }
   // what you see when they're on: a TV's flicker, a lamp's glow, cold air from the AC, steam off the pot and the shower,
   // notes from a speaker, and WYRD's ring on the floor round whatever it's showing you
