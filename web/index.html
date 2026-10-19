@@ -3293,6 +3293,9 @@
       gable(a + 1.4, b + 1.6, c - 1.4, d - 3.2, 4, 1.4, '#9CA3AF'); // a corrugated roof
       box(a + 3.4, 0, d - 3.6, a + 5, 2.9, d - 3.4, hq && !hq.may ? '#475569' : col); // the door
       box(a + 1.6, 2.9, d - 3.6, c - 1.6, 3.15, d - 2.4, '#78716C'); // the little porch roof
+      // the parking bay in the front yard beside the door: paved, lined, your favourite car on it
+      flat(a + 5.4, d - 3.3, c - 0.9, d - 0.7, 0.06, '#9CA3AF', '#D1D5DB'); groundText('P', c - 1.6, d - 1.2, 0.9, 'rgba(255,255,255,0.8)');
+      if (hq && hq.mine) { const c2 = parkOrder(myCarsL)[0]; if (c2) drawCar((a + 5.4 + c - 0.9) / 2, d - 2, c2.model, c2.color, 0, 0.6); }
     });
     if (hq && hq.mine) ownerFlag(c - 1.6, b + 1.6, col);
     if (hq) partyHouse(a, b, c, d, partyAt('hq:' + hq.slot));
@@ -4881,7 +4884,7 @@
       parkOrder(R.cars).slice(0, 3).forEach((c2, k) => drawCar(bx + 32 / 6 + k * 32 / 3, R.d - 14, c2.model, c2.color, Math.PI / 2, 2.4));
       afterCars.push(() => { for (let k = 1; k < 4; k++) box(k * R.w / 4 - 0.6, 17, 0, k * R.w / 4 + 0.6, 18, R.d, '#1F2937'); });
     }
-    homeFitout(R); if (s !== 'loft') parkBay(R); devFx(R);
+    homeFitout(R); devFx(R); // your cars park outside (the pad in front of the house); only the loft garages them inside
     if (s === 'mansion' || s === 'villa') { const p = P(R.w / 2, 16, R.d / 2), r = K * 14; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,236,190,0.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }
   }
   // ---- the boutiques: Idumota (native and easy on the pocket), Falomo (sportswear and tailoring), Circle Mall (streetwear
@@ -5017,7 +5020,7 @@
       if (night < 0.5) { x.fillStyle = 'rgba(255,248,220,0.18)'; x.beginPath(); const f0 = P(wx - 3, 0.05, 0), f1 = P(wx + 3, 0.05, 0), f2 = P(wx + 5, 0.05, 10), f3 = P(wx - 1, 0.05, 10); x.moveTo(f0[0], f0[1]); x.lineTo(f1[0], f1[1]); x.lineTo(f2[0], f2[1]); x.lineTo(f3[0], f3[1]); x.fill(); } }
     for (const wz of [9, 15]) { const p0 = P(0.05, 4, wz - 2.5), p1 = P(0.05, 4, wz + 2.5), p2 = P(0.05, 15, wz + 2.5), p3 = P(0.05, 15, wz - 2.5); quad([p0, p1, p2, p3], '#BFE3FF', '#E5E7EB'); }
     box(0, 0, -0.1, R.w, 0.7, 0.15, '#FFFFFF'); box(-0.1, 0, 0, 0.15, 0.7, R.d, '#FFFFFF'); // skirting boards
-    homeFitout({ ...R, style: 'bq' }); parkBay({ ...R, style: 'bq' });
+    homeFitout({ ...R, style: 'bq' }); // your car parks outside, in the BQ's front yard
     // a lived-in Lagos BQ: a TV console facing the rug with the screen on, plants either side, a split AC high on the wall,
     // a ceiling fan turning over the sitting room, the inverter and its battery by the door (NEPA takes light, the
     // inverter keeps it on), warm cove light round the ceiling after dark
