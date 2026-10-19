@@ -665,6 +665,9 @@
     { id: 'hqrow', name: 'HQ Row', rect: [38, 20, 57, 24], rows: [22], cols: [46, 52], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
     // the Blue Line station on the old airport land, its tracks running the whole length
     { id: 'station', name: 'Blue Line Station', rect: [40, 31, 77, 35], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.85 } },
+    // the beaches in one straight line: one strip of sand along the coast from Bar Beach to Club Lekki, the roads across it kept
+    { id: 'vi', name: 'Victoria Island', rect: [20, 20, 27, 22], rows: [], cols: [23], sand: true, fill: 'none', cam: { yaw: -0.5, pitch: 0.95, zoom: 0.95 } },
+    { id: 'lekki', name: 'Lekki', rect: [28, 20, 37, 22], rows: [], cols: [33, 37], sand: true, fill: 'none', cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
   ];
   // bridges and the ferry: [i0, j0, i1, j1, name]
   const BRIDGES = [
@@ -7070,7 +7073,8 @@
   let act = null;
   function updateAct() {
     let next = null;
-    const door = (type) => PLACES.find((p) => p[0] === type && me.x > p[1] * T - 14 && me.x < (p[1] + p[3]) * T + 14 && me.z > p[2] * T - 14 && me.z < (p[2] + p[4]) * T + 14);
+    // at a building's door: within reach of the middle of its front (not anywhere round it, so walking past on a road doesn't keep asking)
+    const door = (type) => PLACES.find((p) => p[0] === type && Math.hypot(me.x - (p[1] + p[3] / 2) * T, me.z - (p[2] + p[4]) * T) < Math.max(10, p[3] * T * 0.35));
     if (inside) {
       if (me.z > inside.d - 2.2 && !deco && inside.entered) { leaveRoom(); return; }
       if (me.z < inside.d - 4) inside.entered = true;
