@@ -144,13 +144,25 @@ class IslandMeEndpoint extends Endpoint {
 
   /// Save how I look on the island (chosen when I joined; changeable in Profile).
   Future<String> setLook(Session session, String look) async {
-    // g,skin,hair,style,bottom and, optionally, the outfit being worn: a free starter or one I've bought
-    final m = RegExp(r'^[mf](,[0-9]{1,2}){4}(,([a-z0-9_]{1,30})?)?$').firstMatch(look);
+    // g,skin,hair,style,bottom and, optionally, the outfit being worn (a free starter or one I've bought) and the
+    // accessories worn on top, joined by + (each bought, one per slot)
+    final m = RegExp(r'^[mf](,[0-9]{1,2}){4}(,([a-z0-9_]{0,30}))?(,([a-z0-9_+]{0,200}))?$').firstMatch(look);
     if (m == null) return _err('Bad look.');
-    final outfit = m.group(3);
+    final outfit = (m.group(3) ?? '').isEmpty ? null : m.group(3);
+    final accs = (m.group(5) ?? '').split('+').where((a) => a.isNotEmpty).toList();
+    if (accs.length > 5) return _err('Five accessories at most.');
+    final slots = <String>{};
+    for (final a in accs) {
+      final slot = accessorySlot(a), o = outfitCatalog[a];
+      if (slot == null || o == null) return _err('That accessory is not in any shop.');
+      if (!slots.add(slot)) return _err('One accessory per slot.');
+      if (await IslandOutfit.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)) & t.item.equals(a)) == null) {
+        return _err('Buy the ${o.name} first.');
+      }
+    }
     if (outfit != null) {
       final o = outfitCatalog[outfit];
-      if (o == null) return _err('That outfit is not in any shop.');
+      if (o == null || outfit.startsWith('acc_')) return _err('That outfit is not in any shop.');
       if (o.price > 0 &&
           await IslandOutfit.db.findFirstRow(
                 session,
@@ -1332,7 +1344,37 @@ class IslandMeEndpoint extends Endpoint {
     'fendi_set': (name: 'Fendi Monogram set', price: 1800000),
     'lv_jacket': (name: 'Louis Vuitton Monogram jacket', price: 2400000),
     'dior_gown': (name: 'Dior Evening gown', price: 3000000),
+    // accessories (worn on top of an outfit, one per slot; see accessorySlot)
+    'acc_shades': (name: 'Balogun Classic shades', price: 12000),
+    'acc_aviators': (name: 'Ray-Ban Aviator sunglasses', price: 85000),
+    'acc_cap_green': (name: 'Naija Green cap', price: 18000),
+    'acc_cap_black': (name: 'New Era Black cap', price: 25000),
+    'acc_cap_white': (name: 'New Era White cap', price: 25000),
+    'acc_beanie': (name: 'Carhartt Beanie', price: 30000),
+    'acc_bucket': (name: 'Kangol White bucket hat', price: 45000),
+    'acc_bucket_black': (name: 'Kangol Black bucket hat', price: 45000),
+    'acc_fedora': (name: 'Borsalino Fedora', price: 180000),
+    'acc_chain_silver': (name: 'Idumota Silver chain', price: 60000),
+    'acc_chain_gold': (name: 'Jacob & Co Gold Cuban chain', price: 1500000),
+    'acc_watch': (name: 'Casio Digital watch', price: 40000),
+    'acc_watch_gold': (name: 'Rolex Gold watch', price: 4500000),
+    'acc_backpack': (name: 'The North Face Backpack', price: 60000),
   };
+
+  /// Where each accessory is worn: one per slot (ACC_LIST in web/index.html).
+  static String? accessorySlot(String id) => !id.startsWith('acc_')
+      ? null
+      : id.startsWith('acc_shades') || id.startsWith('acc_aviators')
+      ? 'eyes'
+      : id.startsWith('acc_cap') || id.startsWith('acc_beanie') || id.startsWith('acc_bucket') || id.startsWith('acc_fedora')
+      ? 'head'
+      : id.startsWith('acc_chain')
+      ? 'neck'
+      : id.startsWith('acc_watch')
+      ? 'wrist'
+      : id.startsWith('acc_backpack')
+      ? 'back'
+      : null;
 
   /// Buy an outfit: the price comes out of my wallet; it's in my wardrobe to wear whenever I like.
   Future<String> buyOutfit(Session session, String item) => _money(session, (

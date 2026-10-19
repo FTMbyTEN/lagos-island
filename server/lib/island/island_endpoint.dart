@@ -81,7 +81,7 @@ class IslandEndpoint extends Endpoint {
       ..x = x.clamp(-60000, 60000).toDouble()
       ..z = z.clamp(-60000, 60000).toDouble()
       ..room = _clean(room, 40)
-      ..look = RegExp(r'^[a-z0-9,|.-]{0,40}$').hasMatch(look) ? look : ''
+      ..look = RegExp(r'^[a-z0-9_,|.+-]{0,240}$').hasMatch(look) ? look : ''
       ..car = RegExp(r'^[a-z]{2,16}:#[0-9A-Fa-f]{6}$').hasMatch(car) ? car : ''
       ..seen = now;
     double dist(double ax, double az) => sqrt(pow(ax - me.x, 2) + pow(az - me.z, 2));
