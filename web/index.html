@@ -664,7 +664,7 @@
     // HQ Row: two rows of HQs either side of the coastal road (row 22), from Lekki's edge all the way along, cross streets up to Ajah
     { id: 'hqrow', name: 'HQ Row', rect: [38, 20, 57, 24], rows: [22], cols: [46, 52], fill: 'hq', cam: { yaw: -0.25, pitch: 0.9, zoom: 1.1 } },
     // the Blue Line station on the old airport land, its tracks running the whole length
-    { id: 'station', name: 'Blue Line Station', rect: [11, 31, 77, 35], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.85 } },
+    { id: 'station', name: 'Blue Line Station', rect: [0, 31, 77, 35], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.85 } },
     // the beaches in one straight line: one strip of sand along the coast from Bar Beach to Club Lekki, the roads across it kept
     { id: 'vi', name: 'Victoria Island', rect: [20, 20, 27, 22], rows: [], cols: [23], sand: true, fill: 'none', cam: { yaw: -0.5, pitch: 0.95, zoom: 0.95 } },
     { id: 'lekki', name: 'Lekki', rect: [28, 20, 37, 22], rows: [], cols: [33, 37], sand: true, fill: 'none', cam: { yaw: 0.25, pitch: 0.95, zoom: 0.95 } },
@@ -829,7 +829,7 @@
     // the refinery, always running
     ['refinery', 65, 0, 9, 7, 'Lekki Free Zone Refinery', '🛢️'], // along the top, clear of the car dealers below
     ['refinery', 75, 1, 9, 3, 'Tank farm', '🛢️'], // beside the refinery
-    ['station', 11, 31, 67, 5, 'Blue Line · Lagos Island Station', '🚆'], // the line runs behind the bank and the Arena, all the way to the Home Store
+    ['station', 0, 31, 78, 5, 'Blue Line · Lagos Island Station', '🚆'], // the line runs from the island's west edge, behind the bank and the Arena, to the Home Store
     ['airport', 39, 0, 24, 8, 'Lagos Island Airport', '✈️'], // behind Banana Island, across the top of the map
     ['houses', 40, 26, 4, 3, 'Atlantic Gardens', '🏠'], // on the sandfill south of HQ Row
     ['houses', 47, 26, 4, 3, 'Ocean Crest', '🏠'], // on the sandfill south of HQ Row
@@ -839,7 +839,7 @@
     ['dealer', 62, 8, 12, 11, 'Lekki Luxury Cars', '🏎️'], // beside Polanco
     ['houses', 18, 37, 6, 4, 'Marina Court', '🏠'], // 24 homes, beside Harbour View behind the Arena
     ['houses', 24, 37, 6, 4, 'Harbour View', '🏠'], // 24 homes
-    ['soon', 5, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['soon', 5, 36, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['homestore', 64, 23, 7, 6, 'Eko Home Store', '🛋️'], // just south of the coastal road
     ['soon', 89, 7, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 86, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -3506,7 +3506,9 @@
     }
     // everything that stands up, far to near
     const items = [];
-    for (const p of PLACES) if (visible(p[1] + p[3] / 2, p[2] + p[4] / 2)) items.push({ d: P((p[1] + p[3] / 2) * T, 0, (p[2] + p[4] / 2) * T)[2], f: () => MODELS[p[0]](p[1] * T, p[2] * T, (p[1] + p[3]) * T, (p[2] + p[4]) * T) });
+    // a place shows if any part of it is on screen (a long one, the rail line, is far wider than the view)
+    const placeSeen = (p) => { const step = Math.max(1, Math.floor(Math.min(p[3], 12) / 2)); for (let i = p[1]; i <= p[1] + p[3]; i += step) for (let j = p[2]; j <= p[2] + p[4]; j += Math.max(1, Math.floor(p[4] / 2))) if (visible(i, j)) return true; return false; };
+    for (const p of PLACES) if (placeSeen(p)) items.push({ d: P((p[1] + p[3] / 2) * T, 0, (p[2] + p[4] / 2) * T)[2], f: () => MODELS[p[0]](p[1] * T, p[2] * T, (p[1] + p[3]) * T, (p[2] + p[4]) * T) });
     for (const l of lots) {
       if (!visible(l.i, l.j)) continue;
       const a = l.i * T, b = l.j * T, c = a + T, d = b + T, R = rnd(l.i * 53 + l.j * 89);
