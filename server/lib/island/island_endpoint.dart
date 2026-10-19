@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:serverpod/serverpod.dart';
 
+import '../generated/protocol.dart';
+
 /// LAGOS ISLAND together: who is on the island and where, and what they say to the people near them.
 ///
 /// Less is more: all of it lives in memory (a player who stops sending fades out in 20 seconds; the
@@ -35,6 +37,23 @@ class IslandEndpoint extends Endpoint {
   }
 
   static bool _okId(String id) => RegExp(r'^[a-zA-Z0-9_-]{8,40}$').hasMatch(id);
+
+  /// The housing register, public: which homes in the island's estates are lived in. Only the plots, never who owns them,
+  /// so anyone (a guest too) sees the same real count. Read fresh from the homes table, cached for 10 seconds.
+  static String? _housing;
+  static DateTime _housingAt = DateTime.fromMillisecondsSinceEpoch(0);
+  Future<String> housing(Session session) async {
+    if (_housing != null &&
+        DateTime.now().difference(_housingAt) < const Duration(seconds: 10))
+      return _housing!;
+    final rows = await IslandHome.db.find(session, limit: 1000);
+    _housing = jsonEncode({
+      'taken': [for (final h in rows) h.plot],
+      'at': DateTime.now().toUtc().toIso8601String(),
+    });
+    _housingAt = DateTime.now();
+    return _housing!;
+  }
 
   /// Here I am; who's around? [since]: the last chat line already seen (0 the first time).
   Future<String> tick(

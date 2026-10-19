@@ -3144,11 +3144,20 @@
   // many are lived in and how many are free. It's worked out fresh from who owns what each time it's asked, so it's
   // always current (the owners' list refreshes every 15 seconds while you're signed in)
   const EST_NAME = { vgc: 'Victoria Garden City', lekki1: 'Lekki Phase 1', lekkiest: 'Lekki estates', ikoyihomes: 'Ikoyi homes', oldikoyi: 'Old Ikoyi', banana: 'Banana Island' };
+  let housingTaken = null; // the server's public register: the set of plots lived in (null until it answers)
+  async function housingPoll() {
+    try {
+      const v = await call('housing', {}); if (!v || !Array.isArray(v.taken)) return;
+      const before = housingTaken ? census().taken : null; housingTaken = new Set(v.taken); const now = census();
+      if (before != null && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']);
+    } catch {} // a server without the public register yet: the count falls back to the owners' list (signed in only)
+  }
+  setTimeout(() => { housingPoll(); setInterval(housingPoll, 20000); }, 1500);
   function census() {
     const est = {}, style = {}; let total = 0, taken = 0;
     for (const [e, list] of Object.entries(ESTATES)) {
       est[e] = { name: EST_NAME[e] || e, total: list.length, taken: 0 };
-      list.forEach((st, k) => { const occ = !!homesLive[e + ':' + k]; total++; if (occ) { taken++; est[e].taken++; } const v = style[st] || (style[st] = { total: 0, taken: 0 }); v.total++; if (occ) v.taken++; });
+      list.forEach((st, k) => { const occ = housingTaken ? housingTaken.has(e + ':' + k) : !!homesLive[e + ':' + k]; total++; if (occ) { taken++; est[e].taken++; } const v = style[st] || (style[st] = { total: 0, taken: 0 }); v.total++; if (occ) v.taken++; });
     }
     return { total, taken, free: total - taken, pct: total ? Math.round(taken / total * 100) : 0, est, style };
   }
@@ -3205,7 +3214,7 @@
     const tiles = [];
     for (let j = b / T; j < d / T; j++) for (let i = a / T; i < c / T; i++) { const pl = plotAt(i, j); if (pl) tiles.push([P(i * T + T / 2, 0, j * T + T / 2)[2], i, j, pl]); }
     tiles.sort((p, q) => p[0] - q[0]);
-    for (const [, i, j, pl] of tiles) homeModel(pl.style, i * T, j * T, (i + 1) * T, (j + 1) * T, homesLive[pl.plot]);
+    for (const [, i, j, pl] of tiles) homeModel(pl.style, i * T, j * T, (i + 1) * T, (j + 1) * T, homesLive[pl.plot] || (housingTaken && housingTaken.has(pl.plot) ? { plot: pl.plot, style: pl.style, color: '#94A3B8' } : undefined));
   }
 
   // ---- the lots: each landmark takes its tiles; the rest of a sector's lots get a plot, a house or trees
@@ -6882,7 +6891,7 @@
   async function loadHqRow() {
     if (!signedIn()) return;
     try { hqSlots = await my('hqRow'); } catch {}
-    try { const before = census().taken; homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); const now = census(); if (loadHqRow.seen && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']); loadHqRow.seen = true; } catch {} // who owns which plot (until the server has homes, everything's for sale)
+    try { const before = census().taken; homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); const now = census(); if (!housingTaken && loadHqRow.seen && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']); loadHqRow.seen = true; } catch {} // who owns which plot (until the server has homes, everything's for sale)
     try { // the parties going on that I can go to; a new invite pings my phone
       const list = await my('parties'), seen = new Set(Object.keys(partiesLive));
       partiesLive = Object.fromEntries(list.map((p) => [p.key, { ...p, until: Date.parse(p.until) }]));
