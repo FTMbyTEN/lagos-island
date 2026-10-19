@@ -653,7 +653,7 @@
     { id: 'polanco', name: 'Polanco', rect: [64, 0, 73, 10], rows: [], cols: [], fill: 'none', cam: { yaw: 0.25, pitch: 0.85, zoom: 0.9 } },
     { id: 'lekkiluxury', name: 'Lekki Luxury Cars', rect: [74, 0, 85, 12], rows: [], cols: [], fill: 'none', cam: { yaw: 0.3, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill9', name: 'Reclaimed land', rect: [1, 31, 13, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
-    { id: 'fill10', name: 'Reclaimed land', rect: [18, 31, 33, 38], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
+    { id: 'fill10', name: 'Reclaimed land', rect: [18, 31, 33, 38], rows: [36], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'homestore', name: 'Eko Home Store', rect: [64, 17, 75, 29], rows: [22], cols: [], fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill13', name: 'Reclaimed land', rect: [88, 2, 93, 14], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
     { id: 'fill14', name: 'Reclaimed land', rect: [81, 18, 94, 30], rows: [], cols: [], sand: true, fill: 'none', cam: { yaw: 0.2, pitch: 0.85, zoom: 0.85 } },
@@ -837,8 +837,9 @@
     ['soon', 1, 0, 4, 2, 'Reclaimed land: coming soon', '🚧'],
     ['dealer', 64, 0, 10, 11, 'Polanco', '🚘'],
     ['dealer', 74, 0, 12, 13, 'Lekki Luxury Cars', '🏎️'], // beside Polanco
-    ['houses', 5, 34, 4, 3, 'Marina Court', '🏠'], // a new estate on the reclaimed land
-    ['houses', 24, 36, 4, 3, 'Harbour View', '🏠'], // a new estate on the reclaimed land
+    ['houses', 18, 32, 6, 4, 'Marina Court', '🏠'], // 24 homes, beside Harbour View behind the Arena
+    ['houses', 24, 32, 6, 4, 'Harbour View', '🏠'], // 24 homes
+    ['soon', 5, 34, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['homestore', 64, 23, 7, 6, 'Eko Home Store', '🛋️'], // just south of the coastal road
     ['soon', 89, 7, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 86, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -3244,8 +3245,8 @@
     // the new estates on the reclaimed land, 12 homes each (the server has the same lists)
     atlantic: ['flat', 'bungalow', 'flat', 'terrace', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow'],
     oceancrest: ['duplex', 'terrace', 'townhouse', 'duplex', 'terrace', 'duplex', 'townhouse', 'terrace', 'duplex', 'loft', 'townhouse', 'duplex'],
-    marinacourt: ['flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'flat', 'flat', 'terrace', 'bungalow', 'flat'],
-    harbourview: ['loft', 'duplex', 'mansion', 'loft', 'townhouse', 'mansion', 'duplex', 'loft', 'villa', 'mansion', 'townhouse', 'villa'],
+    marinacourt: ['flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'flat', 'flat', 'terrace', 'bungalow', 'flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow', 'flat', 'terrace'],
+    harbourview: ['loft', 'duplex', 'mansion', 'loft', 'townhouse', 'mansion', 'duplex', 'loft', 'villa', 'mansion', 'townhouse', 'villa', 'duplex', 'loft', 'townhouse', 'mansion', 'loft', 'duplex', 'villa', 'townhouse', 'loft', 'mansion', 'duplex', 'villa'],
   };
   const ESTATE_OF = { 'Victoria Garden City': 'vgc', 'Lekki Phase 1': 'lekki1', 'Lekki estates': 'lekkiest', 'Ikoyi homes': 'ikoyihomes', 'Old Ikoyi': 'oldikoyi', 'Banana Island': 'banana', 'Atlantic Gardens': 'atlantic', 'Ocean Crest': 'oceancrest', 'Marina Court': 'marinacourt', 'Harbour View': 'harbourview' };
   let homesLive = {}; // plot -> { style, mine, may, slot, color, owner } for plots someone owns
@@ -7094,7 +7095,7 @@
     else if (door('wyrdtower')) next = { label: '⚛️ Enter WYRD Tower', run: () => enterRoom('tower', 'place:tower', 'WYRD Tower') };
     else if (door('club')) { const p = door('club'), n = p[5].replace(' (open every night)', ''); next = { label: '🪩 Enter ' + n, run: () => enterRoom('club', 'place:club:' + p[1], n) }; }
     else if (door('casino')) next = { label: '🎰 Enter the Island Casino', run: () => enterRoom('casino', 'place:casino', 'Island Casino') };
-    else if (near('arena', 12)) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
+    else if (door('arena')) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
     if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
     // at an HQ's door: yours is always open; anyone else's needs the owner to let you in

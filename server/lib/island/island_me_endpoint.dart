@@ -1618,8 +1618,8 @@ class IslandMeEndpoint extends Endpoint {
     // the new estates on the reclaimed land, 12 homes each
     'atlantic': ['flat', 'bungalow', 'flat', 'terrace', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow'],
     'oceancrest': ['duplex', 'terrace', 'townhouse', 'duplex', 'terrace', 'duplex', 'townhouse', 'terrace', 'duplex', 'loft', 'townhouse', 'duplex'],
-    'marinacourt': ['flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'flat', 'flat', 'terrace', 'bungalow', 'flat'],
-    'harbourview': ['loft', 'duplex', 'mansion', 'loft', 'townhouse', 'mansion', 'duplex', 'loft', 'villa', 'mansion', 'townhouse', 'villa'],
+    'marinacourt': ['flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'bungalow', 'flat', 'flat', 'terrace', 'bungalow', 'flat', 'flat', 'bungalow', 'flat', 'terrace', 'flat', 'flat', 'bungalow', 'terrace', 'flat', 'bungalow', 'flat', 'terrace'],
+    'harbourview': ['loft', 'duplex', 'mansion', 'loft', 'townhouse', 'mansion', 'duplex', 'loft', 'villa', 'mansion', 'townhouse', 'villa', 'duplex', 'loft', 'townhouse', 'mansion', 'loft', 'duplex', 'villa', 'townhouse', 'loft', 'mansion', 'duplex', 'villa'],
   };
 
   static String? _styleOf(String plot) {
