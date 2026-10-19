@@ -4819,10 +4819,26 @@
     // ---- the bathroom in the far corner (back right), tiled, behind low walls: a shower, a basin, the WC
     const [bwid, bdep] = F.b, x0 = W - bwid;
     flat(x0, 0.2, W, bdep, 0.025, '#E2E8F0'); x.strokeStyle = 'rgba(100,116,139,0.3)'; x.beginPath(); for (let px = x0 + 2; px < W; px += 2) { const p = P(px, 0.03, 0.2), q = P(px, 0.03, bdep); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } for (let pz = 2; pz < bdep; pz += 2) { const p = P(x0, 0.03, pz), q = P(W, 0.03, pz); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); } x.stroke();
-    if (R.style === 'mansion' || R.style === 'villa') { box(x0 + 2, 0, 1, x0 + 9, 2.4, 4.6, '#FFFFFF'); flat(x0 + 2.5, 1.5, x0 + 8.5, 4.1, 2.42, '#93C5FD'); } // a bath
+    if (R.style === 'mansion' || R.style === 'villa') { box(x0 + 2, 0, bdep - 6, x0 + 10, 2.4, bdep - 1.6, '#FFFFFF'); flat(x0 + 2.5, bdep - 5.5, x0 + 9.5, bdep - 2.1, 2.42, '#93C5FD'); box(x0 + 9.2, 2.4, bdep - 4, x0 + 9.5, 3.6, bdep - 3.6, '#CBD5E1'); } // a bath, its tap
     else { quad([P(W - 5, 0, 5), P(W - 5, 0, 0.2), P(W - 5, 11, 0.2), P(W - 5, 11, 5)], 'rgba(186,230,253,0.45)', 'rgba(255,255,255,0.8)'); disk(W - 2.5, 2.6, 0.05, 1.6, '#CBD5E1'); box(W - 2.7, 9, 0.2, W - 2.3, 9.4, 1.6, '#9CA3AF'); } // a walk-in shower
     box(x0 + 1, 0, 0.2, x0 + 4, 3.2, 1.8, '#F8FAFC'); flat(x0 + 1.5, 0.5, x0 + 3.5, 1.5, 3.22, '#BFDBFE'); quad([P(x0 + 1, 5, 0.12), P(x0 + 4, 5, 0.12), P(x0 + 4, 9, 0.12), P(x0 + 1, 9, 0.12)], 'rgba(219,234,254,0.85)', '#D4AF37'); // basin and mirror
-    box(x0 + 5.5, 0, 0.2, x0 + 7.5, 1.6, 2.6, '#FFFFFF'); box(x0 + 5.5, 1.6, 0.2, x0 + 7.5, 3.6, 0.8, '#FFFFFF'); // the WC
+    // the WC: a cistern on the wall with a chrome button, the bowl on its pedestal, the seat down and the lid up, a roll and a brush
+    { const wx = x0 + 6.5, D = R.dev || {}, t = performance.now() / 1000;
+      box(wx - 1.15, 1.7, 0.2, wx + 1.15, 4.2, 1.15, '#FFFFFF'); box(wx - 1.2, 4.2, 0.15, wx + 1.2, 4.4, 1.2, '#F1F5F9'); box(wx - 0.3, 4.4, 0.55, wx + 0.3, 4.48, 0.85, '#CBD5E1'); // the cistern and its button
+      box(wx - 0.55, 0, 1.2, wx + 0.55, 1.2, 2.3, '#F8FAFC'); cylLit(wx, 2.1, 1, 0.9, 0.7, '#FFFFFF'); // the pedestal and the bowl
+      disk(wx, 2.1, 1.62, 0.95, '#E2E8F0'); disk(wx, 2.1, 1.64, 0.62, D.flush > Date.now() ? '#60A5FA' : '#BFDBFE'); // the seat and the water
+      if (D.flush > Date.now()) { const c = P(wx, 1.66, 2.1); x.strokeStyle = 'rgba(255,255,255,0.9)'; x.lineWidth = 1; x.beginPath(); for (let k = 0; k < 18; k++) { const an = k * 0.6 + t * 9, r = K * 0.55 * (1 - k / 22), p = [c[0] + Math.cos(an) * r, c[1] + Math.sin(an) * r * sp]; k ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]); } x.stroke(); } // the flush
+      quad([P(wx - 0.95, 1.7, 1.25), P(wx + 0.95, 1.7, 1.25), P(wx + 0.85, 3.7, 1.18), P(wx - 0.85, 3.7, 1.18)], '#F8FAFC', 'rgba(148,163,184,0.6)'); // the lid, up
+      box(wx + 1.8, 2.6, 0.2, wx + 2.6, 2.75, 0.6, '#CBD5E1'); cylLit(wx + 2.2, 0.55, 0.38, 2.15, 0.45, '#FFFFFF'); // the roll
+      cylLit(wx - 1.8, 1.4, 0.3, 0, 0.6, '#94A3B8'); box(wx - 1.84, 0.6, 1.36, wx - 1.76, 1.8, 1.44, '#64748B'); } // the brush
+    // the rest of it: towels on a rail, a mat, toiletries on a shelf over the basin, the water heater, a ceiling light,
+    // and (this is Lagos) a bucket and bowl by the shower for when NEPA takes the light and the pump stops
+    { box(x0 + 0.2, 3.6, 3.2, x0 + 0.35, 3.8, 7.2, '#CBD5E1'); for (const [z0, col] of [[3.5, '#0EA5E9'], [5.4, '#F8FAFC']]) box(x0 + 0.1, 1.8, z0, x0 + 0.45, 3.75, z0 + 1.6, col); // the towel rail
+      flat(W - 4.6, 5.4, W - 1.2, 7.4, 0.04, '#0EA5E9'); // the bath mat
+      box(x0 + 1, 9.4, 0.15, x0 + 4, 9.6, 0.9, '#E7E5E4'); for (let k = 0; k < 4; k++) cylLit(x0 + 1.4 + k * 0.75, 0.55, 0.22, 9.6, 0.5 + (k % 2) * 0.35, ['#F472B6', '#22C55E', '#F59E0B', '#FFFFFF'][k]); // toiletries
+      cylLit(W - 1.4, 1.2, 0.9, 11, 3, '#F8FAFC'); box(W - 1.5, 10.6, 1.15, W - 1.3, 11, 1.35, '#94A3B8'); { const l = P(W - 1.4, 12.4, 2.12); x.fillStyle = R.dev && R.dev.fresh > Date.now() ? '#EF4444' : '#22C55E'; x.beginPath(); x.arc(l[0], l[1], Math.max(1, K * 0.18), 0, Math.PI * 2); x.fill(); } // the water heater
+      if (R.style !== 'mansion' && R.style !== 'villa') { cylLit(W - 6.8, 3.2, 0.8, 0, 1.4, '#2563EB'); disk(W - 6.8, 3.2, 1.42, 0.65, '#93C5FD'); cylLit(W - 6.8, 4.5, 0.45, 0, 0.35, '#F97316'); } // the bucket and the bowl
+      disk(x0 + bwid / 2, bdep / 2, 16.9, 0.9, '#F8FAFC'); if (night > 0.5) glow.push(() => { const p = P(x0 + bwid / 2, 15, bdep / 2), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 7); g.addColorStop(0, 'rgba(240,249,255,0.4)'); g.addColorStop(1, 'rgba(240,249,255,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 7, 0, Math.PI * 2); x.fill(); x.restore(); }); }
     const lw = (a, b, c, d) => { box(a, 0, b, c, 5, d, R.wall); box(a, 5, b, c, 5.3, d, R.trim); };
     lw(x0 - 0.6, 0, x0, bdep - 4); lw(x0, bdep - 0.6, W - 6, bdep); // the bathroom's walls, a door gap at the front
     // ---- stairs up the left wall to the floor above (terrace, duplex, townhouse; the mansion's are grand and curve out)
@@ -7540,7 +7556,7 @@
   function roomDevices(R) {
     const out = [], F = FITOUT[R.kind === 'hq' ? 'bq' : R.style];
     if (R.kind === 'hq') out.push({ k: 'tv', x: 31, z: 18, name: 'TV' }, { k: 'fan', x: 31, z: 25, name: 'ceiling fan' }, { k: 'ac', x: 3, z: 28, name: 'AC' }, { k: 'inverter', x: 21.5, z: R.d - 1, name: 'inverter' });
-    if (F) { const [kx, kl] = F.k; out.push({ k: 'cooker', x: kx + kl * 0.65, z: 4.5, name: 'cooker' }, { k: 'fridge', x: kx + kl + 2, z: 5, name: 'fridge' }, { k: 'shower', x: R.w - 3, z: F.b[1] + 1.5, name: 'bathroom' }); }
+    if (F) { const [kx, kl] = F.k; out.push({ k: 'toilet', x: R.w - F.b[0] + 6.5, z: 4.6, name: 'toilet' }, { k: 'basin', x: R.w - F.b[0] + 2.5, z: 3.6, name: 'basin' }, { k: 'cooker', x: kx + kl * 0.65, z: 4.5, name: 'cooker' }, { k: 'fridge', x: kx + kl + 2, z: 5, name: 'fridge' }, { k: 'shower', x: R.w - 3, z: F.b[1] + 1.5, name: 'bathroom' }); }
     for (const it of R.layout || []) { const kd = kindOf(it); if (['tv', 'lamp', 'speaker', 'fridge'].includes(kd)) out.push({ k: kd, x: it.x, z: it.z, name: (STORE[it.k] ? STORE[it.k].name : kd).toLowerCase(), it }); }
     return out;
   }
@@ -7555,7 +7571,9 @@
       case 'inverter': return { label: '🔋 Check the inverter', run: () => openInverter(R) };
       case 'cooker': return D.cook > Date.now() ? { label: '🍳 The jollof is cooking…', run: () => say('Patience. Good jollof takes time.') } : { label: '🍳 Cook some jollof', run: () => { D.cook = Date.now() + 20000; say('Jollof on the fire…'); setTimeout(() => { if (inside === R) say('Jollof ready. Party jollof, smoky bottom and all.'); }, 20000); } };
       case 'fridge': return { label: '🧊 Open the fridge', run: () => say(SNACKS[Math.floor(Math.random() * SNACKS.length)]) };
-      case 'shower': return { label: '🚿 Freshen up', run: () => { D.fresh = Date.now() + 5000; say('Fresh. Ready for the island.'); } };
+      case 'shower': return { label: '🚿 Freshen up', run: () => { if (!nepaAt(lagosMs() - 3600e3)) return say('NEPA took light, so the pumping machine is off. Bucket bath it is.'); D.fresh = Date.now() + 5000; say('Fresh. Ready for the island.'); } };
+      case 'toilet': return { label: '🚽 Use the toilet', run: () => { D.flush = Date.now() + 2500; say(nepaAt(lagosMs() - 3600e3) ? 'Flushed.' : 'Flushed, with the bucket. NEPA took light.'); } };
+      case 'basin': return { label: '🧼 Wash your hands', run: () => say(nepaAt(lagosMs() - 3600e3) ? 'Clean hands. Good.' : 'No water in the tap: NEPA took light. Fetch from the bucket.') };
       case 'lamp': return tog('lamps', '💡 Switch the lamps on', '💡 Switch the lamps off');
       case 'speaker': return { label: MP.q.length && !MP.a.paused ? '🔊 Pause the music' : '🔊 Play music', run: () => { if (MP.q.length) mpToggle(); else openPhone('music'); } };
     }
@@ -7614,7 +7632,7 @@
     if (D.focus && D.focus.until > performance.now()) { const p = P(D.focus.x, 0.1, D.focus.z), r = K * (3 + Math.sin(t * 4) * 0.5); x.save(); x.strokeStyle = 'rgba(167,139,250,0.95)'; x.shadowColor = '#A78BFA'; x.shadowBlur = 14; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); const top = P(D.focus.x, 9 + Math.sin(t * 4), D.focus.z); x.fillStyle = '#A78BFA'; x.beginPath(); x.moveTo(top[0], top[1] + K * 1.4); x.lineTo(top[0] - K, top[1]); x.lineTo(top[0] + K, top[1]); x.closePath(); x.fill(); x.restore(); }
   }
   // WYRD's walk round your home's devices, the first time you're in each home of yours
-  const DEV_TIP = { tv: 'Walk up to it and tap Watch TV. NTA, Africa Magic, the Super Eagles.', fan: 'Tap to switch it on or off. Lagos heat is no joke.', ac: 'Cold air, when NEPA allows. Switch it on from here.', inverter: 'When NEPA takes light, the inverter keeps you on. Check its battery here.', cooker: 'Stand at the hob and cook a pot of jollof. Twenty seconds, smoky bottom included.', fridge: 'Something cold is always inside. Open it.', shower: 'Freshen up after a long day on the island.', lamp: 'Your lamp. Switch it on for the evening.', speaker: 'It plays your music. Tap to play or pause.' };
+  const DEV_TIP = { toilet: 'The toilet. It flushes, and when NEPA takes the light there\'s the bucket.', basin: 'Wash your hands here. The tap needs the pump, and the pump needs light.', tv: 'Walk up to it and tap Watch TV. NTA, Africa Magic, the Super Eagles.', fan: 'Tap to switch it on or off. Lagos heat is no joke.', ac: 'Cold air, when NEPA allows. Switch it on from here.', inverter: 'When NEPA takes light, the inverter keeps you on. Check its battery here.', cooker: 'Stand at the hob and cook a pot of jollof. Twenty seconds, smoky bottom included.', fridge: 'Something cold is always inside. Open it.', shower: 'Freshen up after a long day on the island.', lamp: 'Your lamp. Switch it on for the evening.', speaker: 'It plays your music. Tap to play or pause.' };
   async function homeTour(R) {
     if (touring || !R || !R.mine || inside !== R || store.get('li.devtour.' + R.key)) return;
     store.set('li.devtour.' + R.key, '1'); touring = true;
