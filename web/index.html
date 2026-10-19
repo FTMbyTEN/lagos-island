@@ -3035,7 +3035,7 @@
     m_cargo: ['m_cargo', null, 1, [0, 0, 0], null, 45, 0.06], m_hoodie: ['hoodiejeans', [0], 0.0108, [0.002, 0, 0.01], null, 47, 0.06],
     m_jeans: ['hoodiejeans', [1], 0.0108, [0.002, 0, 0.01], null, 47, 0.06], suit_jacket: ['suit_jacket', null, 0.54, [0, 1.19, 0.005], null, 45, 0.09],
     leather_jacket: ['leather_jacket', null, 0.54, [0, 1.19, 0.005], null, 45, 0.09],
-    f_jeanstank: ['f_jeanstank', null, 0.00115, [0, -0.1, 0], null, 45, 0.06], f_knitskirt: ['f_knitskirt', null, 1, [0, 0, 0], null, 45, 0.06, [-0.4, 0.3]],
+    f_jeanstank: ['f_jeanstank', null, 0.00115, [0, -0.1, 0], null, 45, 0.06], f_knitskirt: ['f_knitskirt', null, 0.78, [0, 0, 0], null, 45, 0.06, [-0.4, 0.3]],
     f_sweatshirt: ['f_sweatshirt', null, 121, [0, -0.18, 0], null, 45, 0.06], f_sweatpants: ['f_sweatpants', [0], 105, [0.19, -0.09, 0], null, 45, 0.06],
     f_cargo: ['f_cargo', [0], 0.135, [0, 0, 0], null, 45, 0.08], f_dress: ['f_dress', null, 0.0105, [0, 0, 0], null, 20, 0.06],
     f_longdress: ['f_longdress', null, 0.0108, [0, 0, 0], null, 45, 0.06],
@@ -3057,6 +3057,7 @@
     versace_silk: { m: [['suit_jacket'], ['m_cargo']], f: [['f_dress']] }, fendi_set: { m: [['leather_jacket'], ['m_cargo']], f: [['f_knitskirt', '#D6A15C']] },
     lv_jacket: { m: [['leather_jacket'], ['m_jeans']], f: [['f_jeanstank']] }, dior_gown: { m: [['suit_jacket'], ['m_cargo']], f: [['f_longdress']] },
   };
+  const WEAR_SNUG = { m_hoodie: 0.045, suit_jacket: 0.04, leather_jacket: 0.045, f_cargo: 0.04, f_sweatshirt: 0.04, f_knitskirt: 0.09, f_dress: 0.08, f_longdress: 0.1 }; // default 0.035
   const WEAR_SRC = {}, WEAR_LOADING = {}, WEAR_FITTED = {}, WEAR_HIDE = {};
   function wearLoad(file) {
     if (WEAR_SRC[file] || WEAR_LOADING[file]) return; WEAR_LOADING[file] = 1;
@@ -3078,6 +3079,10 @@
     const seg = new THREE.Line3(), cp = new THREE.Vector3(), boneMats = sk.map((b, i) => new THREE.Matrix4().multiplyMatrices(b.matrixWorld, bm.skeleton.boneInverses[i]));
     const gs = WEAR_SRC[file].clone(true), w = new THREE.Group(), r = new THREE.Group(); r.add(gs); if (rot) r.rotation.set(...rot.map((d) => d * Math.PI / 180)); w.add(r); w.scale.setScalar(s); w.position.set(...off); w.updateMatrixWorld(true);
     const ms = []; gs.traverse((m) => { if (m.isMesh) ms.push(m); });
+    const BG = bm.geometry, bpos = [], bgrid = new Map(), bc = 0.1, bkey = (x, y, z) => (Math.floor(x / bc) * 73856093) ^ (Math.floor(y / bc) * 19349663) ^ (Math.floor(z / bc) * 83492791), tv = new THREE.Vector3(), maxOff = WEAR_SNUG[gk] ?? 0.035;
+    for (let i = 0; i < BG.attributes.position.count; i++) { tv.fromBufferAttribute(BG.attributes.position, i); bm.applyBoneTransform(i, tv); bpos.push(tv.x, tv.y, tv.z); const kk = bkey(tv.x, tv.y, tv.z); let a = bgrid.get(kk); if (!a) bgrid.set(kk, (a = [])); a.push(i); }
+    const snug = (q) => { let best = -1, bd = 1e9; for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) { const a = bgrid.get(bkey(q.x + dx * bc, q.y + dy * bc, q.z + dz * bc)); if (a) for (const j of a) { const ex = q.x - bpos[j * 3], ey = q.y - bpos[j * 3 + 1], ez = q.z - bpos[j * 3 + 2], d = ex * ex + ey * ey + ez * ez; if (d < bd) { bd = d; best = j; } } }
+      if (best < 0) return; const d = Math.sqrt(bd); if (d <= maxOff) return; const f = maxOff / d; q.set(bpos[best * 3] + (q.x - bpos[best * 3]) * f, bpos[best * 3 + 1] + (q.y - bpos[best * 3 + 1]) * f, bpos[best * 3 + 2] + (q.z - bpos[best * 3 + 2]) * f); };
     const parts = [], pts = [];
     ms.forEach((m, mi) => {
       if (keep && !keep.includes(mi)) return;
@@ -3087,7 +3092,7 @@
       if (clip) { const kept = []; for (let t = 0; t < idx.length; t += 3) { const wx = (i) => new THREE.Vector3(src.attributes.position.getX(i), src.attributes.position.getY(i), src.attributes.position.getZ(i)).applyMatrix4(m.matrixWorld).x; const cx = (wx(idx[t]) + wx(idx[t + 1]) + wx(idx[t + 2])) / 3; if (cx >= clip[0] && cx <= clip[1]) kept.push(idx[t], idx[t + 1], idx[t + 2]); } idx = kept; }
       const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), q = new THREE.Vector3(), S = new THREE.Matrix4(), M2 = new THREE.Matrix4();
       for (let i = 0; i < n; i++) {
-        q.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]); pts.push(q.x, q.y, q.z);
+        q.set(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]); snug(q); pos[i * 3] = q.x; pos[i * 3 + 1] = q.y; pos[i * 3 + 2] = q.z; pts.push(q.x, q.y, q.z);
         let d1 = 1e9, d2 = 1e9, k1 = 0, k2 = 0;
         for (const sg of segs) { seg.set(sg.a, sg.e); seg.closestPointToPoint(q, true, cp); const d = cp.distanceTo(q); if (d < d1) { d2 = d1; k2 = k1; d1 = d; k1 = sg.k; } else if (d < d2) { d2 = d; k2 = sg.k; } }
         const w1 = 1 / Math.pow(d1 + 0.01, 4), w2 = 1 / Math.pow(d2 + 0.01, 4), tt = w1 + w2; si[i * 4] = k1; sw[i * 4] = w1 / tt; si[i * 4 + 1] = k2; sw[i * 4 + 1] = w2 / tt;
