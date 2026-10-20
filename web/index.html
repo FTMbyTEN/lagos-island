@@ -849,6 +849,7 @@
       welcome: 'M7 11V6a1.5 1.5 0 0 1 3 0v4M10 9V4.5a1.5 1.5 0 0 1 3 0V10M13 9.5V6a1.5 1.5 0 0 1 3 0v6M16 9a1.5 1.5 0 0 1 3 0v4a8 8 0 0 1-8 8 7 7 0 0 1-6-3.5L3 13.5a1.5 1.5 0 0 1 2.5-1.5L7 14',
       bank: 'M3 21h18M5 18h14M12 3l9 5H3zM6 10v6M10 10v6M14 10v6M18 10v6M12 6.2h.01',
       gov: 'M3 21h18M5 21V11h14v10M8 11a4 4 0 0 1 8 0M12 3v4M12 3l3 1.2-3 1.2M7.5 14v4M10.5 14v4M13.5 14v4M16.5 14v4',
+      grid: 'M13 2 4 14h7l-1 8 9-12h-7z',
       pin: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 10h.01',
     };
   })();
@@ -859,7 +860,7 @@
     g.save(); g.translate(cx - size / 2, cy - size / 2); g.scale(size / 24, size / 24); g.strokeStyle = col; g.lineWidth = lw; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(p); g.restore();
   }
   // each landmark's colour, for its pin
-  const PIN_COL = { bank: '#B8860B', mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
+  const PIN_COL = { grid: '#CA8A04', bank: '#B8860B', mosque: '#059669', cathedral: '#7C3AED', palace: '#B45309', market: '#EA580C', shops: '#DB2777', mall: '#DB2777', arcade: '#DB2777', fountain: '#0284C7', field: '#CA8A04', park: '#16A34A', forest: '#15803D', golf: '#16A34A', hospital: '#DC2626', jetty: '#0369A1', marina: '#0369A1', beach: '#0EA5E9', hotel: '#9333EA', club: '#C026D3', casino: '#DC2626', arena: '#7C3AED', wyrdtower: '#4F46E5', refinery: '#57534E', airport: '#2563EB', station: '#0F766E', motorpark: '#F59E0B', tollgate: '#F59E0B', bigate: '#64748B', soon: '#F59E0B', gallery: '#E11D48', dealer: '#0F172A', homestore: '#EA580C', screens: '#0891B2' };
   // the landmarks: [type, i, j, wi, dj, name, emoji]
   const PLACES = [
     // Lagos Island
@@ -934,7 +935,7 @@
     ['soon', 5, 36, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['homestore', 64, 23, 7, 6, 'Eko Home Store', '🛋️'], // just south of the coastal road
     ['soon', 89, 7, 4, 3, 'Reclaimed land: coming soon', '🚧'],
-    ['soon', 86, 23, 4, 3, 'Reclaimed land: coming soon', '🚧'],
+    ['grid', 82, 19, 12, 11, 'National Grid · run by WYRD', '⚡'], // the power station that lights the island, away from the city
     ['soon', 86, 39, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 9, 43, 4, 3, 'Reclaimed land: coming soon', '🚧'],
     ['soon', 34, 43, 4, 3, 'Reclaimed land: coming soon', '🚧'],
@@ -2645,6 +2646,47 @@
       });
       const bp = P(cx, 108.4, tz); x.fillStyle = Math.floor(t * 1.2) % 2 ? '#EF4444' : '#7F1D1D'; x.beginPath(); x.arc(bp[0], bp[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill(); // the beacon
     },
+    // ---- the National Grid, run by WYRD: a gas turbine hall with its stacks, two cooling towers, the transformer yard and
+    // switchyard, a solar farm, the WYRD control centre with WYRD's orb on the roof, pylons carrying the lines to the city,
+    // and a big board with the output. It follows NEPA: when there's light the stacks smoke and it's lit up; when there
+    // isn't, LOAD SHEDDING in red and the plant goes dim
+    grid(a, b, c, d) {
+      const t = performance.now() / 1000, on = nepaAt(lagosMs() - 3600e3), dark = night > 0.45, mid = (a + c) / 2;
+      flat(a, b, c, d, 0.05, '#A8A29E', C.plotEdge); flat(a + 2, b + 2, c - 2, d - 2, 0.06, '#B8B2A7');
+      // the fence
+      x.strokeStyle = 'rgba(71,85,105,0.85)'; x.lineWidth = 1; for (const [x0, z0, x1, z1] of [[a + 1, b + 1, c - 1, b + 1], [a + 1, b + 1, a + 1, d - 1], [c - 1, b + 1, c - 1, d - 1], [a + 1, d - 1, mid - 6, d - 1], [mid + 6, d - 1, c - 1, d - 1]]) { const p0 = P(x0, 0, z0), p1 = P(x1, 0, z1), q0 = P(x0, 2.4, z0), q1 = P(x1, 2.4, z1); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.moveTo(q0[0], q0[1]); x.lineTo(q1[0], q1[1]); x.stroke(); }
+      // the solar farm along the back
+      for (let row = 0; row < 4; row++) for (let k = 0; k < 9; k++) { const sx = a + 4 + k * 6.2, sz = b + 4 + row * 4.4; quad([P(sx, 0.6, sz), P(sx + 5, 0.6, sz), P(sx + 5, 2, sz + 2.6), P(sx, 2, sz + 2.6)], '#1E3A8A', 'rgba(147,197,253,0.6)'); }
+      // two cooling towers, their tops steaming while the plant runs
+      for (const [tx, tz] of [[c - 26, b + 10], [c - 12, b + 10]]) { for (let k = 0; k < 10; k++) { const y0 = k * 2.6, r = 6 - Math.sin(k / 9 * Math.PI) * 1.8; cylLit(tx, tz, r, y0, 2.7, '#D6D3D1', k === 9); }
+        if (on) for (let k = 0; k < 6; k++) { const u = (t * 0.25 + k / 6) % 1, p = P(tx + Math.sin(t + k) * 2, 26 + u * 16, tz); x.fillStyle = `rgba(241,245,249,${0.55 * (1 - u)})`; x.beginPath(); x.arc(p[0], p[1], K * (3 + u * 5), 0, Math.PI * 2); x.fill(); } }
+      // the turbine hall and its stacks
+      box(a + 6, 0, b + 24, a + 40, 12, b + 38, '#E7E5E4', '#475569', 2); box(a + 5.6, 12, b + 23.6, a + 40.4, 12.8, b + 38.4, '#57534E');
+      for (let k = 0; k < 3; k++) { const sx = a + 12 + k * 11; cylLit(sx, b + 27, 1.3, 12.8, 16, '#78716C'); box(sx - 1.35, 26, b + 25.65, sx + 1.35, 27.2, b + 28.35, '#B91C1C');
+        if (on) for (let q = 0; q < 4; q++) { const u = (t * 0.4 + q / 4 + k * 0.3) % 1, p = P(sx + u * 6, 29 + u * 10, b + 27); x.fillStyle = `rgba(148,163,184,${0.45 * (1 - u)})`; x.beginPath(); x.arc(p[0], p[1], K * (1.4 + u * 3), 0, Math.PI * 2); x.fill(); } }
+      if (K > 2.4) faceText('TURBINE HALL', a + 23, 9, b + 38.45, '#334155', 1.4, 0, 800);
+      // the transformer yard and switchyard: rows of transformers, gantries, insulators
+      for (let r2 = 0; r2 < 3; r2++) for (let k = 0; k < 4; k++) { const tx = a + 48 + k * 7, tz = b + 26 + r2 * 6; box(tx - 1.8, 0, tz - 1.4, tx + 1.8, 3, tz + 1.4, '#64748B'); for (let q = 0; q < 3; q++) box(tx - 1.2 + q * 1.2 - 0.12, 3, tz - 0.12, tx - 1.2 + q * 1.2 + 0.12, 4.6, tz + 0.12, '#CBD5E1'); }
+      for (const gz of [b + 24, b + 42]) { for (const gx of [a + 45, c - 22]) box(gx - 0.3, 0, gz - 0.3, gx + 0.3, 9, gz + 0.3, '#94A3B8'); box(a + 45, 8.6, gz - 0.25, c - 22, 9.1, gz + 0.25, '#94A3B8'); }
+      // the WYRD control centre: glass, WYRD's orb glowing on the roof, the name across the front
+      const cx0 = mid - 14, cx1 = mid + 14, cz0 = d - 22, cz1 = d - 10;
+      box(cx0, 0, cz0, cx1, 9, cz1, '#1E1B4B', '#A5B4FC', 2); box(cx0 - 0.4, 9, cz0 - 0.4, cx1 + 0.4, 9.6, cz1 + 0.4, '#312E81');
+      const orbF = () => { const p = P(mid, 13, (cz0 + cz1) / 2), r = K * 2.4, g = x.createRadialGradient(p[0] - r * 0.3, p[1] - r * 0.3, 0, p[0], p[1], r); g.addColorStop(0, '#FFFFFF'); g.addColorStop(0.45, '#A78BFA'); g.addColorStop(1, '#0EA5E9'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.save(); x.globalCompositeOperation = 'lighter'; const h = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r * 3); h.addColorStop(0, 'rgba(167,139,250,0.5)'); h.addColorStop(1, 'rgba(167,139,250,0)'); x.fillStyle = h; x.beginPath(); x.arc(p[0], p[1], r * 3, 0, Math.PI * 2); x.fill(); x.restore(); };
+      box(mid - 0.3, 9.6, (cz0 + cz1) / 2 - 0.3, mid + 0.3, 11, (cz0 + cz1) / 2 + 0.3, '#475569'); orbF(); glow.push(orbF);
+      const sign = () => { faceText('NATIONAL GRID', mid, 7.3, cz1 + 0.05, '#E0E7FF', 1.8, dark ? 8 : 0, 900); faceText('RUN BY WYRD', mid, 5.6, cz1 + 0.05, '#A78BFA', 1, dark ? 6 : 0, 800); };
+      sign(); glow.push(sign);
+      // the output board by the gate: megawatts when the grid's up, LOAD SHEDDING when NEPA's off
+      { const bx = mid + 18, bz = d - 4; for (const px of [bx - 6, bx + 6]) box(px - 0.2, 0, bz - 0.2, px + 0.2, 4, bz + 0.2, '#1F2937'); box(bx - 6.6, 4, bz - 0.3, bx + 6.6, 9, bz + 0.3, '#0B1020');
+        const mw = on ? 1180 + Math.round(Math.sin(t * 0.3) * 40 + (new Date(lagosMs()).getUTCHours() >= 18 ? 160 : 0)) : 0;
+        const board = () => { faceText(on ? `${mw.toLocaleString()} MW` : 'LOAD SHEDDING', bx, 7.3, bz + 0.32, on ? '#4ADE80' : '#F87171', on ? 1.7 : 1.15, 8, 900); faceText(on ? 'THE ISLAND HAS LIGHT' : 'NEPA: BEAR WITH US', bx, 5.3, bz + 0.32, on ? '#FDE68A' : '#FCA5A5', 0.75, 4, 800); };
+        board(); glow.push(board); }
+      // pylons carrying the lines west, to the city
+      const pyl = (px, pz, h) => { x.strokeStyle = '#64748B'; x.lineWidth = Math.max(1, K * 0.18); const L = P(px - 1.6, 0, pz), Rr = P(px + 1.6, 0, pz), top = P(px, h, pz), arm0 = P(px - 3.5, h - 2, pz), arm1 = P(px + 3.5, h - 2, pz); x.beginPath(); x.moveTo(L[0], L[1]); x.lineTo(top[0], top[1]); x.lineTo(Rr[0], Rr[1]); x.moveTo(arm0[0], arm0[1]); x.lineTo(arm1[0], arm1[1]); x.stroke(); return [arm0, arm1]; };
+      const towers = [[a + 3, d - 8], [a - 12, d - 8], [a - 27, d - 8]].map(([px, pz]) => pyl(px, pz, 16));
+      x.strokeStyle = 'rgba(30,41,59,0.75)'; x.lineWidth = 1; for (let k = 0; k < towers.length - 1; k++) for (const s2 of [0, 1]) { const p0 = towers[k][s2], p1 = towers[k + 1][s2]; x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2 + K * 1.5, p1[0], p1[1]); x.stroke(); }
+      // lights round the site after dark (dim when the grid's down)
+      if (dark) glow.push(() => { for (let k = 0; k < 8; k++) { const p = P(a + 4 + k * ((c - a - 8) / 7), 6, d - 2), r = K * (on ? 4 : 1.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, on ? 'rgba(254,240,138,0.55)' : 'rgba(248,113,113,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); } });
+    },
     soon(a, b, c, d) {
       for (let k = 0; k < 4; k++) { const px = a + 4 + k * ((c - a - 8) / 3); box(px - 0.8, 0, d - 3, px + 0.8, 2.4, d - 1.4, k % 2 ? '#F8FAFC' : '#F97316'); }
       box(a + 3, 2.4, d - 2.6, c - 3, 3, d - 1.8, '#FACC15');
@@ -3570,8 +3612,8 @@
   }
   function gateLight(px, pz, on) {
     box(px - 0.1, 0, pz - 0.1, px + 0.1, 3.2, pz + 0.1, '#0B0B0F'); box(px - 0.22, 3.2, pz - 0.22, px + 0.22, 3.35, pz + 0.22, '#111827');
-    const p = P(px, 3.65, pz), r = Math.max(1.5, K * 0.32); x.fillStyle = on ? '#22C55E' : '#1F2937'; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill();
-    if (on) { const halo = () => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * (night > 0.35 ? 2.4 : 1.2)); g.addColorStop(0, 'rgba(74,222,128,0.85)'); g.addColorStop(1, 'rgba(74,222,128,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * (night > 0.35 ? 2.4 : 1.2), 0, Math.PI * 2); x.fill(); x.restore(); }; halo(); glow.push(halo); }
+    const p = P(px, 3.65, pz), r = Math.max(1.5, K * 0.32); x.fillStyle = on ? '#14532D' : '#1F2937'; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill();
+    if (on) { const halo = () => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * (night > 0.35 ? 1.6 : 0.8)); g.addColorStop(0, 'rgba(22,101,52,0.55)'); g.addColorStop(1, 'rgba(22,101,52,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * (night > 0.35 ? 2.4 : 1.2), 0, Math.PI * 2); x.fill(); x.restore(); }; halo(); glow.push(halo); }
   }
   const litWindows = (a, b, c, d, h) => { if (night < 0.35) return; glow.push(() => { const p = P((a + c) / 2, h * 0.55, d - 3.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 4.5); g.addColorStop(0, 'rgba(255,214,150,0.55)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 4.5, 0, Math.PI * 2); x.fill(); x.restore(); }); };
   function hqHouse(a, b, c, d, k) {
@@ -3752,7 +3794,7 @@
   // the footprints you walk round
   for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station', 'dealer'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
-  const PIN_H = { bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
+  const PIN_H = { grid: 36, bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
   let glow = [], night = 0;
@@ -5708,6 +5750,7 @@
     jetty: ['⛴️ Take a boat?', 'Water taxis to Ilashe, Badagry and Ikorodu.', null],
     hotel: ['🏨 Book a room?', 'A night on the island, a pool, room service.', null],
     mall: ['🛍️ Go shopping?', 'Fashion, phones, food court.', null], arcade: ['🛍️ Go shopping?', 'Shops and cafés.', null], shops: ['🛍️ Go shopping?', 'Idumota: everything, cheaper.', null],
+    grid: ['⚡ The National Grid', 'Run by WYRD. It powers the whole island; when NEPA takes light, this is where WYRD brings it back.', null],
     hospital: ['🏥 See a doctor?', 'Check-ups and the pharmacy.', null],
     beach: ['🏖️ Spend the day here?', 'Swim, lie on a lounger, a drink at the bar, suya, volleyball, the bonfire at night.', (p) => { at$(p); enterRoom('beach', 'place:beach:' + p[1] + ',' + p[2], p[5]); }],
     mosque: ['🕌 Visit?', 'Lagos Central Mosque, open for prayers.', null], cathedral: ['⛪ Visit?', 'The Cathedral Church of Christ.', null],
@@ -7128,7 +7171,7 @@
           <div class="lock">The rates are set; collection starts when the Treasury opens at the Island Reserve Bank with the financial system.</div>`;
         else if (tab === 'laws') body = `<div class="pcard">${LAWS.map(([cat, t], k) => `<div class="glaw"><em>${k + 1}</em><span><small>${cat}</small>${esc(t)}</span></div>`).join('')}</div>`;
         else if (tab === 'notices') body = [`Power: ${grid ? 'NEPA has light right now.' : 'NEPA took light. Inverters on; go easy on the AC.'}`, `Housing: ${c.taken} of ${c.total} estate homes lived in. ${c.free} for sale in the Homes app.`, 'Every Lagosian keeps a free BQ on HQ Row, whatever else they own.', 'The Treasury opens at the Island Reserve Bank with the financial system: rent, service charges and taxes are collected from then.', 'Speed limit on the coastal road: 60 km/h. The Blue Line runs all day.'].map((t) => `<div class="pcard gnote">✨ ${esc(t)}</div>`).join('');
-        else body = `<div class="pcard">${[['Housing', 'Adaeze Okafor', 'The register: every home, who lives where', 1], ['Treasury', 'Tunde Bakare', 'Rent, rates and tax, at the Island Reserve Bank', 0], ['Power', 'Ngozi Eze', 'NEPA\'s light, hour by hour; the inverters', 1], ['Transport', 'Musa Ibrahim', 'Rides, the Blue Line, the coastal road', 1], ['Culture', 'Folake Adeyemi', 'The Arena, the clubs, the parties', 1], ['Works', 'Emeka Obi', 'The reclaimed land and what gets built on it', 0], ['Law and order', 'Hauwa Bello', 'The island\'s laws, and reports of abuse', 0]].map(([d, who, t, on]) => `<div class="grow"><span><b>${d}</b><small>Commissioner ${who} · ${t}</small></span><em class="${on ? 'gon' : 'gsoon'}">${on ? 'Open' : 'Setting up'}</em></div>`).join('')}</div>`;
+        else body = `<div class="pcard">${[['Housing', 'Adaeze Okafor', 'The register: every home, who lives where', 1], ['Treasury', 'Tunde Bakare', 'Rent, rates and tax, at the Island Reserve Bank', 0], ['Power', 'WYRD (National Grid)', 'The National Grid out east: every megawatt the island uses, hour by hour', 1], ['Transport', 'Musa Ibrahim', 'Rides, the Blue Line, the coastal road', 1], ['Culture', 'Folake Adeyemi', 'The Arena, the clubs, the parties', 1], ['Works', 'Emeka Obi', 'The reclaimed land and what gets built on it', 0], ['Law and order', 'Hauwa Bello', 'The island\'s laws, and reports of abuse', 0]].map(([d, who, t, on]) => `<div class="grow"><span><b>${d}</b><small>Commissioner ${who} · ${t}</small></span><em class="${on ? 'gon' : 'gsoon'}">${on ? 'Open' : 'Setting up'}</em></div>`).join('')}</div>`;
         show(`<div class="ghero"><i>${ico('gov')}</i><div><h2>Lagos Island Government</h2><span>Administered by WYRD</span></div></div>
           <div class="gtabs">${TABS.map(([k, l]) => `<button data-gt="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('')}</div>${body}
           ${tab !== 'housing' ? '<button class="pbtn" data-go="homes">Homes for sale</button>' : ''}`);
@@ -8002,8 +8045,8 @@
     store.set(key, day);
     const what = missing.map((m) => m[1]), list = what.length > 1 ? what.slice(0, -1).join(', ') + ' and ' + what[what.length - 1] : what[0], first = missing[0], it = STORE[first[3]];
     const place = R.kind === 'hq' ? 'Your BQ' : 'This home';
-    const why = first[0] === 'bed' ? 'You\'ll want somewhere to sleep.' : first[0] === 'seat' ? 'Guests will want somewhere to sit.' : 'It makes a place a home.';
-    return coachSay(`${place} is missing ${list}. ${why} The Eko Home Store has ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'what you need'}, delivered straight here.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
+    const why = first[0] === 'bed' ? 'Abeg, you no fit dey sleep for floor like say you be generator. Even mosquito go laugh you.' : first[0] === 'seat' ? 'When visitors come, dem go stand like bus conductor? No o.' : 'Na small small dem dey build house. Even Dangote start with one bag of cement.';
+    return coachSay(`Ehn ehn! ${place} is missing ${list}. ${why} Eko Home Store get ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'everything you need'}, and dem go deliver am sharp sharp. No go-slow.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
   }
   // ---- a home that works: its devices and fittings, each one something you can use. Walk up to it and the button says
   // what: the TV, the ceiling fan and the AC switch on and off, the inverter shows its battery, the cooker cooks a pot of
@@ -8022,20 +8065,20 @@
     for (const it of R.layout || []) { const kd = kindOf(it); if (['tv', 'lamp', 'speaker', 'fridge'].includes(kd)) out.push({ k: kd, x: it.x, z: it.z, name: (STORE[it.k] ? STORE[it.k].name : kd).toLowerCase(), it }); }
     return out;
   }
-  const SNACKS = ['A cold Malt. Perfect.', 'Chilled zobo.', 'Leftover jollof. Score.', 'A bottle of Chapman, already mixed.', 'Cold water in a sachet. Classic.', 'Suya from last night. Still good.'];
+  const SNACKS = ['Cold Malt! Who keep this one? Na God.', 'Zobo wey don chill well well. Life don sweet.', 'Leftover jollof. Mama must not find out.', 'Chapman, already mixed. You be correct person.', 'Pure water, one sachet. Respect the classics.', 'Suya from yesterday. Still pepper dem dey vex.', 'Empty. Fridge dey look you like say na you chop am.'];
   // what you can do at each one
   function devAction(R, dv) {
     const D = devState(R), say = (text) => bubbles.set('me', { text, until: performance.now() + 4000 }), tog = (key, on, off) => ({ label: D[key] ? off : on, run: () => { D[key] = !D[key]; devSave(R); } });
     switch (dv.k) {
-      case 'tv': { const a = tog('tv', '📺 Watch TV', '📺 Turn the TV off'); const r0 = a.run; a.run = () => { r0(); if (D.tv) say(['NTA News, then Nollywood.', 'Big Brother Naija reruns.', 'Super Eagles highlights!', 'Africa Magic, all night.'][Math.floor(Math.random() * 4)]); }; return a; }
+      case 'tv': { const a = tog('tv', '📺 Watch TV', '📺 Turn the TV off'); const r0 = a.run; a.run = () => { r0(); if (D.tv) say(['Nollywood: the wicked stepmother don enter. Grab popcorn.', 'Big Brother Naija. Who dey house? You, alone.', 'Super Eagles dey lead! Make NEPA no try am.', 'Africa Magic: ritual movie again. Close your eye small.', 'NTA News: "the President has directed…" Change am.'][Math.floor(Math.random() * 5)]); }; return a; }
       case 'fan': return tog('fan', '🌀 Switch the fan on', '🌀 Switch the fan off');
-      case 'ac': { const a = tog('ac', '❄️ Turn the AC on', '❄️ Turn the AC off'); const r0 = a.run; a.run = () => { r0(); if (D.ac) say('Ahh. 18°C. Lagos heat, defeated.'); }; return a; }
+      case 'ac': { const a = tog('ac', '❄️ Turn the AC on', '❄️ Turn the AC off'); const r0 = a.run; a.run = () => { r0(); if (D.ac) say(['18°C. Ah! Na so London be?', 'AC don rush. Lagos heat, you don lose.', 'Cold everywhere. Just pray NEPA no carry light now now.'][Math.floor(Math.random() * 3)]); }; return a; }
       case 'inverter': return { label: '🔋 Check the inverter', run: () => openInverter(R) };
-      case 'cooker': return D.cook > Date.now() ? { label: '🍳 The jollof is cooking…', run: () => say('Patience. Good jollof takes time.') } : { label: '🍳 Cook some jollof', run: () => { D.cook = Date.now() + 20000; say('Jollof on the fire…'); setTimeout(() => { if (inside === R) say('Jollof ready. Party jollof, smoky bottom and all.'); }, 20000); } };
+      case 'cooker': return D.cook > Date.now() ? { label: '🍳 The jollof is cooking…', run: () => say('Calm down! Good jollof no dey rush. Ghana people rush their own, see wetin happen.') } : { label: '🍳 Cook some jollof', run: () => { D.cook = Date.now() + 20000; say('Jollof don enter fire. Smell go reach your neighbour, dem go suddenly remember your name.'); setTimeout(() => { if (inside === R) say('Jollof ready! Party jollof, bottom pot burn small. That one na the best part.'); }, 20000); } };
       case 'fridge': return { label: '🧊 Open the fridge', run: () => say(SNACKS[Math.floor(Math.random() * SNACKS.length)]) };
-      case 'shower': return { label: '🚿 Freshen up', run: () => { if (!nepaAt(lagosMs() - 3600e3)) return say('NEPA took light, so the pumping machine is off. Bucket bath it is.'); D.fresh = Date.now() + 5000; say('Fresh. Ready for the island.'); } };
-      case 'toilet': return { label: '🚽 Use the toilet', run: () => { D.flush = Date.now() + 2500; say(nepaAt(lagosMs() - 3600e3) ? 'Flushed.' : 'Flushed, with the bucket. NEPA took light.'); } };
-      case 'basin': return { label: '🧼 Wash your hands', run: () => say(nepaAt(lagosMs() - 3600e3) ? 'Clean hands. Good.' : 'No water in the tap: NEPA took light. Fetch from the bucket.') };
+      case 'shower': return { label: '🚿 Freshen up', run: () => { if (!nepaAt(lagosMs() - 3600e3)) return say('NEPA don carry light, pumping machine don off. Bucket bath it is. Cold water, sharp sharp!'); D.fresh = Date.now() + 5000; say('You don baff! You dey smell like money now.'); } };
+      case 'toilet': return { label: '🚽 Use the toilet', run: () => { D.flush = Date.now() + 2500; say(nepaAt(lagosMs() - 3600e3) ? 'Flushed. Clean. We move.' : 'No water for tank o. Carry bucket. NEPA no send anybody.'); } };
+      case 'basin': return { label: '🧼 Wash your hands', run: () => say(nepaAt(lagosMs() - 3600e3) ? 'Hand don clean. Corona must not hear word.' : 'Tap dry like Harmattan. NEPA carry light, pump no work. Bucket dey there.') };
       case 'lamp': return tog('lamps', '💡 Switch the lamps on', '💡 Switch the lamps off');
       case 'speaker': return { label: MP.q.length && !MP.a.paused ? '🔊 Pause the music' : '🔊 Play music', run: () => { if (MP.q.length) mpToggle(); else openPhone('music'); } };
     }
@@ -8094,12 +8137,12 @@
     if (D.focus && D.focus.until > performance.now()) { const p = P(D.focus.x, 0.1, D.focus.z), r = K * (3 + Math.sin(t * 4) * 0.5); x.save(); x.strokeStyle = 'rgba(167,139,250,0.95)'; x.shadowColor = '#A78BFA'; x.shadowBlur = 14; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); const top = P(D.focus.x, 9 + Math.sin(t * 4), D.focus.z); x.fillStyle = '#A78BFA'; x.beginPath(); x.moveTo(top[0], top[1] + K * 1.4); x.lineTo(top[0] - K, top[1]); x.lineTo(top[0] + K, top[1]); x.closePath(); x.fill(); x.restore(); }
   }
   // WYRD's walk round your home's devices, the first time you're in each home of yours
-  const DEV_TIP = { toilet: 'The toilet. It flushes, and when NEPA takes the light there\'s the bucket.', basin: 'Wash your hands here. The tap needs the pump, and the pump needs light.', tv: 'Walk up to it and tap Watch TV. NTA, Africa Magic, the Super Eagles.', fan: 'Tap to switch it on or off. Lagos heat is no joke.', ac: 'Cold air, when NEPA allows. Switch it on from here.', inverter: 'When NEPA takes light, the inverter keeps you on. Check its battery here.', cooker: 'Stand at the hob and cook a pot of jollof. Twenty seconds, smoky bottom included.', fridge: 'Something cold is always inside. Open it.', shower: 'Freshen up after a long day on the island.', lamp: 'Your lamp. Switch it on for the evening.', speaker: 'It plays your music. Tap to play or pause.' };
+  const DEV_TIP = { toilet: 'The toilet. E dey flush. When NEPA carry light, na bucket be your friend.', basin: 'Wash hand here. Tap need pump, pump need light, light need prayer.', tv: 'Your TV. Africa Magic, Nollywood, Super Eagles. Just no dey cry when the wicked stepmother win.', fan: 'Ceiling fan. Lagos heat no be joke, this one na your bodyguard.', ac: 'AC: cold like abroad, when NEPA gree. Off am before your bill do you strong thing.', inverter: 'Your inverter. When NEPA carry light, na this one dey save your life. Check battery, no let am die.', cooker: 'The cooker. Stand there and cook jollof. If e no burn small for bottom, e no be party jollof.', fridge: 'The fridge. Something cold dey inside… or nothing. Open am and see your destiny.', shower: 'Bathroom. Baff well before you go outside, Lagos traffic no go wait.', lamp: 'Your lamp. On am for evening, make your enemies see say you dey shine.', speaker: 'Speaker. Play Burna, play Wizkid, but no disturb neighbour after 10pm o.' };
   async function homeTour(R) {
     if (touring || !R || !R.mine || inside !== R || store.get('li.devtour.' + R.key)) return;
     store.set('li.devtour.' + R.key, '1'); touring = true;
     const D = devState(R), list = roomDevices(R).filter((dv, k, all) => all.findIndex((v) => v.k === dv.k) === k).slice(0, 7);
-    const r0 = await coachSay(`Welcome home. Everything in here works. Let me show you round: ${list.length} things you can use.`, [['Show me', null, true], ['Not now', () => 'stop']]);
+    const r0 = await coachSay(`Welcome home, my person! Everything for here dey work, no be like government property. Make I show you ${list.length} things wey you fit use.`, [['Oya show me', null, true], ['Later, abeg', () => 'stop']]);
     if (r0 !== 'stop') for (let k = 0; k < list.length; k++) {
       const dv = list[k]; D.focus = { x: dv.x, z: dv.z, until: performance.now() + 60000 };
       const r = await coachSay(`Your ${dv.name}. ${DEV_TIP[dv.k] || ''}`, [[k === list.length - 1 ? 'Done' : 'Next', null, true], ['Skip', () => 'stop']], `${k + 1} of ${list.length}`);
