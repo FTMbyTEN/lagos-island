@@ -2694,8 +2694,20 @@
     screens(a, b, c, d) { flat(a, b, c, d, 0.05, '#1F2937'); for (let k = 0; k < 2; k++) screen(a + 10 + k * 20, b + 10, k + 7); },
     hqgate(a, b, c, d) {
       flat(a, b, c, d, 0.05, C.paving, C.plotEdge);
-      for (const px of [a + 4, c - 4]) box(px - 1, 0, b + 8, px + 1, 8, b + 10, '#F8FAFC');
-      box(a + 3, 8, b + 8, c - 3, 10, b + 10, '#A855F7');
+      const t = performance.now() / 1000, x0 = a + 2, x1 = c - 2, zf = b + 10.1, y0 = 3.2, y1 = 11.5, mid = (x0 + x1) / 2;
+      for (const px of [a + 3.5, c - 3.5]) box(px - 0.5, 0, b + 9, px + 0.5, y0, b + 10, '#1F2937');
+      box(x0 - 0.4, y0 - 0.4, b + 8.6, x1 + 0.4, y1 + 0.4, b + 10, '#0B0B0F'); // the frame
+      const msgs = hqBoardMsgs(), m = msgs[Math.floor(t / 5) % msgs.length], wipe = Math.min(1, (t % 5) / 0.5);
+      const scr = () => {
+        const p0 = P(x0, y0, zf), p1 = P(x1, y0, zf), p2 = P(x1, y1, zf), p3 = P(x0, y1, zf), g = x.createLinearGradient(p3[0], p3[1], p1[0], p1[1]);
+        g.addColorStop(0, m.bg[0]); g.addColorStop(1, m.bg[1]); quad([p0, p1, p2, p3], g);
+        x.save(); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.lineTo(p2[0], p2[1]); x.lineTo(p3[0], p3[1]); x.closePath(); x.clip(); x.globalAlpha = wipe;
+        faceText(m.head, mid, 8.6, zf + 0.02, '#FFFFFF', Math.min(1.5, 14 / Math.max(8, m.head.length) * 1.6), 6, 900);
+        faceText(m.sub, mid, 5.6, zf + 0.02, m.col, Math.min(0.95, 14 / Math.max(10, m.sub.length) * 1.7), 4, 700);
+        x.globalAlpha = 0.18; x.strokeStyle = '#000'; x.lineWidth = 1; x.beginPath(); for (let k = 1; k < 20; k++) { const u = k / 20, q0 = P(x0, y0 + (y1 - y0) * u, zf + 0.03), q1 = P(x1, y0 + (y1 - y0) * u, zf + 0.03); x.moveTo(q0[0], q0[1]); x.lineTo(q1[0], q1[1]); } x.stroke(); x.restore(); // LED rows
+        const dots = msgs.length; for (let k = 0; k < dots; k++) { const p = P(mid + (k - (dots - 1) / 2) * 0.9, y0 + 0.5, zf + 0.04); x.fillStyle = k === Math.floor(t / 5) % dots ? '#FFFFFF' : 'rgba(255,255,255,0.3)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.14), 0, Math.PI * 2); x.fill(); }
+      };
+      scr(); if (night > 0.35) glow.push(() => { const p = P(mid, (y0 + y1) / 2, zf), r = K * 9, g2 = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g2.addColorStop(0, m.glow); g2.addColorStop(1, 'rgba(0,0,0,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g2; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); scr(); });
     },
   };
   // WYRD Tower's atom: a nucleus of shaded protons and neutrons, three orbits that tilt and turn slowly in 3D (their far
@@ -3615,7 +3627,18 @@
     const p = P(px, 3.65, pz), r = Math.max(1.5, K * 0.32); x.fillStyle = on ? '#14532D' : '#1F2937'; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill();
     if (on) { const halo = () => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * (night > 0.35 ? 1.6 : 0.8)); g.addColorStop(0, 'rgba(22,101,52,0.55)'); g.addColorStop(1, 'rgba(22,101,52,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * (night > 0.35 ? 2.4 : 1.2), 0, Math.PI * 2); x.fill(); x.restore(); }; halo(); glow.push(halo); }
   }
-  const litWindows = (a, b, c, d, h) => { if (night < 0.35) return; glow.push(() => { const p = P((a + c) / 2, h * 0.55, d - 3.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 4.5); g.addColorStop(0, 'rgba(255,214,150,0.55)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 4.5, 0, Math.PI * 2); x.fill(); x.restore(); }); };
+  const litWindows = (a, b, c, d, h) => { if (night < 0.35) return; glow.push(() => { const p = P((a + c) / 2, h * 0.55, d - 3.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 3.2); g.addColorStop(0, 'rgba(255,214,150,0.26)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 3.2, 0, Math.PI * 2); x.fill(); x.restore(); }); };
+  const hqBoard = { seen: null, arrivals: [] }; // new arrivals noticed this session: [{ k, owner, at }]
+  function hqBoardMsgs() {
+    const out = [], now = Date.now(), n = Math.max(hqSlots.length, housingBqs ?? 0);
+    if (hqBoard.seen != null && n > hqBoard.seen) for (let k = hqBoard.seen; k < n; k++) hqBoard.arrivals.push({ k, owner: hqSlots[k] && hqSlots[k].owner, at: now });
+    if (n) hqBoard.seen = n; hqBoard.arrivals = hqBoard.arrivals.filter((v) => now - v.at < 3 * 3600e3);
+    for (const v of hqBoard.arrivals.slice(-3)) out.push({ head: `WELCOME ${v.owner ? v.owner.toUpperCase() : 'NEIGHBOUR'}!`, sub: `New on the Row · BQ #${v.k + 1}`, col: '#86EFAC', bg: ['#052E16', '#14532D'], glow: 'rgba(34,197,94,0.35)' });
+    for (const p of Object.values(typeof partiesLive !== 'undefined' ? partiesLive : {})) { if (!p.key || !p.key.startsWith('hq:') || !(p.until > now)) continue; const k = hqSlots.findIndex((s2) => String(s2.slot) === p.key.split(':')[1]), th = PARTY_THEMES[p.theme] || ['Party']; out.push({ head: `PARTY: ${(p.host || 'A NEIGHBOUR').toUpperCase()}`, sub: `${th[0]} · ${k >= 0 ? 'BQ #' + (k + 1) : 'on the Row'} · ${p.open ? 'everyone welcome' : 'guest list'}`, col: '#FDE68A', bg: ['#4A044E', '#831843'], glow: 'rgba(236,72,153,0.4)' }); }
+    if (!out.length && n) { const last = hqSlots[n - 1]; out.push({ head: last && last.owner ? `WELCOME ${last.owner.toUpperCase()}!` : 'NEWEST ON THE ROW', sub: `BQ #${n} · the latest to move in`, col: '#86EFAC', bg: ['#052E16', '#14532D'], glow: 'rgba(34,197,94,0.3)' }); }
+    out.push({ head: 'HQ ROW', sub: `${n} Lagosian${n === 1 ? '' : 's'} live here · host a party to go on this board`, col: '#A5F3FC', bg: ['#0C0A2E', '#1E1B4B'], glow: 'rgba(99,102,241,0.35)' });
+    return out;
+  }
   function hqHouse(a, b, c, d, k) {
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
     compound(a, b, c, d, hq && hq.mine, () => {
@@ -6889,11 +6912,13 @@
         show(`${ahead('hq', 'My HQ', 'Your BQ on HQ Row · and every home you buy')}
           <div class="hero" style="--ac:${esc(h.color)}"><div class="hl">${h.locked ? '🔒 Invite only' : '🔓 Open door'}</div><div class="hv" style="font-size:20px">🏠 ${esc(h.name)}</div><small>${h.invites.length ? h.invites.length + ' invited · ' : ''}anyone else knocks, and you decide</small></div>
           <div class="qa" style="--ac:#FF4FD8"><button id="hGo"><i>🚪</i>Go home</button><button id="hHomes"><i>🏡</i>Homes</button><button id="hShop"><i>🛋️</i>Furnish</button><button id="hEdit"><i>⚙️</i>Settings</button></div>
+          <button class="pbtn" id="hBoard">📣 Put it on the HQ Row board: host a party</button>
           ${reqs.length ? `<div class="rsec">🔔 AT YOUR DOOR</div><div class="lst">${reqs.map((r) => `<div class="li">${avatar(r.handle)}<span class="lt"><b>${esc(r.handle)}</b><small>wants to come in</small></span><button class="pbtn" data-allow="${r.id}" style="margin:0 4px 0 0">Let in</button><button class="pbtn alt" data-deny="${r.id}" style="margin:0">No</button></div>`).join('')}</div>` : ''}
           <div class="pcard" id="hSet" style="display:${reqs.length ? 'none' : 'block'}"><h3>Settings</h3><label class="dim">Name</label><input id="hName" maxlength="40" value="${esc(h.name)}" placeholder="Name"><label class="dim">Colour (your flag and your door)</label><input id="hCol" type="color" value="${esc(h.color)}" style="height:40px;padding:2px"><label class="dim"><input id="hLock" type="checkbox" style="width:auto" ${h.locked ? 'checked' : ''}> Invite only</label><input id="hInv" value="${esc(h.invites.join(', '))}" placeholder="Invited: island names, comma separated"><button class="pbtn" id="hSave">Save</button></div>`);
         $('hHomes').onclick = () => go('homes'); $('hShop').onclick = () => go('store'); $('hEdit').onclick = () => { const s = $('hSet'); s.style.display = s.style.display === 'none' ? 'block' : 'none'; };
         pbody.querySelectorAll('[data-allow],[data-deny]').forEach((b) => (b.onclick = async () => { await my('answerHq', { id: Number(b.dataset.allow || b.dataset.deny), grant: !!b.dataset.allow }).catch(fail); poll(); render('hq'); }));
         $('hSave').onclick = async () => { try { await my('setHq', { name: $('hName').value, color: $('hCol').value, locked: $('hLock').checked, invites: JSON.stringify($('hInv').value.split(',').map((s) => s.trim()).filter(Boolean)) }); await loadHqRow(); render('hq'); } catch (e) { fail(e); } };
+        if ($('hBoard')) $('hBoard').onclick = () => go('parties');
         $('hGo').onclick = async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; } closePhone(); };
         return;
       }
