@@ -1007,6 +1007,43 @@
   #tFs { position: fixed; right: calc(12px + env(safe-area-inset-right)); top: calc(62px + env(safe-area-inset-top)); z-index: 15; width: 38px; height: 38px; border-radius: 12px; border: 0; cursor: pointer; display: grid; place-items: center; background: rgba(15,23,42,.55); color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 16px rgba(0,0,0,.25); }
   #tFs svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   @media (display-mode: fullscreen), (display-mode: standalone) { #tFs { display: none; } }
+  /* ================= Lock screen 2 ================= */
+  #phone.os-light #lockscr, #phone #lockscr { justify-content: flex-start !important; gap: 0; padding: calc(54px + env(safe-area-inset-top)) 18px calc(26px + env(safe-area-inset-bottom)) !important; font-family: 'Plus Jakarta Sans', sans-serif;
+    background: radial-gradient(60% 40% at 15% 12%, rgba(56,189,248,.55), transparent 70%), radial-gradient(55% 40% at 90% 30%, rgba(167,139,250,.5), transparent 70%), radial-gradient(70% 45% at 30% 95%, rgba(52,211,153,.4), transparent 70%), radial-gradient(60% 40% at 95% 85%, rgba(251,146,60,.35), transparent 70%), linear-gradient(180deg, #EAF6FF, #F3EEFF 60%, #EFFAF5) !important; }
+  #phone.os-dark #lockscr { background: radial-gradient(60% 40% at 15% 12%, rgba(14,165,233,.45), transparent 70%), radial-gradient(55% 40% at 90% 30%, rgba(236,72,153,.38), transparent 70%), radial-gradient(70% 45% at 30% 95%, rgba(99,102,241,.4), transparent 70%), linear-gradient(180deg, #050816, #0B0B1E 60%, #07070D) !important; }
+  #phone #lockscr .lscan, #phone #lockscr .lbeam, #phone #lockscr .lnet { display: none !important; }
+  #phone #lockscr .lpad { display: flex; justify-content: center; margin-bottom: 6px; color: #0F172A; opacity: .75; } #phone.os-dark #lockscr .lpad { color: #fff; }
+  #phone #lockscr .lpad svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; } #phone #lockscr .lpad .sh { transition: transform .35s cubic-bezier(.3,1.4,.5,1); transform-origin: 16px 10px; }
+  #phone #lockscr.unlocking .lpad .sh { transform: translateY(-3px) rotate(-28deg); } #phone #lockscr.unlocking .lpad { color: #16A34A; opacity: 1; }
+  #phone #lockscr .ltop { gap: 0 !important; } #phone #lockscr .ld { font: 700 15px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; text-transform: none !important; color: #1E293B !important; text-shadow: none !important; opacity: .8; }
+  #phone #lockscr .lt { font: 800 86px/1 'Plus Jakarta Sans', sans-serif !important; letter-spacing: -.04em; margin: 2px 0 0; animation: none !important; text-shadow: none !important; color: transparent !important; background: linear-gradient(180deg, #0F172A, #334155); -webkit-background-clip: text; background-clip: text; }
+  #phone.os-dark #lockscr .ld { color: #E2E8F0 !important; } #phone.os-dark #lockscr .lt { background: linear-gradient(180deg, #fff, #CBD5E1); -webkit-background-clip: text; background-clip: text; }
+  #phone #lockscr .lwx { display: none !important; }
+  #phone #lockscr .lwid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; margin: 16px 0 14px; }
+  #phone #lockscr .lwid > div { min-width: 0; padding: 10px 11px; border-radius: 18px; background: rgba(255,255,255,.55); backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4); box-shadow: inset 0 0 0 1px rgba(255,255,255,.6), 0 6px 18px rgba(15,23,42,.06); color: #0F172A; }
+  #phone.os-dark #lockscr .lwid > div { background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); color: #F1F5F9; }
+  #phone #lockscr .lwid small { display: block; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .04em; text-transform: uppercase; opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #phone #lockscr .lwid b { display: flex; align-items: center; gap: 5px; margin-top: 4px; font: 800 16px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } #phone #lockscr .lwid b .wxic { width: 20px; height: 20px; }
+  #phone #lockscr .lwid span { display: block; margin-top: 1px; font: 600 11px 'Plus Jakarta Sans', sans-serif; opacity: .65; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #phone #lockscr .lnotes { flex: 1 1 auto; min-height: 0; overflow-y: auto; justify-content: flex-start; gap: 8px !important; scrollbar-width: none; } #phone #lockscr .lnotes::-webkit-scrollbar { display: none; }
+  #phone #lockscr .lnotes .n { background: rgba(255,255,255,.62) !important; backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 0 0 1px rgba(255,255,255,.6), 0 8px 22px rgba(15,23,42,.08) !important; color: #0F172A !important; animation: lkIn .3s ease-out both; }
+  #phone.os-dark #lockscr .lnotes .n { background: rgba(255,255,255,.09) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12) !important; color: #F1F5F9 !important; }
+  #phone #lockscr .lnotes .n small { margin-left: auto; align-self: flex-start; font: 600 11px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; opacity: .6; color: inherit !important; }
+  #phone #lockscr .lnotes .n span { display: block; font: 500 13px/1.35 'Plus Jakarta Sans', sans-serif; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #phone #lockscr .lmore { align-self: center; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.5); font: 700 11.5px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: 0 !important; color: #334155 !important; } #phone.os-dark #lockscr .lmore { background: rgba(255,255,255,.1); color: #CBD5E1 !important; }
+  #phone #lockscr .lmus { border-radius: 22px !important; background: rgba(255,255,255,.62) !important; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: #0F172A !important; } #phone.os-dark #lockscr .lmus { background: rgba(255,255,255,.09) !important; color: #F1F5F9 !important; }
+  #phone #lockscr .lempty { margin-top: 10px; text-align: center; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; color: #475569; opacity: .75; } #phone.os-dark #lockscr .lempty { color: #CBD5E1; }
+  #phone #lockscr .lq[data-lq="music"] { display: none !important; }
+  #phone #lockscr .lbot { flex: none; margin-top: 10px; justify-content: space-between !important; flex-wrap: nowrap !important; padding: 0 6px; }
+  #phone #lockscr .lq { width: 52px !important; height: 52px !important; border: 0 !important; font-size: 20px; background: rgba(255,255,255,.55) !important; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.6), 0 6px 16px rgba(15,23,42,.08) !important; transition: transform .12s; }
+  #phone.os-dark #lockscr .lq { background: rgba(255,255,255,.1) !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14) !important; } #phone #lockscr .lq:active { transform: scale(.9); }
+  #phone #lockscr .lbot .lu { order: 0 !important; flex: 1 !important; flex-basis: auto !important; font: 700 12px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .02em !important; color: #334155 !important; animation: none !important; opacity: .85; }
+  #phone.os-dark #lockscr .lbot .lu { color: #E2E8F0 !important; }
+  #phone #lockscr .lbot .lu::before { width: 120px !important; height: 5px !important; margin: 0 auto 8px !important; background: currentColor !important; opacity: .55; animation: luBob 1.8s ease-in-out infinite; }
+  @keyframes luBob { 50% { transform: translateY(-5px); } }
+  #phone #lockscr .lid { bottom: calc(96px + env(safe-area-inset-bottom)) !important; font: 800 12px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .04em !important; color: #16A34A !important; text-shadow: none !important; }
+  #phone #lockscr.unlocking .ltop, #phone #lockscr.unlocking .lwid, #phone #lockscr.unlocking .lnotes, #phone #lockscr.unlocking .lbot { transition: transform .4s cubic-bezier(.4,0,.2,1) .15s, opacity .35s .15s; transform: translateY(-40px) scale(.97); opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { #phone #lockscr .lbot .lu::before { animation: none; } }
 </style>
 </head>
 <body>
@@ -6615,7 +6652,7 @@
   }
 
   // who just arrived: their name drops in under the phone and floats up as it fades
-  const everSeen = new Set(), joinsEl = document.getElementById('joins');
+  const everSeen = new Set(), joinedAt = new Map(), joinsEl = document.getElementById('joins');
   let ticked = false;
   function showJoin(name, color) {
     const d = document.createElement('div'), dot = document.createElement('i');
@@ -6638,7 +6675,7 @@
         if (o) Object.assign(o, { tx: p.x, tz: p.z, name: p.name, color: p.color, look: p.look });
         else {
           others.set(p.id, { name: p.name, color: p.color, x: p.x, z: p.z, tx: p.x, tz: p.z, look: p.look });
-          if (ticked && !everSeen.has(p.id)) showJoin(p.name, p.color);
+          const nm = String(p.name || '').trim(); if (ticked && !everSeen.has(p.id) && nm && !/^(undefined|null|guest|lagosian)$/i.test(nm) && Date.now() - (joinedAt.get(nm) || 0) > 600000) { joinedAt.set(nm, Date.now()); showJoin(nm, p.color); }
         }
         everSeen.add(p.id);
       }
@@ -7208,8 +7245,8 @@
     const room = CITY.dj, s = clubSrc(room); if (!room || !s || !song) return;
     deckPlay(s, { ...song, dj: myName || 'You', local: true }, 0);
     MP.a.pause();
-    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '' }); if (ok === false) tick('Someone else is on the decks here right now'); }
-    catch { tick('Couldn\'t start your set here. Try again.'); }
+    try { const ok = await call('spin', { id, club: room, url: song.url, title: song.title, artist: song.artist, art: song.art || '' }); if (ok === false) tickerSay('Someone else is on the decks here right now'); }
+    catch { tickerSay('Couldn\'t start your set here. Try again.'); }
   }
   function djNext() { if (!MP.q.length) return; MP.i = (MP.i + 1) % MP.q.length; djSpin(MP.q[MP.i]); }
   function djLeave() { const room = CITY.dj; CITY.dj = null; if (!room) return; call('spin', { id, club: room, url: '', title: '', artist: '', art: '' }).catch(() => {}); const s = clubSrc(room); if (s) residentSet(s).then((set) => deckPlay(s, set)); }
@@ -7231,7 +7268,7 @@
   }, 250);
   { const tc = document.getElementById('tCity'), tm = document.getElementById('tMusic');
     tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tm.innerHTML = ico('music');
-    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tick(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
+    tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tickerSay(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
     tm.onclick = () => openPhone('music', MP.q.length ? { tab: 'now' } : undefined);
     document.getElementById('tDj').onclick = () => openPhone('music'); // see who's playing, take the decks inside a club
     for (const ev of ['play', 'pause']) MP.a.addEventListener(ev, () => tm.classList.toggle('playing', !MP.a.paused)); }
@@ -7535,6 +7572,9 @@
   const NOTE_GROUP = { chat: 'Island chat', link: 'Messages', join: 'Arrivals' };
   let hqReqs = 0;
   function notify(text, kind = 'island', open = null, from = '') {
+    text = String(text ?? '').trim(); if (!text || /^undefined\b/.test(text)) return;
+    const dup = notes.findIndex((n) => n.text === text && n.kind === kind && (n.from || '') === (from || '') && Date.now() - n.at < 30 * 60000);
+    if (dup >= 0) { const [n] = notes.splice(dup, 1); n.at = new Date(); notes.unshift(n); if (shadeEl && shadeEl.classList.contains('on')) buildShade(); return; }
     notes.unshift({ text, kind, open, from, at: new Date(), seen: false }); notes.length = Math.min(notes.length, 60); updBadge(); headsUp(notes[0]);
     if (shadeEl && shadeEl.classList.contains('on')) buildShade();
   }
@@ -7614,14 +7654,14 @@
   // Link: new messages from other players reach you anywhere on the island, opened on this device like the app does.
   // It starts as soon as you're signed in (your profile and keys load in the background), asks once for all your chats,
   // and also tells you about messages that came while you were away (once each).
-  const LINK = { told: {} };
+  const LINK = { told: (() => { try { return JSON.parse(store.get('li.told') || '{}'); } catch { return {}; } })() };
   async function linkPoll() {
     if (!signedIn() || !me$ || !keyed) return;
     try {
       const seen = linkSeen(), gs = await myNet('inbox', { seenJson: JSON.stringify(seen) });
       for (const g of gs) {
         const m = g.lastMsg; if (!m || m.mine || m.id <= (seen[g.id] || 0) || m.id <= (LINK.told[g.id] || 0)) continue;
-        LINK.told[g.id] = m.id;
+        LINK.told[g.id] = m.id; store.set('li.told', JSON.stringify(LINK.told));
         const viewing = phone.style.display === 'block' && stack.length && stack[stack.length - 1][0] === 'thread' && stack[stack.length - 1][1] && stack[stack.length - 1][1].id === g.id;
         if (viewing) continue;
         let t; try { t = JSON.parse(dec.decode(await open(await groupKey(g), m.ct))).t; } catch { t = '🔒 New message'; }
@@ -7718,18 +7758,26 @@
       const L = document.getElementById('lockscr'), d = new Date(lagosMs()), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
-      document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos${w4Brief() ? `<div class="lbrief">${esc(w4Brief())}</div>` : ''}`;
+      document.getElementById('lockw').innerHTML = '';
+      if (!L.querySelector('.lpad')) { L.querySelector('.ltop').insertAdjacentHTML('afterbegin', '<div class="lpad" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path class="sh" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>'); L.querySelector('.ltop').insertAdjacentHTML('afterend', '<div class="lwid"></div>'); }
+      const online = document.getElementById('count') ? document.getElementById('count').textContent : '';
+      L.querySelector('.lwid').innerHTML = `<div><small>Lagos</small><b>${wx.icon}${wx.temp}°</b><span>${esc(wx.text)}</span></div>`
+        + `<div><small>Wallet</small><b>${me$ && signedIn() ? naira(me$.naira) : '—'}</b><span>${me$ && signedIn() ? 'game naira' : 'sign in'}</span></div>`
+        + `<div><small>Island</small><b>${esc(online || '0')}</b><span>online now</span></div>`;
+      clearInterval(lockScreen.t); lockScreen.t = setInterval(() => { if (L.style.display === 'none') return clearInterval(lockScreen.t); const n = new Date(lagosMs()); document.getElementById('lockt').textContent = String(n.getUTCHours()).padStart(2, '0') + ':' + String(n.getUTCMinutes()).padStart(2, '0'); }, 5000);
       if (!L.querySelector('.lnet')) { L.insertAdjacentHTML('afterbegin', '<div class="lscan" aria-hidden="true"></div><div class="lnet"><i></i>NETWATCH · LINK SECURE</div><div class="lbeam" aria-hidden="true"></div><div class="lid" aria-live="polite"></div>'); }
       // what's playing, with its controls, above the notifications
       const s = MP.q[MP.i], lm = s ? `<div class="lmus" onclick="event.stopPropagation()"><div class="mwa" style="background-image:url('${esc(s.art)}')"></div><div class="mwt"><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><div class="mwc"><button data-lm="prev">⏮</button><button data-lm="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-lm="next">⏭</button></div></div>` : '';
-      document.getElementById('lockn').innerHTML = lm + notes.slice(0, 3).map(noteHtml).join('') + (notes.length > 3 ? `<div class="lmore">+${notes.length - 3} more</div>` : '');
+      const fresh = notes.filter((n) => !n.seen && n.kind !== 'join');
+      document.getElementById('lockn').innerHTML = lm + fresh.slice(0, 4).map((n) => noteHtml(n, notes.indexOf(n))).join('') + (fresh.length > 4 ? `<div class="lmore">${fresh.length - 4} more notifications</div>` : '') + (!fresh.length && !lm ? '<div class="lempty">No new notifications</div>' : '');
+      document.getElementById('lockn').querySelectorAll('.n').forEach((el) => (el.style.setProperty('--nt', NOTE_TILE[(notes[+el.dataset.ni] || {}).kind] || 'linear-gradient(135deg,#38BDF8,#6366F1)')));
       document.getElementById('lockn').querySelectorAll('[data-lm]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); audioCtx(); const k = b.dataset.lm; if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); b.closest('.lmus').querySelector('[data-lm=play]').textContent = MP.a.paused ? '▶' : '⏸'; }));
-      L.querySelector('.lu').textContent = 'Swipe up to unlock';
+      L.querySelector('.lu').textContent = 'Swipe up to open';
       L.classList.remove('unlocking'); L.style.display = 'flex';
       let busy = false, y0 = null;
       const unlock = (then) => { if (busy) return; busy = true;
-        L.querySelector('.lid').textContent = 'WYRD ID // NEURAL MATCH…'; L.classList.add('unlocking'); islandSet('il-lock il-scan', null, '', '🔒', '');
-        setTimeout(() => { L.querySelector('.lid').textContent = 'WYRD ID ✓ WELCOME BACK'; islandSet('il-unlock', null, 'WYRD ID', '✓', ''); islHoldUntil = performance.now() + 900; }, 380);
+        L.querySelector('.lid').textContent = ''; L.classList.add('unlocking'); islandSet('il-lock il-scan', null, '', '🔒', '');
+        setTimeout(() => { L.querySelector('.lid').textContent = me$ && signedIn() ? `Welcome back, ${me$.handle}` : 'Welcome to Lagos Island'; islandSet('il-unlock', null, 'WYRD ID', '✓', ''); islHoldUntil = performance.now() + 900; }, 380);
         setTimeout(() => { L.style.display = 'none'; L.classList.remove('unlocking'); L.querySelector('.lid').textContent = ''; then && then(); done(); }, 700); };
       L.onpointerdown = (e) => { y0 = e.clientY; };
       L.onpointerup = (e) => { if (y0 != null && y0 - e.clientY > 40) unlock(); y0 = null; }; // a swipe up
@@ -7815,7 +7863,7 @@
           $('realBox').innerHTML = `<button class="wReal" id="wReal"><span class="ic2">${pi('bank')}</span><span style="flex:1"><small>Real earnings${e.mode === 'sandbox' ? ' · sandbox, no real money' : ''}</small><b>${kobo(e.availableKobo)}</b><small>${kobo(e.pendingKobo)} pending · ${kobo(e.inFlightKobo)} being paid out</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`;
           $('wReal').onclick = () => go('earn'); }).catch(() => {});
         rwa('dashboard').then((d) => { if (!d || !d.can || !$('realBox')) return; const b = document.createElement('button'); b.className = 'pbtn alt'; b.style.margin = '6px 0'; b.textContent = '🏦 Treasury (admin)'; b.onclick = () => go('treasury'); $('realBox').after(b); }).catch(() => {});
-        $('sGo').onclick = async () => { const sb = $('sGo'); if (sb.disabled) return; sb.disabled = true; try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); tick(`Sent ${naira(Number($('sAmt').value))} to ${$('sTo').value}`); render('wallet'); } catch (e) { sb.disabled = false; fail(e); } };
+        $('sGo').onclick = async () => { const sb = $('sGo'); if (sb.disabled) return; sb.disabled = true; try { const v = await my('send', { handle: $('sTo').value, amount: Number($('sAmt').value), note: $('sNote').value }); pnaira.textContent = naira(v.naira); tickerSay(`Sent ${naira(Number($('sAmt').value))} to ${$('sTo').value}`); render('wallet'); } catch (e) { sb.disabled = false; fail(e); } };
         return;
       }
       if (app === 'treasury') {
@@ -8211,7 +8259,7 @@
           const o = ACCS[id], on = curAcc.includes(id), list = curAcc.filter((v) => ACCS[v].slot !== o.slot); if (!on) list.push(id);
           q[6] = list.join('+'); myLook = q.join(','); store.set('li.look', myLook);
           try { await my('setLook', { look: myLook }); } catch (e) { if (!/\((404|500)\)/.test(e.message)) return fail(e); }
-          tick(on ? `Took off: ${o.name}` : `Now wearing: ${o.brand} ${o.name}`);
+          tickerSay(on ? `Took off: ${o.name}` : `Now wearing: ${o.brand} ${o.name}`);
         };
         const DEPTS = [['Sportswear', '👟'], ['Streetwear', '🧢'], ['Native', '🪡'], ['Formal', '👔'], ['Luxury', '💎'], ['Accessories', '🕶️']];
         const FAB = ['Cotton', 'Denim', 'Fleece', 'Silk', 'Leather'], PAT = ['', 'Stripes', 'Two-tone', 'Print', 'Side stripe', 'Monogram'];
@@ -8533,7 +8581,7 @@
           pbody.querySelectorAll('[data-ml]').forEach((b) => (b.onclick = (e) => { const lk = e.target.closest('[data-like]'); const list = lists[b.dataset.ml], i = +b.dataset.mi; if (lk) { lk.classList.toggle('on', mpLike(list[i])); return; } if (CITY.dj && inside && inside.key === CITY.dj) { MP.q = list.filter(Boolean); MP.i = i; djSpin(list[i]); setTimeout(() => render('music', a), 600); return; } mpPlay(list, i); pbody.querySelectorAll('.mrow.on').forEach((r) => r.classList.remove('on')); b.classList.add('on'); }));
           pbody.querySelectorAll('[data-album]').forEach((b) => (b.onclick = () => go('music', { tab: 'album', id: b.dataset.album, title: b.dataset.title })));
           pbody.querySelectorAll('[data-genre]').forEach((b) => (b.onclick = () => go('music', { tab: 'genre', q: b.dataset.genre })));
-          if ($('mDeck')) $('mDeck').onclick = () => { audioCtx(); if (CITY.dj) { djLeave(); tick('Handed the decks back to ' + club.spot.dj); } else { CITY.dj = inside.key; tick(`You're on the decks at ${club.spot.name}. Pick a song to drop it.`, 'music'); } render('music', a); };
+          if ($('mDeck')) $('mDeck').onclick = () => { audioCtx(); if (CITY.dj) { djLeave(); tickerSay('Handed the decks back to ' + club.spot.dj); } else { CITY.dj = inside.key; tickerSay(`You're on the decks at ${club.spot.name}. Pick a song to drop it.`, 'music'); } render('music', a); };
         };
         // inside a club: who's on the decks and what's playing, and the button to take over (or hand back)
         const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, onDecks = !!club && CITY.dj === inside.key;
@@ -8893,7 +8941,7 @@
   let partiesLive = {}; // room key -> { host, theme, open, until (ms), place, mine, invited }
   const partyAt = (key) => { const p = partiesLive[key]; return p && p.until > Date.now() ? p : null; };
   // a passing line in the ticker (bottom left): for confirmations of what you just did, which aren't news
-  function tick(text) { const d = document.createElement('div'), dot = document.createElement('i'); d.className = 'j'; dot.style.background = '#38BDF8'; d.append(dot, document.createTextNode(text)); joinsEl.append(d); while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove(); setTimeout(() => d.remove(), 5000); }
+  function tickerSay(text) { const d = document.createElement('div'), dot = document.createElement('i'); d.className = 'j'; dot.style.background = '#38BDF8'; d.append(dot, document.createTextNode(text)); joinsEl.append(d); while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove(); setTimeout(() => d.remove(), 5000); }
   function partyAlert(text) {
     const d = document.createElement('div'), dot = document.createElement('i');
     d.className = 'j'; dot.style.background = '#F472B6'; d.append(dot, document.createTextNode(text));
