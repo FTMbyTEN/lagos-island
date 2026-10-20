@@ -3562,6 +3562,13 @@
   // HQ Row: everyone's free starter home, a BQ (boys' quarters): a single-storey block behind a compound wall
   // (filled in from the server for signed-in players)
   let hqSlots = [];
+  // a plate on a post by a gate: OCCUPIED in green, VACANT in grey (the words once you're close enough to read them)
+  function gatePlate(px, pz, occ, label) {
+    box(px - 0.08, 0, pz - 0.08, px + 0.08, 2.4, pz + 0.08, '#57534E');
+    quad([P(px - 1.3, 1.6, pz + 0.1), P(px + 1.3, 1.6, pz + 0.1), P(px + 1.3, 2.6, pz + 0.1), P(px - 1.3, 2.6, pz + 0.1)], occ ? '#15803D' : '#6B7280', '#FFFFFF');
+    if (K > 3) faceText(label || (occ ? 'OCCUPIED' : 'VACANT'), px, 2.1, pz + 0.12, '#FFFFFF', 0.45, 0, 800);
+  }
+  const litWindows = (a, b, c, d, h) => { if (night < 0.35) return; glow.push(() => { const p = P((a + c) / 2, h * 0.55, d - 3.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 4.5); g.addColorStop(0, 'rgba(255,214,150,0.55)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 4.5, 0, Math.PI * 2); x.fill(); x.restore(); }); };
   function hqHouse(a, b, c, d, k) {
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
     compound(a, b, c, d, hq && hq.mine, () => {
@@ -3575,6 +3582,7 @@
     });
     if (hq && hq.mine) ownerFlag(c - 1.6, b + 1.6, col);
     if (hq) partyHouse(a, b, c, d, partyAt('hq:' + hq.slot));
+    { const occ = !!hq || k < (housingBqs ?? 0); gatePlate(a + 2, d - 0.9, occ); if (occ) litWindows(a, b, c, d, 4); } // assigned or not, at a glance
   }
   // a house with a party on: lights pulsing round it, searchlights at night, a 🎉 bobbing over the roof
   function partyHouse(a, b, c, d, p) {
@@ -3628,7 +3636,7 @@
     govPanel.innerHTML = `<div class="gphead"><i>${ico('gov')}</i><div><b>Lagos Island Government</b><small>${A.signed ? `Your account${myRole() ? ' · ' + myRole().icon + ' ' + myRole().name : ''}` : 'Sign in to see your account'}</small></div><button class="gpx" aria-label="Close">✕</button></div>
       ${A.signed ? `<div class="gptiles"><div class="gpt"><span>Wallet</span><b>${naira(A.naira)}</b></div><div class="gpt"><span>Paid today</span><b>${naira(A.pay)}</b><div class="gpbar"><i style="width:${pct}%"></i></div><small>${A.cap ? naira(A.cap) + ' a day at most' : ''}</small></div></div>
       <div class="gpsec">Your bills</div>
-      ${row('Rent · your BQ on HQ Row', A.rent ? naira(A.rent) : 'Free', 'Every Lagosian\'s, from the Government')}
+      ${row('Rent · your BQ on HQ Row', A.trial ? 'Free' : naira(A.rent) + '/wk', A.trial ? `your first week · free until ${new Date(A.trialEnd).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : 'a basic apartment, after the free first week')}
       ${A.homes.map((h) => row(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `service charge · land use ${naira(h.landUseWk)}/wk`)).join('')}
       ${row('Income tax (PAYE, 7%)', naira(A.paye), `on today's pay · you keep ${naira(A.net)}`)}
       ${row('Due this week', naira(A.dueWk), A.homes.length ? 'service charges and land use' : 'no homes bought yet: nothing due', 'total')}
@@ -3646,12 +3654,13 @@
   setInterval(() => { const el = document.getElementById('tHome'); if (!el) return; const c = census(), h = `${ico('hq')}<b>${c.all.total - c.all.taken}</b><span>free</span><i></i><b>${c.all.taken}</b><span>lived in</span>`; if (el.innerHTML !== h) el.innerHTML = h; el.title = `Housing register: ${c.all.total} homes, ${c.all.taken} lived in, ${c.all.total - c.all.taken} free`; }, 2000);
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tHome')) openPhone('gov'); });
   // the rates (set by WYRD's government; collected once the Treasury opens with the financial system)
-  const GOV = { bqRent: 0, paye: 0.07, landUse: 0.005, service: { flat: 2000, bungalow: 5000, terrace: 8000, duplex: 15000, townhouse: 18000, loft: 25000, mansion: 40000, villa: 80000 } };
+  const GOV = { bqRent: 0, bqRentWk: 3000, trialDays: 7, paye: 0.07, landUse: 0.005, service: { flat: 2000, bungalow: 5000, terrace: 8000, duplex: 15000, townhouse: 18000, loft: 25000, mansion: 40000, villa: 80000 } };
   function govAccount() {
     const mine = Object.values(homesLive).filter((h) => h.mine), homes = mine.map((h) => { const st = HOME_STYLES[h.style] || ['Home', 0]; return { name: st[0], est: EST_NAME[(h.plot || '').split(':')[0]] || '', service: GOV.service[h.style] || 0, landUseWk: Math.round(st[1] * GOV.landUse / 52) }; });
     const pay = me$ ? me$.earnedToday || 0 : 0, cap = me$ ? me$.dailyCap || 0 : 0, paye = Math.round(pay * GOV.paye);
     const serviceWk = Math.round(homes.reduce((s2, h) => s2 + h.service, 0) / 4.33), landWk = homes.reduce((s2, h) => s2 + h.landUseWk, 0);
-    return { signed: signedIn() && !!me$, naira: me$ ? me$.naira : 0, pay, cap, paye, net: pay - paye, homes, rent: GOV.bqRent, serviceWk, landWk, dueWk: serviceWk + landWk };
+    const joined = +store.get('li.joined') || 0, trialEnd = joined ? joined + GOV.trialDays * 864e5 : 0, trial = Date.now() < trialEnd, rent = trial ? 0 : GOV.bqRentWk;
+    return { signed: signedIn() && !!me$, naira: me$ ? me$.naira : 0, pay, cap, paye, net: pay - paye, homes, rent, trial, trialEnd, serviceWk, landWk, dueWk: serviceWk + landWk + rent };
   }
   function census() {
     const est = {}, style = {}; let total = 0, taken = 0;
@@ -3708,7 +3717,7 @@
     });
     { flat(a + 0.8, d - 3.1, c - 0.8, d - 0.5, 0.06, '#9CA3AF', '#D1D5DB'); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = 1; x.beginPath(); const p = P((a + c) / 2, 0.07, d - 3), q = P((a + c) / 2, 0.07, d - 0.6); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); // the parking pad, two bays
       if (h && h.mine && h.style !== 'loft') parkOrder(myCarsL).slice(0, 2).forEach((c2, k) => drawCar(a + (c - a) * (k ? 0.73 : 0.27), d - 1.8, c2.model, c2.color, 0, 0.62)); }
-    if (h) { ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573'); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); }
+    if (h) { ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573'); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); gatePlate(c - 2.3, d - 1.6, true); litWindows(a, b, c, d, 8); }
     else { box(c - 2.4, 0, d - 1.8, c - 2.2, 2.6, d - 1.6, '#78350F'); quad([P(c - 3.6, 1.6, d - 1.55), P(c - 1, 1.6, d - 1.55), P(c - 1, 2.8, d - 1.55), P(c - 3.6, 2.8, d - 1.55)], '#DC2626'); if (K > 3) faceText('FOR SALE', c - 2.3, 2.2, d - 1.5, '#FFFFFF', 0.55, 0); }
   }
   // an estate: its plots far to near, each in its style
@@ -3717,6 +3726,11 @@
     for (let j = b / T; j < d / T; j++) for (let i = a / T; i < c / T; i++) { const pl = plotAt(i, j); if (pl) tiles.push([P(i * T + T / 2, 0, j * T + T / 2)[2], i, j, pl]); }
     tiles.sort((p, q) => p[0] - q[0]);
     for (const [, i, j, pl] of tiles) homeModel(pl.style, i * T, j * T, (i + 1) * T, (j + 1) * T, homesLive[pl.plot] || (housingTaken && housingTaken.has(pl.plot) ? { plot: pl.plot, style: pl.style, color: '#94A3B8' } : undefined));
+    { const ep = estateAt(a / T, b / T); if (ep) { const bx0 = a + 1, bx1 = a + Math.min(14, (c - a) - 2), bz = d - 0.35, mid = (bx0 + bx1) / 2;
+        for (const px of [bx0 + 0.6, bx1 - 0.6]) box(px - 0.15, 0, bz - 0.15, px + 0.15, 4.6, bz + 0.15, '#57534E');
+        quad([P(bx0, 2.4, bz + 0.2), P(bx1, 2.4, bz + 0.2), P(bx1, 4.8, bz + 0.2), P(bx0, 4.8, bz + 0.2)], '#15803D', '#FFFFFF');
+        { const q0 = [P(bx0 + 0.25, 2.65, bz + 0.21), P(bx1 - 0.25, 2.65, bz + 0.21), P(bx1 - 0.25, 4.55, bz + 0.21), P(bx0 + 0.25, 4.55, bz + 0.21)]; x.strokeStyle = '#FFFFFF'; x.lineWidth = Math.max(1, K * 0.14); x.beginPath(); x.moveTo(q0[0][0], q0[0][1]); for (const p of q0.slice(1)) x.lineTo(p[0], p[1]); x.closePath(); x.stroke(); }
+        const sz = Math.min(1.1, (bx1 - bx0 - 1) / Math.max(6, ep[5].length * 0.62)); faceText(ep[5].toUpperCase(), mid, 3.6, bz + 0.22, '#FFFFFF', sz, 0, 900); } }
   }
 
   // ---- the lots: each landmark takes its tiles; the rest of a sector's lots get a plot, a house or trees
@@ -5636,6 +5650,7 @@
   addEventListener('blur', () => keys.clear());
   const zoomBy = (f) => { cam.user = Math.max(0.45, Math.min(2.4, cam.user * f)); };
   document.getElementById('zoomin').onclick = () => zoomBy(1.25);
+  addEventListener('wheel', (e) => { if (e.target !== cv) return; e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1); }, { passive: false }); // zoom with the wheel (or a trackpad's two fingers)
   document.getElementById('zoomout').onclick = () => zoomBy(1 / 1.25);
   const stickEl = document.getElementById('stick'), knob = document.getElementById('knob');
   let stickId = null;
@@ -7089,7 +7104,7 @@
         const citizens = c.bq.taken, online = (typeof others !== 'undefined' ? others.size : 0) + 1, lightHrs = Array.from({ length: 24 }, (_, k) => nepaAt(lagosMs() - 3600e3 - k * 3600e3)).filter(Boolean).length;
         const rev = Object.entries(c.style).map(([k, v]) => ({ k, name: HOME_STYLES[k][0], n: v.taken, wk: Math.round(v.taken * ((GOV.service[k] || 0) / 4.33 + HOME_STYLES[k][1] * GOV.landUse / 52)) })).filter((r) => r.n), revWk = rev.reduce((s2, r) => s2 + r.wk, 0);
         const SPEND = [['Power', 'Steadier light: transformers, the solar farms, inverters for the clinics', 30, '#FACC15'], ['Roads and transport', 'The coastal road, the Blue Line, the bridges', 20, '#38BDF8'], ['Housing', 'New estates on the reclaimed land, upkeep of HQ Row', 15, '#22C55E'], ['Health', 'General Hospital and the clinics', 10, '#F87171'], ['Education', 'Schools and skills: real jobs need real skills', 10, '#A78BFA'], ['Culture', 'The Arena, the festivals, Freedom Park', 5, '#F472B6'], ['Reserve', 'Kept at the Island Reserve Bank for a rainy day', 10, '#94A3B8']];
-        const LAWS = [['Housing', 'Every Lagosian holds a free BQ on HQ Row, whatever else they own.'], ['Housing', 'No one holds more than three homes in the estates.'], ['Housing', 'A home someone lives in is private: go in only when its owner lets you.'], ['Money', 'Income tax (PAYE) is 7% of what you earn on the island.'], ['Money', 'Each home pays a monthly service charge and a land use charge of 0.5% of its value a year.'], ['Money', 'Pay from shifts is capped each day, so nobody can farm the island.'], ['Roads', 'The coastal road is 60 km/h; HQ Row and the estates, 30.'], ['Roads', 'Drive only cars you own, bought at Polanco or Lekki Luxury Cars.'], ['Nightlife', 'The clubs open every night; the DJ hands back the decks when asked.'], ['Conduct', 'Chats are private and encrypted: not even the Government reads them.'], ['Conduct', 'Respect every Lagosian. WYRD acts on reports of abuse.']];
+        const LAWS = [['Housing', 'Every new Lagosian is assigned a BQ on HQ Row: free for the first week, then ₦3,000 a week.'], ['Housing', 'No one holds more than three homes in the estates.'], ['Housing', 'A home someone lives in is private: go in only when its owner lets you.'], ['Money', 'Income tax (PAYE) is 7% of what you earn on the island.'], ['Money', 'Each home pays a monthly service charge and a land use charge of 0.5% of its value a year.'], ['Money', 'Pay from shifts is capped each day, so nobody can farm the island.'], ['Roads', 'The coastal road is 60 km/h; HQ Row and the estates, 30.'], ['Roads', 'Drive only cars you own, bought at Polanco or Lekki Luxury Cars.'], ['Nightlife', 'The clubs open every night; the DJ hands back the decks when asked.'], ['Conduct', 'Chats are private and encrypted: not even the Government reads them.'], ['Conduct', 'Respect every Lagosian. WYRD acts on reports of abuse.']];
         const line = (k, v, sub) => `<div class="grow"><span><b>${k}</b>${sub ? `<small>${sub}</small>` : ''}</span><em>${v}</em></div>`;
         let body = '';
         if (tab === 'overview') body = `<div class="ggov"><i class="gorb"></i><div><small>Governor of Lagos Island</small><b>WYRD</b><span>"Eko o ni baje. Every Lagosian housed, every street lit."</span></div></div>
@@ -7098,9 +7113,10 @@
           ${A.signed ? `<div class="pcard">${line('Wallet', naira(A.naira))}${line('Paid today', naira(A.pay), A.cap ? `of ${naira(A.cap)} a day` : '')}${bar(A.cap ? Math.min(100, A.pay / A.cap * 100) : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}${line('Due this week', naira(A.dueWk))}</div>` : '<div class="pcard dim">Sign in to see your rent, tax and pay.</div>'}
           <div class="pcard">${line('Housing register', `${c.all.taken}/${c.all.total}`, `${c.total} estate homes · ${c.bq.total} BQs`)}${bar(c.all.total ? c.all.taken / c.all.total * 100 : 0, 'linear-gradient(90deg,#22D3EE,#A78BFA)')}</div>`;
         else if (tab === 'account') body = A.signed ? `<div class="pcard">${line('Wallet', naira(A.naira))}${line('Paid today', naira(A.pay), A.cap ? `of ${naira(A.cap)} a day at most` : '')}${line('Income tax (PAYE 7%)', naira(A.paye), `you keep ${naira(A.net)}`)}</div>
-          <div class="rsec">RENT AND RATES</div><div class="pcard">${line('Your BQ on HQ Row', A.rent ? naira(A.rent) : 'Free', 'from the Government, for every Lagosian')}${A.homes.map((h) => line(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `land use ${naira(h.landUseWk)} a week`)).join('') || '<div class="dim" style="padding:6px 0">No homes bought yet.</div>'}${line('Due this week', naira(A.dueWk))}</div>
+          <div class="rsec">RENT AND RATES</div><div class="pcard">${line('Your BQ on HQ Row', A.trial ? 'Free' : naira(A.rent) + '/wk', A.trial ? `free for your first week, until ${new Date(A.trialEnd).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : 'a basic apartment, after the free first week')}${A.homes.map((h) => line(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `land use ${naira(h.landUseWk)} a week`)).join('') || '<div class="dim" style="padding:6px 0">No homes bought yet.</div>'}${line('Due this week', naira(A.dueWk))}</div>
           <div class="lock">Rates set by WYRD's government. Nothing is taken yet: collection starts when the Treasury opens at the Island Reserve Bank.</div>` : '<div class="pcard dim">Sign in to WYRD to see your account.</div>';
-        else if (tab === 'housing') body = `<div class="pcard">${line('Every home on the island', `${c.all.taken}/${c.all.total}`, `${c.total} in the estates, ${c.bq.total} BQs on HQ Row`)}${bar(c.all.total ? c.all.taken / c.all.total * 100 : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}${line('BQs on HQ Row', `${c.bq.taken}/${c.bq.total}`, 'free for every Lagosian')}</div>
+        else if (tab === 'housing') body = `<div class="pcard">${line('Every home on the island', `${c.all.taken}/${c.all.total}`, `${c.total} in the estates, ${c.bq.total} BQs on HQ Row`)}${bar(c.all.total ? c.all.taken / c.all.total * 100 : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}${line('BQs on HQ Row', `${c.bq.taken}/${c.bq.total}`, 'assigned to new Lagosians, free their first week')}</div>
+          ${hqSlots.length ? `<div class="msec" style="font-size:15px">Assigned BQs<small>${hqSlots.length}</small></div><div class="pcard">${hqSlots.map((sl, k) => line(`BQ #${k + 1}`, sl.mine ? 'You' : sl.owner ? esc(sl.owner) : 'Assigned', sl.mine ? 'your apartment' : sl.may ? 'open to visitors' : 'private')).join('')}</div>` : ''}
           <div class="rsec">BY ESTATE</div><div class="pcard">${Object.values(c.est).map((e) => line(esc(e.name), `${e.taken}/${e.total}`, `${e.total - e.taken} free`) + bar(Math.round(e.taken / e.total * 100), e.taken === e.total ? '#F87171' : '#22D3EE')).join('')}</div>
           <div class="rsec">BY KIND OF HOME</div><div class="pcard">${Object.entries(c.style).map(([k, v]) => line(esc(HOME_STYLES[k][0]), `${v.taken}/${v.total}`, naira(HOME_STYLES[k][1]))).join('')}</div>`;
         else if (tab === 'budget') body = `<div class="pcard">${line('Rates raised each week', naira(revWk), revWk ? 'service charges and land use, from homes lived in' : 'no homes bought yet')}${rev.map((r) => line(`${esc(r.name)} × ${r.n}`, naira(r.wk) + '/wk')).join('')}</div>
@@ -7907,7 +7923,7 @@
     if (box) { box.innerHTML = PERSONAS.map(([k, e, n]) => `<button type="button" data-ps="${k}"><i>${e}</i>${n}</button>`).join('');
       box.querySelectorAll('[data-ps]').forEach((b) => (b.onclick = () => { const k = b.dataset.ps; if (persoPicked.has(k)) persoPicked.delete(k); else if (persoPicked.size < 3) persoPicked.add(k); box.querySelectorAll('[data-ps]').forEach((o) => { o.classList.toggle('on', persoPicked.has(o.dataset.ps)); o.disabled = !persoPicked.has(o.dataset.ps) && persoPicked.size >= 3; }); cnt.textContent = persoPicked.size ? `${persoPicked.size} of 3` : 'pick up to 3'; })); } }
   // a new Lagosian: keep what they picked, and have WYRD onboard them after the welcome
-  function newLagosian() { const picks = persoPicked.size ? [...persoPicked] : ['ambitious', 'social']; store.set('li.persona', JSON.stringify(picks)); store.set('li.role', roleFor(picks)); store.set('li.onboard', '1'); store.set('li.intro', ''); }
+  function newLagosian() { store.set('li.joined', String(Date.now())); const picks = persoPicked.size ? [...persoPicked] : ['ambitious', 'social']; store.set('li.persona', JSON.stringify(picks)); store.set('li.role', roleFor(picks)); store.set('li.onboard', '1'); store.set('li.intro', ''); }
   const myRole = () => ROLES[store.get('li.role')] || null;
   // ---- WYRD, your guide: a card at the foot of the screen with WYRD's orb, what it says (typed out), and what you can do
   // about it. It shows a newcomer round the island the first time they play, and it looks round your home when you walk in:
@@ -7944,7 +7960,7 @@
         // the apartment: every new Lagosian gets one
         if (signedIn()) await loadHqRow().catch(() => {});
         const k = hqSlots.findIndex((sl) => sl.mine), lot = k >= 0 ? [...hqIndex].find(([, v]) => v === k) : null;
-        const r1 = await coachSay(`Every Lagosian gets a home. I've assigned you ${k >= 0 ? 'BQ #' + (k + 1) : 'a BQ'} on HQ Row: a basic apartment, yours, free. It's bare for now. Furnish it from the Eko Home Store and make it yours.`, [...(lot ? [['Take me there', () => { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; return 'home'; }, true]] : []), ['Next', null, !lot]], 'Your apartment');
+        const r1 = await coachSay(`Every Lagosian gets a home. I've assigned you ${k >= 0 ? 'BQ #' + (k + 1) : 'a BQ'} on HQ Row: a basic apartment, yours, free for your first week. It's bare for now. Furnish it from the Eko Home Store and make it yours.`, [...(lot ? [['Take me there', () => { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; return 'home'; }, true]] : []), ['Next', null, !lot]], 'Your apartment');
         if (r1 === 'home') await new Promise((res) => setTimeout(res, 2500));
       }
     }
