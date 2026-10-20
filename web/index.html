@@ -1848,11 +1848,9 @@
         flat(a + 1, d - 3, c - 8, d - 1.6, 0.07, '#B07A45');
         for (let k = 0; k < 4; k++) { const cx2 = a + 4 + k * 5.5, cz2 = d - 6.5; for (const [ox, oz] of [[-1.6, -1.6], [1.6, -1.6], [-1.6, 1.6], [1.6, 1.6]]) box(cx2 + ox - 0.1, 0, cz2 + oz - 0.1, cx2 + ox + 0.1, 3.4, cz2 + oz + 0.1, '#E7E5E4'); pyramid(cx2 - 2, cz2 - 2, cx2 + 2, cz2 + 2, 3.4, 1.4, '#FFFFFF'); box(cx2 - 1.2, 0, cz2 - 1, cx2 + 1.2, 0.8, cz2 + 1, '#F5F5F4'); torches.push([cx2 + 2, cz2 + 2.2, 2.2]); }
       } else if (/Elegushi/.test(name)) {
-        // Elegushi: the party beach, a stage with a DJ booth and stacks of speakers, lights pulsing at night
+        // Elegushi: the party beach, a stage with a DJ booth and stacks of speakers (no strobe)
         const sx = a + 9, sz = d - 6; box(sx - 6, 0, sz - 2.5, sx + 6, 1, sz + 2.5, '#1F2937'); for (const px of [sx - 6, sx + 5.6]) box(px, 1, sz - 2.5, px + 0.4, 6, sz - 2.1, '#374151'); box(sx - 6, 6, sz - 2.5, sx + 6, 6.4, sz + 2.5, '#111827');
         box(sx - 2, 1, sz - 0.6, sx + 2, 2.4, sz + 0.6, '#0F172A'); for (const px of [sx - 5, sx + 4]) box(px, 1, sz - 1, px + 1.2, 3.6, sz + 1, '#111827');
-        const stage = () => { if (night < 0.3) return; const tt = performance.now() / 1000; for (let k = 0; k < 6; k++) { const p = P(sx - 5 + k * 2, 6, sz + 2.4), on = (k + Math.floor(tt * 6)) % 3 === 0; x.fillStyle = on ? `hsl(${(tt * 120 + k * 60) % 360},95%,65%)` : 'rgba(80,80,80,0.6)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.4, K * 0.4), 0, Math.PI * 2); x.fill(); } beams(sx, 6, sz, 300, tt); };
-        stage(); glow.push(stage);
         for (let k = 0; k < 4; k++) torches.push([a + 18 + k * 3, d - 3, 2.2]);
       } else {
         // Ilashe: thatched chalets, a hammock between palms, a speedboat drawn up on the shore
@@ -2068,8 +2066,7 @@
           x.save(); x.font = `800 ${Math.max(8, K * 2.1)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
           x.shadowColor = '#22D3EE'; x.shadowBlur = 14; x.fillStyle = '#A5F3FC'; x.fillText('LEKKI', sg[0], sg[1] - K * 1.2);
           x.shadowColor = '#FB7185'; x.fillStyle = '#FECDD3'; x.font = `700 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.fillText('beach club', sg[0], sg[1] + K * 1.2); x.restore();
-          if (night > 0.3) beams((a + bx1) / 2, 10, (b + d) / 2, 190, t);
-        };
+                  };
         neon(); glow.push(neon);
       } else if (LK.theme === 'ozumba') {
         // Club Ozumba: two floors of black glass behind gold fins, LED bands chasing round, a rooftop lounge with umbrellas
