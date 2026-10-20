@@ -3,7 +3,7 @@
 //  - models, textures, icons and three.js: from the device once downloaded (cache first)
 //  - the game server (accounts, wallet, jobs, who's around): always live, never cached
 // "Install app" asks it to download everything listed in precache.json, reporting progress back.
-const CACHE = 'lagos-island-v1';
+const CACHE = 'lagos-island-v2';
 const ASSET = /\.(glb|gltf|bin|jpg|jpeg|png|webp|webmanifest)$/i;
 const CDN = /^https:\/\/(cdn\.jsdelivr\.net|fonts\.(googleapis|gstatic)\.com)\//;
 
