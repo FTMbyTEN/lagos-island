@@ -284,7 +284,7 @@
   .rsec { font: 800 11px 'Orbitron', sans-serif; letter-spacing: 3px; color: var(--m); margin: 14px 0 6px; }
   #phoneBtn::before { background: linear-gradient(160deg, #FCEE0A, #FF003C 60%, #00F0FF); }
   /* one phone shape everywhere: a fixed 372 x 780 handset, scaled as a whole (--ps, set in fitPhone) so it never stretches or squashes */
-  #phone, .touch #phone { left: auto; top: auto; right: 16px; bottom: 16px; width: 372px !important; height: 780px !important; scale: var(--ps, 1); transform-origin: 100% 100% !important; }
+  #phone, .touch #phone { left: auto; top: auto; right: 16px; bottom: 16px; width: 372px !important; height: var(--phh, 780px) !important; scale: var(--ps, 1); transform-origin: 100% 100% !important; }
   @media (max-width: 560px) { #phone, .touch #phone { right: auto; left: 50%; margin-left: -186px; bottom: calc(8px + env(safe-area-inset-bottom)); transform-origin: 50% 100% !important; } }
   /* WYRD OS, polished */
   #phone { border-radius: 52px !important; padding: 11px !important; background: linear-gradient(145deg, #3A3D46, #15161B 22%, #0B0B10 50%, #15161B 78%, #3A3D46) !important; box-shadow: 0 0 0 1px rgba(255,255,255,.14) inset, 0 0 0 1.5px #000, 0 0 0 2.5px rgba(252,238,10,.28), 0 0 44px rgba(0,240,255,.16), 0 40px 90px rgba(0,0,0,.55) !important; }
@@ -6128,7 +6128,9 @@
     // tablet, and on a desktop up to 80% of its real size; always within the window's width and height
     const w = innerWidth, vh = (window.visualViewport && visualViewport.height) || innerHeight, m = w <= 560 ? 8 : 16;
     const [fw, fh, cap] = w < 600 ? [0.97, 0.93, 1] : w < 1024 ? [0.62, 0.88, 0.96] : [1, 0.9, 0.92];
-    phone.style.setProperty('--ps', Math.max(0.45, Math.min(cap, (w - 2 * m) * fw / 372, (vh - 2 * m) * fh / 780)).toFixed(4));
+    // text stays readable: the scale never drops below what the width allows (about 90% on a desktop); a short window gets a shorter phone, not a smaller one
+    const s = Math.max(0.45, Math.min(cap, (w - 2 * m) * fw / 372, Math.max((vh - 2 * m) * fh / 780, w < 600 ? 0.9 : 0.88)));
+    phone.style.setProperty('--ps', s.toFixed(4)); phone.style.setProperty('--phh', Math.round(Math.min(780, (vh - 2 * m) / s)) + 'px');
   }
   addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
   // ---- Island Music: songs from two open catalogues. Deezer for what's charting and new (Nigeria's top 100, new releases,
