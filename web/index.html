@@ -671,6 +671,46 @@
   #go:hover { filter: brightness(1.06); box-shadow: 0 12px 28px rgba(14,165,233,.45) !important; } #go:active { transform: scale(.98); }
   #hello .link { color: #0369A1; font-weight: 700; }
 /* compact and sleek: everything fits in one slim bar, the DJ chip gives way first, nothing spills out */  #top.pill { width: min(600px, calc(100vw - 16px)); height: 46px; padding: 5px !important; gap: 6px !important; overflow: hidden; }  #title { font-size: 15px; gap: 7px; flex: none; } #title .logo { width: 34px; height: 34px; }  #online { height: 26px; padding: 0 9px; font-size: 11.5px; flex: none; }  #topR { flex: 1 1 auto; min-width: 0; justify-content: flex-end; gap: 4px !important; }  #tWx { height: 30px; padding: 0 9px !important; font-size: 12.5px !important; flex: none; }  .tdj { flex: 0 1 auto; min-width: 0; max-width: 190px; height: 32px; padding: 0 10px 0 8px; } .tdj.on { display: flex; }  #topR button { width: 32px !important; height: 32px !important; flex: none; transition: background .2s, transform .15s, color .2s !important; }  @media (max-width: 640px) { #title span.logo + * { display: none; } #title { font-size: 0; } .tdj { max-width: 150px; } }  @media (max-width: 430px) { #online { padding: 0 7px; } .tdj small { display: none; } .tdj { max-width: 112px; } #tWx b { font-size: 12px; } }
+  /* WYRD OS 3: the system UI's states. Locked: Back / Home / Close wait (dimmed, no taps) until you unlock. */
+  #phone.locked #pnav button { opacity: .28 !important; pointer-events: none !important; filter: grayscale(1) saturate(0); transform: none !important; }
+  #phone.locked #pnav { border-color: rgba(255,255,255,.06) !important; }
+  #phone .btnR { cursor: pointer; } #phone .btnR:active { transform: translateX(1px); }
+  /* the Dynamic Island: compact live activities (left: what, middle: the line, right: how it's going) */
+  #island .il-l, #island .il-r { flex: none; font: 800 11px 'Rajdhani', 'Plus Jakarta Sans', sans-serif; letter-spacing: .5px; font-variant-numeric: tabular-nums; }
+  #island .il-l:empty, #island .il-r:empty { display: none; }
+  #island .il-r { color: #FDE68A; }
+  #island .il-orb { display: none; flex: none; width: 7px; height: 7px; margin-left: 2px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #E0FCFF, #00F0FF 45%, #0E7490); box-shadow: 0 0 6px #00F0FF; animation: orbBreath 3.2s ease-in-out infinite; }
+  #island.il-idle .il-orb { display: block; } @keyframes orbBreath { 50% { opacity: .35; transform: scale(.7); } }
+  #island.il-music .il-eq { display: flex; } #island.il-music .il-r { display: none; }
+  #island.il-fly { color: #BAE6FD; } #island.il-grid { color: #FDE68A; } #island.il-grid .il-r { color: #FACC15; }
+  #island.il-lock { width: 64px !important; margin-left: -32px !important; color: #E2E8F0; justify-content: center; }
+  #island.il-lock::before { content: ''; position: absolute; inset: 3px auto 3px 6px; width: 20px; border-radius: 50%; border: 1.5px solid rgba(0,240,255,.0); }
+  #island.il-scan::before { border-color: rgba(0,240,255,.8); border-top-color: transparent; animation: islScan .5s linear infinite; } @keyframes islScan { to { transform: rotate(360deg); } }
+  #island.il-unlock { width: 132px !important; margin-left: -66px !important; color: #4ADE80; justify-content: center; box-shadow: 0 0 0 1px rgba(74,222,128,.45), 0 0 16px rgba(74,222,128,.3) !important; }
+  #island.il-unlock .il-r { color: #4ADE80; }
+  #island.il-toast .il-r { display: none; }
+  /* the lock screen, Night City over Lagos: scanlines, a glitching clock, the NETWATCH chip, the unlock beam */
+  #lockscr { overflow: hidden; touch-action: none; }
+  #lockscr .lscan { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }
+  #lockscr > *:not(.lscan):not(.lbeam) { position: relative; z-index: 1; }
+  #lockscr .lnet { position: absolute !important; top: 46px; left: 50%; transform: translateX(-50%); padding: 3px 10px; border: 1px solid rgba(0,240,255,.45); font: 700 10px 'Rajdhani', sans-serif; letter-spacing: 2.5px; color: #7DF9FF; background: rgba(0,20,30,.55); white-space: nowrap; }
+  #lockscr .lnet i { display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 6px #4ADE80; vertical-align: 1px; animation: orbBreath 2s ease-in-out infinite; }
+  #lockscr .lt { animation: lockGlitch 6s steps(1) infinite; }
+  @keyframes lockGlitch { 0%, 92%, 100% { transform: none; text-shadow: 4px 0 var(--m), -3px 0 var(--c); } 93% { transform: translateX(-3px) skewX(-6deg); text-shadow: -6px 0 var(--m), 5px 0 var(--c); } 95% { transform: translateX(2px); clip-path: inset(10% 0 45% 0); } 97% { transform: none; clip-path: none; } }
+  #lockscr .lbeam { position: absolute; left: 0; right: 0; bottom: -20%; height: 18%; z-index: 2; pointer-events: none; opacity: 0; background: linear-gradient(0deg, transparent, rgba(0,240,255,.35) 60%, rgba(224,252,255,.9) 62%, transparent 64%); }
+  #lockscr.unlocking .lbeam { animation: lockBeam .65s cubic-bezier(.4,0,.2,1) forwards; } @keyframes lockBeam { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: .9; transform: translateY(-640%); } }
+  #lockscr.unlocking .ltop, #lockscr.unlocking .lnotes, #lockscr.unlocking .lbot { transition: transform .45s cubic-bezier(.4,0,.2,1) .2s, opacity .45s .2s; transform: translateY(-24px); opacity: 0; }
+  #lockscr .lid { position: absolute !important; left: 0; right: 0; bottom: 92px; text-align: center; font: 800 11px 'Orbitron', sans-serif; letter-spacing: 3px; color: #7DF9FF; text-shadow: 0 0 8px rgba(0,240,255,.6); min-height: 14px; }
+  #lockscr.unlocking .lid { color: #4ADE80; text-shadow: 0 0 8px rgba(74,222,128,.6); }
+  @media (prefers-reduced-motion: reduce) { #lockscr .lt, #island .il-orb, #lockscr .lnet i { animation: none !important; } #lockscr.unlocking .lbeam { animation-duration: .01s; } }
+  /* the lock screen's foot: the hint on its own line, the quick buttons in a row under it, all clear of the (idle) bar */
+  #lockscr { padding-bottom: 104px !important; }
+  #lockscr .lbot { flex-wrap: wrap; justify-content: center !important; gap: 14px 22px; }
+  #lockscr .lbot .lu { order: -1; flex-basis: 100%; text-align: center; white-space: nowrap; font-size: 11px !important; letter-spacing: 3px !important; }
+  #lockscr .lbot .lu::before { content: ''; display: block; width: 36px; height: 3px; margin: 0 auto 8px; border-radius: 3px; background: linear-gradient(90deg, var(--c), var(--m)); animation: swipeHint 1.8s ease-in-out infinite; }
+  @keyframes swipeHint { 50% { transform: translateY(-5px); opacity: .55; } }
+  #lockscr .lid { bottom: 178px !important; }
+  #lockscr.unlocking .lbot .lu { opacity: 0 !important; transition: opacity .1s !important; } /* WYRD ID speaks instead */
 </style>
 </head>
 <body>
@@ -6992,34 +7032,67 @@
     const sh = g.createLinearGradient(0, 0, 0, h); sh.addColorStop(0, 'rgba(7,7,13,0.15)'); sh.addColorStop(0.4, 'rgba(7,7,13,0.35)'); sh.addColorStop(1, 'rgba(7,7,13,0.55)'); g.fillStyle = sh; g.fillRect(0, 0, w, h);
   }
   (function wallLoop(now) { if (phone.style.display === 'block' && now - (WALL.last || 0) > 33) { WALL.last = now; drawWall(now); } requestAnimationFrame(wallLoop); })(performance.now()); // ~30 frames a second is plenty for a wallpaper
-  // ---- the Dynamic Island: the camera notch, alive. Music playing: the cover and a moving equaliser; the city DJ out at night;
-  // a ride on its way. A notification grows out of it for a moment. Tap it to open what it shows.
-  const ISL = document.querySelector('#pbar .cam'); ISL.id = 'island'; ISL.innerHTML = '<img alt=""><span class="il-t"></span><i class="il-eq"><s></s><s></s><s></s></i>';
-  let islToastUntil = 0, islOpen = null;
-  function islandSet(kind, img, text) { ISL.className = 'cam ' + kind; const im = ISL.querySelector('img'); if (img) { if (im.src !== img) im.src = img; im.style.display = ''; } else im.style.display = 'none'; ISL.querySelector('.il-t').textContent = text || ''; }
+  // ---- WYRD OS 3: the system UI. Like a real phone's, it has states: asleep (put away), locked (the lock screen; only
+  // the lock screen's own controls answer, Back/Home/Close wait), and unlocked. The side button is the power button:
+  // it puts the phone away whatever state it's in (Esc does the same on a computer).
+  function phoneLock(on) {
+    phone.classList.toggle('locked', !!on);
+    for (const b of document.querySelectorAll('#pnav button')) { b.disabled = !!on; b.setAttribute('aria-disabled', on ? 'true' : 'false'); }
+  }
+  { const pw = phone.querySelector('.btnR'); pw.title = 'Power: put the phone away'; pw.setAttribute('role', 'button'); pw.setAttribute('aria-label', 'Power'); pw.onclick = (e) => { e.stopPropagation(); document.getElementById('lockscr').style.display = 'none'; phoneLock(false); closePhone(); }; }
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && phone.style.display === 'block' && !e.target.closest?.('input, textarea')) { document.getElementById('lockscr').style.display = 'none'; phoneLock(false); closePhone(); } });
+
+  // ---- the Dynamic Island: the camera notch, alive, as a set of live activities. Compact: what it is on the left, how
+  // it's going on the right (the music's cover and equaliser, a ride, your flight's countdown, your Grid shift). Locked:
+  // a padlock and a scanning ring; unlocking flashes WYRD ID. A notification grows out of it for a moment. Idle: WYRD's
+  // orb breathing in the notch. Tap it to open what it shows.
+  const ISL = document.querySelector('#pbar .cam'); ISL.id = 'island'; ISL.innerHTML = '<img alt=""><span class="il-l"></span><span class="il-t"></span><span class="il-r"></span><i class="il-eq"><s></s><s></s><s></s></i><i class="il-orb"></i>';
+  let islToastUntil = 0, islOpen = null, islHoldUntil = 0;
+  function islandSet(kind, img, text, left = '', right = '') {
+    ISL.className = 'cam ' + kind; const im = ISL.querySelector('img');
+    if (img) { if (im.src !== img) im.src = img; im.style.display = ''; } else im.style.display = 'none';
+    ISL.querySelector('.il-l').textContent = left; ISL.querySelector('.il-t').textContent = text || ''; ISL.querySelector('.il-r').textContent = right;
+  }
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.max(0, s) % 60).padStart(2, '0')}`;
   setInterval(() => {
-    if (performance.now() < islToastUntil) return;
+    const now = performance.now(); if (now < islToastUntil || now < islHoldUntil) return;
+    if (phone.classList.contains('locked')) { islandSet('il-lock', null, '', '🔒', ''); islOpen = null; return; }
     const s = MP.q[MP.i];
-    if (s && !MP.a.paused) { islandSet('il-live', s.art, s.title); islOpen = ['music', { tab: 'now' }]; }
-    else if (CITY.mix && CITY.mix.playing && CITY.mix.now && !inside) { islandSet('il-live il-dj', null, '🎧 ' + (CITY.mix.now.title || 'DJ Eko Nights')); islOpen = ['music']; }
-    else if (typeof trip !== 'undefined' && trip) { islandSet('il-live il-ride', null, trip.phase === 'ontrip' ? '🛵 On the way' : '🛵 Your ride is coming'); islOpen = ['ride']; }
-    else { islandSet('', null, ''); islOpen = null; }
-  }, 600);
-  ISL.onclick = (e) => { e.stopPropagation(); if (islOpen) go(...islOpen); };
-  function islandToast(text, kind) { islToastUntil = performance.now() + 3200; islandSet('il-toast', null, ((NOTE_ICON[kind] ? NOTE_ICON[kind] + ' ' : '🔔 ')) + text); }
-  { const n0 = notify; notify = (text, kind, open, from) => { n0(text, kind, open, from); if (phone.style.display === "block") islandToast(from ? from + ": " + text : text, kind); }; }
+    if (inside && inside.kind === 'jetcabin') { const d = AIR.find(inside.flight) || AIR_JOY, left = Math.ceil(((inside.until || 0) - Date.now()) / 1000); islandSet('il-live il-fly', null, d[0] === 'island' ? 'Joyride' : 'LOS → ' + d[2], '✈️', mmss(left)); islOpen = null; }
+    else if (s && !MP.a.paused) { islandSet('il-live il-music', s.art, s.title); islOpen = ['music', { tab: 'now' }]; }
+    else if (typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks) { const n = GJ.shift.tasks.filter((tk) => tk.done).length, tk = GJ.shift.tasks.find((v) => !v.done); islandSet('il-live il-grid', null, tk ? tk.title : 'Hand in your shift', '⚡', `${n}/${GJ.shift.tasks.length}`); islOpen = ['grid']; }
+    else if (CITY.mix && CITY.mix.playing && CITY.mix.now && !inside) { islandSet('il-live il-dj', null, CITY.mix.now.title || 'DJ Eko Nights', '🎧', 'LIVE'); islOpen = ['music']; }
+    else if (typeof trip !== 'undefined' && trip) { islandSet('il-live il-ride', null, trip.phase === 'ontrip' ? 'On the way' : 'Your ride is coming', '🛵', ''); islOpen = ['ride']; }
+    else { islandSet('il-idle', null, ''); islOpen = null; }
+  }, 500);
+  ISL.onclick = (e) => { e.stopPropagation(); if (islOpen && !phone.classList.contains('locked')) go(...islOpen); };
+  function islandToast(text, kind) { islToastUntil = performance.now() + 3200; islandSet('il-toast', null, text, NOTE_ICON[kind] || '🔔'); }
+  { const n0 = notify; notify = (text, kind, open, from) => { n0(text, kind, open, from); if (phone.style.display === 'block') islandToast(from ? from + ': ' + text : text, kind); }; }
+
+  // ---- the lock screen: the time over the city, what's playing, your notifications. Swipe up (or tap) to unlock: WYRD
+  // ID runs its scan, a beam goes up the screen, and you're in. The quick buttons at the bottom open straight to an app.
   function lockScreen() {
     return new Promise((done) => {
       const L = document.getElementById('lockscr'), d = new Date(lagosMs()), wx = lagosWeather();
       document.getElementById('lockt').textContent = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); document.getElementById('lockt').setAttribute('data-clock', '');
       document.getElementById('lockd').textContent = d.toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
       document.getElementById('lockw').innerHTML = `${wx.icon} ${wx.temp}°C · ${esc(wx.text)} · Lagos`;
+      if (!L.querySelector('.lnet')) { L.insertAdjacentHTML('afterbegin', '<div class="lscan" aria-hidden="true"></div><div class="lnet"><i></i>NETWATCH · LINK SECURE</div><div class="lbeam" aria-hidden="true"></div><div class="lid" aria-live="polite"></div>'); }
       // what's playing, with its controls, above the notifications
       const s = MP.q[MP.i], lm = s ? `<div class="lmus" onclick="event.stopPropagation()"><div class="mwa" style="background-image:url('${esc(s.art)}')"></div><div class="mwt"><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(s.title)}</b><span>${esc(s.artist)}</span></div><div class="mwc"><button data-lm="prev">⏮</button><button data-lm="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-lm="next">⏭</button></div></div>` : '';
       document.getElementById('lockn').innerHTML = lm + notes.slice(0, 3).map(noteHtml).join('') + (notes.length > 3 ? `<div class="lmore">+${notes.length - 3} more</div>` : '');
       document.getElementById('lockn').querySelectorAll('[data-lm]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); audioCtx(); const k = b.dataset.lm; if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); b.closest('.lmus').querySelector('[data-lm=play]').textContent = MP.a.paused ? '▶' : '⏸'; }));
-      L.style.display = 'flex'; L.onclick = () => { L.style.display = 'none'; done(); };
-      L.querySelectorAll('[data-lq]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); lockGo = b.dataset.lq; L.style.display = 'none'; done(); })); // straight into an app
+      L.querySelector('.lu').textContent = 'Swipe up to unlock';
+      L.classList.remove('unlocking'); L.style.display = 'flex';
+      let busy = false, y0 = null;
+      const unlock = (then) => { if (busy) return; busy = true;
+        L.querySelector('.lid').textContent = 'WYRD ID // NEURAL MATCH…'; L.classList.add('unlocking'); islandSet('il-lock il-scan', null, '', '🔒', '');
+        setTimeout(() => { L.querySelector('.lid').textContent = 'WYRD ID ✓ WELCOME BACK'; islandSet('il-unlock', null, 'WYRD ID', '✓', ''); islHoldUntil = performance.now() + 900; }, 380);
+        setTimeout(() => { L.style.display = 'none'; L.classList.remove('unlocking'); L.querySelector('.lid').textContent = ''; then && then(); done(); }, 700); };
+      L.onpointerdown = (e) => { y0 = e.clientY; };
+      L.onpointerup = (e) => { if (y0 != null && y0 - e.clientY > 40) unlock(); y0 = null; }; // a swipe up
+      L.onclick = (e) => { if (!e.target.closest('.lq, .lmus, .n')) unlock(); }; // or a tap
+      L.querySelectorAll('[data-lq]').forEach((b) => (b.onclick = (e) => { e.stopPropagation(); unlock(() => { lockGo = b.dataset.lq; }); })); // straight into an app
     });
   }
   function boot() {
@@ -7036,8 +7109,10 @@
     // already open (tapping piece after piece in the Home Store, say): just show the next thing, no lock screen
     if (phone.style.display === 'block' && app && signedIn() && me$ && keyed) { shadeEl.classList.remove('on'); if (stack.length > 1 && stack[stack.length - 1][0] === app) stack.pop(); return go(app, arg); } // the next piece replaces the last, so Back stays short
     phone.style.display = 'block'; phoneBtnEl.style.display = 'none'; stack = [['home']]; shadeEl.classList.remove('on');
+    phoneLock(true); // locked until it's unlocked: Back, Home and Close wait (the side button still puts it away)
     if (!booted) await boot();
     if (!app) await lockScreen(); // you picked the phone up yourself; something in the world (a piece in the store, a car, a ride) opens straight to it
+    phoneLock(false);
     if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
     if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
     if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' || app === 'airport' ? go(app) : render('signin'); // a ride, the free harbour tour and the airport's boards need no account
