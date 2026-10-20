@@ -946,6 +946,7 @@ class IslandMeEndpoint extends Endpoint {
           final req = asked[p.authUserId.uuid];
           return {
             'slot': p.id,
+            'resident': p.handle, // HQ Row is public: each BQ's resident, shouted out on the Row's billboard
             'color': p.hqColor,
             'mine': mine,
             'may': may,
