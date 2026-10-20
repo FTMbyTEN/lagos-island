@@ -453,6 +453,19 @@
   .ivhist { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; } .ivhist i, .ivlegend i { height: 16px; border-radius: 4px; background: rgba(239,68,68,.55); } .ivhist i.on, .ivlegend i.on { background: #22C55E; }
   .ivlegend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: #94A3B8; align-items: center; } .ivlegend span { display: flex; gap: 4px; align-items: center; } .ivlegend i { width: 10px; height: 10px; display: inline-block; }
   .ivwarn { margin-top: 10px; padding: 9px 11px; border-radius: 12px; background: rgba(245,158,11,.14); color: #FCD34D; font-size: 12.5px; font-weight: 600; }
+  #gridTask { position: fixed; left: 50%; top: 50%; z-index: 62; width: min(400px, calc(100vw - 24px)); max-height: calc(100dvh - 40px); overflow-y: auto; padding: 16px; border-radius: 24px; background: linear-gradient(160deg, rgba(15,23,42,.95), rgba(30,27,20,.95)); border: 1px solid rgba(250,204,21,.35); box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 30px rgba(250,204,21,.15); color: #E2E8F0; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, -46%) scale(.96); opacity: 0; pointer-events: none; transition: transform .25s, opacity .25s; }
+  #gridTask.on { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; } #gridTask p { font-size: 13.5px; line-height: 1.45; color: #CBD5E1; }
+  .gphd { display: flex; align-items: center; justify-content: space-between; gap: 10px; } .gphd b { font-size: 16px; color: #FDE68A; } .gphd span { font-weight: 800; color: #FACC15; } .gpx2 { width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(255,255,255,.1); color: #fff; cursor: pointer; }
+  .gpbig { font: 900 46px 'Plus Jakarta Sans', sans-serif; color: #FACC15; text-align: center; margin: 8px 0; } .gpbig small { font-size: 16px; opacity: .6; }
+  .gpgo { width: 100%; margin-top: 10px; padding: 11px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #FACC15, #F97316); color: #1C1917; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .gpfreq { text-align: center; padding: 10px; border-radius: 14px; margin: 8px 0; } .gpfreq b { display: block; font-size: 30px; } .gpfreq small { opacity: .7; font-size: 11px; } .gpfreq.ok { background: rgba(34,197,94,.15); color: #4ADE80; } .gpfreq.bad { background: rgba(239,68,68,.15); color: #F87171; }
+  .gprow2 { display: flex; justify-content: space-between; padding: 5px 2px; font-size: 13px; } .gpwarn { margin: 6px 0; padding: 7px 10px; border-radius: 10px; background: rgba(239,68,68,.15); color: #FCA5A5; font-size: 12.5px; font-weight: 700; }
+  .gpsl { display: grid; grid-template-columns: 1fr 1.4fr 44px; align-items: center; gap: 8px; padding: 4px 0; font-size: 12.5px; } .gpsl input { accent-color: #FACC15; } .gpsl b { text-align: right; }
+  .gpopts { display: grid; gap: 6px; margin-top: 8px; } .gpopts button { padding: 10px; border: 1px solid rgba(250,204,21,.25); border-radius: 12px; background: rgba(255,255,255,.05); color: #F1F5F9; font: 700 13px 'Plus Jakarta Sans', sans-serif; text-align: left; cursor: pointer; } .gpopts button.dn { opacity: .35; text-decoration: line-through; } .gpopts button.sel { background: #FACC15; color: #1C1917; } .gpopts.sm { grid-template-columns: repeat(3, 1fr); } .gpopts.sm button { text-align: center; padding: 7px 4px; font-size: 11.5px; }
+  .gpchk { display: grid; gap: 6px; margin: 8px 0; } .gpchk label { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.05); font-size: 13px; }
+  .gppan { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 8px 0; } .gppan button { aspect-ratio: 1.3; border: 0; border-radius: 6px; cursor: pointer; background: linear-gradient(135deg, #1E3A8A, #2563EB); } .gppan .dust { background: linear-gradient(135deg, #78716C, #A8A29E); } .gppan .crack { background: linear-gradient(135deg, #1E3A8A, #2563EB), repeating-linear-gradient(45deg, transparent 0 5px, #F87171 5px 7px); background-blend-mode: multiply; outline: 2px solid #F87171; } .gppan .clean { background: linear-gradient(135deg, #22C55E, #2563EB); } .gppan .flag { background: #F97316; } .gppan .oops { background: #7F1D1D; }
+  .gpunit { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); } .gpunit b { display: block; } .gpunit span { font-size: 12.5px; color: #94A3B8; } .gpq { font-size: 15px !important; color: #fff !important; font-weight: 700; } .gpsec2 { margin-top: 8px; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #FACC15; }
+  #phone .gtrack { display: block; width: 100%; text-align: left; color: inherit; cursor: pointer; border: 0; } #phone .gtrack.on { box-shadow: inset 0 0 0 2px #FACC15 !important; } #phone .gtrack b { display: block; font-size: 14.5px; } #phone .gtrack em { font-style: normal; font-size: 10px; padding: 2px 7px; margin-left: 6px; border-radius: 999px; background: #FACC15; color: #1C1917; vertical-align: middle; } #phone .gtrack small { display: block; margin-top: 4px; font-size: 12px; opacity: .8; }
   #coach { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 60; width: min(440px, calc(100vw - 24px)); display: flex; gap: 12px; align-items: flex-start; padding: 14px 14px 12px; border-radius: 22px; background: linear-gradient(135deg, rgba(15,23,42,.9), rgba(30,27,75,.9)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(167,139,250,.35); box-shadow: 0 18px 50px rgba(15,23,42,.45), 0 0 30px rgba(139,92,246,.25); color: #E2E8F0; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: transform .3s cubic-bezier(.2,.8,.3,1), opacity .3s; }
   #coach.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
   #coach .orb { flex: none; width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 18px rgba(167,139,250,.8); animation: orbBob 2.4s ease-in-out infinite; }
@@ -2686,6 +2699,36 @@
       x.strokeStyle = 'rgba(30,41,59,0.75)'; x.lineWidth = 1; for (let k = 0; k < towers.length - 1; k++) for (const s2 of [0, 1]) { const p0 = towers[k][s2], p1 = towers[k + 1][s2]; x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2 + K * 1.5, p1[0], p1[1]); x.stroke(); }
       // lights round the site after dark (dim when the grid's down)
       if (dark) glow.push(() => { for (let k = 0; k < 8; k++) { const p = P(a + 4 + k * ((c - a - 8) / 7), 6, d - 2), r = K * (on ? 4 : 1.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, on ? 'rgba(254,240,138,0.55)' : 'rgba(248,113,113,0.4)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); } });
+      // ---- more of the plant: the LNG jetty and its tanker, the gas line in, fuel tanks, aviation lights on the stacks,
+      // WYRD across a cooling tower, the gatehouse and barrier, a staff car park, crew vans, floodlight masts, a helipad,
+      // and the line of pylons marching off west over the water toward the city
+      { // the jetty out the east side, a gas tanker moored, the pipe running in to the turbine hall
+        flat(c - 1, b + 44, c + 18, b + 48, 0.3, '#57534E'); for (let k = 0; k < 6; k++) box(c + k * 3.2, -2, b + 44.2, c + k * 3.2 + 0.5, 0.3, b + 44.7, '#44403C');
+        const tx = c + 9, tz = b + 54; box(tx - 14, 0, tz - 3, tx + 14, 3.5, tz + 3, '#1E3A8A'); box(tx - 14, 3.5, tz - 3, tx + 14, 4, tz + 3, '#B91C1C'); for (let k = 0; k < 4; k++) disk(tx - 9 + k * 6, tz, 4.6, 2.2, '#E5E7EB'); box(tx + 10, 4, tz - 2, tx + 14, 9, tz + 2, '#F8FAFC'); if (K > 2.6) faceText('WYRD LNG', tx - 4, 2, tz + 3.05, '#FFFFFF', 1.3, 0, 900);
+        for (const [x0, z0, x1, z1] of [[c - 1, b + 46, a + 40, b + 46], [a + 40, b + 46, a + 40, b + 38]]) { const n2 = Math.max(1, Math.round(Math.hypot(x1 - x0, z1 - z0) / 1)); for (let k = 0; k <= n2; k++) { const u = k / n2; cylLit(x0 + (x1 - x0) * u, z0 + (z1 - z0) * u, 0.45, 0.6, 0.01, '#A16207', false); } box(Math.min(x0, x1) - 0.45, 0.4, Math.min(z0, z1) - 0.45, Math.max(x0, x1) + 0.45, 1.3, Math.max(z0, z1) + 0.45, '#CA8A04'); } }
+      // the fuel tanks by the turbine hall
+      for (let k = 0; k < 3; k++) { cylLit(a + 9 + k * 9, b + 46, 3.6, 0, 7, '#F8FAFC'); box(a + 7 + k * 9, 6.4, b + 49.4, a + 11 + k * 9, 7, b + 49.6, '#16A34A'); }
+      // red aviation lights blinking on the stacks and towers
+      const avi = () => { if (Math.floor(t * 1.2) % 2) return; for (const [ax, ay, az] of [[a + 12, 29, b + 27], [a + 23, 29, b + 27], [a + 34, 29, b + 27], [c - 26, 27, b + 10], [c - 12, 27, b + 10]]) { const p = P(ax, ay, az); x.fillStyle = '#EF4444'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.5, K * 0.4), 0, Math.PI * 2); x.fill(); } };
+      avi(); glow.push(avi);
+      if (K > 2) faceText('WYRD', c - 12, 15, b + 16.05, '#4F46E5', 3.2, dark ? 10 : 0, 900); // WYRD across the near cooling tower
+      // the gatehouse and its barrier at the front gate, a guard
+      box(mid - 9, 0, d - 4, mid - 6, 3.6, d - 1.5, '#334155', '#A5B4FC', 1); box(mid - 9.3, 3.6, d - 4.3, mid - 5.7, 4, d - 1.2, '#1E293B');
+      { const lift = on ? 0 : 0; box(mid - 5.6, 1, d - 1.1, mid + 5.6, 1.3, d - 0.8, ['#F8FAFC', '#DC2626'][Math.floor(t) % 2 && lift ? 1 : 0]); for (let k = 0; k < 6; k++) box(mid - 5 + k * 2, 1, d - 1.12, mid - 4 + k * 2, 1.3, d - 1.1, '#DC2626'); }
+      // the staff car park and the crew vans
+      flat(c - 22, d - 9, c - 3, d - 3, 0.07, '#4B5563'); { const R2 = rnd(a * 11 + 5); for (let k = 0; k < 5; k++) drawCar(c - 20 + k * 3.6, d - 6, ['corolla', 'camry', 'highlander', 'lexusrx', 'corolla'][k], ['#F8FAFC', '#111827', '#B91C1C', '#1D4ED8', '#9CA3AF'][Math.floor(R2() * 5)], Math.PI / 2, 0.9); }
+      for (let k = 0; k < 2; k++) { const vx = a + 6 + k * 7, vz = d - 7; box(vx - 2.6, 0.4, vz - 1.2, vx + 2.6, 2.8, vz + 1.2, '#F8FAFC'); box(vx - 2.62, 1.4, vz - 1.22, vx + 2.62, 1.9, vz + 1.22, '#CA8A04'); for (const wx of [vx - 1.6, vx + 1.6]) disk(wx, vz + 1.22, 0.45, 0.45, '#111827'); box(vx - 1, 2.8, vz - 0.8, vx + 1.4, 3.1, vz + 0.8, '#94A3B8'); if (K > 3) faceText('GRID CREW', vx, 2.2, vz + 1.25, '#1E3A8A', 0.45, 0, 900); }
+      // a helipad by the control centre
+      { const hx = mid + 20, hz = d - 16; disk(hx, hz, 0.09, 3.6, '#374151'); disk(hx, hz, 0.1, 3.2, '#4B5563'); if (K > 2) groundText('H', hx, hz, 3, '#F8FAFC'); }
+      // floodlight masts at the corners, lit after dark
+      const masts = [[a + 3, b + 3], [c - 3, b + 3], [a + 3, d - 3], [c - 3, d - 3]];
+      for (const [mx, mz] of masts) { box(mx - 0.25, 0, mz - 0.25, mx + 0.25, 18, mz + 0.25, '#64748B'); box(mx - 1.6, 18, mz - 0.4, mx + 1.6, 19.2, mz + 0.4, '#E5E7EB'); }
+      if (dark && on) glow.push(() => { for (const [mx, mz] of masts) { const p = P(mx, 18.6, mz), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 18); g.addColorStop(0, 'rgba(255,250,230,0.35)'); g.addColorStop(1, 'rgba(255,250,230,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 18, 0, Math.PI * 2); x.fill(); x.restore(); } });
+      // the line west: pylons all the way across the water toward the Home Store and the city
+      { const pts = []; for (let k = 0; k < 8; k++) pts.push([a - 12 - k * 15, d - 8 - k * 1.5]);
+        const arms = pts.map(([px, pz]) => { x.strokeStyle = '#64748B'; x.lineWidth = Math.max(1, K * 0.16); const L = P(px - 1.4, 0, pz), Rr = P(px + 1.4, 0, pz), top = P(px, 15, pz), a0 = P(px - 3.2, 13, pz), a1 = P(px + 3.2, 13, pz); x.beginPath(); x.moveTo(L[0], L[1]); x.lineTo(top[0], top[1]); x.lineTo(Rr[0], Rr[1]); x.moveTo(a0[0], a0[1]); x.lineTo(a1[0], a1[1]); x.stroke(); return [a0, a1]; });
+        x.strokeStyle = 'rgba(30,41,59,0.6)'; x.lineWidth = 1; for (let k = 0; k < arms.length - 1; k++) for (const s2 of [0, 1]) { const p0 = arms[k][s2], p1 = arms[k + 1][s2]; x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2 + K * 1.4, p1[0], p1[1]); x.stroke(); } }
+      gridJobFx(a, b, c, d); // where a grid career sends you, marked on the plant
     },
     soon(a, b, c, d) {
       for (let k = 0; k < 4; k++) { const px = a + 4 + k * ((c - a - 8) / 3); box(px - 0.8, 0, d - 3, px + 0.8, 2.4, d - 1.4, k % 2 ? '#F8FAFC' : '#F97316'); }
@@ -4018,6 +4061,7 @@
       for (const g of glow) g();
     }
     drawWeather(now); // clouds, rain, lightning, fog, haze, over the town and under the pins
+    gridJobDraw(); // where your grid shift sends you
     // the pins, on top
     const placed = [];
     for (const p of PLACES) {
@@ -5785,7 +5829,7 @@
     jetty: ['⛴️ Take a boat?', 'Water taxis to Ilashe, Badagry and Ikorodu.', null],
     hotel: ['🏨 Book a room?', 'A night on the island, a pool, room service.', null],
     mall: ['🛍️ Go shopping?', 'Fashion, phones, food court.', null], arcade: ['🛍️ Go shopping?', 'Shops and cafés.', null], shops: ['🛍️ Go shopping?', 'Idumota: everything, cheaper.', null],
-    grid: ['⚡ The National Grid', 'Run by WYRD. It powers the whole island; when NEPA takes light, this is where WYRD brings it back.', null],
+    grid: ['⚡ The National Grid', 'Run by WYRD. It powers the whole island. Careers here: control room, lineman, solar, plant engineer.', () => openPhone('grid')],
     hospital: ['🏥 See a doctor?', 'Check-ups and the pharmacy.', null],
     beach: ['🏖️ Spend the day here?', 'Swim, lie on a lounger, a drink at the bar, suya, volleyball, the bonfire at night.', (p) => { at$(p); enterRoom('beach', 'place:beach:' + p[1] + ',' + p[2], p[5]); }],
     mosque: ['🕌 Visit?', 'Lagos Central Mosque, open for prayers.', null], cathedral: ['⛪ Visit?', 'The Cathedral Church of Christ.', null],
@@ -6071,13 +6115,13 @@
   let me$ = null, stack = [], chatTimer = 0, threadTok = null, storeRoom = 'Living', storeQ = '', storeSort = 'low', jobsTab = 'all', rideFind = '', casinoStake = 500, fashionDept = 'Sportswear', partyDraft = { key: null, theme: 'afro', mins: 60, open: false, guests: '' };
   const phoneBtnEl = document.getElementById('phoneBtn');
   const APP_BG = { wallet: 'linear-gradient(160deg,#34D399,#059669)', jobs: 'linear-gradient(160deg,#FBBF24,#D97706)', chats: 'linear-gradient(160deg,#60A5FA,#2563EB)', hq: 'linear-gradient(160deg,#F472B6,#DB2777)', arena: 'linear-gradient(160deg,#A78BFA,#7C3AED)', casino: 'linear-gradient(160deg,#F87171,#B91C1C)', wyrd: 'linear-gradient(160deg,#818CF8,#312E81)', ride: 'linear-gradient(160deg,#FCD34D,#F59E0B)', me: 'linear-gradient(160deg,#94A3B8,#475569)', privacy: 'linear-gradient(160deg,#2DD4BF,#0F766E)' };
-  const APP_AC = { gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
+  const APP_AC = { grid: '#FACC15', gov: '#22D3EE', music: '#22C55E', fashion: '#F59E0B', parties: '#F472B6', homes: '#4ADE80', store: '#FB923C', garage: '#38BDF8', wallet: '#FCEE0A', jobs: '#00F0FF', chats: '#FF003C', hq: '#FF4FD8', arena: '#B26BFF', casino: '#FCEE0A', wyrd: '#00F0FF', ride: '#FF8A00', me: '#9AE6B4', privacy: '#00FFA3' };
   const APPS = [
     ['wallet', '👛', 'Wallet'], ['jobs', '💼', 'Jobs'], ['chats', '🔗', 'Link'], ['hq', '🏠', 'My HQ'],
-    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
+    ['arena', '🎤', 'Arena'], ['casino', '🎰', 'Casino'], ['wyrd', '✨', 'WYRD'], ['ride', '🛵', 'Ride'], ['garage', '🚗', 'Garage'], ['store', '🛋️', 'Home Store'], ['homes', '🏡', 'Homes'], ['parties', '🎉', 'Parties'], ['fashion', '👔', 'Fashion'], ['music', '🎧', 'Music'], ['gov', '🏛️', 'Government'], ['grid', '⚡', 'WYRD Grid'], ['credits', '📜', 'Credits'], ['me', '🪪', 'Profile'], ['privacy', '🛡️', 'Privacy'],
   ];
   // the home screen, in groups under the widgets (the dock holds the four you use most)
-  const HOME_GROUPS = [['Your life', ['hq', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['gov', 'me', 'privacy', 'credits']]];
+  const HOME_GROUPS = [['Your life', ['hq', 'grid', 'homes', 'store', 'fashion', 'garage', 'ride']], ['Out tonight', ['music', 'arena', 'parties', 'casino']], ['You', ['gov', 'me', 'privacy', 'credits']]];
   // the phone keeps its shape: scale the whole handset to fit the window, never stretch it
   function fitPhone() {
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
@@ -7239,6 +7283,22 @@
         pbody.querySelector('[data-go]').onclick = () => go('homes');
         return;
       }
+      if (app === 'grid') {
+        // WYRD Grid: your career at the National Grid
+        const rec = gridRecommend(), tr = GJ.track || rec, lv = gridLv(tr), xp = GJ.xp[tr] || 0, nextXp = GRID_XP[lv] ?? xp, pct = lv >= 5 ? 100 : Math.min(100, Math.round((xp - GRID_XP[lv - 1]) / Math.max(1, nextXp - GRID_XP[lv - 1]) * 100)), sh = GJ.shift, tk = gridTask();
+        show(`<div class="ghero" style="background:linear-gradient(135deg,rgba(202,138,4,.35),rgba(79,70,229,.25))"><i style="background:linear-gradient(135deg,#FACC15,#F97316)">${ico('grid')}</i><div><h2>WYRD Grid</h2><span>Careers at the National Grid · run by WYRD</span></div></div>
+          <div class="ggov"><i class="gorb"></i><div><small>Today's briefing</small><span style="font-style:normal">${esc(gridBriefing())}</span></div></div>
+          ${GJ.track ? `<div class="pcard"><div class="grow"><span><b>${GRID_TRACKS[tr].icon} ${GRID_TRACKS[tr].name}</b><small>${GRID_LEVELS[lv - 1]} · level ${lv} of 5 · ${naira(GRID_PAY[lv - 1])} a shift at full marks</small></span><em>${xp} XP</em></div><div class="gbar"><i style="width:${pct}%;background:linear-gradient(90deg,#FACC15,#F97316)"></i></div><small class="dim">${lv >= 5 ? 'Chief: the top of the track.' : xp >= nextXp ? 'Ready for promotion: take the exam.' : `${nextXp - xp} XP to the ${GRID_LEVELS[lv]} exam`}</small></div>
+            ${sh ? `<div class="msec" style="font-size:15px">Your shift</div><div class="pcard">${sh.tasks.map((t2, k) => `<div class="grow"><span><b>${t2.done ? '✅' : t2 === tk ? '⚡' : '⬜'} ${esc(t2.title)}</b><small>${t2.done ? 'scored ' + t2.score + '/100' : 'at ' + esc(t2.spot.name)}</small></span></div>`).join('')}<button class="pbtn" id="gGo">Show me where</button></div>` : '<button class="pbtn" id="gStart">⚡ Start a shift</button>'}
+            ${lv < 5 && xp >= nextXp ? '<button class="pbtn" id="gExam">🎓 Take the certification exam</button>' : ''}` : ''}
+          <div class="msec" style="font-size:15px">${GJ.track ? 'Switch track' : 'Choose your track'}</div>${Object.entries(GRID_TRACKS).map(([k, t2]) => `<button class="pcard gtrack ${k === tr && GJ.track ? 'on' : ''}" data-tr="${k}"><b>${t2.icon} ${t2.name}${k === rec ? ' <em>WYRD recommends</em>' : ''}</b><small>${t2.blurb}</small><small class="dim">Level ${gridLv(k)} · ${GJ.xp[k] || 0} XP</small></button>`).join('')}
+          ${GJ.shifts.length ? `<div class="msec" style="font-size:15px">Your shifts</div><div class="pcard">${GJ.shifts.slice(0, 8).map((s2) => `<div class="grow"><span><b>${GRID_TRACKS[s2.track].icon} ${GRID_TRACKS[s2.track].name}</b><small>${new Date(s2.at).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })} · level ${s2.level}</small></span><em>${s2.score}/100${s2.paid ? ' · ' + naira(s2.paid) : ''}</em></div>`).join('')}</div>` : ''}`);
+        pbody.querySelectorAll('[data-tr]').forEach((b) => (b.onclick = () => { if (GJ.shift && !confirm('Switching track ends the shift you are on. Switch?')) return; GJ.track = b.dataset.tr; GJ.shift = null; gridSave(); render('grid'); }));
+        if ($('gStart')) $('gStart').onclick = () => { gridNewShift(tr); closePhone(); const t1 = gridTask(); coachSay(`Shift started. ${t1.title}: go to ${t1.spot.name}. Follow the yellow beacon, and when you get there the button go show.`, [['Oya', null, true]]); };
+        if ($('gGo')) $('gGo').onclick = () => { const t1 = gridTask(); closePhone(); if (t1) { cam.follow = false; cam.x = t1.spot.x; cam.z = t1.spot.z; coachSay(`There: ${t1.spot.name}. Walk, take a ride, or drive. The beacon dey shine.`, [['Got it', () => { cam.follow = true; return 'x'; }, true]]); } };
+        if ($('gExam')) $('gExam').onclick = () => { closePhone(); gridExam(tr, () => openPhone('grid')); };
+        return;
+      }
       if (app === 'store') {
         // the Home Store: browse by room, cheapest first, grouped by tier; a piece's page shows its price and buys it
         let owned = {}, live = true;
@@ -7712,6 +7772,7 @@
     else if (door('casino')) next = { label: '🎰 Enter the Island Casino', run: () => enterRoom('casino', 'place:casino', 'Island Casino') };
     else if (door('arena')) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
+    if (!next && !inside) { const tk = gridNear() || (gridTask() && gridTask().type !== "fault" && near("grid", 6) ? gridTask() : null); if (tk) next = { label: `⚡ ${tk.title}`, run: () => gridDo(tk) }; else if (near('grid', 6)) next = { label: '⚡ Careers at the National Grid', run: () => openPhone('grid') }; }
     if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
     // at an HQ's door: yours is always open; anyone else's needs the owner to let you in
     if (!next && sector.id === 'hqrow') {
@@ -8186,6 +8247,127 @@
       if (r === 'stop' || inside !== R) break;
     }
     D.focus = null; touring = false; coachHide();
+  }
+  // ================= careers at the National Grid =================
+  // Four tracks, each a real career: Control Room Operator, Lineman, Solar Technician, Plant Engineer. WYRD recommends one
+  // from your role. A shift is three tasks that take time and thought (balancing the island's supply against demand,
+  // going out to a fault and repairing it safely, working the solar farm, reading the turbines), each scored; WYRD writes
+  // the report and the shift is paid by your level and your score. Five levels, Trainee to Chief: each promotion needs
+  // experience and a pass in that track's certification exam. Your career is kept on this device.
+  const GRID_TRACKS = {
+    control: { name: 'Control Room Operator', icon: '🖥️', for: ['innovator', 'leader'], blurb: 'Keep the whole island at 50 Hz: match the turbines, the solar and the import line to what Lagos is using, minute by minute.' },
+    lineman: { name: 'Lineman', icon: '🧗', for: ['hustler', 'explorer'], blurb: 'When a feeder trips anywhere on the island, you go. Isolate, prove dead, earth, repair, restore: in that order, every time.' },
+    solar: { name: 'Solar Technician', icon: '☀️', for: ['creative', 'socialite'], blurb: 'The solar farm is yours: clean the dirty panels, flag the cracked ones, keep every string producing.' },
+    plant: { name: 'Plant Engineer', icon: '⚙️', for: ['entrepreneur'], blurb: 'The turbines are your responsibility. Read their temperatures, vibration and oil, and call it: keep running, ease off, or shut down.' },
+  };
+  const GRID_LEVELS = ['Trainee', 'Technician', 'Senior', 'Supervisor', 'Chief'], GRID_XP = [0, 60, 160, 320, 560], GRID_PAY = [12000, 16000, 21000, 27000, 34000];
+  const GRID_EXAM = {
+    control: [['The island is in balance when the frequency is…', ['50 Hz', '60 Hz', '45 Hz'], 0], ['Demand jumps and the frequency falls. You…', ['Raise generation', 'Cut generation', 'Wait'], 0], ['A turbine trips. The quickest power to bring in is…', ['Spinning reserve / the import line', 'A new power station', 'The solar farm at night'], 0], ['Solar output at 9 pm is…', ['About zero', 'At its highest', 'The same as noon'], 0], ['When can frequency go too high?', ['When generation exceeds demand', 'When demand exceeds generation', 'Never'], 0], ['The evening peak in Lagos comes mostly from…', ['Lights, ACs and TVs when people get home', 'The solar farm', 'Midnight'], 0]],
+    lineman: [['Before touching a line, the first step is…', ['Open the breaker to isolate it', 'Replace the part', 'Remove the earths'], 0], ['After isolating, you must…', ['Prove it dead with a tester', 'Close the breaker', 'Climb straight up'], 0], ['Earths are applied to…', ['Protect you if the line is re-energised', 'Make it brighter', 'Hold the pylon up'], 0], ['A blown fuse is replaced with…', ['A fuse of the right rating', 'Any wire', 'A bigger fuse'], 0], ['The last step before restoring is…', ['Remove the earths', 'Apply more earths', 'Leave the site'], 0], ['Rain on a cracked insulator causes…', ['Flashover and trips', 'Nothing', 'Better conduction'], 0]],
+    solar: [['A dusty panel produces…', ['Less power', 'More power', 'The same'], 0], ['A cracked panel should be…', ['Flagged for replacement', 'Cleaned harder', 'Ignored'], 0], ['Solar panels produce the most around…', ['Midday', 'Midnight', 'Sunrise only'], 0], ['Harmattan season means…', ['More dust: clean more often', 'No sun at all', 'Panels freeze'], 0], ['Panels in a string share…', ['Current: one bad panel drags the string', 'Nothing', 'Their colour'], 0], ['The best time to clean panels is…', ['Early morning or evening', 'Noon in full sun', 'During a storm'], 0]],
+    plant: [['Turbine bearing vibration above the limit means…', ['Shut down for inspection', 'Run harder', 'Nothing'], 0], ['Exhaust temperature a little high, everything else normal:', ['Reduce load', 'Shut down at once', 'Ignore it'], 0], ['Low oil pressure risks…', ['Bearing damage', 'Better efficiency', 'Nothing'], 0], ['All readings normal. You…', ['Keep it running', 'Shut it down', 'Reduce load to zero'], 0], ['Why keep spinning reserve?', ['To cover a trip instantly', 'To waste gas', 'For decoration'], 0], ['The cooling towers…', ['Reject heat from the cycle', 'Make the electricity', 'Store gas'], 0]],
+  };
+  const gridLoad = () => { try { return JSON.parse(store.get('li.grid') || 'null'); } catch { return null; } };
+  const GJ = Object.assign({ track: null, xp: {}, level: {}, shifts: [], shift: null, notes: {} }, gridLoad() || {});
+  const gridSave = () => store.set('li.grid', JSON.stringify(GJ));
+  const gridRecommend = () => { const r = store.get('li.role'); return Object.entries(GRID_TRACKS).find(([, t]) => t.for.includes(r))?.[0] || 'control'; };
+  const gridLv = (tr) => GJ.level[tr] || 1;
+  // where the work is: the Grid itself (its control centre, the solar farm, the turbine hall), or a fault out on the island
+  const gridPlace = () => PLACES.find((p) => p[0] === 'grid');
+  function gridSpot(kind) { const p = gridPlace(); if (!p) return null; const a = p[1] * T, b = p[2] * T, c = (p[1] + p[3]) * T, d = (p[2] + p[4]) * T;
+    return { control: { x: (a + c) / 2, z: d - 8, name: 'the WYRD control centre' }, solar: { x: a + 30, z: b + 12, name: 'the solar farm' }, turbine: { x: a + 23, z: b + 40, name: 'the turbine hall' }, gate: { x: (a + c) / 2, z: d + 2, name: 'the Grid gatehouse' } }[kind]; }
+  function faultSpot(seed) { const dist = SECTORS.filter((s2) => ['lagos', 'ikoyi', 'vi', 'lekki', 'ajah', 'hqrow'].includes(s2.id) && !s2.sand), R2 = rnd(seed), sct = dist[Math.floor(R2() * dist.length)], [i0, j0, i1, j1] = sct.rect, pool = roadTiles.filter(([i, j]) => i >= i0 && i <= i1 && j >= j0 && j <= j1), [ti, tj] = pool[Math.floor(R2() * pool.length)] || [i0, j0]; return { x: ti * T + T / 2, z: tj * T + T / 2, name: `a feeder fault in ${sct.name}` }; }
+  // a shift: three tasks for your track (a lineman's start at the Grid, collecting the van)
+  function gridNewShift(tr) {
+    const seed = Date.now() % 100000, mk = (type, title, spot) => ({ type, title, spot, done: false, score: 0 });
+    const tasks = tr === 'control' ? [mk('balance', 'Morning ramp-up', gridSpot('control')), mk('balance', 'The evening peak', gridSpot('control')), mk('balance', 'Turbine 2 trips!', gridSpot('control'))]
+      : tr === 'lineman' ? [mk('van', 'Collect the crew van', gridSpot('gate')), mk('fault', 'Repair the fault', faultSpot(seed)), mk('fault', 'Second call-out', faultSpot(seed + 7))]
+      : tr === 'solar' ? [mk('solar', 'Clean and inspect, rows A to C', gridSpot('solar')), mk('solar', 'Clean and inspect, rows D to F', gridSpot('solar')), mk('turbine', 'Inverter station readings', gridSpot('control'))]
+      : [mk('turbine', 'Morning rounds', gridSpot('turbine')), mk('turbine', 'Load change review', gridSpot('turbine')), mk('turbine', 'End of shift handover', gridSpot('turbine'))];
+    GJ.shift = { track: tr, tasks, at: Date.now() }; gridSave();
+  }
+  const gridTask = () => GJ.shift && GJ.shift.tasks.find((tk) => !tk.done);
+  // the beacon over where you have to go
+  function gridJobDraw() {
+    const tk = gridTask(); if (!tk || !tk.spot || inside) return;
+    const t = performance.now() / 1000, base = P(tk.spot.x, 0, tk.spot.z), top = P(tk.spot.x, 40, tk.spot.z);
+    x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createLinearGradient(base[0], base[1], top[0], top[1]); g.addColorStop(0, 'rgba(250,204,21,0.55)'); g.addColorStop(1, 'rgba(250,204,21,0)'); x.fillStyle = g; x.fillRect(base[0] - K * 1.2, top[1], K * 2.4, base[1] - top[1]); x.restore();
+    const r = K * (3 + Math.sin(t * 4)); x.strokeStyle = '#FACC15'; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); x.ellipse(base[0], base[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke();
+    x.font = '800 12px "Plus Jakarta Sans", sans-serif'; const lbl = `⚡ ${tk.title}`, w = x.measureText(lbl).width + 16; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(top[0] - w / 2, top[1] - 12, w, 22, 11); x.fill(); x.fillStyle = '#FDE68A'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(lbl, top[0], top[1] - 1);
+  }
+  function gridJobFx() {} // the plant's own marking is the beacon
+  const gridNear = () => { const tk = gridTask(); return tk && tk.spot && Math.hypot(me.x - tk.spot.x, me.z - tk.spot.z) < 18 ? tk : null; };
+  // ---- the task screens
+  const gpEl = document.createElement('div'); gpEl.id = 'gridTask'; document.body.append(gpEl);
+  let gpTimer = 0;
+  const gpClose = () => { clearInterval(gpTimer); gpEl.classList.remove('on'); };
+  function gpShow(html) { gpEl.innerHTML = html; gpEl.classList.add('on'); }
+  function gridDo(tk) {
+    const done = (score, note) => { clearInterval(gpTimer); tk.done = true; tk.score = Math.round(Math.max(0, Math.min(100, score))); tk.note = note; gridSave();
+      gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><button class="gpx2">✕</button></div><div class="gpbig">${tk.score}<small>/100</small></div><p>${esc(note)}</p><button class="gpgo">${gridTask() ? 'Next task' : 'Finish the shift'}</button>`);
+      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); if (!gridTask()) gridFinish(); else coachSay(`Next: ${gridTask().title}, at ${gridTask().spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }; };
+    if (tk.type === 'van') { gpShow(`<div class="gphd"><b>Collect the crew van</b><button class="gpx2">✕</button></div><p>Sign out van GC-02, check the ladder, the tester, the earthing kit and the spares.</p><div class="gpchk">${['Ladder secured', 'Voltage tester working', 'Earthing kit complete', 'Spare fuses and insulators', 'Radio checked with control'].map((t2, k) => `<label><input type="checkbox" data-c="${k}"> ${t2}</label>`).join('')}</div><button class="gpgo">Sign out the van</button>`);
+      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { const n2 = gpEl.querySelectorAll('[data-c]:checked').length; done(n2 * 20, n2 === 5 ? 'Every check done. Control has you on the radio.' : `You skipped ${5 - n2} check${5 - n2 > 1 ? 's' : ''}. On a real call-out that can cost a life.`); }; return; }
+    if (tk.type === 'balance') { // supply against demand for 90 seconds: keep the frequency inside 49.8 to 50.2 Hz
+      const S = { t: 0, t1: 300, t2: 300, t3: 250, imp: 100, inBand: 0, ticks: 0, low: 50 }, scen = tk.title, sun = solarAt(lagosMs() - 3600e3);
+      const demandAt = (s2) => { const base = scen.includes('peak') ? 1180 + s2 * 2.4 : scen.includes('Morning') ? 820 + s2 * 2.8 : 1050; return base + Math.sin(s2 / 6) * 30 + (s2 > 40 && s2 < 55 && scen.includes('peak') ? 140 : 0); };
+      const draw = () => { const dem = Math.round(demandAt(S.t)), tripped = scen.includes('trips') && S.t >= 20, gen = Math.round(S.t1 + (tripped ? 0 : S.t2) + S.t3 + S.imp + sun * 0.6), f = 50 + (gen - dem) / 400, ok = f >= 49.8 && f <= 50.2;
+        const stat = `<div class="gphd"><b>${esc(scen)}</b><span>${Math.max(0, 90 - S.t)} s</span></div>
+          <div class="gpfreq ${ok ? 'ok' : 'bad'}"><b>${f.toFixed(2)} Hz</b><small>keep it between 49.80 and 50.20</small></div>
+          <div class="gprow2"><span>Demand</span><b>${dem} MW</b></div><div class="gprow2"><span>Generation</span><b>${gen} MW</b></div>${S.t > 40 && S.t < 55 && scen.includes('peak') ? '<div class="gpwarn">The Arena show just started: +140 MW</div>' : ''}${tripped ? '<div class="gpwarn">Turbine 2 tripped! Pick up the load.</div>' : ''}`;
+        if (!gpEl.querySelector('#gpStat')) { gpShow(`<div id="gpStat"></div>${[['t1', 'Turbine 1', 400], ['t2', 'Turbine 2', 400], ['t3', 'Turbine 3', 400], ['imp', 'Import line', 250]].map(([k, l, mx]) => `<label class="gpsl"><span>${l}</span><input type="range" min="0" max="${mx}" step="10" value="${S[k]}" data-s="${k}"><b>${S[k]}</b></label>`).join('')}<div class="gprow2"><span>Solar (by the sky)</span><b>${Math.round(sun * 0.6)} MW</b></div>`);
+          gpEl.querySelectorAll('[data-s]').forEach((r) => (r.oninput = () => { S[r.dataset.s] = +r.value; r.nextElementSibling.textContent = r.value; })); }
+        gpEl.querySelector('#gpStat').innerHTML = stat; const t2el = gpEl.querySelector('[data-s="t2"]'); if (tripped && !t2el.disabled) { t2el.disabled = true; t2el.previousElementSibling.textContent = 'Turbine 2 (tripped)'; }
+        S.ticks++; if (ok) S.inBand++; S.low = Math.min(S.low, f); };
+      draw(); gpTimer = setInterval(() => { S.t++; if (S.t >= 90) { const sc = S.inBand / Math.max(1, S.ticks) * 100; GJ.notes.lowHz = S.low.toFixed(2); done(sc, sc > 85 ? 'Rock steady. The island never knew how close it came.' : sc > 60 ? `Mostly in band. Lowest you let it fall: ${S.low.toFixed(2)} Hz. Keep more reserve ready.` : `The frequency wandered: lowest ${S.low.toFixed(2)} Hz. Watch demand and move before it does.`); } else draw(); }, 1000); return; }
+    if (tk.type === 'fault') { // the safe repair: the right steps in the right order, the right part
+      const kinds = [['a blown fuse', 'Fuse, 63 A'], ['a cracked insulator', 'Insulator, 33 kV'], ['a burnt jumper', 'Jumper cable']], R2 = rnd(Math.round(tk.spot.x + tk.spot.z)), fk = kinds[Math.floor(R2() * 3)];
+      const STEPS = ['Open the breaker', 'Prove it dead with the tester', 'Apply the earths', `Replace ${fk[0].replace(/^a /, 'the ')}`, 'Remove the earths', 'Close the breaker and restore'];
+      const order = [...STEPS].sort(() => R2() - 0.5); let next = 0, strikes = 0, part = null;
+      const draw = () => { gpShow(`<div class="gphd"><b>Fault: ${esc(fk[0])}</b><span>step ${next + 1} of 6</span></div><p>Feeder ${tk.spot.name.replace('a feeder fault in ', '')} is down. Do it safely, in order.${strikes ? ` <b style="color:#F87171">Safety strikes: ${strikes}</b>` : ''}</p>
+          ${next === 3 && !part ? `<div class="gpsec2">Pick the right part</div><div class="gpopts">${kinds.map((k2) => `<button data-p="${esc(k2[1])}">${esc(k2[1])}</button>`).join('')}</div>` : `<div class="gpopts">${order.map((s2) => `<button data-st="${esc(s2)}" ${STEPS.indexOf(s2) < next ? 'disabled class="dn"' : ''}>${esc(s2)}</button>`).join('')}</div>`}`);
+        gpEl.querySelectorAll('[data-p]').forEach((b) => (b.onclick = () => { if (b.dataset.p === fk[1]) { part = fk[1]; draw(); } else { strikes++; draw(); } }));
+        gpEl.querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => { if (b.dataset.st === STEPS[next]) { next++; if (next === 3 && !part) return draw(); if (next >= 6) return done(100 - strikes * 18, strikes ? `Restored, but with ${strikes} safety strike${strikes > 1 ? 's' : ''}. Out there, one is too many.` : 'Textbook. Isolated, proved dead, earthed, repaired, restored. The street has light.'); draw(); } else { strikes++; draw(); } })); };
+      draw(); return; }
+    if (tk.type === 'solar') { // 24 panels, some dusty, some cracked, 60 seconds
+      const R2 = rnd(Date.now() % 9999), P2 = Array.from({ length: 24 }, () => { const r = R2(); return r < 0.35 ? 'dust' : r < 0.47 ? 'crack' : 'ok'; }); let tleft = 60, right = 0, wrong = 0;
+      const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${tleft} s</span></div><p>Tap a dusty panel to clean it, a cracked one to flag it. Leave the good ones.</p><div class="gppan">${P2.map((v, k) => `<button data-k="${k}" class="${v}"></button>`).join('')}</div><div class="gprow2"><span>Done right</span><b>${right}</b></div>`);
+        gpEl.querySelectorAll('[data-k]').forEach((b) => (b.onclick = () => { const k = +b.dataset.k, v = P2[k]; if (v === 'dust' || v === 'crack') { right++; P2[k] = v === 'dust' ? 'clean' : 'flag'; } else if (v === 'ok') { wrong++; P2[k] = 'oops'; } draw(); })); };
+      draw(); gpTimer = setInterval(() => { tleft--; const left = P2.filter((v) => v === 'dust' || v === 'crack').length; if (tleft <= 0 || !left) { const total = right + left; done(total ? right / total * 100 - wrong * 8 : 100, left ? `${left} panel${left > 1 ? 's' : ''} left undone${wrong ? `, ${wrong} good one${wrong > 1 ? 's' : ''} touched for nothing` : ''}.` : wrong ? 'All done, but you fiddled with good panels. Time is money.' : 'Every string producing. Clean work.'); } else { const el = gpEl.querySelector('.gphd span'); if (el) el.textContent = tleft + ' s'; } }, 1000); return; }
+    if (tk.type === 'turbine') { // three machines' readings: call each one
+      const R2 = rnd(Date.now() % 7777), units = [1, 2, 3].map((u) => { const kind = Math.floor(R2() * 3); return { u, temp: kind === 1 ? 612 + Math.round(R2() * 15) : 560 + Math.round(R2() * 25), vib: kind === 2 ? 11 + Math.round(R2() * 4) : 3 + Math.round(R2() * 3), oil: kind === 2 ? 1.6 : 2.6 + Math.round(R2() * 5) / 10, right: ['keep', 'reduce', 'shut'][kind] }; });
+      const pick = {}; const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>3 machines</span></div><p>Limits: exhaust under 600 °C (reduce load if over), vibration under 8 mm/s and oil over 2 bar (shut down if not).</p>
+          ${units.map((un) => `<div class="gpunit"><b>Turbine ${un.u}</b><span>${un.temp} °C · ${un.vib} mm/s · ${un.oil} bar</span><div class="gpopts sm">${[['keep', 'Keep running'], ['reduce', 'Reduce load'], ['shut', 'Shut down']].map(([k, l]) => `<button data-u="${un.u}" data-a="${k}" class="${pick[un.u] === k ? 'sel' : ''}">${l}</button>`).join('')}</div></div>`).join('')}<button class="gpgo">Log the decisions</button>`);
+        gpEl.querySelectorAll('[data-u]').forEach((b) => (b.onclick = () => { pick[b.dataset.u] = b.dataset.a; draw(); }));
+        gpEl.querySelector('.gpgo').onclick = () => { const ok = units.filter((un) => pick[un.u] === un.right).length; done(ok / 3 * 100, ok === 3 ? 'Every call right. The plant runs safe and earns.' : `${3 - ok} wrong call${3 - ok > 1 ? 's' : ''}. ${units.filter((un) => pick[un.u] !== un.right).map((un) => `Turbine ${un.u} needed: ${{ keep: 'keep running', reduce: 'reduce load', shut: 'shut down' }[un.right]}`).join('. ')}.`); }; };
+      draw(); }
+  }
+  // the end of a shift: the report, the pay, the experience, and the next step in the career
+  async function gridFinish() {
+    const sh = GJ.shift; if (!sh) return; const tr = sh.track, lv = gridLv(tr), score = Math.round(sh.tasks.reduce((s2, tk) => s2 + tk.score, 0) / sh.tasks.length), xp = Math.round(10 + score / 5);
+    GJ.xp[tr] = (GJ.xp[tr] || 0) + xp; let paid = null, payNote = '';
+    try { const v = await my('gridShift', { level: lv, score }); paid = v.paid; if (typeof pnaira !== 'undefined' && v.naira != null) pnaira.textContent = naira(v.naira); } catch (e) { payNote = /enough for today|just finished/i.test(e.message) ? e.message : 'Pay is held until the National Grid payroll goes live on the server.'; }
+    GJ.shifts.unshift({ at: Date.now(), track: tr, level: lv, score, paid, xp }); GJ.shifts.length = Math.min(30, GJ.shifts.length); GJ.shift = null; gridSave();
+    const canExam = lv < 5 && GJ.xp[tr] >= GRID_XP[lv];
+    notify(`Grid shift done: ${score}/100${paid ? `, paid ${naira(paid)}` : ''}`, 'money', ['grid']);
+    coachSay(`Shift report, ${myName || 'Lagosian'}: ${score}/100. ${score >= 85 ? 'Correct! Na you be the real deal.' : score >= 60 ? 'Not bad at all, but you fit do pass this.' : 'Hmm. Today no be your day, but tomorrow go better.'} ${paid ? `${naira(paid)} has landed in your wallet.` : payNote} +${xp} XP.${canExam ? ' You have the experience for promotion: take the certification exam in the WYRD Grid app.' : ''}`, [['WYRD Grid', () => { openPhone('grid'); return 'x'; }, true], ['Later', null]]);
+  }
+  // the certification exam for the next level: five questions, four to pass
+  function gridExam(tr, onDone) {
+    const R2 = rnd(Date.now() % 5555), qs = [...GRID_EXAM[tr]].sort(() => R2() - 0.5).slice(0, 5); let k = 0, right = 0;
+    const draw = () => { const [q, opts] = qs[k]; const order = opts.map((o, i) => [o, i]).sort(() => R2() - 0.5);
+      gpShow(`<div class="gphd"><b>${esc(GRID_TRACKS[tr].name)} certification</b><span>${k + 1} of 5</span></div><p class="gpq">${esc(q)}</p><div class="gpopts">${order.map(([o, i]) => `<button data-i="${i}">${esc(o)}</button>`).join('')}</div>`);
+      gpEl.querySelectorAll('[data-i]').forEach((b) => (b.onclick = () => { if (+b.dataset.i === qs[k][2]) right++; k++; if (k < 5) return draw(); const pass = right >= 4;
+        gpShow(`<div class="gphd"><b>${pass ? 'Passed!' : 'Not this time'}</b><button class="gpx2">✕</button></div><div class="gpbig">${right}<small>/5</small></div><p>${pass ? `Promoted to ${GRID_LEVELS[gridLv(tr)]}. Your pay goes up from your next shift.` : 'You need four right. Study the job and sit it again.'}</p>`);
+        if (pass) { GJ.level[tr] = gridLv(tr) + 1; gridSave(); notify(`Promoted: ${GRID_LEVELS[GJ.level[tr] - 1]} ${GRID_TRACKS[tr].name}`, 'money', ['grid']); }
+        gpEl.querySelector('.gpx2').onclick = () => { gpClose(); onDone && onDone(); }; })); };
+    draw();
+  }
+  // WYRD's briefing for today: who you are, how your last shift went, the island's state
+  function gridBriefing() {
+    const tr = GJ.track || gridRecommend(), last = GJ.shifts.find((s2) => s2.track === tr), grid = nepaAt(lagosMs() - 3600e3), h = new Date(lagosMs()).getUTCHours(), rain = WX && WX.cur && WX.cur.rain > 0.1, nm = myName || 'my person';
+    const tips = { control: h >= 17 && h <= 22 ? 'Evening peak is coming: everybody go on AC and TV at once. Keep reserve ready.' : 'Demand dey climb small small this morning. Move before it moves you.', lineman: rain ? 'Rain dey fall: insulators go flash over. Plenty call-outs today, no rush the safety.' : 'Dry day, but feeders still dey trip. Isolate, prove dead, earth. Always.', solar: WX && WX.cur && WX.cur.haze > 0.2 ? 'Harmattan dust don cover the panels. Na cleaning day.' : 'Good sun today. Every clean panel na money.', plant: grid ? 'The turbines dey carry the whole island. Watch the vibration.' : 'NEPA dey load-shed: turbines go dey stressed when we bring them back. Read every gauge.' };
+    return `${nm}, ${GRID_TRACKS[tr].icon} ${GRID_LEVELS[gridLv(tr) - 1]} ${GRID_TRACKS[tr].name}. ${last ? `Your last shift: ${last.score}/100${last.score < 70 ? `. We go do better today${tr === 'control' && GJ.notes.lowHz ? ` (frequency dipped to ${GJ.notes.lowHz} Hz)` : ''}.` : '. Keep that standard.'}` : 'Your first shift. Take am easy, learn the job.'} ${tips[tr]} The grid ${grid ? 'has light right now' : 'is load-shedding right now'}.`;
   }
   document.getElementById('guest').onclick = () => { myName = store.get('li.name') || 'Guest'; start(); };
   for (const el of [emailIn, nameIn, passIn, pass2In]) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('go').click(); });
