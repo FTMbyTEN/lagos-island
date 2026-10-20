@@ -14,3 +14,7 @@
   Cache-Control: no-cache
 /precache.json
   Cache-Control: no-cache
+/version.json
+  Cache-Control: no-store
+/manifest.webmanifest
+  Cache-Control: no-cache
