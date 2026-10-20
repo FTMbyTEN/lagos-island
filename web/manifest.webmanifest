@@ -1,0 +1,16 @@
+{
+  "name": "Lagos Island",
+  "short_name": "Lagos Island",
+  "description": "Lagos Island, Ikoyi, VI, Eko Atlantic, Lekki and Ajah: walk it, live in it, meet the people on it and WYRD.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#07070D",
+  "theme_color": "#07070D",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
