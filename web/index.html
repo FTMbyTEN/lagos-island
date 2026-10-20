@@ -51,7 +51,7 @@
   #okada:active { background: var(--green-dark); transform: scale(0.96); }
   #stick { position: fixed; left: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); width: 120px; height: 120px; border-radius: 50%; display: none; background: rgba(255, 255, 255, 0.55); box-shadow: var(--shadow); }
   #knob { position: absolute; left: 38px; top: 38px; width: 44px; height: 44px; border-radius: 50%; background: #fff; box-shadow: var(--shadow); }
-  .touch #stick { display: block; }
+  .touch #stick { display: block; opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity .25s, transform .25s; } .touch #stick.show { opacity: 1; pointer-events: auto; transform: none; } /* only when your character is on screen and can walk */
   body:not(.touch) #okada { width: 70px; height: 70px; font-size: 12px; }
   #say { position: fixed; left: 50%; transform: translateX(-50%); width: min(560px, calc(100vw - 20px)); bottom: calc(120px + env(safe-area-inset-bottom)); display: none; gap: 8px; padding: 6px; }
   #say input { flex: 1; padding: 11px 14px; border: none; border-radius: 999px; background: #F2F6FA; color: var(--ink); font: 500 15px 'Plus Jakarta Sans', sans-serif; outline: none; }
@@ -618,6 +618,16 @@
   #pnav #phome { width: 52px; height: 52px; padding: 0 !important; border-radius: 50% !important; margin: -14px 0 -4px; background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1) !important; color: #fff !important; box-shadow: 0 8px 20px rgba(14,165,233,.45), 0 0 0 4px rgba(15,17,26,.9); font-size: 9px !important; }
   #pnav #phome svg { width: 20px !important; height: 20px !important; } #pnav #phome:active { transform: scale(.9); }
 @media (max-width: 440px) { #online { display: none !important; } #topR { gap: 3px !important; } } /* a narrow phone: the online count lives in the phone's island widget, the top bar keeps its buttons */
+  /* the phone's loading screen: cyberpunk */
+  #phone .cyload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 70%; padding-top: 30%; font-family: 'Orbitron', 'Rajdhani', sans-serif; }
+  #phone .cyring { position: relative; width: 96px; height: 96px; } #phone .cyring i { position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; border-top-color: #00F0FF; border-right-color: rgba(0,240,255,.35); animation: cySpin 1s linear infinite; filter: drop-shadow(0 0 6px #00F0FF); }
+  #phone .cyring i:nth-child(2) { inset: 12px; border-top-color: #FF003C; border-left-color: rgba(255,0,60,.35); border-right-color: transparent; animation-duration: .7s; animation-direction: reverse; filter: drop-shadow(0 0 6px #FF003C); }
+  #phone .cyring b { position: absolute; inset: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 18px rgba(167,139,250,.9); animation: cyPulse 1.2s ease-in-out infinite; }
+  @keyframes cySpin { to { transform: rotate(360deg); } } @keyframes cyPulse { 50% { transform: scale(.82); opacity: .75; } }
+  #phone .cyg { position: relative; font: 900 18px 'Orbitron', sans-serif; letter-spacing: 6px; color: #FCEE0A; text-shadow: 0 0 10px rgba(252,238,10,.6); }
+  #phone .cyg::before, #phone .cyg::after { content: attr(data-t); position: absolute; inset: 0; } #phone .cyg::before { color: #00F0FF; transform: translate(-2px, 0); clip-path: inset(0 0 55% 0); animation: cwSlice 1.3s infinite steps(1); mix-blend-mode: screen; } #phone .cyg::after { color: #FF003C; transform: translate(2px, 0); clip-path: inset(55% 0 0 0); animation: cwSlice 1s infinite reverse steps(1); mix-blend-mode: screen; }
+  #phone .cybar { width: 62%; height: 4px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; } #phone .cybar i { display: block; width: 40%; height: 100%; background: linear-gradient(90deg, #00F0FF, #FF003C); box-shadow: 0 0 10px #00F0FF; animation: cyBar 1.1s ease-in-out infinite; } @keyframes cyBar { 0% { transform: translateX(-110%); } 100% { transform: translateX(260%); } }
+  #phone .cylog { position: relative; height: 16px; width: 80%; text-align: center; font: 600 11px 'Rajdhani', monospace; letter-spacing: 1.5px; color: #8FB6C2; } #phone .cylog span { position: absolute; inset: 0; opacity: 0; animation: cyLog 3.6s infinite; } #phone .cylog span:nth-child(2) { animation-delay: 1.2s; } #phone .cylog span:nth-child(3) { animation-delay: 2.4s; } @keyframes cyLog { 0%, 33% { opacity: 1; } 34%, 100% { opacity: 0; } }
   /* sign up and sign in, in the top bar's language: a frosted card, the palm badge, pill tabs like the "online" chip,
      soft fields, the logo's gradient on the button, compact and centred over the island */
   #hello { place-items: center; padding: 16px; background: radial-gradient(120% 80% at 50% 100%, rgba(15,23,42,.45), rgba(15,23,42,.08) 70%); }
@@ -5873,7 +5883,7 @@
     }
     if (trip && !inside) tripStep(dt);
     if (drive && !inside) driveStep(dt);
-    if (MOBILE && phoneEl0.style.display === 'block') { requestAnimationFrame(frame); return; }
+    if (MOBILE && phoneEl0.style.display === 'block') { if (stickId == null) stickEl.classList.remove('show'); requestAnimationFrame(frame); return; }
     if (inside) { const e = Math.min(1, dt * 3); cam.x += (inside.w / 2 + (me.x - inside.w / 2) * 0.3 - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * 0.3 - cam.z) * e; }
     else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
     // each sector its own angle: the camera glides there
@@ -5883,7 +5893,7 @@
     cam.yaw += dy * e2; cam.pitch += (want.pitch - cam.pitch) * e2; cam.zoom += (want.zoom - cam.zoom) * e2;
     for (const o of others.values()) { o.x += (o.tx - o.x) * Math.min(1, dt * 4); o.z += (o.tz - o.z) * Math.min(1, dt * 4); }
     if (!inside) wyrdStep(dt);
-    if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); }
+    if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); { const sp0 = P(me.x, 0, me.z), seen = sp0[0] > 0 && sp0[0] < W && sp0[1] > 0 && sp0[1] < H; stickEl.classList.toggle('show', stickId != null || (playing && seen && !pose && phoneEl0.style.display !== 'block' && !document.querySelector('#hello:not([style*="none"])'))); } } // the joystick: only while your character is on screen and free to walk
     if (x === cvMain && (W !== innerWidth || H !== innerHeight)) resize(); // a preview put back a stale size (the window changed while it drew): fit the screen again
     draw();
     requestAnimationFrame(frame);
@@ -6613,6 +6623,7 @@
       setTimeout(() => { B.style.display = 'none'; booted = true; done(); }, 1250);
     });
   }
+  const CYLOAD = `<div class="cyload"><div class="cyring"><i></i><i></i><b></b></div><div class="cyg" data-t="LOADING">LOADING</div><div class="cybar"><i></i></div><small class="cylog"><span>// linking to WYRD OS</span><span>// decrypting your keys</span><span>// syncing the island</span></small></div>`;
   async function openPhone(app, arg) {
     // already open (tapping piece after piece in the Home Store, say): just show the next thing, no lock screen
     if (phone.style.display === 'block' && app && signedIn() && me$ && keyed) { shadeEl.classList.remove('on'); if (stack.length > 1 && stack[stack.length - 1][0] === app) stack.pop(); return go(app, arg); } // the next piece replaces the last, so Back stays short
@@ -6622,12 +6633,12 @@
     if (lockGo) { app = lockGo; arg = undefined; lockGo = null; }
     if (app === 'music' || app === 'gov') return go(app, arg); // music and the government's public register need no account
     if (!signedIn()) return app === 'ride' || app === 'yacht' || app === 'gov' ? go(app) : render('signin'); // a ride or the free harbour tour need no account
-    try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
+    try { if (!me$ || !keyed) { show(CYLOAD); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
     if (app) go(app, arg); else render('home');
   }
   async function render(app, arg) { pbody.dataset.app = app;
     try {
-      if (app === 'signin') { show(`<div class="ptitle">Your phone</div><div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
+      if (app === 'signin') { show(`<div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
       if (app === 'home') {
         const d = new Date(lagosMs()), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
