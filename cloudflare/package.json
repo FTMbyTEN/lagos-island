@@ -2,6 +2,12 @@
   "name": "lagos-island-cloudflare",
   "private": true,
   "type": "module",
-  "scripts": { "deploy": "wrangler deploy", "check": "wrangler deploy --dry-run" },
-  "devDependencies": { "wrangler": "^4.151.3" }
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run",
+    "predeploy": "node precache.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.151.3"
+  }
 }
