@@ -711,6 +711,8 @@
   @keyframes swipeHint { 50% { transform: translateY(-5px); opacity: .55; } }
   #lockscr .lid { bottom: 178px !important; }
   #lockscr.unlocking .lbot .lu { opacity: 0 !important; transition: opacity .1s !important; } /* WYRD ID speaks instead */
+  /* the jet colour picker */
+  .jsw { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; } .jsw button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); cursor: pointer; padding: 0; } .jsw button.on { border-color: #FACC15; box-shadow: 0 0 0 2px rgba(250,204,21,.4); }
 </style>
 </head>
 <body>
@@ -2892,7 +2894,7 @@
     flat(hx + 0.6, hz + 0.6, hx + w - 0.6, hz + d, 0.07, '#F5F0E6');
     const glowIn = () => { const p = P(hx + w / 2, 4, hz + d / 2); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * w * 0.6); g.addColorStop(0, 'rgba(255,236,200,0.45)'); g.addColorStop(1, 'rgba(255,236,200,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * w * 0.6, 0, Math.PI * 2); x.fill(); x.restore(); };
     glow.push(glowIn);
-    jet(hx + w / 2, hz + d / 2 + 2, k); flush3d();
+    const own = HANGARS.list[k]; jet(hx + w / 2, hz + d / 2 + 2, own ? own.livery : k); flush3d(); // an owner's jet, in their colours
     // the arched roof, in ribs
     const ribs = 7;
     for (let r = 0; r <= ribs; r++) {
@@ -2903,7 +2905,7 @@
     const back = []; for (let u = 0; u <= 10; u++) { const ang = Math.PI * u / 10; back.push(P(hx + w / 2 - Math.cos(ang) * w / 2, 9 + Math.sin(ang) * 5, hz)); }
     const front = back.map((_, u) => { const ang = Math.PI * u / 10; return P(hx + w / 2 - Math.cos(ang) * w / 2, 9 + Math.sin(ang) * 5, hz + d); });
     x.fillStyle = 'rgba(203,213,225,0.55)'; x.beginPath(); x.moveTo(back[0][0], back[0][1]); for (const p of back) x.lineTo(p[0], p[1]); for (let u = front.length - 1; u >= 0; u--) x.lineTo(front[u][0], front[u][1]); x.closePath(); x.fill();
-    const sg = P(hx + w / 2, 10.5, hz + d); x.save(); x.font = `800 ${Math.max(7, K * 1.3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#B08A43'; x.fillText(['EKO JET CLUB', 'ATLANTIC AVIATION', 'ISLAND PRIVATE'][k % 3], sg[0], sg[1]); x.restore();
+    const sg = P(hx + w / 2, 10.5, hz + d); x.save(); x.font = `800 ${Math.max(7, K * 1.3)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#B08A43'; x.fillText(own ? (own.name ? '@' + own.name.toUpperCase() : own.tail) : ['EKO JET CLUB', 'ATLANTIC AVIATION', 'ISLAND PRIVATE'][k % 3], sg[0], sg[1]); x.restore();
   }
   // a private jet: a slim white fuselage with a gold cheatline, swept wings with winglets, a T-tail, engines at the back
   let JET_TURN = 0; // which way the model's nose points (checked in the preview)
@@ -5356,7 +5358,7 @@
     return f < 0.1 ? 'takeoff' : joy ? (f < 0.9 ? 'island' : 'landing') : f < 0.42 ? 'out' : f < 0.58 ? 'there' : f < 0.9 ? 'home' : 'landing';
   }
   const CABIN_SAY = {
-    takeoff: (d) => `Good day, this is Captain Ade. Cabin crew, seats for take-off. ${d[0] === 'island' ? 'We\'ll take you round the island.' : `Next stop, ${d[1]}.`}`,
+    takeoff: (d, own) => `Good day, this is Captain Ade${own ? ', and welcome aboard ' + own + ', your own jet' : ''}. Cabin crew, seats for take-off. ${d[0] === 'island' ? 'We\'ll take you round the island.' : `Next stop, ${d[1]}.`}`,
     out: (d) => `We're cruising at 41,000 feet on our way to ${d[1]}. Relax, the bar is open.`,
     there: (d) => `Welcome to ${d[1]} ${d[3]}! Have a look out of the window. We head home shortly.`,
     home: () => 'Wheels up for Lagos. We\'ll have you home soon.',
@@ -5365,7 +5367,7 @@
   };
   function drawCabin(R, now) {
     const t = now / 1000, ph = cabinPhase(R), d = AIR.find(R.flight) || AIR_JOY, nt = Math.min(1, night * 1.2);
-    if (R.said !== ph) { R.said = ph; bubbles.set('captain', { text: CABIN_SAY[ph](d), until: performance.now() + 6500 }); }
+    if (R.said !== ph) { R.said = ph; bubbles.set('captain', { text: CABIN_SAY[ph](d, R.own), until: performance.now() + 6500 }); }
     // the windows: ovals down the wall, each a little view of the same sky
     const A = cloudArt(nt), speed = ph === 'takeoff' || ph === 'landing' ? 40 : ph === 'there' ? 6 : 22;
     for (let wx = 7; wx < R.w - 6; wx += 6) {
@@ -6165,6 +6167,41 @@
     const t = await r.text(); if (!t) return null;
     const v = JSON.parse(t); return typeof v === 'string' ? JSON.parse(v) : v;
   }
+  // ---- private jets: the three newest in the airport's hangars (by registration and colour; the owner's name only where
+  // they chose to show it), refreshed a minute at a time, and your own jet in the Airport app
+  const HANGARS = { list: [] };
+  const hangarsLoad = () => call('hangars', {}).then((v) => { if (Array.isArray(v)) HANGARS.list = v; }).catch(() => {});
+  hangarsLoad(); setInterval(hangarsLoad, 60000);
+  const JETS = { light: ['Light jet', 6, 60000000, 'Six seats, Abuja and Accra in comfort'], midsize: ['Midsize jet', 8, 120000000, 'Eight seats, any of our cities nonstop'], heavy: ['Long-range jet', 13, 250000000, 'Thirteen seats, a bedroom, London nonstop'] };
+  const jetFee = (d) => (d[0] === 'island' ? 2000 : Math.floor(d[4] / 4)); // fuel and handling for your own jet
+  async function myJetBox(el) {
+    if (!el) return;
+    if (!signedIn()) { el.innerHTML = '<div class="rsec">YOUR OWN JET</div><div class="pcard dim">Sign in to buy a jet of your own: fly anywhere for just the fuel, your registration on a hangar door.</div>'; return; }
+    let j = null; try { j = (await my('myJet')).jet; } catch (e) { el.innerHTML = '<div class="rsec">YOUR OWN JET</div><div class="pcard dim">Private jets open when the server update goes live.</div>'; return; }
+    const sw = (sel) => `<div class="jsw">${LIVERY.map((c, k) => `<button data-liv="${k}" class="${k === sel ? 'on' : ''}" style="background:${c}" aria-label="Colour ${k + 1}"></button>`).join('')}</div>`;
+    if (!j) {
+      let liv = 1;
+      el.innerHTML = `<div class="rsec">BUY A JET</div><div class="pcard"><div class="dim">Your colours</div>${sw(liv)}</div>
+        <div class="lst">${Object.entries(JETS).map(([k, v]) => `<button class="li" data-buy="${k}"><span class="ic">🛩️</span><span class="lt"><b>${v[0]}</b><small>${v[3]} · ${v[1]} seats</small></span><span class="lr">${naira(v[2])}</span></button>`).join('')}</div>
+        <div class="lock">One jet each. It gets its own 5N- registration and a place in a hangar. Flying it costs only fuel and handling.</div>`;
+      el.querySelectorAll('[data-liv]').forEach((b) => (b.onclick = () => { liv = +b.dataset.liv; el.querySelectorAll('[data-liv]').forEach((o) => o.classList.toggle('on', o === b)); }));
+      el.querySelectorAll('[data-buy]').forEach((b) => (b.onclick = async () => { const v = JETS[b.dataset.buy]; if (!confirm(`Buy a ${v[0]} for ${naira(v[2])}?`)) return; b.disabled = true;
+        try { const r = await my('buyJet', { model: b.dataset.buy, livery: liv }); if (r.naira != null) pnaira.textContent = naira(r.naira); notify(`Your ${v[0]} is in the hangar: ${r.jet.tail}`, 'money', ['airport']); hangarsLoad(); myJetBox(el); } catch (e) { b.disabled = false; fail(e); } }));
+      return;
+    }
+    el.innerHTML = `<div class="rsec">YOUR JET</div><div class="pcard"><div class="row"><span><b style="font-size:17px">🛩️ ${esc(j.tail)}</b><br><span class="dim">${esc(j.name)}</span></span><b style="color:${LIVERY[j.livery]}">■■■</b></div>
+        <div class="dim" style="margin-top:6px">Repaint</div>${sw(j.livery)}<label class="row" style="margin-top:6px"><span>Show my name on the hangar</span><input type="checkbox" id="jName" ${j.showName ? 'checked' : ''}></label></div>
+      <div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-own="${d[0]}"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}</b><small>Your jet · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">${naira(jetFee(d))} fuel</span></button>`).join('')}</div>`;
+    const save = async (patch) => { try { const r = await my('setJet', { livery: patch.livery ?? j.livery, showName: patch.showName ?? j.showName }); j = r.jet; hangarsLoad(); } catch (e) { fail(e); } };
+    el.querySelectorAll('[data-liv]').forEach((b) => (b.onclick = async () => { el.querySelectorAll('[data-liv]').forEach((o) => o.classList.toggle('on', o === b)); await save({ livery: +b.dataset.liv }); }));
+    el.querySelector('#jName').onchange = (e) => save({ showName: e.target.checked });
+    el.querySelectorAll('[data-own]').forEach((b) => (b.onclick = async () => { const d = AIR.find(b.dataset.own); b.disabled = true;
+      try { const r = await my('flyJet', { dest: d[0] }); if (r.naira != null) pnaira.textContent = naira(r.naira);
+        closePhone(); const ap = PLACES.find((p) => p[0] === 'airport'); if (ap && !inside) at$(ap);
+        enterRoom('jetcabin', `place:flight:own:${j.tail}`, `🛩️ ${j.tail} · ${d[0] === 'island' ? 'Round the island' : 'Lagos – ' + d[1]}`, { flight: d[0], own: j.tail, from: Date.now(), until: Date.now() + d[5] * 1000 });
+      } catch (e) { b.disabled = false; fail(e); } }));
+  }
+
   // who just arrived: their name drops in under the phone and floats up as it fades
   const everSeen = new Set(), joinsEl = document.getElementById('joins');
   let ticked = false;
@@ -7581,9 +7618,11 @@
         show(`${ahead('airport', 'Lagos Island Airport', 'Private jets, every minute')}
           <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#FACC15">✈ Departures</h3>${rows([0, 1, 2, 3, 4].map((k) => { const s = s0 + k, d = AIR.dep(s), st = AIR.depStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} ${esc(d[1])} <span class="dim">${d[2]}</span></span><b style="color:${stCol(st)}">Gate ${AIR.gate(s)} · ${st}</b></div>`; }))}</div>
           <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#38BDF8">🛬 Arrivals</h3>${rows([-1, 0, 1, 2].map((k) => { const s = s0 + k, d = AIR.arr(s), st = AIR.arrStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} from ${esc(d[1])}</span><b style="color:${stCol(st)}">${st}</b></div>`; }))}</div>
+          <div id="myJetBox"></div>
           <div class="rsec">FLY SOMEWHERE</div>
           <div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-fly="${d[0]}"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}${d[0] === 'island' ? '' : ' <span class="dim">' + d[2] + '</span>'}</b><small>${d[0] === 'island' ? 'Round the island and back' : 'There, a look round, and home'} · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">G${naira(d[4])}</span></button>`).join('')}</div>
           <div class="lock">Paid from your wallet. Everyone who books the same flight in the same minute is on the same jet.</div>`);
+        myJetBox($('myJetBox'));
         pbody.querySelectorAll('[data-fly]').forEach((b) => (b.onclick = async () => {
           const d = AIR.find(b.dataset.fly); b.disabled = true;
           try {
