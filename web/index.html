@@ -590,6 +590,14 @@
   #phone .malb button img { border-radius: 14px !important; box-shadow: 0 8px 18px rgba(0,0,0,.35); } #phone .mgen button { border-radius: 16px !important; background: linear-gradient(135deg, var(--g), color-mix(in srgb, var(--g) 40%, #000)) !important; color: #fff !important; font: 800 14px 'Plus Jakarta Sans', sans-serif !important; text-align: left; border: 0 !important; clip-path: none !important; }
   #phone .mnow img { border-radius: 20px !important; box-shadow: 0 18px 40px rgba(0,0,0,.5), 0 0 40px rgba(34,197,94,.18); } #phone .mprog { height: 5px !important; border-radius: 5px !important; } #phone .mprog i { background: #22C55E !important; border-radius: 5px; }
   #phone .mctl button { width: 46px; height: 46px; border-radius: 50% !important; background: rgba(255,255,255,.08) !important; font-size: 18px !important; } #phone .mctl button.big { width: 64px; height: 64px; background: #22C55E !important; color: #052E16 !important; font-size: 24px !important; box-shadow: 0 10px 24px rgba(34,197,94,.45); } #phone .mctl button.on { color: #F43F5E !important; }
+  /* Island Music, cleaner: a deep green glow behind it, titles in plain type, a shelf of big cards, quiet tags */
+  #pbody[data-app="music"] { background: radial-gradient(120% 60% at 50% 0%, rgba(22,101,52,.55), rgba(5,46,22,.15) 55%, transparent 80%); }
+  #phone .msec { display: flex; align-items: baseline; gap: 8px; margin: 18px 2px 10px; font: 800 17px 'Plus Jakarta Sans', sans-serif; color: #fff; letter-spacing: -.2px; } #phone .msec small { font-size: 12px; font-weight: 600; opacity: .55; }
+  #phone .mcards { display: flex; gap: 12px; overflow-x: auto; margin: 0 -16px 4px; padding: 0 16px 6px; scrollbar-width: none; scroll-snap-type: x mandatory; } #phone .mcards::-webkit-scrollbar { display: none; }
+  #phone .mcards button { flex: none; width: 128px; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; scroll-snap-align: start; } #phone .mcards img { width: 128px; height: 128px; border-radius: 16px; object-fit: cover; box-shadow: 0 10px 22px rgba(0,0,0,.4); transition: transform .2s; } #phone .mcards button:active img { transform: scale(.96); } #phone .mcards button.on img { box-shadow: 0 0 0 3px #22C55E, 0 10px 22px rgba(0,0,0,.4); }
+  #phone .mcards b, #phone .mcards small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } #phone .mcards b { font-size: 13px; margin-top: 7px; } #phone .mcards small { font-size: 11.5px; opacity: .6; }
+  #phone .mrow em { background: rgba(255,255,255,.08) !important; color: rgba(255,255,255,.55) !important; border: 0 !important; border-radius: 6px; font: 700 9.5px 'Plus Jakarta Sans', sans-serif !important; } #phone .mrow > i { font-size: 15px !important; }
+  #phone .mrow .lt b { font-size: 14px; } #phone .mrow .lt small { opacity: .6; }
   /* sign up and sign in, in the top bar's language: a frosted card, the palm badge, pill tabs like the "online" chip,
      soft fields, the logo's gradient on the button, compact and centred over the island */
   #hello { place-items: center; padding: 16px; background: radial-gradient(120% 80% at 50% 100%, rgba(15,23,42,.45), rgba(15,23,42,.08) 70%); }
@@ -6597,7 +6605,7 @@
     try { if (!me$ || !keyed) { show('<div class="ptitle">Opening…</div>'); await loadMe(); await ensureKey(); keyed = true; } } catch (e) { if (e.message === 'signin') return fail(e); show('<div class="ptitle">No signal</div><div class="pcard">Could not reach the network. Check your connection.</div><button class="pbtn" id="retry">Try again</button>'); $('retry').onclick = () => openPhone(app, arg); return; }
     if (app) go(app, arg); else render('home');
   }
-  async function render(app, arg) {
+  async function render(app, arg) { pbody.dataset.app = app;
     try {
       if (app === 'signin') { show(`<div class="ptitle">Your phone</div><div class="glass"><h3>Sign in to unlock it</h3><p>Your wallet, jobs, encrypted chats, your HQ and the arena live here. One username and password works on Lagos Island and in WYRD.</p><button class="pbtn" id="gIn">Sign in or make an account</button></div><button class="pbtn alt" id="gRide">🛵 Ride somewhere</button>`); $('gIn').onclick = () => { closePhone(); playing = false; document.getElementById('hello').style.display = 'grid'; }; $('gRide').onclick = () => go('ride'); return; }
       if (app === 'home') {
@@ -7154,7 +7162,7 @@
         // inside a club: who's on the decks and what's playing, and the button to take over (or hand back)
         const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, onDecks = !!club && CITY.dj === inside.key;
         const dj = club ? `<div class="mdj" style="--h:${club.spot.hue}"><div><small>🎧 ${esc(club.spot.name)} · ${esc(club.spot.vibe)}</small><b>${club.now ? esc(club.now.title) : 'Warming up…'}</b><span>${onDecks ? 'You are on the decks · pick a song to drop it' : 'On the decks: ' + esc(club.now ? club.now.dj : club.spot.dj)}</span></div><button id="mDeck" class="${onDecks ? 'on' : ''}">${onDecks ? 'Hand back' : 'Take the decks'}</button></div>` : '';
-        const head = ahead('music', 'Island Music', 'Charts and new songs · full tracks from independent artists') + dj;
+        const head = dj;
         if (tab === 'now') {
           const s = MP.q[MP.i];
           if (!s) { show(`${head}${tabs}<div class="pcard"><h3>Nothing playing</h3><p class="dim">Pick a song from Home or Search. It keeps playing when you put the phone away.</p></div>`); wire(); return; }
@@ -7164,7 +7172,7 @@
             <div class="mprog"><i id="mNowB"></i></div><div class="dim" id="mNowT">0:00</div>
             <div class="mctl"><button id="mPrev">⏮</button><button id="mNowP" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button id="mNext">⏭</button><button id="mLike" class="${MP.liked.some((l) => l.id === s.id) ? 'on' : ''}">♥</button></div>
             <div class="mbass"><span>🔊 Bass</span>${[[0, 'Off'], [6, 'Boost'], [12, 'Max']].map(([v, n]) => `<button data-bass="${v}" class="${AX.bass === v ? 'on' : ''}">${n}</button>`).join('')}</div></div>
-            <div class="rsec">UP NEXT</div><div class="lst">${MP.q.map((v, i) => i > MP.i && i < MP.i + 12 ? row(v, i, 'q') : '').join('')}</div>`);
+            <div class="msec">Up next</div><div class="lst">${MP.q.map((v, i) => i > MP.i && i < MP.i + 12 ? row(v, i, 'q') : '').join('')}</div>`);
           $('mPrev').onclick = () => { mpNext(-1); render('music', { tab: 'now' }); }; $('mNext').onclick = () => { mpNext(1); render('music', { tab: 'now' }); };
           $('mNowP').onclick = mpToggle; $('mLike').onclick = () => $('mLike').classList.toggle('on', mpLike(s));
           pbody.querySelectorAll('[data-bass]').forEach((b) => (b.onclick = () => { audioCtx(); setBass(+b.dataset.bass); pbody.querySelectorAll('[data-bass]').forEach((o) => o.classList.toggle('on', o === b)); }));
@@ -7174,8 +7182,8 @@
         }
         if (tab === 'lib') {
           lists.liked = MP.liked; lists.recent = MP.recent;
-          show(`${head}${tabs}<div class="rsec">♥ LIKED SONGS · ${MP.liked.length}</div><div class="lst">${MP.liked.map((s, i) => row(s, i, 'liked')).join('') || '<div class="li"><span class="lt"><small>Tap ♥ on a song to keep it here.</small></span></div>'}</div>
-            <div class="rsec">RECENTLY PLAYED</div><div class="lst">${MP.recent.slice(0, 15).map((s, i) => row(s, i, 'recent')).join('') || '<div class="li"><span class="lt"><small>Nothing yet.</small></span></div>'}</div>`);
+          show(`${head}${tabs}<div class="msec">Liked songs<small>${MP.liked.length}</small></div><div class="lst">${MP.liked.map((s, i) => row(s, i, 'liked')).join('') || '<div class="li"><span class="lt"><small>Tap ♥ on a song to keep it here.</small></span></div>'}</div>
+            <div class="msec">Recently played</div><div class="lst">${MP.recent.slice(0, 15).map((s, i) => row(s, i, 'recent')).join('') || '<div class="li"><span class="lt"><small>Nothing yet.</small></span></div>'}</div>`);
           wire(); return;
         }
         if (tab === 'search') {
@@ -7186,7 +7194,7 @@
             const [d1, d2] = await Promise.allSettled([dz('/search?q=' + encodeURIComponent(q) + '&limit=25'), au('/tracks/search?query=' + encodeURIComponent(q) + '&limit=12')]);
             lists.sd = d1.status === 'fulfilled' ? d1.value.data.map(fromDz).filter(Boolean) : []; lists.sa = d2.status === 'fulfilled' ? d2.value.map(fromAu).filter(Boolean) : [];
             if (!$('mRes')) return;
-            $('mRes').innerHTML = `${lists.sd.length ? `<div class="rsec">SONGS</div><div class="lst">${lists.sd.map((s, i) => row(s, i, 'sd')).join('')}</div>` : ''}${lists.sa.length ? `<div class="rsec">FULL TRACKS · INDEPENDENT ARTISTS</div><div class="lst">${lists.sa.map((s, i) => row(s, i, 'sa')).join('')}</div>` : ''}${!lists.sd.length && !lists.sa.length ? '<div class="dim">Nothing found.</div>' : ''}`;
+            $('mRes').innerHTML = `${lists.sd.length ? `<div class="msec">Songs</div><div class="lst">${lists.sd.map((s, i) => row(s, i, 'sd')).join('')}</div>` : ''}${lists.sa.length ? `<div class="msec">Full tracks<small>Independent artists</small></div><div class="lst">${lists.sa.map((s, i) => row(s, i, 'sa')).join('')}</div>` : ''}${!lists.sd.length && !lists.sa.length ? '<div class="dim">Nothing found.</div>' : ''}`;
             wire();
           };
           $('mQ').onkeydown = (e) => { if (e.key === 'Enter') { a.q = $('mQ').value; run(a.q); } };
@@ -7194,7 +7202,7 @@
           return;
         }
         if (tab === 'album' || tab === 'genre') {
-          show(`${head}<div class="rsec">${esc(tab === 'album' ? a.title : a.q).toUpperCase()}</div><button class="pbtn alt" id="mAll">▶ Play all</button><div class="lst" id="mList"><div class="li"><span class="lt"><small>Loading…</small></span></div></div>`);
+          show(`${head}<div class="msec">${esc(tab === 'album' ? a.title : a.q)}</div><button class="pbtn alt" id="mAll">▶ Play all</button><div class="lst" id="mList"><div class="li"><span class="lt"><small>Loading…</small></span></div></div>`);
           const d = tab === 'album' ? await dz('/album/' + a.id) : await dz('/search?q=' + encodeURIComponent(a.q) + '&order=RANKING&limit=40');
           const tr = (tab === 'album' ? d.tracks.data.map((t) => ({ ...t, album: { cover_medium: d.cover_medium } })) : d.data).map(fromDz).filter(Boolean);
           lists.x = tr; $('mList').innerHTML = tr.map((s, i) => row(s, i, 'x')).join('') || '<div class="li"><span class="lt"><small>No songs to play here.</small></span></div>';
@@ -7205,8 +7213,8 @@
         const [top, rel, full] = await Promise.allSettled([dz('/playlist/1362516565/tracks?limit=50'), dz('/editorial/0/releases?limit=12'), au('/tracks/trending?limit=20')]);
         lists.top = top.status === 'fulfilled' ? top.value.data.map(fromDz).filter(Boolean) : [];
         lists.full = full.status === 'fulfilled' ? full.value.map(fromAu).filter(Boolean) : [];
-        let albums = rel.status === 'fulfilled' ? rel.value.data : [], albLabel = '🆕 NEW RELEASES';
-        if (!albums.length) { try { albums = (await dz('/chart/0/albums?limit=12')).data; albLabel = '🔥 TOP ALBUMS'; } catch {} }
+        let albums = rel.status === 'fulfilled' ? rel.value.data : [], albLabel = 'New releases';
+        if (!albums.length) { try { albums = (await dz('/chart/0/albums?limit=12')).data; albLabel = 'Top albums'; } catch {} }
         try { const pl = (await dz('/search/playlist?q=' + encodeURIComponent('new music friday') + '&limit=1')).data[0]; if (pl) lists.fresh = (await dz('/playlist/' + pl.id + '/tracks?limit=25')).data.map(fromDz).filter(Boolean); } catch {}
         const GENRES = [['Afrobeats', '#F59E0B'], ['Amapiano', '#A855F7'], ['Afro gospel', '#0EA5E9'], ['Naija hip hop', '#EF4444'], ['Highlife', '#22C55E'], ['Fuji', '#B45309'], ['Alté', '#EC4899'], ['R&B', '#6366F1']];
         if (!$('mHome')) return;
@@ -7214,11 +7222,11 @@
         if (feat) lists.feat = [feat];
         $('mHome').innerHTML = `${playing ? `<button class="mmini" data-mt="now"><img src="${esc(playing.art)}" alt=""><span><small>${MP.a.paused ? 'Paused' : 'Now playing'}</small><b>${esc(playing.title)}</b><em>${esc(playing.artist)}</em></span>${MP.a.paused ? '' : '<i class="meq"><s></s><s></s><s></s></i>'}</button>` : ''}
           ${feat ? `<div class="mfeat" style="--art:url('${esc(feat.art)}')"><div class="mbg"></div><img src="${esc(feat.art)}" alt=""><div class="mft"><small>${lists.fresh && lists.fresh[0] === feat ? 'NEW THIS WEEK' : 'NUMBER ONE IN NIGERIA'}</small><b>${esc(feat.title)}</b><span>${esc(feat.artist)}</span><button class="mplay" data-ml="feat" data-mi="0" aria-label="Play">▶ Play</button></div></div>` : ''}
-          ${lists.fresh && lists.fresh.length ? `<div class="rsec">🆕 NEW MUSIC FRIDAY</div><div class="lst">${lists.fresh.slice(0, 10).map((s, i) => row(s, i, 'fresh')).join('')}</div>` : ''}
-          ${albums.length ? `<div class="rsec">${albLabel}</div><div class="malb">${albums.map((al) => `<button data-album="${al.id}" data-title="${esc(al.title)}"><img src="${esc(al.cover_medium)}" alt="" loading="lazy"><b>${esc(al.title)}</b><small>${esc(al.artist ? al.artist.name : '')}</small></button>`).join('')}</div>` : ''}
-          <div class="rsec">🎚️ GENRES</div><div class="mgen">${GENRES.map(([g, c]) => `<button data-genre="${g}" style="--g:${c}">${g}</button>`).join('')}</div>
-          ${lists.top.length ? `<div class="rsec">🇳🇬 TOP NIGERIA</div><div class="lst">${lists.top.slice(0, 20).map((s, i) => row(s, i, 'top')).join('')}</div>` : ''}
-          ${lists.full.length ? `<div class="rsec">🎧 FULL TRACKS · TRENDING ON AUDIUS</div><div class="lst">${lists.full.map((s, i) => row(s, i, 'full')).join('')}</div>` : ''}
+          ${lists.fresh && lists.fresh.length ? `<div class="msec">New Music Friday</div><div class="mcards">${lists.fresh.slice(0, 12).map((s, i) => `<button data-ml="fresh" data-mi="${i}" class="${MP.q[MP.i] && MP.q[MP.i].id === s.id ? 'on' : ''}"><img src="${esc(s.art)}" alt="" loading="lazy"><b>${esc(s.title)}</b><small>${esc(s.artist)}</small></button>`).join('')}</div>` : ''}
+          ${albums.length ? `<div class="msec">${albLabel}</div><div class="malb">${albums.map((al) => `<button data-album="${al.id}" data-title="${esc(al.title)}"><img src="${esc(al.cover_medium)}" alt="" loading="lazy"><b>${esc(al.title)}</b><small>${esc(al.artist ? al.artist.name : '')}</small></button>`).join('')}</div>` : ''}
+          <div class="msec">Genres</div><div class="mgen">${GENRES.map(([g, c]) => `<button data-genre="${g}" style="--g:${c}">${g}</button>`).join('')}</div>
+          ${lists.top.length ? `<div class="msec">Top in Nigeria</div><div class="lst">${lists.top.slice(0, 20).map((s, i) => row(s, i, 'top')).join('')}</div>` : ''}
+          ${lists.full.length ? `<div class="msec">Full tracks<small>Trending on Audius</small></div><div class="lst">${lists.full.map((s, i) => row(s, i, 'full')).join('')}</div>` : ''}
           ${!lists.top.length && !lists.full.length ? '<div class="pcard err">Music is offline right now. Try again in a moment.</div>' : ''}
           <div class="lock">Chart songs play as 30-second previews from Deezer; full tracks come from independent artists on Audius.</div>`;
         wire(); return;
