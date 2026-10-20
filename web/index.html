@@ -923,7 +923,8 @@
   let W = 0, H = 0, DPR = 1;
   let quality = 1; // drops when frames run slow
   const cvMain = cv.getContext('2d');
-  function resize() { DPR = Math.max(1, Math.min(2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
+  const MOBILE = matchMedia('(pointer: coarse)').matches || innerWidth < 760; // a phone or a small tablet: draw lighter
+  function resize() { DPR = Math.max(MOBILE ? 0.75 : 1, Math.min(MOBILE ? 1.25 : 2, devicePixelRatio || 1) * quality); W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; }
   addEventListener('resize', resize); resize();
   const cam = { x: 75, z: 105, yaw: -0.32, pitch: 0.95, zoom: 1, user: isTouch ? 1.15 : 1, follow: true };
   let co = 1, si = 0, sp = 1, cp = 0, K = 1;
@@ -5756,12 +5757,16 @@
 
   // ================= the loop =================
   let last = performance.now(), whereT = 0, playing = false, slow = 0, fast = 0;
+  const phoneEl0 = document.getElementById('phone');
   function frame(t) {
+    // on a phone: a steady 30 frames a second (half the work, and smoother than a stuttering 60)
+    if (MOBILE && t - (frame.drawn || 0) < 31) { requestAnimationFrame(frame); return; }
+    frame.drawn = t;
     const dt = Math.min(0.05, (t - last) / 1000); last = t;
     if (document.hidden) { requestAnimationFrame(frame); return; }
     // keep it smooth: frames over 28 ms for a while lower the canvas resolution; quick ones raise it back
-    if (dt > 0.045) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
-    if (slow > 90 && quality > 0.85) { quality = Math.max(0.85, quality - 0.075); slow = 0; resize(); }
+    if (dt > (MOBILE ? 0.048 : 0.045)) { slow++; fast = 0; } else { fast++; slow = Math.max(0, slow - 1); }
+    if (slow > (MOBILE ? 30 : 90) && quality > (MOBILE ? 0.6 : 0.85)) { quality = Math.max(MOBILE ? 0.6 : 0.85, quality - 0.075); slow = 0; resize(); }
     if (fast > 300 && quality < 1) { quality = Math.min(1, quality + 0.075); fast = 0; resize(); }
     if (playing) {
       let ix = stick.x, iz = stick.z;
@@ -5784,6 +5789,7 @@
     }
     if (trip && !inside) tripStep(dt);
     if (drive && !inside) driveStep(dt);
+    if (MOBILE && phoneEl0.style.display === 'block') { requestAnimationFrame(frame); return; }
     if (inside) { const e = Math.min(1, dt * 3); cam.x += (inside.w / 2 + (me.x - inside.w / 2) * 0.3 - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * 0.3 - cam.z) * e; }
     else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
     // each sector its own angle: the camera glides there
@@ -5880,7 +5886,7 @@
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
     // tablet, and on a desktop up to 80% of its real size; always within the window's width and height
     const w = innerWidth, vh = (window.visualViewport && visualViewport.height) || innerHeight, m = w <= 560 ? 8 : 16;
-    const [fw, fh, cap] = w < 600 ? [0.74, 0.68, 0.72] : w < 1024 ? [0.5, 0.74, 0.76] : [1, 0.84, 0.8];
+    const [fw, fh, cap] = w < 600 ? [0.97, 0.93, 1] : w < 1024 ? [0.62, 0.88, 0.96] : [1, 0.9, 0.92];
     phone.style.setProperty('--ps', Math.max(0.45, Math.min(cap, (w - 2 * m) * fw / 372, (vh - 2 * m) * fh / 780)).toFixed(4));
   }
   addEventListener('resize', fitPhone); if (window.visualViewport) visualViewport.addEventListener('resize', fitPhone); fitPhone();
