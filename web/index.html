@@ -645,6 +645,8 @@
   #hello .perso { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } #hello .perso button { display: inline-flex; align-items: center; gap: 5px; padding: 7px 11px; border: 1px solid rgba(15,23,42,.1); border-radius: 999px; background: rgba(15,23,42,.04); color: #0F172A; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: background .15s, transform .12s, border-color .15s; } #hello .perso button i { font-style: normal; } #hello .perso button.on { background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1); color: #fff; border-color: transparent; transform: scale(1.04); } #hello .perso button:disabled { opacity: .4; cursor: default; } #psCount { color: #0EA5E9; font-weight: 700; }
   #phone .ggov { display: flex; gap: 12px; align-items: center; padding: 12px 14px; margin-bottom: 10px; border-radius: 18px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(167,139,250,.25); } #phone .gorb { flex: none; width: 42px; height: 42px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 18px rgba(167,139,250,.7); animation: orbBob 2.4s ease-in-out infinite; }
   #phone .ggov small { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: #A5B4FC; } #phone .ggov b { font-size: 18px; } #phone .ggov span { display: block; font-size: 12px; opacity: .75; font-style: italic; }
+  #phone .gdl { display: block; font-size: 10px; opacity: .7; margin-top: 2px; } #phone .gfeed { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.06); } #phone .gfeed i { font-style: normal; font-size: 18px; } #phone .gfeed span { font-size: 13px; line-height: 1.4; } #phone .gfeed small { display: block; font-size: 10.5px; opacity: .6; margin-top: 2px; }
+  #phone .gbill small { display: block; font-size: 11px; opacity: .7; font-weight: 700; } #phone .gbill b { display: block; font-size: 17px; margin: 4px 0; } #phone .gbill > span { display: block; font-size: 13px; line-height: 1.4; opacity: .85; margin-bottom: 8px; }
   #phone .glaw { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); } #phone .glaw em { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; background: rgba(79,70,229,.35); font: 800 12px 'Plus Jakarta Sans', sans-serif; font-style: normal; } #phone .glaw small { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #22D3EE; } #phone .glaw span { font-size: 13.5px; line-height: 1.4; }
   /* sign up and sign in, in the top bar's language: a frosted card, the palm badge, pill tabs like the "online" chip,
      soft fields, the logo's gradient on the button, compact and centred over the island */
@@ -3780,6 +3782,50 @@
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tHome')) openPhone('gov'); });
   // the rates (set by WYRD's government; collected once the Treasury opens with the financial system)
   const GOV = { bqRent: 0, bqRentWk: 3000, trialDays: 7, paye: 0.07, landUse: 0.005, service: { flat: 2000, bungalow: 5000, terrace: 8000, duplex: 15000, townhouse: 18000, loft: 25000, mansion: 40000, villa: 80000 } };
+  // ---- the government, live: everything here comes from the island's real state (the light, the weather, who lives
+  // where, who is online, the parties, your own shifts) and the clock, so every Lagosian sees the same government
+  const GOV_EPOCH = Date.UTC(2026, 9, 1), GOV_WEEK = 7 * 864e5;
+  const GOV_BILLS = [
+    ['Solar on every BQ roof', 'Put a 1 kW panel and a small inverter on every BQ on HQ Row, paid from the Power budget.', 'Power'],
+    ['Night Blue Line', 'Run the Blue Line until 2 am on Fridays and Saturdays, for the clubs and the Arena.', 'Transport'],
+    ['Rent freeze on HQ Row', 'Hold BQ rent at ₦3,000 a week for the next three months.', 'Housing'],
+    ['Okada lanes on the coastal road', 'Paint a lane for okadas from Lekki to Ajah: safer for riders and drivers.', 'Transport'],
+    ['Free Wi-Fi at Freedom Park', 'Public Wi-Fi in Freedom Park and Tafawa Balewa Square.', 'Culture'],
+    ['Flood drains in VI', 'Dig new drains on Adeola Odeku and Ahmadu Bello Way before the rains.', 'Works'],
+    ['Skills school at the Grid', 'A free training school at the National Grid for linemen and solar technicians.', 'Education'],
+    ['Weekend market at Balogun', 'Close Balogun to cars on Saturdays and open it as a street market.', 'Culture'],
+  ];
+  const GOV_WORKS = [['Lekki–Ajah coastal road resurfacing', 'Works', 9], ['New substation for Ikoyi', 'Power', 6], ['HQ Row phase 2: 40 more BQs', 'Housing', 12], ['Blue Line extension to Ajah', 'Transport', 20], ['General Hospital new wing', 'Health', 14], ['Flood barrier at Eko Atlantic', 'Works', 16]];
+  function govLive() {
+    const now = lagosMs(), c = census(), wk = Math.floor((now - GOV_EPOCH) / GOV_WEEK), into = ((now - GOV_EPOCH) % GOV_WEEK) / GOV_WEEK;
+    const lightIn = (from) => Array.from({ length: 24 }, (_, k) => nepaAt(from - k * 3600e3)).filter(Boolean).length, light = lightIn(now - 3600e3), on = nepaAt(now - 3600e3);
+    const rain = WX && WX.cur ? WX.cur.rain : 0, occ = c.all.total ? c.all.taken / c.all.total : 0, online = (typeof others !== 'undefined' ? others.size : 0) + 1;
+    // approval: the light matters most, then housing and the weather; it drifts a little hour to hour
+    const R = rnd(Math.floor(now / 3600e3)), approval = Math.round(Math.max(18, Math.min(92, 38 + (light - 12) * 2.2 + occ * 25 + (on ? 4 : -6) - rain * 10 + (R() - 0.5) * 4)));
+    const apY = Math.round(Math.max(18, Math.min(92, 38 + (lightIn(now - 25 * 3600e3) - 12) * 2.2 + occ * 25)));
+    // the treasury: rates from homes lived in, BQ rent and the island's base income since the government began, less what it has spent
+    const rateWk = Object.entries(c.style).reduce((s2, [k, v]) => s2 + v.taken * ((GOV.service[k] || 0) / 4.33 + HOME_STYLES[k][1] * GOV.landUse / 52), 0) + c.bq.taken * GOV.bqRentWk + 2500000;
+    const treasury = Math.round(rateWk * ((now - GOV_EPOCH) / GOV_WEEK) * 0.38 + 48e6), perSec = rateWk * 0.38 / (GOV_WEEK / 1000);
+    // the bill of the week, and last week's result
+    const bill = GOV_BILLS[wk % GOV_BILLS.length], last = GOV_BILLS[(wk + GOV_BILLS.length - 1) % GOV_BILLS.length], RV = rnd(wk * 31 + 7), RL = rnd((wk - 1) * 31 + 7);
+    const base = Math.round(4 + c.bq.taken * 0.6 + into * 30), yes0 = Math.round(base * (0.35 + RV() * 0.4)), no0 = base - yes0, mine = store.get('li.vote.' + wk) || '';
+    const lastYes = 0.35 + RL() * 0.4 + (store.get('li.vote.' + (wk - 1)) === 'yes' ? 0.04 : 0);
+    // works under way: each takes its weeks, on its own schedule
+    const works = GOV_WORKS.map(([nm, dep, wks], k) => { const t0 = GOV_EPOCH + k * 5 * 864e5, p = Math.max(0, Math.min(1, (now - t0) / (wks * GOV_WEEK))); return { nm, dep, p, eta: p >= 1 ? 'Done' : `${Math.ceil((1 - p) * wks * 7)} days left` }; });
+    // what is happening on the island, newest first
+    const feed = [], h = new Date(now).getUTCHours(), ago = (ms) => { const m2 = Math.max(1, Math.round((now - ms) / 60000)); return m2 < 60 ? `${m2} min ago` : m2 < 1440 ? `${Math.round(m2 / 60)} h ago` : `${Math.round(m2 / 1440)} d ago`; };
+    for (let k = 0; k < 12; k++) { const a1 = nepaAt(now - 3600e3 - k * 3600e3), a0 = nepaAt(now - 3600e3 - (k + 1) * 3600e3); if (a1 !== a0) feed.push([Math.floor((now - k * 3600e3) / 3600e3) * 3600e3, '⚡', a1 ? 'Power restored across the island. The National Grid is carrying the load again.' : 'Load shedding: the Grid cut supply to protect the turbines. WYRD is bringing it back.']); }
+    if (rain > 0.3) feed.push([now - 600e3, '🌧️', 'Heavy rain: Works has crews on the VI drains. Avoid Ahmadu Bello Way if you can.']);
+    if (typeof hqBoard !== 'undefined') for (const v of hqBoard.arrivals) feed.push([v.at, '🏠', `A new Lagosian moved into BQ #${v.k + 1} on HQ Row. Welcome home.`]);
+    for (const p of Object.values(typeof partiesLive !== 'undefined' ? partiesLive : {})) if (p.until > now) feed.push([p.at || now - 1200e3, '🎉', `${p.host || 'A Lagosian'} is hosting a party${p.open ? ': everyone is welcome' : ''}.`]);
+    for (const s2 of (typeof GJ !== 'undefined' ? GJ.shifts : []).slice(0, 2)) feed.push([s2.at, '🔧', `A ${GRID_TRACKS[s2.track].name.toLowerCase()} finished a shift at the National Grid: ${s2.score}/100.`]);
+    for (const w of works) if (w.p >= 1) feed.push([GOV_EPOCH + GOV_WORKS.findIndex((g) => g[0] === w.nm) * 5 * 864e5 + GOV_WORKS.find((g) => g[0] === w.nm)[2] * GOV_WEEK, '🏗️', `Completed: ${w.nm}.`]);
+    feed.push([GOV_EPOCH + wk * GOV_WEEK, '🗳️', `New bill before the island: "${bill[0]}". Vote in the Government app.`]);
+    feed.push([GOV_EPOCH + wk * GOV_WEEK - 3600e3, lastYes >= 0.5 ? '✅' : '❌', `Last week's bill, "${last[0]}", ${lastYes >= 0.5 ? 'passed' : 'failed'} with ${Math.round(lastYes * 100)}% yes.`]);
+    if (h >= 17 && h <= 22) feed.push([now - 300e3, '📈', 'Evening peak: the island is using the most power of the day.']);
+    feed.sort((p, q) => q[0] - p[0]);
+    return { approval, apDelta: approval - apY, treasury, perSec, rateWk, light, on, online, bill, last, lastYes, wk, yes: yes0 + (mine === 'yes' ? 1 : 0), no: no0 + (mine === 'no' ? 1 : 0), mine, closes: GOV_EPOCH + (wk + 1) * GOV_WEEK, works, feed: feed.slice(0, 10).map(([t, i, s2]) => ({ when: ago(t), i, s: s2 })) };
+  }
   function govAccount() {
     const mine = Object.values(homesLive).filter((h) => h.mine), homes = mine.map((h) => { const st = HOME_STYLES[h.style] || ['Home', 0]; return { name: st[0], est: EST_NAME[(h.plot || '').split(':')[0]] || '', service: GOV.service[h.style] || 0, landUseWk: Math.round(st[1] * GOV.landUse / 52) }; });
     const pay = me$ ? me$.earnedToday || 0 : 0, cap = me$ ? me$.dailyCap || 0 : 0, paye = Math.round(pay * GOV.paye);
@@ -7229,7 +7275,8 @@
       }
       if (app === 'gov' && !(arg && arg.old)) {
         const tab = (arg && arg.tab) || 'overview', A = govAccount(), c = census(), grid = typeof nepaAt === 'function' ? nepaAt(lagosMs() - 3600e3) : true, bar = (p, col) => `<div class="gbar"><i style="width:${p}%;background:${col}"></i></div>`;
-        const TABS = [['overview', 'Overview'], ['account', 'My account'], ['housing', 'Housing'], ['budget', 'Budget'], ['laws', 'Laws'], ['notices', 'Notices'], ['depts', 'Departments']];
+        const L = govLive();
+        const TABS = [['overview', 'Overview'], ['live', 'Live'], ['vote', 'Vote'], ['account', 'My account'], ['housing', 'Housing'], ['budget', 'Budget'], ['laws', 'Laws'], ['notices', 'Notices'], ['depts', 'Departments']];
         // the island's numbers: citizens (everyone with a BQ), who's on now, the light over the last day, what the rates raise
         const citizens = c.bq.taken, online = (typeof others !== 'undefined' ? others.size : 0) + 1, lightHrs = Array.from({ length: 24 }, (_, k) => nepaAt(lagosMs() - 3600e3 - k * 3600e3)).filter(Boolean).length;
         const rev = Object.entries(c.style).map(([k, v]) => ({ k, name: HOME_STYLES[k][0], n: v.taken, wk: Math.round(v.taken * ((GOV.service[k] || 0) / 4.33 + HOME_STYLES[k][1] * GOV.landUse / 52)) })).filter((r) => r.n), revWk = rev.reduce((s2, r) => s2 + r.wk, 0);
@@ -7238,6 +7285,9 @@
         const line = (k, v, sub) => `<div class="grow"><span><b>${k}</b>${sub ? `<small>${sub}</small>` : ''}</span><em>${v}</em></div>`;
         let body = '';
         if (tab === 'overview') body = `<div class="ggov"><i class="gorb"></i><div><small>Governor of Lagos Island</small><b>WYRD</b><span>"Eko o ni baje. Every Lagosian housed, every street lit."</span></div></div>
+          <div class="gstat"><div><span>Approval</span><b class="${L.approval >= 50 ? 'gon' : 'goff'}">${L.approval}%</b><small class="gdl">${L.apDelta >= 0 ? '▲' : '▼'} ${Math.abs(L.apDelta)} since yesterday</small></div><div style="grid-column:span 2"><span>Treasury</span><b id="govTreas">${naira(L.treasury)}</b><small class="gdl">+${naira(Math.round(L.rateWk))} a week in rates and rent</small></div></div>
+          <div class="msec" style="font-size:15px">Happening now<small>live</small></div><div class="pcard">${L.feed.slice(0, 4).map((f) => `<div class="gfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}<button class="pbtn" data-gt="live" style="margin-top:8px">Everything happening</button></div>
+          <div class="pcard gbill"><small>This week's bill · ${L.bill[2]}</small><b>${esc(L.bill[0])}</b><span>${esc(L.bill[1])}</span>${bar(L.yes / Math.max(1, L.yes + L.no) * 100, 'linear-gradient(90deg,#22C55E,#4ADE80)')}<small>${L.yes} yes · ${L.no} no${L.mine ? ` · you voted ${L.mine}` : ''}</small><button class="pbtn" data-gt="vote" style="margin-top:8px">${L.mine ? 'See the vote' : 'Cast your vote'}</button></div>
           <div class="gstat"><div><span>Citizens</span><b>${citizens}</b></div><div><span>Online now</span><b>${online}</b></div><div><span>Light today</span><b class="${lightHrs >= 16 ? 'gon' : 'goff'}">${lightHrs}/24h</b></div></div>
           <div class="gstat"><div><span>Homes free</span><b>${c.all.total - c.all.taken}</b></div><div><span>Lived in</span><b>${c.all.taken}</b></div><div><span>Power</span><b class="${grid ? 'gon' : 'goff'}">${grid ? 'On' : 'Off'}</b></div></div>
           ${A.signed ? `<div class="pcard">${line('Wallet', naira(A.naira))}${line('Paid today', naira(A.pay), A.cap ? `of ${naira(A.cap)} a day` : '')}${bar(A.cap ? Math.min(100, A.pay / A.cap * 100) : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}${line('Due this week', naira(A.dueWk))}</div>` : '<div class="pcard dim">Sign in to see your rent, tax and pay.</div>'}
@@ -7252,6 +7302,13 @@
         else if (tab === 'budget') body = `<div class="pcard">${line('Rates raised each week', naira(revWk), revWk ? 'service charges and land use, from homes lived in' : 'no homes bought yet')}${rev.map((r) => line(`${esc(r.name)} × ${r.n}`, naira(r.wk) + '/wk')).join('')}</div>
           <div class="msec" style="font-size:15px">Where it goes</div><div class="pcard">${SPEND.map(([nm, why, p, col]) => line(nm, p + '%', why) + bar(p * 3, col)).join('')}</div>
           <div class="lock">The rates are set; collection starts when the Treasury opens at the Island Reserve Bank with the financial system.</div>`;
+        else if (tab === 'live') body = `<div class="pcard">${L.feed.map((f) => `<div class="gfeed"><i>${f.i}</i><span>${esc(f.s)}<small>${f.when}</small></span></div>`).join('')}</div>
+          <div class="msec" style="font-size:15px">Public works</div><div class="pcard">${L.works.map((w) => line(esc(w.nm), Math.round(w.p * 100) + '%', `${w.dep} · ${w.eta}`) + bar(w.p * 100, w.p >= 1 ? '#4ADE80' : 'linear-gradient(90deg,#FACC15,#F97316)')).join('')}</div>
+          <div class="msec" style="font-size:15px">The island right now</div><div class="pcard">${line('Approval of WYRD', L.approval + '%', `${L.apDelta >= 0 ? 'up' : 'down'} ${Math.abs(L.apDelta)} since yesterday: it follows the light, the housing and the weather`)}${line('Treasury', `<span id="govTreas">${naira(L.treasury)}</span>`, `growing by about ${naira(Math.round(L.perSec * 60))} a minute`)}${line('Light in the last day', L.light + '/24 h', L.on ? 'on now' : 'load shedding now')}${line('On the island now', L.online)}</div>`;
+        else if (tab === 'vote') { const tot = Math.max(1, L.yes + L.no), left = L.closes - lagosMs(); body = `<div class="pcard gbill"><small>Bill ${L.wk + 1} · ${L.bill[2]} · closes in ${Math.floor(left / 864e5)}d ${Math.floor(left % 864e5 / 3600e3)}h</small><b>${esc(L.bill[0])}</b><span>${esc(L.bill[1])}</span>
+          ${line('Yes', `${L.yes} · ${Math.round(L.yes / tot * 100)}%`)}${bar(L.yes / tot * 100, '#4ADE80')}${line('No', `${L.no} · ${Math.round(L.no / tot * 100)}%`)}${bar(L.no / tot * 100, '#F87171')}
+          ${L.mine ? `<div class="dim" style="padding:6px 0">You voted <b>${L.mine}</b>. You can change your vote until it closes.</div>` : ''}<div class="qa" style="--ac:#22D3EE;grid-template-columns:1fr 1fr"><button data-vote="yes"><i>👍</i>Yes</button><button data-vote="no"><i>👎</i>No</button></div></div>
+          <div class="msec" style="font-size:15px">Last week</div><div class="pcard">${line(esc(L.last[0]), L.lastYes >= 0.5 ? 'Passed' : 'Failed', `${Math.round(L.lastYes * 100)}% yes · ${L.last[2]}`)}</div>`; }
         else if (tab === 'laws') body = `<div class="pcard">${LAWS.map(([cat, t], k) => `<div class="glaw"><em>${k + 1}</em><span><small>${cat}</small>${esc(t)}</span></div>`).join('')}</div>`;
         else if (tab === 'notices') body = [`Power: ${grid ? 'NEPA has light right now.' : 'NEPA took light. Inverters on; go easy on the AC.'}`, `Housing: ${c.taken} of ${c.total} estate homes lived in. ${c.free} for sale in the Homes app.`, 'Every Lagosian keeps a free BQ on HQ Row, whatever else they own.', 'The Treasury opens at the Island Reserve Bank with the financial system: rent, service charges and taxes are collected from then.', 'Speed limit on the coastal road: 60 km/h. The Blue Line runs all day.'].map((t) => `<div class="pcard gnote">✨ ${esc(t)}</div>`).join('');
         else body = `<div class="pcard">${[['Housing', 'Adaeze Okafor', 'The register: every home, who lives where', 1], ['Treasury', 'Tunde Bakare', 'Rent, rates and tax, at the Island Reserve Bank', 0], ['Power', 'WYRD (National Grid)', 'The National Grid out east: every megawatt the island uses, hour by hour', 1], ['Transport', 'Musa Ibrahim', 'Rides, the Blue Line, the coastal road', 1], ['Culture', 'Folake Adeyemi', 'The Arena, the clubs, the parties', 1], ['Works', 'Emeka Obi', 'The reclaimed land and what gets built on it', 0], ['Law and order', 'Hauwa Bello', 'The island\'s laws, and reports of abuse', 0]].map(([d, who, t, on]) => `<div class="grow"><span><b>${d}</b><small>Commissioner ${who} · ${t}</small></span><em class="${on ? 'gon' : 'gsoon'}">${on ? 'Open' : 'Setting up'}</em></div>`).join('')}</div>`;
@@ -7259,6 +7316,9 @@
           <div class="gtabs">${TABS.map(([k, l]) => `<button data-gt="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('')}</div>${body}
           ${tab !== 'housing' ? '<button class="pbtn" data-go="homes">Homes for sale</button>' : ''}`);
         pbody.querySelectorAll('[data-gt]').forEach((b) => (b.onclick = () => { stack.pop(); go('gov', { tab: b.dataset.gt }); }));
+        pbody.querySelectorAll('[data-vote]').forEach((b) => (b.onclick = () => { store.set('li.vote.' + L.wk, b.dataset.vote); notify(`You voted ${b.dataset.vote} on "${L.bill[0]}"`, 'gov', ['gov']); render('gov', { tab: 'vote' }); }));
+        // it stays live while you look: the treasury ticks up every second, and the page refreshes every half minute
+        clearInterval(window.__govT); const t0 = Date.now(), tre = L.treasury; window.__govT = setInterval(() => { if (pbody.dataset.app !== 'gov' || phone.style.display === 'none') return clearInterval(window.__govT); const el = $('govTreas'); if (el) el.textContent = naira(Math.round(tre + L.perSec * (Date.now() - t0) / 1000)); if (Date.now() - t0 > 30000) render('gov', { tab }); }, 1000);
         const hb = pbody.querySelector('[data-go]'); if (hb) hb.onclick = () => go('homes');
         return;
       }
