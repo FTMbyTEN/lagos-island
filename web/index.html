@@ -1003,6 +1003,7 @@
   .ulk label { display: block; margin: 0 4px 5px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
   .ulk .fld { position: relative; margin-bottom: 12px; } .ulk .fld .pi { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ppDim); }
   .ulk .fld input { width: 100%; box-sizing: border-box; margin: 0 !important; padding: 13px 14px 13px 40px !important; border-radius: 14px !important; border: 0 !important; background: var(--ppCard) !important; box-shadow: inset 0 0 0 1px var(--ppLine); color: var(--ppInk) !important; font: 500 14.5px 'Plus Jakarta Sans', sans-serif !important; }
+  .ulk .err:empty { background: none !important; box-shadow: none !important; border: 0 !important; padding: 0 !important; }
   .ulk .err { min-height: 18px; margin: 0 4px 6px; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; color: #DC2626; } .ulk .fine { margin: 12px 6px 0; text-align: center; font: 500 11.5px/1.5 'Plus Jakarta Sans', sans-serif; color: var(--ppDim); }
   #tFs { position: fixed; right: calc(12px + env(safe-area-inset-right)); top: calc(62px + env(safe-area-inset-top)); z-index: 15; width: 38px; height: 38px; border-radius: 12px; border: 0; cursor: pointer; display: grid; place-items: center; background: rgba(15,23,42,.55); color: #fff; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 16px rgba(0,0,0,.25); }
   #tFs svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
@@ -1044,6 +1045,54 @@
   #phone #lockscr .lid { bottom: calc(96px + env(safe-area-inset-bottom)) !important; font: 800 12px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .04em !important; color: #16A34A !important; text-shadow: none !important; }
   #phone #lockscr.unlocking .ltop, #phone #lockscr.unlocking .lwid, #phone #lockscr.unlocking .lnotes, #phone #lockscr.unlocking .lbot { transition: transform .4s cubic-bezier(.4,0,.2,1) .15s, opacity .35s .15s; transform: translateY(-40px) scale(.97); opacity: 0; }
   @media (prefers-reduced-motion: reduce) { #phone #lockscr .lbot .lu::before { animation: none; } }
+  /* ================= the player passport (the palm) and Home 2 ================= */
+  #title .logo { cursor: pointer; transition: transform .15s; } #title .logo:hover { transform: scale(1.08); } #title .logo:active { transform: scale(.92); }
+  #passportVeil { position: fixed; inset: 0; z-index: 70; background: rgba(2,6,23,.38); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); opacity: 0; transition: opacity .25s; }
+  #passportVeil.on { opacity: 1; }
+  #passport { position: fixed; left: 50%; top: calc(8px + env(safe-area-inset-top)); z-index: 71; width: min(420px, calc(100vw - 16px)); max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain;
+    transform: translate(-50%, -16px) scale(.97); opacity: 0; transition: transform .3s cubic-bezier(.2,1.1,.3,1), opacity .2s; border-radius: 28px; background: rgba(248,250,252,.96); color: #0F172A; box-shadow: 0 30px 70px rgba(2,6,23,.4); font-family: 'Plus Jakarta Sans', sans-serif; scrollbar-width: none; }
+  #passport::-webkit-scrollbar { display: none; } #passport.on { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  #passport.dark { background: rgba(12,12,24,.96); color: #F1F5F9; box-shadow: 0 30px 70px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.08); }
+  #passport .phd { position: relative; padding: 22px 18px 18px; border-radius: 28px 28px 0 0; color: #fff; background: radial-gradient(90% 120% at 100% 0%, rgba(255,255,255,.25), transparent 60%), linear-gradient(135deg, #0F766E, #0EA5E9 50%, #6366F1); overflow: hidden; }
+  #passport.dark .phd { background: radial-gradient(90% 120% at 100% 0%, rgba(255,255,255,.14), transparent 60%), linear-gradient(135deg, #1E1B4B, #9D174D 55%, #0E7490); }
+  #passport .phd::after { content: ""; position: absolute; right: -50px; top: -50px; width: 180px; height: 180px; border-radius: 50%; border: 24px solid rgba(255,255,255,.09); }
+  #passport .px { position: absolute; right: 12px; top: 12px; z-index: 2; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255,255,255,.22); color: #fff; font-size: 15px; cursor: pointer; }
+  #passport .pme { position: relative; z-index: 1; display: flex; align-items: center; gap: 14px; } #passport .pme .av2 { width: 64px !important; height: 64px !important; font-size: 22px; box-shadow: 0 0 0 3px rgba(255,255,255,.85) !important; }
+  #passport .pme b { display: block; font: 800 21px 'Plus Jakarta Sans', sans-serif; } #passport .pme small { display: block; margin-top: 2px; font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .85; }
+  #passport .ptags { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; } #passport .ptags span { padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,.2); font: 700 11.5px 'Plus Jakarta Sans', sans-serif; display: inline-flex; align-items: center; gap: 5px; } #passport .ptags .pi { width: 13px; height: 13px; }
+  #passport .pbody { padding: 14px 14px 16px; }
+  #passport .pstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  #passport .pstats button { padding: 11px 10px; border: 0; border-radius: 18px; cursor: pointer; text-align: left; background: #fff; color: inherit; box-shadow: inset 0 0 0 1px rgba(15,23,42,.07), 0 4px 12px rgba(15,23,42,.04); min-width: 0; }
+  #passport.dark .pstats button { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+  #passport .pstats small { display: block; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .04em; text-transform: uppercase; opacity: .55; } #passport .pstats b { display: block; margin-top: 3px; font: 800 16px 'Plus Jakarta Sans', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #passport .pstats .bar { height: 5px; margin-top: 6px; border-radius: 3px; background: rgba(148,163,184,.25); overflow: hidden; } #passport .pstats .bar i { display: block; height: 100%; background: linear-gradient(90deg, #22C55E, #0EA5E9); }
+  #passport .psec { margin: 16px 4px 8px; font: 800 11px 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; text-transform: uppercase; opacity: .55; }
+  #passport .phq { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border: 0; border-radius: 20px; cursor: pointer; text-align: left; color: #fff; background: linear-gradient(135deg, var(--hq, #F97316), #111827 140%); box-shadow: 0 10px 24px rgba(15,23,42,.18); }
+  #passport .phq .ic3 { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.2); } #passport .phq .ic3 .pi { width: 22px; height: 22px; }
+  #passport .phq b { display: block; font: 800 15px 'Plus Jakarta Sans', sans-serif; } #passport .phq small { display: block; font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .85; } #passport .phq em { margin-left: auto; padding: 7px 12px; border-radius: 999px; background: #fff; color: #0F172A; font: 800 12px 'Plus Jakarta Sans', sans-serif; font-style: normal; white-space: nowrap; }
+  #passport .pgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 6px; }
+  #passport .pgrid button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 2px 0; border: 0; background: none; cursor: pointer; color: inherit; font: 700 11.5px 'Plus Jakarta Sans', sans-serif; }
+  #passport .pgrid button span { position: relative; width: 50px; height: 50px; border-radius: 17px; display: grid; place-items: center; color: #fff; background: var(--g); box-shadow: 0 6px 14px rgba(15,23,42,.14); transition: transform .12s; } #passport .pgrid button:active span { transform: scale(.9); }
+  #passport .pgrid button span .pi { width: 22px; height: 22px; } #passport .pgrid button span i { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #EF4444; color: #fff; font: 800 10.5px/18px sans-serif; font-style: normal; box-shadow: 0 0 0 2px #fff; }
+  #passport .ptog { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  #passport .ptog button { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 0; border-radius: 16px; cursor: pointer; text-align: left; background: #fff; color: inherit; box-shadow: inset 0 0 0 1px rgba(15,23,42,.07); font: 700 13px 'Plus Jakarta Sans', sans-serif; }
+  #passport.dark .ptog button { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+  #passport .ptog button small { display: block; font: 600 11px 'Plus Jakarta Sans', sans-serif; opacity: .55; } #passport .ptog button .sw { margin-left: auto; width: 34px; height: 20px; border-radius: 10px; background: rgba(148,163,184,.4); position: relative; flex: none; transition: background .2s; }
+  #passport .ptog button .sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; } #passport .ptog button.on .sw { background: #22C55E; } #passport .ptog button.on .sw::after { transform: translateX(14px); }
+  #passport .pfoot { margin-top: 14px; text-align: center; font: 600 11.5px 'Plus Jakarta Sans', sans-serif; opacity: .5; }
+  #passport .pguest { padding: 18px 16px; text-align: center; } #passport .pguest p { margin: 0 0 12px; font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; opacity: .75; }
+  #passport .pguest .pbtn { width: 100%; border-radius: 14px !important; background: linear-gradient(135deg, #0EA5E9, #6366F1) !important; color: #fff !important; }
+  /* the phone's home screen */
+  .hHi { display: flex; align-items: center; gap: 12px; margin: 2px 2px 12px; } .hHi .av2 { width: 44px !important; height: 44px !important; cursor: pointer; } .hHi div { flex: 1; min-width: 0; }
+  .hHi small { display: block; font: 600 12px 'Plus Jakarta Sans', sans-serif; opacity: .6; } .hHi b { display: block; font: 800 22px/1.15 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hHi button.nb { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center; background: rgba(255,255,255,.7); color: #0F172A; box-shadow: inset 0 0 0 1px rgba(15,23,42,.06); }
+  #phone.os-dark .hHi button.nb { background: rgba(255,255,255,.08); color: #fff; } .hHi button.nb i { position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 0 2px #fff; }
+  #phone.os-light #pbody[data-app="home"] .widget, #phone.os-light #pbody[data-app="home"] .mw, #phone.os-light #pbody[data-app="home"] .tw, #phone.os-light #pbody[data-app="home"] .wmini, #phone.os-light #pbody[data-app="home"] .wfit, #phone.os-light #pbody[data-app="home"] .w4sug button {
+    background: rgba(255,255,255,.72) !important; backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4); border: 0 !important; border-radius: 22px !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 8px 22px rgba(15,23,42,.06) !important; }
+  #pbody[data-app="home"] .hsec { margin: 18px 4px 8px !important; font: 800 11px 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .08em !important; text-transform: uppercase; opacity: .55; }
+  #pbody[data-app="home"] .apps { gap: 14px 8px !important; } #pbody[data-app="home"] .app { font: 700 11.5px 'Plus Jakarta Sans', sans-serif !important; }
+  #pbody[data-app="home"] .app i { border-radius: 18px !important; box-shadow: 0 6px 14px rgba(15,23,42,.12) !important; transition: transform .12s; } #pbody[data-app="home"] .app:active i { transform: scale(.9); }
+  #phone.os-light #pbody[data-app="home"] .dock { background: rgba(255,255,255,.6) !important; backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border-radius: 28px !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 10px 26px rgba(15,23,42,.1) !important; }
 </style>
 </head>
 <body>
@@ -1409,6 +1458,52 @@
     b.onclick = (e) => { e.stopPropagation(); fsAsked = true; if (fsEl()) return fsOut(); if (fsCan) fsGo(); else appInstall(null); };
     document.addEventListener('fullscreenchange', draw); document.addEventListener('webkitfullscreenchange', draw); document.body.append(b); }, 1200);
 
+  // ---- the player passport: tap the palm. Everything about you on the island, your HQ, your places and things, and the switches
+  function goHQ() { (async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T / 2; me.z = j * T + T - 0.5; cam.follow = true; tickerSay('Home: you\'re at your HQ'); } else tickerSay('Your HQ isn\'t on the map yet'); })().catch(() => tickerSay('Can\'t reach the island right now')); }
+  async function openPass() {
+    let veil = document.getElementById('passportVeil'), el = document.getElementById('passport');
+    if (!el) { veil = document.createElement('div'); veil.id = 'passportVeil'; el = document.createElement('div'); el.id = 'passport'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Your passport'); document.body.append(veil, el); veil.onclick = closePass; addEventListener('keydown', (e) => { if (e.key === 'Escape') closePass(); }); }
+    el.className = osMode === 'light' ? '' : 'dark'; veil.style.display = el.style.display = 'block'; requestAnimationFrame(() => { veil.classList.add('on'); el.classList.add('on'); });
+    const wx = lagosWeather(), online = (document.getElementById('count') || {}).textContent || '1';
+    if (!signedIn()) { el.innerHTML = `<div class="phd"><button class="px" aria-label="Close">✕</button><div class="pme">${avatar(myName || 'Guest')}<div><b>${esc(myName || 'Guest')}</b><small>Exploring as a guest · ${esc(sector.name)}</small></div></div></div><div class="pguest"><p>Sign in to get your HQ, your wallet, friends, chats, cars and a jet. One username and password.</p><button class="pbtn" id="pIn">Sign in or make an account</button></div>`;
+      el.querySelector('.px').onclick = closePass; el.querySelector('#pIn').onclick = () => { closePass(); openPhone(); }; return; }
+    const draw = (pf, extra) => {
+      const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), fr = FR.list || { friends: [], incoming: [] }, unread = notes.filter((n) => !n.seen && n.kind === 'link').length;
+      const hq = me$.hq || {}, careers = (pf && pf.careers) || [];
+      const A = [['wallet', 'Wallet', 'bank', 'linear-gradient(135deg,#0EA5E9,#6366F1)', 0], ['chats', 'Link', 'chat', 'linear-gradient(135deg,#34D399,#0EA5E9)', unread], ['people', 'People', 'users', 'linear-gradient(135deg,#38BDF8,#818CF8)', fr.incoming.length], ['homes', 'Homes', 'home', 'linear-gradient(135deg,#FB923C,#EF4444)', 0],
+        ['garage', 'Garage', 'car', 'linear-gradient(135deg,#64748B,#0F172A)', 0], ['airport', 'Airport', 'plane', 'linear-gradient(135deg,#22D3EE,#3B82F6)', 0], ['jobs', 'Jobs', 'work', 'linear-gradient(135deg,#FBBF24,#F97316)', 0], ['fashion', 'Wardrobe', 'bag', 'linear-gradient(135deg,#F472B6,#A855F7)', 0],
+        ['ride', 'Ride', 'go', 'linear-gradient(135deg,#2DD4BF,#0891B2)', 0], ['grid', 'The Grid', 'spark', 'linear-gradient(135deg,#FACC15,#EAB308)', 0], ['music', 'Music', 'trend', 'linear-gradient(135deg,#EC4899,#8B5CF6)', 0], ['wyrd', 'WYRD', 'shield', 'linear-gradient(135deg,#6366F1,#0EA5E9)', 0]];
+      const T2 = [['mode', osMode === 'light' ? 'Light' : 'Dark', 'Appearance', osMode === 'light'], ['alerts', 'Alerts', HUP.on ? 'On' : 'Silent', HUP.on], ['sound', 'City sound', CITY.on ? 'On' : 'Off', CITY.on], ['3d', '3D models', G3.on ? 'On' : 'Off', G3.on]];
+      el.innerHTML = `<div class="phd"><button class="px" aria-label="Close">✕</button><div class="pme">${avatar(me$.handle)}<div><b>@${esc(me$.handle)}</b><small>${pf && pf.since ? 'Lagosian since ' + sinceStr(pf.since) : 'Lagosian'} · now in ${esc(sector.name)}</small></div></div>
+          <div class="ptags">${careers.slice(0, 2).map((c) => `<span>${pi('work')}${esc(c)}</span>`).join('')}${pf && pf.jet ? `<span>${pi('plane')}${esc(pf.jet)}</span>` : ''}<span>${pi('users')}${fr.friends.length} friend${fr.friends.length === 1 ? '' : 's'}</span><span>${wx.icon} ${wx.temp}° Lagos</span></div></div>
+        <div class="pbody">
+          <div class="pstats"><button data-pa="wallet"><small>Wallet</small><b>${naira(me$.naira)}</b><div class="bar"><i style="width:${pct}%"></i></div></button><button data-pa="homes"><small>Homes</small><b>${extra.homes}</b></button><button data-pa="garage"><small>Cars</small><b>${extra.cars}</b></button></div>
+          <div class="psec">Your HQ</div>
+          <button class="phq" id="pHq" style="--hq:${esc(hq.color || '#F97316')}"><span class="ic3">${pi('home')}</span><span><b>${esc(hq.name || me$.handle + "'s HQ")}</b><small>${hq.locked ? 'Invite only' : 'Open door'}${me$.requests ? ` · ${me$.requests} at your door` : ''}</small></span><em>Go home</em></button>
+          <div class="psec">Everything</div>
+          <div class="pgrid">${A.map(([k, n, ic, g, c]) => `<button data-pa="${k}"><span style="--g:${g}">${pi(ic)}${c ? `<i>${c}</i>` : ''}</span>${n}</button>`).join('')}</div>
+          <div class="psec">Settings</div>
+          <div class="ptog">${T2.map(([k, n, s, on]) => `<button data-pt2="${k}" class="${on ? 'on' : ''}"><span><span>${n}</span><small>${s}</small></span><span class="sw"></span></button>`).join('')}
+            <button data-pt2="hqset"><span><span>HQ settings</span><small>Name, colour, door</small></span></button><button data-pt2="share"><span><span>Share profile</span><small>Invite a friend</small></span></button></div>
+          <div class="pfoot">${esc(online)} on the island now · Lagos time ${String(new Date(lagosMs()).getUTCHours()).padStart(2, '0')}:${String(new Date(lagosMs()).getUTCMinutes()).padStart(2, '0')}</div></div>`;
+      el.querySelector('.px').onclick = closePass;
+      el.querySelector('#pHq').onclick = () => { closePass(); if (phone.style.display === 'block') closePhone(); goHQ(); };
+      el.querySelectorAll('[data-pa]').forEach((b) => (b.onclick = () => { closePass(); openPhone(b.dataset.pa); }));
+      el.querySelectorAll('[data-pt2]').forEach((b) => (b.onclick = async () => { const k = b.dataset.pt2;
+        if (k === 'mode') { osMode = osMode === 'light' ? 'dark' : 'light'; store.set('li.osMode', osMode); applyMode(); el.className = 'on' + (osMode === 'light' ? '' : ' dark'); }
+        else if (k === 'alerts') { HUP.on = !HUP.on; store.set('li.alerts', HUP.on ? 'on' : 'off'); }
+        else if (k === 'sound') { const tc = document.querySelector('#topR [data-city], #tCity'); if (tc) tc.click(); else { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); } }
+        else if (k === '3d') G3.on = !G3.on;
+        else if (k === 'hqset') { closePass(); return openPhone('hq'); }
+        else if (k === 'share') { const url = location.origin + location.pathname, t = `Find me on Lagos Island: @${me$.handle}`; try { if (navigator.share) await navigator.share({ title: 'Lagos Island', text: t, url }); else { await navigator.clipboard.writeText(t + ' ' + url); tickerSay('Invite copied'); } } catch {} return; }
+        draw(pf, extra); }));
+    };
+    const extra = { homes: '…', cars: '…' }; draw(null, extra);
+    const [pf, homes, cars] = await Promise.all([my('publicProfile', { handle: me$.handle }).catch(() => null), my('myHomes').catch(() => []), my('myCars').catch(() => []), FR.list ? null : my('friends').then((f) => (FR.list = f)).catch(() => null)]);
+    extra.homes = Array.isArray(homes) ? homes.length : 0; extra.cars = Array.isArray(cars) ? cars.length : 0; if (el.classList.contains('on')) draw(pf, extra);
+  }
+  function closePass() { const v = document.getElementById('passportVeil'), el = document.getElementById('passport'); if (!el) return; v.classList.remove('on'); el.classList.remove('on'); setTimeout(() => { if (!el.classList.contains('on')) v.style.display = el.style.display = 'none'; }, 260); }
+  { const lg = document.querySelector('#title .logo'); if (lg) { lg.setAttribute('role', 'button'); lg.setAttribute('aria-label', 'Your passport'); lg.title = 'You on Lagos Island'; lg.addEventListener('click', (e) => { e.stopPropagation(); openPass(); }); } }
   // ---- the app: install Lagos Island like an app, with all of it downloaded onto the device (the service worker keeps
   // the page, every model and texture, and three.js, so it opens at once and loads nothing again). Chrome, Edge and
   // Android install in one tap; an iPhone or iPad adds it to the home screen from Safari's Share menu (Apple allows no
@@ -7820,16 +7915,18 @@
         const DOCK = ['chats', 'wallet', 'wyrd', 'jobs'], tile = ([k, i, n]) => `<button class="app" data-app="${k}" style="--ac:${APP_AC[k] || '#00F0FF'}"><i>${ico(k) || i}${k === 'hq' && me$.requests ? `<b>${me$.requests}</b>` : ''}</i>${n}</button>`;
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
-        show(`${w4Home()}
+        const unseen = notes.some((n) => !n.seen);
+        show(`<div class="hHi">${avatar(me$.handle)}<div><small>${hi}</small><b>${esc(me$.handle)}</b></div><button class="nb" id="hBell" aria-label="Notifications">${pi('inbox')}${unseen ? '<i></i>' : ''}</button></div>${w4Home()}
           <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
-          ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🎶</i></button>`; })()}
+          ${(() => { const live = arenaLive(), playing = (CITY.srcs || []).filter((s) => s.room && s.now); return playing.length || live ? `<button class="tw" data-app="${live ? 'arena' : 'music'}"><div><small>Live now</small><b>${playing.length ? `${playing.length} club${playing.length > 1 ? 's' : ''} playing · ${esc(playing.slice(0, 2).map((s) => s.spot.dj || s.spot.name).join(', '))}` : 'The Arena is live'}</b><span>${live && playing.length ? '● The Arena is live too' : 'Tap to listen'}</span></div><i>🎶</i></button>` : ''; })()}
           <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><div class="wbar"><i style="width:${pct}%"></i></div><small>${naira(me$.earnedToday || 0)} of ${naira(cap)} today</small></button>
             <button class="wmini" data-app="gov"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${(() => { const c = census(); return `${c.taken}/${c.total} homes lived in`; })()}</small></button></div>
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app))); w4Wire();
+        { const av = pbody.querySelector('.hHi .av2'); if (av) av.onclick = () => openPass(); $('hBell').onclick = () => { buildShade(); shadeEl.classList.add('on'); setTimeout(() => { notes.forEach((n) => (n.seen = true)); updBadge(); }, 900); }; }
         if ($('osQ')) $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
         pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => { const s = MP.q[MP.i], w = pbody.querySelector('.mw'); if (!s || !w) return; w.querySelector('.mwa').style.backgroundImage = `url('${s.art}')`; w.querySelector('.mwt b').textContent = s.title; w.querySelector('.mwt span').textContent = s.artist; w.querySelector('.mwt small').textContent = MP.a.paused ? 'Paused' : 'Now playing'; const pb = w.querySelector('[data-mw=play]'); if (pb) pb.textContent = MP.a.paused ? '▶' : '⏸'; }, 150); })); // update the widget in place
         { const im = pbody.querySelector('.wfit img'); const u = im ? fitShot(im.dataset.shot) : null; if (u) im.src = u; else if (im) im.remove(); }
@@ -9055,7 +9152,7 @@
   if (signedIn()) my('myCars').then((l) => { myCarsL = l; const a = l.find((c2) => c2.active); if (a) myCar = a.model + ':' + a.color; }).catch(() => {});
 
   // ---- the door: one account for Lagos Island and WYRD (a username and a password), or a look round as a guest
-  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('pass'), errEl = document.getElementById('err');
+  const hello = document.getElementById('hello'), nameIn = document.getElementById('name'), passIn = document.getElementById('passport'), errEl = document.getElementById('err');
   const emailIn = document.getElementById('email'), pass2In = document.getElementById('pass2');
   const RULES = { len: (p) => p.length >= 8, up: (p) => /[A-Z]/.test(p), low: (p) => /[a-z]/.test(p), num: (p) => /[0-9]/.test(p) };
   const strong = (p) => Object.values(RULES).every((f) => f(p));
