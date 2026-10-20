@@ -7993,7 +7993,7 @@
     touring = false; coachHide();
   }
   // a look round your home when you walk in: the basics a home needs, and the cheapest of each in the Home Store
-  const BASICS = [['bed', 'a bed', ['bed'], 'k:bedSingle'], ['seat', 'anywhere to sit', ['sofa', 'armchair', 'chair', 'couch2', 'stool', 'booth'], 'k:loungeSofa'], ['table', 'a table', ['table', 'coffee', 'desk', 'island'], 'k:tableCoffee'], ['tv', 'a TV', ['tv'], 'k:televisionVintage'], ['lamp', 'a lamp', ['lamp'], 'k:lampRoundFloor']];
+  const BASICS = [['bed', 'a bed', ['bed'], 'k:bedSingle'], ['seat', 'somewhere to sit', ['sofa', 'armchair', 'chair', 'couch2', 'stool', 'booth'], 'k:loungeSofa'], ['table', 'a table', ['table', 'coffee', 'desk', 'island'], 'k:tableCoffee'], ['tv', 'a TV', ['tv'], 'k:televisionVintage'], ['lamp', 'a lamp', ['lamp'], 'k:lampRoundFloor']];
   function homeCheck(R) {
     if (touring || !R || !R.mine || inside !== R) return;
     const day = new Date(lagosMs()).toISOString().slice(0, 10), key = 'li.hc.' + R.key; if (store.get(key) === day) return; // once a day for each home
@@ -8003,7 +8003,7 @@
     const what = missing.map((m) => m[1]), list = what.length > 1 ? what.slice(0, -1).join(', ') + ' and ' + what[what.length - 1] : what[0], first = missing[0], it = STORE[first[3]];
     const place = R.kind === 'hq' ? 'Your BQ' : 'This home';
     const why = first[0] === 'bed' ? 'You\'ll want somewhere to sleep.' : first[0] === 'seat' ? 'Guests will want somewhere to sit.' : 'It makes a place a home.';
-    return coachSay(`${place} has no ${list} yet. ${why} The Eko Home Store has ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'what you need'}, delivered straight here.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
+    return coachSay(`${place} is missing ${list}. ${why} The Eko Home Store has ${it ? it.name.toLowerCase() + ' from ' + naira(it.price) : 'what you need'}, delivered straight here.`, [[`Shop for ${first[1].replace(/^(a|an) /, '')}`, () => { openPhone('store', first[3]); return 'shop'; }, true], ['Later', null]]);
   }
   // ---- a home that works: its devices and fittings, each one something you can use. Walk up to it and the button says
   // what: the TV, the ceiling fan and the AC switch on and off, the inverter shows its battery, the cooker cooks a pot of
