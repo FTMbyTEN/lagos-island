@@ -3568,6 +3568,11 @@
     quad([P(px - 1.3, 1.6, pz + 0.1), P(px + 1.3, 1.6, pz + 0.1), P(px + 1.3, 2.6, pz + 0.1), P(px - 1.3, 2.6, pz + 0.1)], occ ? '#15803D' : '#6B7280', '#FFFFFF');
     if (K > 3) faceText(label || (occ ? 'OCCUPIED' : 'VACANT'), px, 2.1, pz + 0.12, '#FFFFFF', 0.45, 0, 800);
   }
+  function gateLight(px, pz, on) {
+    box(px - 0.1, 0, pz - 0.1, px + 0.1, 3.2, pz + 0.1, '#0B0B0F'); box(px - 0.22, 3.2, pz - 0.22, px + 0.22, 3.35, pz + 0.22, '#111827');
+    const p = P(px, 3.65, pz), r = Math.max(1.5, K * 0.32); x.fillStyle = on ? '#22C55E' : '#1F2937'; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill();
+    if (on) { const halo = () => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * (night > 0.35 ? 2.4 : 1.2)); g.addColorStop(0, 'rgba(74,222,128,0.85)'); g.addColorStop(1, 'rgba(74,222,128,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * (night > 0.35 ? 2.4 : 1.2), 0, Math.PI * 2); x.fill(); x.restore(); }; halo(); glow.push(halo); }
+  }
   const litWindows = (a, b, c, d, h) => { if (night < 0.35) return; glow.push(() => { const p = P((a + c) / 2, h * 0.55, d - 3.6), g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 4.5); g.addColorStop(0, 'rgba(255,214,150,0.55)'); g.addColorStop(1, 'rgba(255,214,150,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 4.5, 0, Math.PI * 2); x.fill(); x.restore(); }); };
   function hqHouse(a, b, c, d, k) {
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
@@ -3582,7 +3587,7 @@
     });
     if (hq && hq.mine) ownerFlag(c - 1.6, b + 1.6, col);
     if (hq) partyHouse(a, b, c, d, partyAt('hq:' + hq.slot));
-    { const occ = !!hq || k < (housingBqs ?? 0); gatePlate(a + 2, d - 0.9, occ); if (occ) litWindows(a, b, c, d, 4); } // assigned or not, at a glance
+    { const occ = !!hq || k < (housingBqs ?? 0); gateLight(a + 2, d - 0.9, occ); if (occ) litWindows(a, b, c, d, 4); } // assigned or not, at a glance
   }
   // a house with a party on: lights pulsing round it, searchlights at night, a 🎉 bobbing over the roof
   function partyHouse(a, b, c, d, p) {
@@ -3717,7 +3722,7 @@
     });
     { flat(a + 0.8, d - 3.1, c - 0.8, d - 0.5, 0.06, '#9CA3AF', '#D1D5DB'); x.strokeStyle = 'rgba(255,255,255,0.75)'; x.lineWidth = 1; x.beginPath(); const p = P((a + c) / 2, 0.07, d - 3), q = P((a + c) / 2, 0.07, d - 0.6); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); // the parking pad, two bays
       if (h && h.mine && h.style !== 'loft') parkOrder(myCarsL).slice(0, 2).forEach((c2, k) => drawCar(a + (c - a) * (k ? 0.73 : 0.27), d - 1.8, c2.model, c2.color, 0, 0.62)); }
-    if (h) { ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573'); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); gatePlate(c - 2.3, d - 1.6, true); litWindows(a, b, c, d, 8); }
+    if (h) { ownerFlag(c - 1.2, b + 1.2, h.color || '#22B573'); partyHouse(a, b, c, d, partyAt('home:' + h.plot)); gateLight(c - 0.9, d - 1, true); litWindows(a, b, c, d, 8); }
     else { box(c - 2.4, 0, d - 1.8, c - 2.2, 2.6, d - 1.6, '#78350F'); quad([P(c - 3.6, 1.6, d - 1.55), P(c - 1, 1.6, d - 1.55), P(c - 1, 2.8, d - 1.55), P(c - 3.6, 2.8, d - 1.55)], '#DC2626'); if (K > 3) faceText('FOR SALE', c - 2.3, 2.2, d - 1.5, '#FFFFFF', 0.55, 0); }
   }
   // an estate: its plots far to near, each in its style
@@ -5756,37 +5761,36 @@
     return enterRoom('club', 'place:club:' + p[1], n);
   }
   // a plot in an estate: for sale (see it on your phone), or someone's home (go in, or knock)
-  function homeCard(pl, i, j) {
-    const h = homesLive[pl.plot], st = HOME_STYLES[pl.style];
+  // ---- tap a house: its details and who lives there. Only your own home opens (no wandering into a vacant one or someone
+  // else's); for a neighbour you can add them as a friend or send a message request (an encrypted Link chat)
+  const friends = () => { try { return JSON.parse(store.get('li.friends') || '[]'); } catch { return []; } };
+  function houseCard(o) {
     card.innerHTML = '';
-    const b = document.createElement('b'); b.textContent = (h ? '🏡 ' : '🪧 ') + st[0], s = document.createElement('span'); s.textContent = pl.name + (h && h.owner ? ' · ' + h.owner + "'s home" : h ? ' · private' : ' · for sale');
-    card.append(b, s);
-    const q = document.createElement('div'); q.className = 'offer'; q.innerHTML = '<strong></strong><small></small>';
-    q.firstChild.textContent = h ? (h.mine ? 'Your home' : h.may ? 'Go in?' : 'Knock?') : naira(st[1]);
-    q.lastChild.textContent = h ? (h.mine ? 'Furnish it from the Eko Home Store.' : h.may ? 'The owner has let you in.' : 'The owner sees it on their phone.') : pl.style === 'loft' ? 'Open plan, and room to park your cars inside.' : 'Yours to furnish however you like.';
-    const yes = document.createElement('button'); yes.className = 'drivebtn';
-    yes.textContent = h ? (h.mine || h.may ? '🚪 Go in' : '🔔 Knock') : '👀 Look inside';
-    const tour = () => { card.style.display = 'none'; me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('home', 'tour:home:' + pl.plot, 'Show home · ' + st[0], { style: pl.style, tour: true }); };
-    yes.onclick = () => {
-      card.style.display = 'none';
-      if (!h) return tour();
-      if (!signedIn()) return openPhone();
-      me.x = i * T + T / 2; me.z = j * T + T - 1;
-      if (h.mine || h.may) return enterRoom('home', 'home:' + pl.plot, h.mine ? 'Your ' + st[0].toLowerCase() : (h.owner || 'Someone') + "'s " + st[0].toLowerCase(), { style: pl.style });
-      askHq(h);
-    };
-    card.append(q, yes);
-    if (!h) { const buy = document.createElement('button'); buy.className = 'drivebtn'; buy.style.background = '#0EA5E9'; buy.textContent = '🏡 Buy it'; buy.onclick = () => { card.style.display = 'none'; openPhone('homes', pl.plot); }; card.append(buy); }
-    card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 8000);
+    const b = document.createElement('b'); b.textContent = o.title; const sub = document.createElement('span'); sub.textContent = o.sub; card.append(b, sub);
+    const q = document.createElement('div'); q.className = 'offer hcard'; q.innerHTML = '<strong></strong><small></small>'; q.firstChild.textContent = o.head; q.lastChild.textContent = o.note; card.append(q);
+    const btn = (label, fn, col) => { const e = document.createElement('button'); e.className = 'drivebtn'; if (col) e.style.background = col; e.textContent = label; e.onclick = fn; card.append(e); return e; };
+    if (o.mine) btn('🚪 Go in', () => { card.style.display = 'none'; o.go(); });
+    else if (o.owner) {
+      const isF = friends().includes(o.owner);
+      const fb = btn(isF ? '✓ Friends' : '➕ Add friend', () => { if (!signedIn()) return openPhone(); const f = friends(); if (f.includes(o.owner)) return; f.push(o.owner); store.set('li.friends', JSON.stringify(f)); fb.textContent = '✓ Friends'; notify(`${o.owner} added to your friends`, 'link', ['chats']); }, '#0EA5E9');
+      btn('💬 Message request', () => { card.style.display = 'none'; if (!signedIn()) return openPhone(); openPhone('newchat', { dm: true, who: o.owner }); }, '#6366F1');
+    } else if (o.buy) btn('🏡 Buy it', () => { card.style.display = 'none'; openPhone('homes', o.buy); }, '#0EA5E9');
+    card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 9000);
   }
+  // a home in an estate
+  function homeCard(pl, i, j) {
+    const h = homesLive[pl.plot] || (housingTaken && housingTaken.has(pl.plot) ? {} : null), st = HOME_STYLES[pl.style];
+    const go = () => { me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('home', 'home:' + pl.plot, 'Your ' + st[0].toLowerCase(), { style: pl.style }); };
+    if (!h) return houseCard({ title: '🪧 ' + st[0], sub: pl.name + ' · for sale', head: naira(st[1]), note: 'Empty, and locked until someone buys it.', buy: pl.plot });
+    houseCard({ title: (h.mine ? '🏡 ' : '🏠 ') + st[0], sub: pl.name, head: h.mine ? 'Your home' : h.owner ? `${h.owner} lives here` : 'A Lagosian lives here', note: h.mine ? 'Furnish it from the Eko Home Store.' : h.owner ? 'Say hello: add them as a friend, or send a message request.' : 'They keep their home private.', mine: h.mine, owner: h.mine ? null : h.owner, go });
+  }
+  // a BQ on HQ Row
   function enterHq(k, i, j) {
-    const say = (t) => { card.innerHTML = ''; const b = document.createElement('b'); b.textContent = t; card.append(b); card.style.display = 'block'; clearTimeout(tapAt.t); tapAt.t = setTimeout(() => { card.style.display = 'none'; }, 3500); };
-    const hq = signedIn() ? hqSlots[k] : null;
-    if (!hq) { me.x = i * T + T / 2; me.z = j * T + T - 1; return enterRoom('hq', 'tour:hq:' + k, signedIn() ? 'Show BQ · unclaimed lot' : 'Show BQ · sign in to visit people', { tour: true }); }
-    me.x = i * T + T / 2; me.z = j * T + T - 1;
-    if (hq.mine || hq.may) return enterRoom('hq', 'hq:' + hq.slot, hq.name);
-    if (hq.asked === 'pending') return say('⏳ Waiting for the owner to let you in');
-    askHq(hq).then(() => say(hq.asked === 'granted' ? '🚪 Come in' : '🔔 Knocked. The owner sees it on their phone.'));
+    const hq = signedIn() ? hqSlots[k] : null, taken = !!hq || k < (housingBqs ?? 0);
+    const go = () => { me.x = i * T + T / 2; me.z = j * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); };
+    if (!taken) return houseCard({ title: '🏚️ BQ #' + (k + 1) + ' · HQ Row', sub: 'Vacant', head: 'Not assigned yet', note: 'Locked: it goes to the next new Lagosian, free for their first week.' });
+    if (!hq) return houseCard({ title: '🏠 BQ #' + (k + 1) + ' · HQ Row', sub: 'Assigned', head: 'A Lagosian lives here', note: signedIn() ? 'They keep their home private.' : 'Sign in to see who lives here.' });
+    houseCard({ title: (hq.mine ? '🏡 ' : '🏠 ') + (hq.name || 'BQ #' + (k + 1)), sub: 'BQ #' + (k + 1) + ' · HQ Row', head: hq.mine ? 'Your apartment' : hq.owner ? `${hq.owner} lives here` : 'A Lagosian lives here', note: hq.mine ? 'Furnish it, invite people round.' : hq.owner ? 'Say hello: add them as a friend, or send a message request.' : 'They keep their home private.', mine: hq.mine, owner: hq.mine ? null : hq.owner, go });
   }
 
   // ---- others and chat (the island endpoint)
@@ -7635,11 +7639,9 @@
       if (k != null) {
         const hq = hqSlots[k];
         if (!signedIn()) next = { label: '🔒 Sign in to WYRD to visit HQs', run: () => openPhone() };
-        else if (!hq) next = { label: '🏚️ Unclaimed lot', run: () => {} };
-        else if (hq.mine || hq.may) next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) };
-        else if (hq.asked === 'pending') next = { label: '⏳ Waiting for the owner to let you in', run: () => {} };
-        else if (hq.asked === 'denied') next = { label: '⛔ The owner said no', run: () => askHq(hq) };
-        else next = { label: '🔔 Ask to enter', run: () => askHq(hq) };
+        else if (!hq) next = null; // vacant: locked
+        else if (hq.mine) next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) };
+        else next = { label: `🏠 ${hq.owner || 'A Lagosian'}'s BQ`, run: () => enterHq(k, Math.floor(me.x / T), Math.floor(me.z / T)) };
       }
     }
     act = next; actBtn.style.display = next && playing ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
