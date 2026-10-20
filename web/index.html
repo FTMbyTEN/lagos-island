@@ -3644,7 +3644,7 @@
       ${row('Rent · your BQ on HQ Row', A.trial ? 'Free' : naira(A.rent) + '/wk', A.trial ? `your first week · free until ${new Date(A.trialEnd).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}` : 'a basic apartment, after the free first week')}
       ${A.homes.map((h) => row(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `service charge · land use ${naira(h.landUseWk)}/wk`)).join('')}
       ${row('Income tax (PAYE, 7%)', naira(A.paye), `on today's pay · you keep ${naira(A.net)}`)}
-      ${row('Due this week', naira(A.dueWk), A.homes.length ? 'service charges and land use' : 'no homes bought yet: nothing due', 'total')}
+      ${row('Due this week', naira(A.dueWk), [A.rent ? 'BQ rent' : '', A.homes.length ? 'service charges and land use' : ''].filter(Boolean).join(', ') || 'nothing due: your first week is free', 'total')}
       <div class="gpnote">Rates set by WYRD's government. Nothing is taken yet: collection starts when the Treasury opens at the Island Reserve Bank.</div>` : `<div class="gpnote">Your rent, tax and pay show here once you're signed in to WYRD.</div>`}
       <div class="gpsec">The island now</div>
       ${row('Power', grid ? 'NEPA has light' : 'NEPA took light', grid ? '' : 'inverters on', grid ? 'ok' : 'off')}
