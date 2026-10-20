@@ -564,6 +564,21 @@
   #topR button.thome { width: auto !important; height: 30px !important; padding: 0 10px; border-radius: 999px !important; display: flex; align-items: center; gap: 4px; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: #0F172A; flex: none; }
   .thome .ic { width: 15px !important; height: 15px !important; color: #0EA5E9; } .thome b { font-weight: 800; } .thome span { color: #64748B; font-weight: 600; } .thome i { width: 1px; height: 14px; margin: 0 3px; background: rgba(15,23,42,.15); }
   @media (max-width: 640px) { .thome span { display: none; } .thome i { margin: 0 1px; } }
+  #topR button.tgov { position: relative; color: #0F172A; } .tgov .ic { width: 18px !important; height: 18px !important; color: #4F46E5; } .tgov em { display: none; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 0 2px #fff; } .tgov.due em { display: block; }
+  #govPanel { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 54px); left: 50%; z-index: 59; width: min(400px, calc(100vw - 20px)); max-height: calc(100dvh - 90px); overflow-y: auto; padding: 14px; border-radius: 22px; background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(241,245,249,.92)); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border: 1px solid rgba(15,23,42,.07); box-shadow: 0 20px 50px rgba(15,23,42,.22); color: #0F172A; font-family: 'Plus Jakarta Sans', sans-serif; transform: translate(-50%, -8px); opacity: 0; pointer-events: none; transition: transform .25s cubic-bezier(.2,.8,.3,1), opacity .2s; }
+  #govPanel.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  .gphead { display: flex; align-items: center; gap: 10px; } .gphead > i { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #4F46E5, #22D3EE); color: #fff; } .gphead > i .ic { width: 20px; height: 20px; } .gphead b { display: block; font-size: 15px; } .gphead small { color: #64748B; font-size: 12px; font-weight: 600; } .gpx { margin-left: auto; width: 28px; height: 28px; border: 0; border-radius: 50%; background: rgba(15,23,42,.06); cursor: pointer; }
+  .gptiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; } .gpt { padding: 10px 12px; border-radius: 14px; background: rgba(15,23,42,.04); } .gpt span { display: block; font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: .5px; } .gpt b { font-size: 17px; } .gpt small { display: block; font-size: 10.5px; color: #94A3B8; margin-top: 3px; }
+  .gpbar { height: 5px; margin-top: 6px; border-radius: 5px; background: rgba(15,23,42,.08); overflow: hidden; } .gpbar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #22C55E, #0EA5E9); }
+  .gpsec { margin: 14px 2px 6px; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #64748B; }
+  .gprow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid rgba(15,23,42,.06); } .gprow span { font-size: 13.5px; font-weight: 700; } .gprow small { display: block; font-size: 11px; color: #94A3B8; font-weight: 600; } .gprow b { font-size: 14px; white-space: nowrap; } .gprow.total b { color: #4F46E5; font-size: 16px; } .gprow.ok b { color: #16A34A; } .gprow.off b { color: #DC2626; }
+  .gpnote { margin-top: 10px; padding: 9px 11px; border-radius: 12px; background: rgba(79,70,229,.07); color: #4338CA; font-size: 12px; font-weight: 600; line-height: 1.4; }
+  .gpopen { width: 100%; margin-top: 12px; padding: 11px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1); color: #fff; font: 800 14px 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  #phone .ghero { display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 10px; border-radius: 20px; background: linear-gradient(135deg, rgba(79,70,229,.35), rgba(34,211,238,.18)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); } #phone .ghero > i { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #4F46E5, #22D3EE); color: #fff; } #phone .ghero > i .ic { width: 24px; height: 24px; } #phone .ghero h2 { margin: 0; font-size: 16px; } #phone .ghero span { font-size: 12px; opacity: .75; }
+  #phone .gtabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; } #phone .gtabs button { flex: none; padding: 8px 13px; border: 0; border-radius: 999px !important; background: rgba(255,255,255,.08); color: inherit; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; } #phone .gtabs button.on { background: linear-gradient(135deg, #4F46E5, #22D3EE); color: #fff; }
+  #phone .gstat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; } #phone .gstat div { padding: 10px; border-radius: 16px; background: rgba(255,255,255,.07); text-align: center; } #phone .gstat span { display: block; font-size: 10.5px; opacity: .7; font-weight: 700; } #phone .gstat b { font-size: 20px; } #phone .gstat b.goff { color: #F87171; } #phone .gstat b.gon { color: #4ADE80; }
+  /* the phone, roomier: bigger app icons and labels, comfier cards and text */
+  #phone .app i { width: 54px !important; height: 54px !important; } #phone .app { font-size: 11.5px !important; } #phone .pcard { padding: 14px !important; } #phone #pbody { font-size: 14.5px; }
   /* sign up and sign in, in the top bar's language: a frosted card, the palm badge, pill tabs like the "online" chip,
      soft fields, the logo's gradient on the button, compact and centred over the island */
   #hello { place-items: center; padding: 16px; background: radial-gradient(120% 80% at 50% 100%, rgba(15,23,42,.45), rgba(15,23,42,.08) 70%); }
@@ -591,7 +606,7 @@
 <div id="top" class="pill">
   <div id="title"><span class="logo"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V11M12 11c-2-3-6-3-8-1M12 11c2-3 6-3 8-1M12 11c-1-4-4-6-7-6M12 11c1-4 4-6 7-6M8 21h8"/></svg></span>Lagos Island</div>
   <div id="online" aria-live="polite"><i></i><span id="count">1</span> online</div>
-  <div id="topR"><button id="tHome" class="thome" aria-label="Housing register" title="Housing register"></button><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night"></button><button id="tMusic" aria-label="Island Music" title="Island Music"></button></div>
+  <div id="topR"><button id="tGov" class="tgov" aria-label="Government: your bills and pay" title="Government: your rent, tax and pay"></button><button id="tHome" class="thome" aria-label="Housing register" title="Housing register"></button><span id="tWx" title="Lagos weather, live"></span><div id="tDj" class="tdj" aria-live="polite"><i class="eq"><s></s><s></s><s></s><s></s></i><span><small></small><b></b></span></div><button id="tCity" aria-label="City sound at night" title="City sound at night"></button><button id="tMusic" aria-label="Island Music" title="Island Music"></button></div>
 
 </div>
 <div id="chips"><div id="where" class="pill">📍 Lagos Island</div></div>
@@ -3550,9 +3565,39 @@
     } catch {} // a server without the public register yet: the count falls back to the owners' list (signed in only)
   }
   setTimeout(() => { housingPoll(); setInterval(housingPoll, 20000); }, 1500);
+  // the Government button in the top bar: a panel dropping out of it with your rent, tax and pay, the power, the island's homes
+  const govPanel = document.createElement('div'); govPanel.id = 'govPanel'; document.body.append(govPanel);
+  function govPanelDraw() {
+    const A = govAccount(), c = census(), grid = typeof nepaAt === 'function' ? nepaAt(lagosMs() - 3600e3) : true, pct = A.cap ? Math.min(100, Math.round(A.pay / A.cap * 100)) : 0;
+    const row = (k, v, sub, cls = '') => `<div class="gprow ${cls}"><span>${k}${sub ? `<small>${sub}</small>` : ''}</span><b>${v}</b></div>`;
+    govPanel.innerHTML = `<div class="gphead"><i>${ico('gov')}</i><div><b>Lagos Island Government</b><small>${A.signed ? 'Your account · run by WYRD' : 'Sign in to see your account'}</small></div><button class="gpx" aria-label="Close">✕</button></div>
+      ${A.signed ? `<div class="gptiles"><div class="gpt"><span>Wallet</span><b>${naira(A.naira)}</b></div><div class="gpt"><span>Paid today</span><b>${naira(A.pay)}</b><div class="gpbar"><i style="width:${pct}%"></i></div><small>${A.cap ? naira(A.cap) + ' a day at most' : ''}</small></div></div>
+      <div class="gpsec">Your bills</div>
+      ${row('Rent · your BQ on HQ Row', A.rent ? naira(A.rent) : 'Free', 'Every Lagosian\'s, from the Government')}
+      ${A.homes.map((h) => row(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `service charge · land use ${naira(h.landUseWk)}/wk`)).join('')}
+      ${row('Income tax (PAYE, 7%)', naira(A.paye), `on today's pay · you keep ${naira(A.net)}`)}
+      ${row('Due this week', naira(A.dueWk), A.homes.length ? 'service charges and land use' : 'no homes bought yet: nothing due', 'total')}
+      <div class="gpnote">Rates set by WYRD's government. Nothing is taken yet: collection starts when the Treasury opens at the Island Reserve Bank.</div>` : `<div class="gpnote">Your rent, tax and pay show here once you're signed in to WYRD.</div>`}
+      <div class="gpsec">The island now</div>
+      ${row('Power', grid ? 'NEPA has light' : 'NEPA took light', grid ? '' : 'inverters on', grid ? 'ok' : 'off')}
+      ${row('Homes', `${c.all.total - c.all.taken} free · ${c.all.taken} lived in`, `${c.all.total} on the island`)}
+      <button class="gpopen">Open the Government app</button>`;
+    govPanel.querySelector('.gpx').onclick = () => govPanel.classList.remove('on');
+    govPanel.querySelector('.gpopen').onclick = () => { govPanel.classList.remove('on'); openPhone('gov'); };
+  }
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tGov')) { if (govPanel.classList.toggle('on')) { govPanelDraw(); if (signedIn() && !me$) my('me').then((v) => { me$ = v; govPanelDraw(); }).catch(() => {}); } } else if (govPanel.classList.contains('on') && !e.target.closest('#govPanel')) govPanel.classList.remove('on'); });
+  setInterval(() => { const b = document.getElementById('tGov'); if (!b) return; if (!b.innerHTML) b.innerHTML = ico('gov') + '<em></em>'; const A = govAccount(); b.classList.toggle('due', A.dueWk > 0 || (typeof nepaAt === 'function' && !nepaAt(lagosMs() - 3600e3))); if (govPanel.classList.contains('on')) govPanelDraw(); }, 3000);
   // the top bar's housing chip: free homes and lived-in homes, all of them (BQs too), refreshed every two seconds
   setInterval(() => { const el = document.getElementById('tHome'); if (!el) return; const c = census(), h = `${ico('hq')}<b>${c.all.total - c.all.taken}</b><span>free</span><i></i><b>${c.all.taken}</b><span>lived in</span>`; if (el.innerHTML !== h) el.innerHTML = h; el.title = `Housing register: ${c.all.total} homes, ${c.all.taken} lived in, ${c.all.total - c.all.taken} free`; }, 2000);
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#tHome')) openPhone('gov'); });
+  // the rates (set by WYRD's government; collected once the Treasury opens with the financial system)
+  const GOV = { bqRent: 0, paye: 0.07, landUse: 0.005, service: { flat: 2000, bungalow: 5000, terrace: 8000, duplex: 15000, townhouse: 18000, loft: 25000, mansion: 40000, villa: 80000 } };
+  function govAccount() {
+    const mine = Object.values(homesLive).filter((h) => h.mine), homes = mine.map((h) => { const st = HOME_STYLES[h.style] || ['Home', 0]; return { name: st[0], est: EST_NAME[(h.plot || '').split(':')[0]] || '', service: GOV.service[h.style] || 0, landUseWk: Math.round(st[1] * GOV.landUse / 52) }; });
+    const pay = me$ ? me$.earnedToday || 0 : 0, cap = me$ ? me$.dailyCap || 0 : 0, paye = Math.round(pay * GOV.paye);
+    const serviceWk = Math.round(homes.reduce((s2, h) => s2 + h.service, 0) / 4.33), landWk = homes.reduce((s2, h) => s2 + h.landUseWk, 0);
+    return { signed: signedIn() && !!me$, naira: me$ ? me$.naira : 0, pay, cap, paye, net: pay - paye, homes, rent: GOV.bqRent, serviceWk, landWk, dueWk: serviceWk + landWk };
+  }
   function census() {
     const est = {}, style = {}; let total = 0, taken = 0;
     for (const [e, list] of Object.entries(ESTATES)) {
@@ -5394,7 +5439,7 @@
   // furnishing: the bar along the bottom, for the owner
   const decoEl = document.getElementById('deco'), askEl = document.getElementById('ask');
   function setDeco() {
-    askEl.style.display = inside && inside.kind === 'tower' ? 'flex' : 'none';
+    askEl.style.display = 'none'; // talking to WYRD is in the WYRD app
     if (!inside || !inside.mine) { decoEl.style.display = 'none'; return; }
     decoEl.style.display = 'flex';
     if (!deco) {
@@ -6550,7 +6595,7 @@
         const wx = lagosWeather(), h = d.getUTCHours(), hi = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
         const cap = me$.dailyCap || 10000, pct = Math.min(100, Math.round(100 * (me$.earnedToday || 0) / cap)), online = (document.getElementById('count') || {}).textContent || '1';
         show(`<div class="hhead"><div class="hgreet">${hi},<b>${esc(me$.handle)}</b></div></div>
-          <form class="osq" id="osQ"><i>✨</i><input id="osQi" placeholder="Ask WYRD anything…" autocomplete="off"><button aria-label="Ask">➤</button></form>
+
           <div class="widget wxw"><div><div class="wt" data-clock>${hh}</div><div class="wd">${esc(sector.name)} · Lagos</div></div><div class="wr"><div class="wxi">${wx.icon}</div><div class="wn">${wx.temp}°C</div><div class="wd">${esc(wx.text)}</div><small>${WX.live ? `feels ${WX.feels}° · ${WX.humidity}% · ${Math.round(WX.wind)} km/h` : 'live reading coming'}</small></div></div>
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
           ${(() => { const live = arenaLive(), clubs = PLACES.filter((p) => p[0] === 'club').length, open = night > 0.2; return `<button class="tw" data-app="music"><div><small>Tonight in Lagos</small><b>${open ? `${clubs} clubs open · DJ Eko Nights on the island` : `Clubs open at dark · ${clubs} to choose from`}</b><span>${live ? '● The Arena is live now' : 'The Arena: shows on your phone'}</span></div><i>🪩</i></button>`; })()}
@@ -6560,7 +6605,7 @@
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app)));
-        $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
+        if ($('osQ')) $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
         pbody.querySelectorAll('[data-mw]').forEach((b) => (b.onclick = () => { const k = b.dataset.mw; if (k === 'open') return go('music'); audioCtx(); if (k === 'play') mpToggle(); else mpNext(k === 'next' ? 1 : -1); setTimeout(() => { const s = MP.q[MP.i], w = pbody.querySelector('.mw'); if (!s || !w) return; w.querySelector('.mwa').style.backgroundImage = `url('${s.art}')`; w.querySelector('.mwt b').textContent = s.title; w.querySelector('.mwt span').textContent = s.artist; w.querySelector('.mwt small').textContent = MP.a.paused ? 'Paused' : 'Now playing'; const pb = w.querySelector('[data-mw=play]'); if (pb) pb.textContent = MP.a.paused ? '▶' : '⏸'; }, 150); })); // update the widget in place
         { const im = pbody.querySelector('.wfit img'); const u = im ? fitShot(im.dataset.shot) : null; if (u) im.src = u; else if (im) im.remove(); }
         return;
@@ -6979,6 +7024,29 @@
           ${Object.keys(ESTATES).map((est) => `<div class="rsec">${esc(placeOf(est)[5]).toUpperCase()} · ${AREA[est].toUpperCase()}</div><div class="pcard">${ESTATES[est].map((style, n) => { const plot = est + ':' + n, h = homesLive[plot]; return `<div class="row"><span>${h ? (h.mine ? '🏡' : '🔒') : '🪧'} ${HOME_STYLES[style][0]} <span class="dim">#${n + 1}</span></span>${h ? `<span class="dim">${h.mine ? 'Yours' : 'Sold'}</span>` : `<button class="pbtn alt" data-plot="${plot}">${naira(HOME_STYLES[style][1])}</button>`}</div>`; }).join('')}</div>`).join('')}`);
         pbody.querySelectorAll('[data-plot]').forEach((b) => (b.onclick = () => go('homes', b.dataset.plot)));
         { const gb = pbody.querySelector('[data-gov]'); if (gb) gb.onclick = () => go('gov'); }
+        return;
+      }
+      if (app === 'gov' && !(arg && arg.old)) {
+        const tab = (arg && arg.tab) || 'overview', A = govAccount(), c = census(), grid = typeof nepaAt === 'function' ? nepaAt(lagosMs() - 3600e3) : true, bar = (p, col) => `<div class="gbar"><i style="width:${p}%;background:${col}"></i></div>`;
+        const TABS = [['overview', 'Overview'], ['account', 'My account'], ['housing', 'Housing'], ['notices', 'Notices'], ['depts', 'Departments']];
+        const line = (k, v, sub) => `<div class="grow"><span><b>${k}</b>${sub ? `<small>${sub}</small>` : ''}</span><em>${v}</em></div>`;
+        let body = '';
+        if (tab === 'overview') body = `<div class="gstat"><div><span>Homes free</span><b>${c.all.total - c.all.taken}</b></div><div><span>Lived in</span><b>${c.all.taken}</b></div><div><span>Power</span><b class="${grid ? 'gon' : 'goff'}">${grid ? 'On' : 'Off'}</b></div></div>
+          ${A.signed ? `<div class="pcard">${line('Wallet', naira(A.naira))}${line('Paid today', naira(A.pay), A.cap ? `of ${naira(A.cap)} a day` : '')}${bar(A.cap ? Math.min(100, A.pay / A.cap * 100) : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}${line('Due this week', naira(A.dueWk))}</div>` : '<div class="pcard dim">Sign in to see your rent, tax and pay.</div>'}
+          <div class="pcard">${line('Housing register', `${c.all.taken}/${c.all.total}`, `${c.total} estate homes · ${c.bq.total} BQs`)}${bar(c.all.total ? c.all.taken / c.all.total * 100 : 0, 'linear-gradient(90deg,#22D3EE,#A78BFA)')}</div>`;
+        else if (tab === 'account') body = A.signed ? `<div class="pcard">${line('Wallet', naira(A.naira))}${line('Paid today', naira(A.pay), A.cap ? `of ${naira(A.cap)} a day at most` : '')}${line('Income tax (PAYE 7%)', naira(A.paye), `you keep ${naira(A.net)}`)}</div>
+          <div class="rsec">RENT AND RATES</div><div class="pcard">${line('Your BQ on HQ Row', A.rent ? naira(A.rent) : 'Free', 'from the Government, for every Lagosian')}${A.homes.map((h) => line(`${h.name}${h.est ? ' · ' + h.est : ''}`, naira(h.service) + '/mo', `land use ${naira(h.landUseWk)} a week`)).join('') || '<div class="dim" style="padding:6px 0">No homes bought yet.</div>'}${line('Due this week', naira(A.dueWk))}</div>
+          <div class="lock">Rates set by WYRD's government. Nothing is taken yet: collection starts when the Treasury opens at the Island Reserve Bank.</div>` : '<div class="pcard dim">Sign in to WYRD to see your account.</div>';
+        else if (tab === 'housing') body = `<div class="pcard">${line('Every home on the island', `${c.all.taken}/${c.all.total}`, `${c.total} in the estates, ${c.bq.total} BQs on HQ Row`)}${bar(c.all.total ? c.all.taken / c.all.total * 100 : 0, 'linear-gradient(90deg,#22C55E,#22D3EE)')}${line('BQs on HQ Row', `${c.bq.taken}/${c.bq.total}`, 'free for every Lagosian')}</div>
+          <div class="rsec">BY ESTATE</div><div class="pcard">${Object.values(c.est).map((e) => line(esc(e.name), `${e.taken}/${e.total}`, `${e.total - e.taken} free`) + bar(Math.round(e.taken / e.total * 100), e.taken === e.total ? '#F87171' : '#22D3EE')).join('')}</div>
+          <div class="rsec">BY KIND OF HOME</div><div class="pcard">${Object.entries(c.style).map(([k, v]) => line(esc(HOME_STYLES[k][0]), `${v.taken}/${v.total}`, naira(HOME_STYLES[k][1]))).join('')}</div>`;
+        else if (tab === 'notices') body = [`Power: ${grid ? 'NEPA has light right now.' : 'NEPA took light. Inverters on; go easy on the AC.'}`, `Housing: ${c.taken} of ${c.total} estate homes lived in. ${c.free} for sale in the Homes app.`, 'Every Lagosian keeps a free BQ on HQ Row, whatever else they own.', 'The Treasury opens at the Island Reserve Bank with the financial system: rent, service charges and taxes are collected from then.', 'Speed limit on the coastal road: 60 km/h. The Blue Line runs all day.'].map((t) => `<div class="pcard gnote">✨ ${esc(t)}</div>`).join('');
+        else body = `<div class="pcard">${[['Housing', 'The register: every home, who lives where', 1], ['Treasury', 'Rent, rates and tax, at the Island Reserve Bank', 0], ['Power', 'NEPA\'s light, hour by hour', 1], ['Transport', 'Rides, the Blue Line, the roads', 1], ['Culture', 'The Arena, the clubs, the parties', 1], ['Works', 'The reclaimed land and what gets built on it', 0], ['Law and order', 'The island\'s rules', 0]].map(([d, t, on]) => `<div class="grow"><span><b>${d}</b><small>${t}</small></span><em class="${on ? 'gon' : 'gsoon'}">${on ? 'Open' : 'Setting up'}</em></div>`).join('')}</div>`;
+        show(`<div class="ghero"><i>${ico('gov')}</i><div><h2>Lagos Island Government</h2><span>Administered by WYRD</span></div></div>
+          <div class="gtabs">${TABS.map(([k, l]) => `<button data-gt="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('')}</div>${body}
+          ${tab !== 'housing' ? '<button class="pbtn" data-go="homes">Homes for sale</button>' : ''}`);
+        pbody.querySelectorAll('[data-gt]').forEach((b) => (b.onclick = () => { stack.pop(); go('gov', { tab: b.dataset.gt }); }));
+        const hb = pbody.querySelector('[data-go]'); if (hb) hb.onclick = () => go('homes');
         return;
       }
       if (app === 'gov') {
