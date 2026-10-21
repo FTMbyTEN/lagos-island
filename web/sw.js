@@ -52,3 +52,21 @@ self.addEventListener('message', (e) => {
     port.postMessage({ got, of: list.length, ok: true });
   })());
 });
+
+// web push: the game server wakes this phone when something happens while the game is closed. The push carries no
+// content (nothing for anyone in between to read): the notification says something's new, and the game shows what.
+self.addEventListener('push', (e) => {
+  e.waitUntil((async () => {
+    const open = (await self.clients.matchAll({ type: 'window', includeUncontrolled: true })).some((c) => c.visibilityState === 'visible');
+    if (open) return; // the game is in front: it shows its own alert
+    await self.registration.showNotification('Lagos Island', { body: 'You have a new message or friend update 💬 Tap to open.', icon: 'icon-192.png', badge: 'icon-192.png', tag: 'li-activity', renotify: true, data: { url: './' } });
+  })());
+});
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of all) { if ('focus' in c) { await c.focus(); c.postMessage({ type: 'open-phone' }); return; } }
+    await self.clients.openWindow('./?from=push');
+  })());
+});

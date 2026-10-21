@@ -1,8 +1,10 @@
 {
-  // Lagos Island on Cloudflare: the game (web/) served from Cloudflare's network. Deploy from this folder: npm run deploy
+  // Lagos Island on Cloudflare: the game (web/) served from Cloudflare's network, and /push (web push for the game
+  // server, see worker.js). Deploy from this folder: npm run deploy
   "name": "play",
   "compatibility_date": "2026-10-06",
-  "assets": { "directory": "../web", "not_found_handling": "404-page" },
+  "main": "worker.js",
+  "assets": { "directory": "../web", "not_found_handling": "404-page", "binding": "ASSETS", "run_worker_first": ["/push"] },
   "workers_dev": true,
   "observability": { "enabled": true }
 }
