@@ -1166,6 +1166,7 @@
   .eSum small { display: block; font: 700 10.5px 'Plus Jakarta Sans', sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--ppDim); } .eSum b { display: block; margin-top: 3px; font: 800 16px 'Plus Jakarta Sans', sans-serif; color: var(--ppInk); }
   .eDone { margin: 8px 0; padding: 10px 12px; border-radius: 14px; background: rgba(34,197,94,.12); color: #15803D; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; }
   .eSt { flex: none; padding: 5px 10px; border-radius: 999px; background: rgba(148,163,184,.16); color: var(--ppDim); font: 800 11.5px 'Plus Jakarta Sans', sans-serif; font-variant-numeric: tabular-nums; } .eSt.on { background: rgba(34,197,94,.15); color: #15803D; }
+  .ulk .err:empty, #pbody .err:empty { display: none !important; }
 </style>
 </head>
 <body>
@@ -8140,44 +8141,35 @@
     setTimeout(() => { if (render.tok === rtok && !render.shown) pbody.innerHTML = '<div class="skel"><i></i><i></i><i class="s"></i><i></i><i class="s"></i></div>'; }, 120);
     try {
       if (app === 'signin') {
-        const mode = (arg && arg.mode) || 'new', nm = String(myName || '').trim(), okName = /^[a-zA-Z0-9_.-]{3,20}$/.test(nm) && !/^(guest|lagosian)/i.test(nm);
-        show(`<div class="ulk"><div class="badge">${pi('shield')}</div><h2>${mode === 'new' ? 'Create your WYRD ID' : 'Sign in with WYRD ID'}</h2>
-          <p>${mode === 'new' ? 'One ID for your phone, your wallet, your HQ and WYRD. Your island name stays yours: WYRD ties your ID to it and calls you by it everywhere.' : 'Your WYRD ID is the email (or island name) and password you made it with.'}</p>
-          <div class="ppSeg" style="margin-bottom:14px"><button data-wm="new" class="${mode === 'new' ? 'on' : ''}">New WYRD ID</button><button data-wm="old" class="${mode === 'old' ? 'on' : ''}">I have one</button></div>
-          ${mode === 'new' ? `<label for="wName">Island name (your game ID)</label><div class="fld">${pi('users')}<input id="wName" maxlength="20" autocomplete="username" value="${okName ? esc(nm) : ''}" placeholder="e.g. tunde.lagos"></div>
-          <label for="wMail">Email</label><div class="fld">${pi('mail')}<input id="wMail" type="email" maxlength="120" autocomplete="email" placeholder="you@example.com"></div>
-          <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="new-password" placeholder="8+ characters, A–Z, a–z, 0–9"></div>`
-          : `<label for="wMail">Email or island name</label><div class="fld">${pi('mail')}<input id="wMail" maxlength="120" autocomplete="username" value="${okName ? esc(nm) : ''}" placeholder="you@example.com"></div>
-          <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="current-password" placeholder="Your password"></div>`}
-          <div class="err" id="wErr"></div><button class="pbtn" id="wGo">${pi('check')}${mode === 'new' ? 'Create WYRD ID' : 'Sign in'}</button>
-          <div class="fine">${mode === 'new' ? 'Your email stays private. It is where a password reset goes.' : ''}</div>
+        const mode = (arg && arg.mode) || 'old', nm = String(myName || '').trim(), okName = /^[a-zA-Z0-9_.-]{3,20}$/.test(nm) && !/^(guest|lagosian)/i.test(nm);
+        show(`<div class="ulk"><div class="badge">${pi('shield')}</div><h2>${mode === 'new' ? 'Make your account' : 'Sign in'}</h2>
+          <p>${mode === 'new' ? 'Pick your island name and a password. That name is yours: WYRD calls you by it everywhere.' : 'Your island name and password, once. This phone remembers you after that.'}</p>
+          <div class="ppSeg" style="margin-bottom:14px"><button data-wm="old" class="${mode === 'old' ? 'on' : ''}">Sign in</button><button data-wm="new" class="${mode === 'new' ? 'on' : ''}">New here</button></div>
+          <label for="wName">Island name</label><div class="fld">${pi('users')}<input id="wName" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" value="${okName ? esc(nm) : ''}" placeholder="e.g. tunde.lagos"></div>
+          <label for="wPass">Password</label><div class="fld">${pi('key')}<input id="wPass" type="password" maxlength="128" autocomplete="${mode === 'new' ? 'new-password' : 'current-password'}" placeholder="${mode === 'new' ? '8+ characters, A–Z, a–z, 0–9' : 'Your password'}"></div>
+          ${mode === 'new' ? `<label for="wPass2">Password again</label><div class="fld">${pi('key')}<input id="wPass2" type="password" maxlength="128" autocomplete="new-password" placeholder="The same password"></div>` : ''}
+          <div class="err" id="wErr"></div><button class="pbtn" id="wGo">${pi('check')}${mode === 'new' ? 'Make my account' : 'Sign in'}</button>
           <div style="display:flex;gap:8px;margin-top:14px"><button class="pbtn alt" id="gRide" style="flex:1">🛵 Ride</button></div></div>`);
         pbody.dataset.app = 'unlock'; // its look
         pbody.querySelectorAll('[data-wm]').forEach((b) => (b.onclick = () => render('signin', { ...(arg || {}), mode: b.dataset.wm })));
         $('gRide').onclick = () => go('ride');
         const goOn = async () => { const b = $('wGo'), err = $('wErr'); if (b.disabled) return; err.textContent = '';
-          const mail = $('wMail').value.trim(), pw = $('wPass').value, name = mode === 'new' ? $('wName').value.trim() : '';
-          if (mode === 'new') {
-            if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(name)) { err.textContent = 'Island names are 3 to 20 letters, digits, _ . or -.'; return $('wName').focus(); }
-            if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(mail)) { err.textContent = 'Enter your email address.'; return $('wMail').focus(); }
-            if (!strong(pw)) { err.textContent = 'Use 8 or more characters with a capital, a small letter and a number.'; return $('wPass').focus(); }
-          } else if (!mail || !pw) { err.textContent = 'Enter your email (or island name) and password.'; return; }
-          b.disabled = true; b.textContent = mode === 'new' ? 'Creating your WYRD ID…' : 'Signing in…';
+          const name = $('wName').value.trim(), pw = $('wPass').value;
+          if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(name)) { err.textContent = 'Island names are 3 to 20 letters, digits, _ . or -.'; return $('wName').focus(); }
+          if (mode === 'new') { if (!strong(pw)) { err.textContent = 'Use 8 or more characters with a capital, a small letter and a number.'; return $('wPass').focus(); } if (pw !== $('wPass2').value) { err.textContent = 'The two passwords don\'t match.'; return $('wPass2').focus(); } }
+          else if (!pw) { err.textContent = 'Enter your password.'; return $('wPass').focus(); }
+          b.disabled = true; b.textContent = mode === 'new' ? 'Making your account…' : 'Signing in…';
           try {
-            const post = (m, body) => fetch(`${API}/islandAuth/${m}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-            if (mode === 'new') { const av = await post('available', { username: name }); if (av.ok && (await av.text()).trim() === 'false') throw new Error('That island name is taken. If it is yours, tap "I have one".');
-              const fr = await post('emailFree', { email: mail }); if (fr.ok && (await fr.text()).trim() === 'false') throw new Error('That email already has a WYRD ID. Tap "I have one" to sign in.'); }
-            const r = await post(mode === 'new' ? 'register' : 'login', mode === 'new' ? { username: name, email: mail.toLowerCase(), password: pw } : { username: mail, password: pw });
+            const r = await fetch(`${API}/islandAuth/${mode === 'new' ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mode === 'new' ? { username: name, email: '', password: pw } : { username: name, password: pw }) });
             const t = await r.text();
-            if (!r.ok) throw new Error(/taken/i.test(t) ? 'That island name is taken.' : /invalidCredentials|credential|notFound/i.test(t) ? 'That WYRD ID and password don\'t match.' : /Too many|tooMany/i.test(t) ? 'Too many tries. Wait a while and try again.' : r.status >= 500 ? 'The island\'s server is busy. Try again in a moment.' : 'That didn\'t go through. Check your details and try again.');
+            if (!r.ok) throw new Error(/taken/i.test(t) ? 'That island name is taken. If it\'s yours, tap "Sign in".' : /invalidCredentials|credential|notFound/i.test(t) ? 'That island name and password don\'t match.' : /Too many|tooMany/i.test(t) ? 'Too many tries. Wait a while and try again.' : r.status >= 500 ? 'The island\'s server is busy. Try again in a moment.' : 'That didn\'t go through. Check your details and try again.');
             const a = JSON.parse(t); localStorage.setItem(TOK, a.token); if (a.refreshToken) localStorage.setItem(RTOK, a.refreshToken);
             me$ = null; keyed = false; MY_CACHE.clear(); await loadMe(); myName = me$.handle; store.set('li.name', myName);
-            store.set('li.phoneOk', JSON.stringify({ h: me$.handle, at: Date.now() })); // you just proved it's you
             if (mode === 'new') { try { newLagosian(); } catch {} my('setLook', { look: myLook }).catch(() => {}); }
             if (typeof poll === 'function') poll(); setTimeout(warmUp, 300);
             tickerSay(`Signed in as @${me$.handle}`); closePhone(); setTimeout(() => openPhone(arg && arg.then, arg && arg.arg), 250);
-          } catch (e) { err.textContent = e.message; b.disabled = false; b.innerHTML = pi('check') + (mode === 'new' ? 'Create WYRD ID' : 'Sign in'); } };
-        $('wGo').onclick = goOn; $('wPass').onkeydown = (e) => { if (e.key === 'Enter') goOn(); };
+          } catch (e) { err.textContent = e.message; b.disabled = false; b.innerHTML = pi('check') + (mode === 'new' ? 'Make my account' : 'Sign in'); } };
+        $('wGo').onclick = goOn; $('wPass').onkeydown = (e) => { if (e.key === 'Enter') { if ($('wPass2')) $('wPass2').focus(); else goOn(); } }; if ($('wPass2')) $('wPass2').onkeydown = (e) => { if (e.key === 'Enter') goOn(); };
         return;
       }
       if (app === 'home') {
