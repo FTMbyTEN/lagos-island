@@ -1,9 +1,10 @@
 // Lagos Island's service worker: keeps the game on the device so it opens at once and loads nothing twice.
-//  - the page: from the network when there is one (updates show straight away), from the device when offline
+//  - the page: from the network when it answers within 2.5 s (updates show straight away); on a slow connection the copy
+//    on the device opens instead while the new one downloads in the background (the update banner offers it)
 //  - models, textures, icons and three.js: from the device once downloaded (cache first)
 //  - the game server (accounts, wallet, jobs, who's around): always live, never cached
 // "Install app" asks it to download everything listed in precache.json, reporting progress back.
-const CACHE = 'lagos-island-v2';
+const CACHE = 'lagos-island-v3';
 const ASSET = /\.(glb|gltf|bin|jpg|jpeg|png|webp|webmanifest)$/i;
 const CDN = /^https:\/\/(cdn\.jsdelivr\.net|fonts\.(googleapis|gstatic)\.com)\//;
 
@@ -19,7 +20,18 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   const same = url.origin === self.location.origin;
   if (same && (req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('.html'))) {
-    e.respondWith((async () => { try { const r = await fetch(req); if (r.ok) (await caches.open(CACHE)).put(req, r.clone()); return r; } catch { return (await caches.match(req)) || (await caches.match('./')) || Response.error(); } })());
+    e.respondWith((async () => {
+      const net = fetch(req).then(async (r) => { if (r.ok) (await caches.open(CACHE)).put(req, r.clone()); return r; });
+      e.waitUntil(net.catch(() => {}));
+      const saved = (await caches.match(req)) || (await caches.match('./'));
+      if (!saved) { try { return await net; } catch { return Response.error(); } }
+      const slow = new Promise((ok) => setTimeout(() => ok(null), 2500));
+      const first = await Promise.race([net, slow]).catch(() => null);
+      if (first && first.ok) return first;
+      // the saved copy opened: when the new one has arrived, tell that page so it can offer the update
+      e.waitUntil(net.then(async (r) => { if (!r.ok) return; const c = await self.clients.get(e.resultingClientId || e.clientId); if (c) c.postMessage({ type: 'fresh-ready' }); }).catch(() => {}));
+      return saved;
+    })());
     return;
   }
   if ((same && ASSET.test(url.pathname)) || CDN.test(req.url)) {
