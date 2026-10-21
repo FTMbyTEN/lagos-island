@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Screen test B (minimal)</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="../../icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Screen B (minimal)">
+<style>
+  html, body { margin: 0; background: #111; }
+  #box { position: fixed; inset: 0; background: linear-gradient(180deg, #F97316, #DB2777 50%, #6366F1); border: 6px solid #22C55E; box-sizing: border-box; }
+  #box::before, #box::after { content: 'TOP EDGE'; position: absolute; left: 0; right: 0; text-align: center; font: 800 12px sans-serif; color: #fff; }
+  #box::before { top: 2px; } #box::after { content: 'BOTTOM EDGE'; bottom: 2px; }
+  #out { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 86vw; padding: 14px; border-radius: 14px; background: rgba(0,0,0,.72); color: #fff; font: 600 13px/1.6 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+</style>
+</head>
+<body data-test="B (minimal)">
+<div id="box"></div>
+<div id="out">measuring…</div>
+<script>
+(() => {
+  const ua = navigator.userAgent, ios = (ua.match(/OS (\d+)_(\d+)(?:_(\d+))? like Mac/) || []).slice(1).filter(Boolean).join('.') || 'not iOS';
+  const m = (css) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;' + css; document.body.append(d); const v = d.getBoundingClientRect().height; d.remove(); return Math.round(v); };
+  const pad = (side) => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;left:-9999px;top:0;padding-top:env(safe-area-inset-' + side + ')'; document.body.append(d); const v = d.getBoundingClientRect().height; d.remove(); return Math.round(v); };
+  const show = () => { const box = document.getElementById('box').getBoundingClientRect();
+    document.getElementById('out').textContent = [
+      'TEST ' + document.body.dataset.test,
+      'iOS ' + ios,
+      'app mode: ' + (navigator.standalone ? 'yes (home screen)' : 'no (browser)'),
+      'screen ' + screen.width + ' x ' + screen.height,
+      'window ' + innerWidth + ' x ' + innerHeight,
+      'visual viewport ' + (window.visualViewport ? Math.round(visualViewport.width) + ' x ' + Math.round(visualViewport.height) + ' at ' + Math.round(visualViewport.offsetTop) : 'n/a'),
+      'box (fixed, inset 0): top ' + Math.round(box.top) + ', bottom ' + Math.round(box.bottom),
+      '100vh ' + m('height:100vh') + ' · 100dvh ' + m('height:100dvh') + ' · 100lvh ' + m('height:100lvh') + ' · 100svh ' + m('height:100svh'),
+      'safe area: top ' + pad('top') + ' · bottom ' + pad('bottom') + ' · left ' + pad('left') + ' · right ' + pad('right'),
+    ].join('\n'); };
+  addEventListener('load', show); addEventListener('resize', show); setTimeout(show, 600); setTimeout(show, 2000);
+})();
+</script>
+</body>
+</html>
