@@ -4,14 +4,17 @@
 //  - models, textures, icons and three.js: from the device once downloaded (cache first)
 //  - the game server (accounts, wallet, jobs, who's around): always live, never cached
 // "Install app" asks it to download everything listed in precache.json, reporting progress back.
-const CACHE = 'lagos-island-v4';
+const CACHE = 'lagos-island-v5';
 const ASSET = /\.(glb|gltf|bin|jpg|jpeg|png|webp|webmanifest)$/i;
 const CDN = /^https:\/\/(cdn\.jsdelivr\.net|fonts\.(googleapis|gstatic)\.com)\//;
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil((async () => {
+  const had = (await caches.keys()).some((k) => k !== CACHE); // an older version was on this device
   for (const k of await caches.keys()) if (k !== CACHE) await caches.delete(k);
   await self.clients.claim();
+  // any game still open from an older copy reloads into this version (an old page can't always tell it's old)
+  if (had) for (const c of await self.clients.matchAll({ type: 'window' })) { try { await c.navigate(c.url); } catch {} }
 })()));
 
 self.addEventListener('fetch', (e) => {
