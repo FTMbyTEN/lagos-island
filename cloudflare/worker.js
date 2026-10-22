@@ -35,7 +35,7 @@ export default {
     }
     // the game's page: its minified copy (written at deploy), so phones download and parse less
     if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
-      const r = await env.ASSETS.fetch(new Request(new URL('/index.min.html', url), request));
+      const r = await env.ASSETS.fetch(new Request(new URL('/index.min', url), request));
       if (r.ok) return new Response(r.body, { status: 200, headers: r.headers });
     }
     return env.ASSETS.fetch(request);
