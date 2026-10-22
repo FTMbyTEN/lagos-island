@@ -4,7 +4,7 @@
 //  - models, textures, icons and three.js: from the device once downloaded (cache first)
 //  - the game server (accounts, wallet, jobs, who's around): always live, never cached
 // "Install app" asks it to download everything listed in precache.json, reporting progress back.
-const CACHE = 'lagos-island-v3';
+const CACHE = 'lagos-island-v4';
 const ASSET = /\.(glb|gltf|bin|jpg|jpeg|png|webp|webmanifest)$/i;
 const CDN = /^https:\/\/(cdn\.jsdelivr\.net|fonts\.(googleapis|gstatic)\.com)\//;
 
@@ -19,9 +19,13 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   const same = url.origin === self.location.origin;
+  // only the game's own page is kept on the device; any other page (the payout terms) goes straight to the network, so
+  // Safari never gets a redirect from here (it refuses those: 'Response served by service worker has redirections')
+  const game = url.pathname === '/' || url.pathname.endsWith('/index.html') || /\/lagos-island\/?$/.test(url.pathname);
+  if (same && !game && (req.mode === 'navigate' || url.pathname.endsWith('.html'))) return;
   if (same && (req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('.html'))) {
     e.respondWith((async () => {
-      const net = fetch(req).then(async (r) => { if (r.ok) (await caches.open(CACHE)).put(req, r.clone()); return r; });
+      const net = fetch(req).then(async (r) => { if (r.redirected) r = new Response(await r.blob(), { status: r.status, statusText: r.statusText, headers: r.headers }); if (r.ok) (await caches.open(CACHE)).put(req, r.clone()); return r; }); // a redirect is passed on as a plain page
       e.waitUntil(net.catch(() => {}));
       const saved = (await caches.match(req)) || (await caches.match('./'));
       if (!saved) { try { return await net; } catch { return Response.error(); } }
