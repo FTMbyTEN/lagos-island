@@ -33,6 +33,11 @@ export default {
       const r = await fetch(ep.href, { method: 'POST', headers: { Authorization: await vapidHeader(env, ep.href), TTL: String(Math.min(86400, Math.max(60, j.ttl | 0 || 3600))), Urgency: 'high', 'Content-Length': '0' } });
       return Response.json({ status: r.status });
     }
+    // the game's page: its minified copy (written at deploy), so phones download and parse less
+    if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
+      const r = await env.ASSETS.fetch(new Request(new URL('/index.min.html', url), request));
+      if (r.ok) return new Response(r.body, { status: 200, headers: r.headers });
+    }
     return env.ASSETS.fetch(request);
   },
 };

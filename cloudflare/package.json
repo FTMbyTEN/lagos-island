@@ -5,9 +5,10 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "check": "wrangler deploy --dry-run",
-    "predeploy": "node precache.mjs"
+    "predeploy": "node precache.mjs && node minify.mjs"
   },
   "devDependencies": {
+    "terser": "^5.31.6",
     "wrangler": "^4.151.3"
   }
 }
