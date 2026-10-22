@@ -1248,6 +1248,14 @@
   #deco.bm .bmTabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; } #deco.bm .bmTabs button { flex: none; padding: 6px 11px; border: 0; border-radius: 999px; background: #EEF2F6; font: 700 12px 'Plus Jakarta Sans', sans-serif; color: #334155; cursor: pointer; } #deco.bm .bmTabs button.on { background: #0F172A; color: #fff; }
   #deco.bm .dscroll { max-width: none; padding-bottom: 2px; } #deco.bm .ditem { position: relative; width: 74px; } #deco.bm .ditem img { width: 44px; height: 44px; } #deco.bm .ditem em { position: absolute; top: 3px; right: 5px; font: 800 10px 'Plus Jakarta Sans', sans-serif; font-style: normal; color: #0F766E; }
   #deco.bm .bmTools { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; } #deco.bm .dbtn[disabled] { opacity: .4; cursor: default; }
+  .hday { display: block; width: 100%; text-align: left; border: 0; cursor: pointer; color: inherit; font: inherit; margin: 10px 0 2px; padding: 14px 16px; border-radius: 22px; background: var(--ppCard, #fff); box-shadow: inset 0 0 0 1px rgba(15,23,42,.07), 0 10px 26px -18px rgba(15,23,42,.45); animation: hIn .45s cubic-bezier(.2,1,.3,1) both; }
+  .hdTop { display: flex; justify-content: space-between; align-items: flex-end; } .hdTop small { display: block; font: 700 11px 'Plus Jakarta Sans', sans-serif; opacity: .6; text-transform: uppercase; letter-spacing: .06em; } .hdTop b { font: 800 26px 'Plus Jakarta Sans', sans-serif; letter-spacing: -.02em; }
+  .hdIO { text-align: right; font: 700 13px 'Plus Jakarta Sans', sans-serif; } .hdIO .in { color: #16A34A; margin-right: 8px; } .hdIO .out { color: #DC2626; } .hdIO small { text-transform: none; letter-spacing: 0; }
+  .hdBar { height: 6px; border-radius: 3px; background: rgba(148,163,184,.25); margin: 10px 0 4px; overflow: hidden; } .hdBar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #22C55E, #0EA5E9); }
+  .hdCap { display: block; font: 600 11.5px 'Plus Jakarta Sans', sans-serif; opacity: .7; }
+  .hdList { margin-top: 8px; border-top: 1px solid rgba(148,163,184,.2); } .hdRow { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 7px 0; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; border-bottom: 1px solid rgba(148,163,184,.12); }
+  .hdRow span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .hdRow em { font-style: normal; opacity: .55; font-size: 11px; } .hdRow b.pos { color: #16A34A; } .hdRow b.neg { color: #DC2626; }
+  .sLeft { margin: -4px 0 8px; font: 600 12.5px 'Plus Jakarta Sans', sans-serif; opacity: .85; } .sLeft small { opacity: .7; }
 </style>
 </head>
 <body>
@@ -4979,18 +4987,21 @@
     // slender white pylon on the median rising to a pointed crown, two fans of stays down to both edges of the deck;
     // at night the stays and pylon run through colours in waves, lamps line the walkways and the light shimmers on the water
     { const x0 = 26 * T, x1 = 30 * T, cx = 28 * T, z0 = 9 * T + 1.5, z1 = 10 * T - 1.5, cz = (z0 + z1) / 2, PH = 34;
-      for (const px of [x0 + 4, cx - 9, cx + 9, x1 - 4]) box(px - 0.7, -3, cz - 1.6, px + 0.7, 0.4, cz + 1.6, '#94A3B8'); // the piers
+      for (const px of [x0 + 4, cx - 9, cx + 9, x1 - 4]) { for (const pz of [cz - 1.8, cz + 1.8]) cylLit(px, pz, 0.7, -3, 2.4, '#94A3B8'); box(px - 1.2, -0.6, z0 + 0.6, px + 1.2, -0.1, z1 - 0.6, '#A8A29E'); } // the piers: twin columns under a cap
+      box(x0, -1.1, z0, x1, -0.05, z0 + 0.35, '#E2E8F0'); box(x0, -1.1, z1 - 0.35, x1, -0.05, z1, '#E2E8F0'); box(x0, -0.9, z0 + 0.35, x1, -0.1, z1 - 0.35, '#64748B'); // the deck's fascia and girder
+      for (const ez of [z0 + 0.25, z1 - 0.25]) { box(x0, 0.47, ez - 0.08, x1, 1.25, ez + 0.08, '#E5E7EB'); for (let px = x0 + 1; px < x1; px += 2) box(px - 0.05, 0.47, ez - 0.06, px + 0.05, 1.2, ez + 0.06, '#CBD5E1'); } // the guardrails
       flat(x0, z0 + 0.4, x1, z0 + 1.4, 0.47, '#CBD5E1'); flat(x0, z1 - 1.4, x1, z1 - 0.4, 0.47, '#CBD5E1'); // the walkways
       flat(x0, cz - 0.35, x1, cz + 0.35, 0.47, '#9CA3AF'); // the median
       x.lineWidth = Math.max(1, K * 0.15); x.strokeStyle = 'rgba(248,250,252,0.8)'; x.setLineDash([3, 4]); x.beginPath();
       for (const z of [(z0 + 1.4 + cz - 0.35) / 2, (cz + 0.35 + z1 - 1.4) / 2]) { const p = P(x0, 0.48, z), q = P(x1, 0.48, z); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); }
       x.stroke(); x.setLineDash([]);
       // the pylon: a tapering white mast on the median, a pointed crown
-      for (let k = 0; k < 6; k++) { const y = k * (PH / 6), w = 1.1 - k * 0.12; box(cx - w, y, cz - w * 0.8, cx + w, y + PH / 6, cz + w * 0.8, '#F8FAFC'); }
+      for (let k = 0; k < 8; k++) { const y = k * (PH / 8), w = 1 - k * 0.085; box(cx - w, y, cz - w * 0.75, cx + w, y + PH / 8, cz + w * 0.75, '#F8FAFC'); box(cx - w - 0.02, y + PH / 8 - 0.12, cz - w * 0.75 - 0.02, cx + w + 0.02, y + PH / 8, cz + w * 0.75 + 0.02, '#CBD5E1'); }
+      box(cx - 0.55, PH - 1.6, cz - 0.45, cx + 0.55, PH - 0.9, cz + 0.45, '#94A3B8'); // the crown ring
       pyramid(cx - 0.4, cz - 0.3, cx + 0.4, cz + 0.3, PH, 4, '#E2E8F0');
       // the stays: two fans, each to both edges of the deck
       const stays = (lit) => {
-        const t = performance.now() / 1000; x.save(); if (lit) { x.globalCompositeOperation = 'lighter'; x.shadowBlur = 10; }
+        const t = performance.now() / 1000; x.save(); if (lit) x.shadowBlur = 3; // a soft glow, not a blaze
         // the lit pass comes after every building, so where WYRD Tower stands in front of the bridge, cut its outline out
         if (lit) { const wt = PLACES.find((p) => p[0] === 'wyrdtower'); if (wt) { const tx = (wt[1] + wt[3] / 2) * T, tz = (wt[2] + wt[4] / 2) * T; if (P(tx, 0, tz)[2] > P(cx, 0, cz)[2]) {
           const pts = []; for (const [hw, hd, y] of [[9, 6.6, 0], [6.4, 4.6, 112], [2, 2, 134]]) for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const p = P(tx + sx * hw, y, tz + sz * hd); pts.push([p[0], p[1]]); }
@@ -4999,19 +5010,19 @@
           for (const p of pts.slice().reverse()) { while (hi.length > 1 && cr(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); }
           const hull = lo.slice(0, -1).concat(hi.slice(0, -1)); x.beginPath(); x.rect(0, 0, W, H); x.moveTo(hull[0][0], hull[0][1]); for (const p of hull) x.lineTo(p[0], p[1]); x.closePath(); x.clip('evenodd');
         } } }
-        for (let k = 1; k <= 8; k++) for (const side of [-1, 1]) for (const ez of [z0 + 0.5, z1 - 0.5]) {
-          const ay = PH - 2 - k * 1.5, a = P(cx, ay, cz), e = P(cx + side * (2.5 + k * 2.1), 1.3, ez), hue = (t * 40 + k * 22 + (side > 0 ? 0 : 180)) % 360;
-          x.strokeStyle = lit ? `hsla(${hue},95%,62%,0.9)` : 'rgba(255,255,255,0.9)'; x.shadowColor = x.strokeStyle; x.lineWidth = lit ? 1.5 : Math.max(0.8, K * 0.1);
+        for (let k = 1; k <= 12; k++) for (const side of [-1, 1]) for (const ez of [z0 + 0.5, z1 - 0.5]) {
+          const ay = PH - 2.2 - k * 1.05, a = P(cx, ay, cz), e = P(cx + side * (2.2 + k * 1.45), 1.3, ez), hue = (t * 25 + k * 16 + (side > 0 ? 0 : 180)) % 360;
+          x.strokeStyle = lit ? `hsla(${hue},70%,62%,0.32)` : 'rgba(255,255,255,0.85)'; x.shadowColor = x.strokeStyle; x.lineWidth = lit ? 1 : Math.max(0.7, K * 0.08);
           x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(e[0], e[1]); x.stroke();
         }
         if (lit) {
           // the pylon washed in colour, a beacon on the crown, lamps along both walkways, light on the water below
           const p0 = P(cx, 0.6, cz), p1 = P(cx, PH + 3, cz), g = x.createLinearGradient(p0[0], p0[1], p1[0], p1[1]);
-          g.addColorStop(0, `hsla(${(t * 40) % 360},95%,60%,0.85)`); g.addColorStop(1, `hsla(${(t * 40 + 140) % 360},95%,70%,0.85)`);
-          x.strokeStyle = g; x.lineWidth = Math.max(3, K * 1.6); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
+          g.addColorStop(0, `hsla(${(t * 25) % 360},70%,60%,0.28)`); g.addColorStop(1, `hsla(${(t * 25 + 140) % 360},70%,70%,0.38)`);
+          x.strokeStyle = g; x.lineWidth = Math.max(2, K * 0.9); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke();
           if (Math.floor(t * 1.2) % 2) { const b = P(cx, PH + 4.2, cz); x.fillStyle = '#EF4444'; x.beginPath(); x.arc(b[0], b[1], Math.max(1.5, K * 0.5), 0, Math.PI * 2); x.fill(); }
-          for (let k = 0; k <= 16; k++) for (const ez of [z0 + 0.5, z1 - 0.5]) { const p = P(x0 + k * 2.5, 2, ez); x.fillStyle = '#FEF3C7'; x.beginPath(); x.arc(p[0], p[1], Math.max(1.2, K * 0.3), 0, Math.PI * 2); x.fill(); }
-          for (let k = 0; k < 10; k++) { const wx = x0 + 2 + k * 4, w = P(wx, -0.1, z1 + 2 + Math.sin(t * 2 + k) * 0.6), hue = (t * 40 + k * 30) % 360; x.fillStyle = `hsla(${hue},95%,60%,0.35)`; x.beginPath(); x.ellipse(w[0], w[1], K * 1.6, K * 0.35, 0, 0, Math.PI * 2); x.fill(); }
+          for (let k = 0; k <= 16; k++) for (const ez of [z0 + 0.5, z1 - 0.5]) { const p = P(x0 + k * 2.5, 2, ez); x.fillStyle = 'rgba(254,243,199,0.55)'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.22), 0, Math.PI * 2); x.fill(); }
+          for (let k = 0; k < 10; k++) { const wx = x0 + 2 + k * 4, w = P(wx, -0.1, z1 + 2 + Math.sin(t * 2 + k) * 0.6), hue = (t * 40 + k * 30) % 360; x.fillStyle = `hsla(${hue},70%,60%,0.12)`; x.beginPath(); x.ellipse(w[0], w[1], K * 1.6, K * 0.35, 0, 0, Math.PI * 2); x.fill(); }
         } else { // the walkway lamp posts by day
           for (let k = 0; k <= 8; k++) for (const ez of [z0 + 0.5, z1 - 0.5]) { const p = P(x0 + k * 5, 0.5, ez), q = P(x0 + k * 5, 2, ez); x.strokeStyle = '#94A3B8'; x.lineWidth = 1; x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); }
         }
@@ -8739,12 +8750,23 @@
             return `<div class="hchips">${chips.map(([i, t, a], k) => `<button data-app="${a}" style="--d:${(k * 0.06).toFixed(2)}s"><i>${i}</i>${esc(t)}</button>`).join('')}</div>`; })()}
           ${(() => { const s = MP.q[MP.i], city = CITY.mix && CITY.mix.playing && CITY.mix.now; return `<div class="mw"><div class="mwa" style="${s ? `background-image:url('${esc(s.art)}')` : ''}">${s ? '' : '🎧'}</div><div class="mwt"><small>${s ? (MP.a.paused ? 'Paused' : 'Now playing') : city ? 'On the island tonight' : 'Island Music'}</small><b>${esc(s ? s.title : city ? city.title : 'Tap to play something')}</b><span>${esc(s ? s.artist : city ? 'DJ Eko Nights · live' : 'Charts, new music, full tracks')}</span></div><div class="mwc">${s ? `<button data-mw="prev">⏮</button><button data-mw="play" class="big">${MP.a.paused ? '▶' : '⏸'}</button><button data-mw="next">⏭</button>` : '<button data-mw="open" class="big">▶</button>'}</div></div>`; })()}
           ${(() => { const live = arenaLive(), playing = (CITY.srcs || []).filter((s) => s.room && s.now); return playing.length || live ? `<button class="tw" data-app="${live ? 'arena' : 'music'}"><div><small>Live now</small><b>${playing.length ? `${playing.length} club${playing.length > 1 ? 's' : ''} playing · ${esc(playing.slice(0, 2).map((s) => s.spot.dj || s.spot.name).join(', '))}` : 'The Arena is live'}</b><span>${live && playing.length ? '● The Arena is live too' : 'Tap to listen'}</span></div><i>🎶</i></button>` : ''; })()}
-          <div class="wrow"><button class="wmini" data-app="wallet"><div class="wd">Wallet</div><div class="wn">${naira(me$.naira)}</div><small>Earned today ${naira(me$.earnedToday || 0)}</small></button>
+          <button class="hday" id="hDay" data-app="wallet"><div class="hdTop"><div><small>Wallet</small><b>${naira(me$.naira)}</b></div><div class="hdIO" id="hdIO"></div></div><div class="hdBar"><i style="width:${Math.min(100, Math.round(100 * (me$.earnedToday || 0) / (me$.dailyCap || 35000)))}%"></i></div><small class="hdCap">Earned ${naira(me$.earnedToday || 0)} of ${naira(me$.dailyCap || 35000)} today</small><div class="hdList" id="hdList"><div class="skel"><i></i><i class="s"></i></div></div></button>
+          <div class="wrow">
             <button class="wmini" data-app="gov"><div class="wd">The island</div><div class="wn">${esc(online)} online</div><small>${(() => { const c = census(); return `${c.taken}/${c.total} homes lived in`; })()}</small></button></div>
           ${(() => { const o = OUTFITS[parseLook(myLook, myName).outfit]; return `<button class="wfit" data-app="fashion"><img data-shot="${o ? o.id : ''}" alt=""><span><small>You're wearing</small><b>${o ? esc(o.brand === 'Starter' ? o.name : o.brand + ' · ' + o.name) : 'Your own clothes'}</b></span><em>Change ›</em></button>`; })()}
           ${HOME_GROUPS.map(([n, ks], gi) => { const list = APPS.filter((a) => ks.includes(a[0]) || (gi === HOME_GROUPS.length - 1 && !DOCK.includes(a[0]) && !HOME_GROUPS.some(([, k2]) => k2.includes(a[0])))); return `<div class="hsec">${n}</div><div class="apps">${list.map(tile).join('')}</div>`; }).join('')}
           <div class="dock">${DOCK.map((k) => tile(APPS.find((a) => a[0] === k))).join('')}</div>`);
         pbody.querySelectorAll('[data-app]').forEach((b) => (b.onclick = () => go(b.dataset.app))); w4Wire();
+        // your day, straight from the ledger: in and out today (tax apart), the tax this week, the last three movements, what you can still send
+        Promise.all([my('receipts'), my('civic').catch(() => null)]).then(([r, cv]) => {
+          const io = $('hdIO'), ls = $('hdList'); if (!io || !ls || !Array.isArray(r)) return;
+          const today = new Date().toDateString(), tr = r.filter((e) => e.at && new Date(e.at).toDateString() === today);
+          const inT = tr.filter((e) => e.amount > 0).reduce((n, e) => n + e.amount, 0), outT = tr.filter((e) => e.amount < 0 && e.kind !== 'tax').reduce((n, e) => n - e.amount, 0), taxT = tr.filter((e) => e.kind === 'tax').reduce((n, e) => n - e.amount, 0);
+          io.innerHTML = `<span class="in">+${naira(inT)}</span><span class="out">−${naira(outT)}</span><small>today${taxT ? ` · tax ${naira(taxT)}` : ''}</small>`;
+          const cap = document.querySelector('#hDay .hdCap'); if (cap && cv) cap.textContent += ` · tax ${naira(cv.taxWeek)} this week` + (me$.send ? ` · can send ${naira(me$.send.left)}` : '');
+          const when = (at) => new Date(at).toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+          ls.innerHTML = r.filter((e) => e.kind !== 'tax').slice(0, 3).map((e) => `<div class="hdRow"><span>${esc(e.memo)}</span><em>${e.at ? when(e.at) : ''}</em><b class="${e.amount < 0 ? 'neg' : 'pos'}">${e.amount < 0 ? '−' : '+'}${naira(Math.abs(e.amount))}</b></div>`).join('') || '<div class="hdRow"><span>Nothing yet today. Work a shift to get paid.</span></div>';
+        }).catch(() => { const ls = $('hdList'); if (ls) ls.innerHTML = ''; });
         { const wk = pbody.querySelector('.hWork'); if (wk) wk.onclick = () => go('jobs'); }
         { const av = pbody.querySelector('.hHi .av2'); if (av) av.onclick = () => openPass(); $('hBell').onclick = () => { buildShade(); shadeEl.classList.add('on'); setTimeout(() => { notes.forEach((n) => (n.seen = true)); updBadge(); }, 900); }; }
         if ($('osQ')) $('osQ').onsubmit = (e) => { e.preventDefault(); const q = $('osQi').value.trim(); go('wyrd'); if (q) setTimeout(() => { const i = $('wText'); if (i) { i.value = q; const sb = i.parentElement.querySelector('button'); if (sb) sb.click(); } }, 400); };
@@ -8770,7 +8792,7 @@
           <button class="wBuyFun" id="wBuy"><span class="bfIc">💸</span><span class="bfTx"><b id="bfLine">${parseLook(myLook, me$.handle).g === 'f' ? 'Fine girl 💅' : 'Fine boy 😎'}</b><small>Buy naira · bank transfer</small></span><span class="bfGo">${pi('go')}</span></button>
           <div id="wBankHold" style="display:none"><button class="wReal" id="wBank" style="margin-top:8px"><span class="ic2">${pi('bank')}</span><span style="flex:1"><b style="font-size:15px">Bank account</b><small id="wBankSub">Where your real earnings are paid</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button></div>
           <div class="wAct"><button id="wSend"><span>${pi('send')}</span>Send</button><button id="wEarn"><span>${pi('work')}</span>Earn</button></div>
-          <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3><input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
+          <div class="wSheet" id="sendBox" style="display:none"><h3>Send naira</h3>${me$.send ? `<div class="sLeft">You can send <b>${naira(me$.send.left)}</b> more today <small>(${naira(me$.send.limit)} a day${me$.send.newAccount ? ', on your first day' : ''})</small></div>` : ''}<input id="sTo" placeholder="Their username" autocomplete="off"><input id="sAmt" type="number" min="50" max="50000" inputmode="numeric" placeholder="Amount (₦50 to ₦50,000)"><div class="wAmts">${[500, 1000, 2000, 5000].map((a) => `<button data-amt="${a}">${naira(a)}</button>`).join('')}</div><input id="sNote" maxlength="60" placeholder="What for (optional)"><button class="pbtn" id="sGo">${pi('send')}Send</button></div>
           <div id="earnBox" style="display:none"><div class="wSec"><span>Real earnings</span></div><div id="realBox"></div><div id="wBankSlot"></div><div id="earnList"><div class="wSec"><span>Where to earn</span></div><div class="ppList">${EARN.map(([k, ic, n, pay]) => `<button class="wRow" data-earn="${k}"><span class="ic2">${ic}</span><span class="t"><b>${n}</b><small>${pay} a shift · ride there</small></span><span style="color:var(--ppDim)">${pi('go')}</span></button>`).join('')}</div></div></div>
           <div class="wSec"><span>Activity</span>${spent ? `<span>Spent today ${naira(spent)}</span>` : ''}</div>
           <div class="ppList">${rows || `<div class="ppEmpty">${pi('trend')}Nothing yet. Work a shift to get paid.</div>`}</div>`);
