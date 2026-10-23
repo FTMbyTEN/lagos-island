@@ -484,6 +484,28 @@
   #coach p { margin: 6px 0 10px; font-size: 14px; line-height: 1.45; min-height: 2.9em; }
   #coach .cbtns { display: flex; flex-wrap: wrap; gap: 6px; } #coach .cbtns button { border: 0; border-radius: 999px; padding: 8px 14px; font: 700 13px 'Plus Jakarta Sans', sans-serif; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; transition: transform .12s, filter .2s; } #coach .cbtns button:active { transform: scale(.95); }
   #coach .cbtns button.main { background: linear-gradient(135deg, #22C55E, #0EA5E9 60%, #6366F1); box-shadow: 0 6px 16px rgba(14,165,233,.35); }
+  /* WYRD's coach, sharper: a living orb, a glowing edge, clearer type */
+  #coach { border: 0; background: linear-gradient(150deg, rgba(10,14,35,.94), rgba(30,27,75,.94)) padding-box, linear-gradient(120deg, #22D3EE, #A78BFA, #F472B6, #22D3EE) border-box; border: 1.5px solid transparent; background-size: 100% 100%, 300% 300%; animation: wgEdge 6s linear infinite; }
+  #coach .orb, #wyrdGuide .orb { position: relative; } #coach .orb::after, #wyrdGuide .orb::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1.5px solid rgba(167,139,250,.6); animation: wgRing 2s ease-out infinite; }
+  #coach .chead b::after { content: ' · your guide'; font-weight: 600; color: #A5B4FC; letter-spacing: 0; font-size: 12px; }
+  #coach .chead small { padding: 2px 8px; border-radius: 999px; background: rgba(167,139,250,.18); }
+  #coach p { font-size: 14.5px; color: #F1F5F9; }
+  @keyframes wgEdge { to { background-position: 0 0, 300% 0; } } @keyframes wgRing { from { transform: scale(.8); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
+  /* the guide card on the refinery floor */
+  #wyrdGuide { position: fixed; left: 50%; top: calc(14px + env(safe-area-inset-top)); z-index: 58; width: min(400px, calc(100vw - 150px)); padding: 12px 14px; border-radius: 20px; color: #E2E8F0; font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(150deg, rgba(10,14,35,.92), rgba(30,27,75,.92)) padding-box, linear-gradient(120deg, #22D3EE, #A78BFA, #FACC15, #22D3EE) border-box; border: 1.5px solid transparent; background-size: 100% 100%, 300% 300%; animation: wgEdge 6s linear infinite; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 16px 40px rgba(15,23,42,.45); transform: translate(-50%, -20px); opacity: 0; pointer-events: none; transition: transform .3s cubic-bezier(.2,.8,.3,1), opacity .3s; }
+  #wyrdGuide.on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  #wyrdGuide .wgh { display: flex; align-items: center; gap: 10px; } #wyrdGuide .orb { flex: none; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #A78BFA 45%, #0EA5E9); box-shadow: 0 0 16px rgba(167,139,250,.8); }
+  #wyrdGuide .wgt { flex: 1; min-width: 0; } #wyrdGuide .wgt b { display: block; font-size: 13px; letter-spacing: .5px; color: #fff; } #wyrdGuide .wgt em { font-style: normal; font-weight: 600; color: #67E8F9; font-size: 11px; margin-left: 4px; }
+  #wyrdGuide .wgt small { display: block; font-size: 12px; color: #FDE68A; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #wyrdGuide .wgn { font: 900 22px 'Plus Jakarta Sans', sans-serif; color: #FACC15; } #wyrdGuide .wgn small { font-size: 12px; opacity: .6; }
+  #wyrdGuide .wgx { width: 26px; height: 26px; border: 0; border-radius: 50%; background: rgba(255,255,255,.1); color: #fff; cursor: pointer; transition: transform .2s; }
+  #wyrdGuide .wgbar { display: flex; gap: 4px; margin: 10px 0 2px; } #wyrdGuide .wgbar i { flex: 1; height: 5px; border-radius: 5px; background: rgba(255,255,255,.12); } #wyrdGuide .wgbar i.ok { background: linear-gradient(90deg, #22C55E, #4ADE80); } #wyrdGuide .wgbar i.now { background: #FACC15; animation: gpblink 1.2s infinite; }
+  #wyrdGuide p { margin: 8px 0; font-size: 13.5px; line-height: 1.45; min-height: 2.9em; } #wyrdGuide p.bad { color: #FCA5A5; }
+  #wyrdGuide .wgl { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 3px; max-height: 120px; overflow-y: auto; } #wyrdGuide .wgl li { font-size: 12px; padding: 4px 8px; border-radius: 8px; background: rgba(34,197,94,.12); color: #BBF7D0; } #wyrdGuide .wgl li::before { content: '✓ '; font-weight: 800; } #wyrdGuide .wgl li.q { background: rgba(250,204,21,.12); color: #FDE68A; } #wyrdGuide .wgl li.q::before { content: '→ '; }
+  #wyrdGuide .wgb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } #wyrdGuide .wgb button { border: 0; border-radius: 999px; padding: 7px 13px; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; } #wyrdGuide .wgb button.main { background: linear-gradient(135deg, #FACC15, #F97316); color: #1C1917; }
+  #wyrdGuide .wgb em { font-style: normal; font-size: 12px; font-weight: 800; color: #F87171; } #wyrdGuide .wgb em.h { color: #FDE68A; }
+  #wyrdGuide.min p, #wyrdGuide.min .wgl, #wyrdGuide.min .wgb { display: none; } #wyrdGuide.min .wgx { transform: rotate(180deg); }
+  @media (max-width: 520px) { #wyrdGuide { top: calc(72px + env(safe-area-inset-top)); width: calc(100vw - 24px); } #wyrdGuide .wgl { max-height: 70px; } }
   /* live chat: someone typing (three bouncing dots in a bubble), and read ticks turning blue */
   #phone .typing { display: none; align-items: center; gap: 4px; width: max-content; margin: 2px 0 8px; padding: 9px 13px; border-radius: 18px 18px 18px 6px; background: rgba(0,240,255,.1); box-shadow: inset 0 0 0 1px rgba(0,240,255,.18); color: #8FB6C2; font: 600 12px 'Rajdhani', sans-serif; }
   #phone .typing.on { display: flex; animation: appIn .2s ease; }
@@ -6497,24 +6519,150 @@
   const wwall = (txt, xc, y, col, size) => faceText(txt, xc, y, 0.25, col, size || 3, 6); // lettering on the back wall
   const wglass = (x0, z0, x1, z1, h, edge) => { quad([P(x0, 0, z1), P(x1, 0, z1), P(x1, h, z1), P(x0, h, z1)], 'rgba(186,230,253,0.25)', edge || 'rgba(255,255,255,0.8)'); quad([P(x1, 0, z0), P(x1, 0, z1), P(x1, h, z1), P(x1, h, z0)], 'rgba(186,230,253,0.18)', edge || 'rgba(255,255,255,0.8)'); };
   const wscreen = (x0, x1, y0, y1, z, t, hue) => { const q = [P(x0, y0, z), P(x1, y0, z), P(x1, y1, z), P(x0, y1, z)], g = x.createLinearGradient(q[0][0], q[3][1], q[1][0], q[0][1]); g.addColorStop(0, `hsl(${hue},70%,${18 + Math.sin(t) * 4}%)`); g.addColorStop(1, `hsl(${hue + 40},70%,30%)`); quad(q, g, '#0F172A'); };
+  // ---- the refinery floor: the machines, and the job done on them by hand, with WYRD alongside
+  const REF = { hot: null, live: null, wyrd: { x: 52, z: 64, tx: 0, tz: 0, until: 0 }, flash: null };
+  const refHere = () => !!(inside && inside.kind === 'work' && inside.place === 'refinery');
+  const REF_EQUIP = { // the kit each step is done on: [its name, x, z where you stand to use it]
+    alarm: ['Fire alarm call point', 92, 74], estop: ['P-101 emergency stop', 132, 74], block: ['P-101 block valves', 106, 70], monitor: ['Fire monitor', 164, 72],
+    muster: ['Muster point', 100, 150], fireteam: ['Fire team gate', 130, 166],
+    h2s: ['H₂S alarm', 172, 34], upwind: ['Wind sock (upwind)', 92, 104], ba: ['Breathing apparatus', 76, 112], iso: ['Sour-water isolation valve', 152, 54], drain: ['Drain and purge point', 168, 60], gastest: ['Gas detector', 160, 44],
+    lineup: ['Valve line-up board', 156, 112], suction: ['P-201 suction valve', 156, 126], vent: ['P-201 vent', 166, 118], starter: ['P-201 motor starter', 177, 113], discharge: ['P-201 discharge valve', 176, 131], gauge: ['P-201 pressure gauge', 165, 136],
+    chocks: ['Wheel chocks', 228, 156], clamp: ['Earth clamp', 190, 156], elight: ['Earth light', 182, 150], hatch: ['Compartment hatch', 206, 136], meter: ['Preset meter', 248, 128], arm: ['Loading arm', 210, 130],
+  };
+  const REF_STEP = { // each procedure step → the kit it's done on
+    'Raise the alarm': 'alarm', "Hit the pump's emergency stop": 'estop', 'Close the block valves either side': 'block', 'Turn the fire monitor on the fire': 'monitor', 'Count everyone at the muster point': 'muster', 'Brief the fire team when they arrive': 'fireteam',
+    'Raise the alarm and call it in': 'h2s', 'Move upwind and test the air': 'upwind', 'Put on breathing apparatus': 'ba', 'Isolate the leaking line': 'iso', 'Drain and purge the line': 'drain', 'Gas-test again before anyone goes back': 'gastest',
+    'Check the valve line-up': 'lineup', 'Open the suction valve': 'suction', 'Vent and prime the pump': 'vent', 'Start the motor': 'starter', 'Slowly open the discharge valve': 'discharge', 'Check the pressure and the flow': 'gauge',
+    'Chock the wheels': 'chocks', 'Clip on the earth clamp': 'clamp', 'Wait for the green earth light': 'elight', 'Open the compartment hatch': 'hatch', 'Lower the loading arm': 'arm', 'Load to the preset': 'meter', 'Raise the arm and close the hatch': 'arm', 'Seal the hatch and sign the docket': 'hatch', 'Unclip the earth clamp': 'clamp',
+  };
+  const REF_ARM = { 'PMS (petrol)': [196, '#EF4444'], 'AGO (diesel)': [210, '#EAB308'], 'DPK (kerosene)': [224, '#3B82F6'], 'Jet A-1': [238, '#64748B'] };
+  const REF_WHY = { fire: 'People first, then cut the fuel, then fight the fire, then count heads.', leak: 'Warn everyone, get yourself safe and masked, then fix the line, then prove it.', startup: 'Liquid in before power on, then build the pressure slowly.', loading: 'No spark before the earth, no product before the hatch and the arm.', rounds: 'Read each gauge against its normal range.', permits: 'Every reading must be safe before you sign.' };
+  const ROUND_AT = [[92, 42], [112, 46], [138, 44], [150, 70], [100, 62], [176, 44]], PERMIT_AT = [[216, 22], [216, 66], [194, 44], [240, 44], [202, 86], [232, 86]];
+  // what you can use right now: each kit once, offering its first step still to do (or each reading, on a round)
+  function refSpots() {
+    const o = REF.hot; if (!o || !refHere()) return [];
+    if (o.free) return o.items.map((it, k) => ({ i: k, label: `📟 ${it.label}`, name: it.label, x: o.at[k][0], z: o.at[k][1], step: it.tag })).filter((v) => !o.done.includes(v.step));
+    const seen = {}, out = [];
+    for (const s of o.order) { if (o.done.includes(s)) continue; const k = REF_STEP[s]; if (!k || seen[k]) continue; seen[k] = 1; const e = REF_EQUIP[k], p = (o.pos && o.pos[k]) || [e[1], e[2]]; out.push({ step: s, key: k, label: `🔧 ${s}`, name: e[0], x: p[0], z: p[1] }); }
+    return out;
+  }
+  const refKitPos = (s) => { const o = REF.hot, k = REF_STEP[s], e = REF_EQUIP[k]; return (o.pos && o.pos[k]) || [e[1], e[2]]; };
+  function refPoint(s) { const p = refKitPos(s); Object.assign(REF.wyrd, { tx: p[0] + 3, tz: p[1] - 3, until: performance.now() + 6000 }); }
+  function refHands(o) { // a procedure done on the kit itself
+    Object.assign(o, { next: 0, strikes: 0, hints: 0, done: [] }); REF.hot = o; gpClose();
+    refGuide(o.free ? `${o.lead} Walk up to each one and read it. ${REF_WHY[o.kind] || ''}` : `${o.lead} Walk to the kit and use it, in the right order. The blue rings mark everything you can touch.`);
+  }
+  function refDo(sp) {
+    const o = REF.hot; if (!o) return;
+    if (o.free) return o.pick(sp);
+    o.clicks.push(sp.step); const want = o.order[o.next];
+    if (sp.step === want) { o.done.push(sp.step); o.next++; REF.flash = { x: sp.x, z: sp.z, ok: true, at: performance.now() };
+      if (o.next >= o.order.length) { REF.hot = null; refGuideOff(); return o.finish(o.strikes, o.hints); }
+      refGuide(`${['Good.', 'That’s it.', 'Right call.', 'Clean.', 'Well done.'][o.next % 5]} ${sp.name}: done. What has to come next?`);
+    } else { o.strikes++; REF.flash = { x: sp.x, z: sp.z, ok: false, at: performance.now() }; refPoint(want);
+      refGuide(`Stop. Not “${sp.step}” yet. ${REF_WHY[o.kind] || ''} Follow me: I'm over the right kit.`, true); }
+  }
+  // WYRD's guide card, at the top while you work
+  const wg = document.createElement('div'); wg.id = 'wyrdGuide'; document.body.append(wg);
+  function refGuideOff() { wg.classList.remove('on'); clearInterval(refGuide.t); }
+  function refGuide(say, bad) {
+    const o = REF.hot; if (!o) return; const n = o.free ? o.items.length : o.order.length, k = o.free ? o.done.length : o.next;
+    wg.innerHTML = `<div class="wgh"><i class="orb"></i><div class="wgt"><b>WYRD <em>guiding</em></b><small>${esc(o.title)}</small></div><span class="wgn">${k}<small>/${n}</small></span><button class="wgx" aria-label="Fold">▾</button></div>
+      <div class="wgbar">${Array.from({ length: n }, (_, j) => `<i class="${j < k ? 'ok' : j === k ? 'now' : ''}"></i>`).join('')}</div>
+      <p class="${bad ? 'bad' : ''}"></p>
+      ${o.free ? '' : `<ol class="wgl">${o.order.slice(0, o.next).map((s) => `<li>${esc(s)}</li>`).join('')}<li class="q">Step ${o.next + 1}: your call</li></ol>`}
+      <div class="wgb">${o.free ? (o.done.length >= n ? '<button data-f class="main">✔ ' + (o.kind === 'permits' ? 'Sign the permits' : 'Log the rounds') + '</button>' : '') : '<button data-h>💡 Hint</button><button data-s>📍 Show me</button>'}${o.strikes ? `<em>✖ ${o.strikes} strike${o.strikes > 1 ? 's' : ''}</em>` : ''}${o.hints ? `<em class="h">${o.hints} hint${o.hints > 1 ? 's' : ''} (−${o.hints * 5})</em>` : ''}</div>`;
+    wg.classList.toggle('min', !!refGuide.min); wg.classList.add('on');
+    const p = wg.querySelector('p'); let c = 0; clearInterval(refGuide.t); refGuide.t = setInterval(() => { c += 2; p.textContent = say.slice(0, c); if (c >= say.length) clearInterval(refGuide.t); }, 16);
+    wg.querySelector('.wgx').onclick = () => { refGuide.min = !refGuide.min; wg.classList.toggle('min', refGuide.min); };
+    const h = wg.querySelector('[data-h]'), s = wg.querySelector('[data-s]'), f = wg.querySelector('[data-f]');
+    if (h) h.onclick = () => { o.hints++; const want = o.order[o.next]; refGuide(`Next is something you do at the ${REF_EQUIP[REF_STEP[want]][0].replace(/^[a-z]/, (m) => m)}. ${REF_WHY[o.kind] || ''}`); };
+    if (s) s.onclick = () => { o.hints++; refPoint(o.order[o.next]); refGuide('Follow me. I’m hovering over the kit you need next.'); };
+    if (f) f.onclick = () => { REF.hot = null; refGuideOff(); o.finish(); };
+  }
+  function refValve(vx, vz, col, h = 4) { box(vx - 0.3, 0, vz - 0.3, vx + 0.3, h, vz + 0.3, '#475569'); const p = P(vx, h + 0.3, vz); x.strokeStyle = col; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); x.ellipse(p[0], p[1], K * 1.3, K * 1.3 * sp, 0, 0, Math.PI * 2); x.stroke(); }
+  function refPost(px, pz, col, h = 5) { box(px - 0.3, 0, pz - 0.3, px + 0.3, h, pz + 0.3, '#64748B'); box(px - 1.1, h - 1.6, pz - 0.6, px + 1.1, h + 0.4, pz + 0.6, col); }
+  const refDot = (px, py, pz, col, r = 0.8) => { const p = P(px, py, pz); x.fillStyle = col; x.beginPath(); x.arc(p[0], p[1], K * r, 0, Math.PI * 2); x.fill(); };
+  function refDraw(R, now) {
+    const t = now / 1000, o = REF.hot, live = REF.live && gpEl.classList.contains('on') ? REF.live : null;
+    const fire = o && o.kind === 'fire' && o.next < 4, leak = o && o.kind === 'leak' && o.next < 5, alarm = (fire || leak) && o.next >= 1;
+    for (const [x0, z0, x1, z1] of [[4, 50, 256, 54], [76, 4, 80, 176], [4, 94, 256, 98], [182, 4, 186, 98], [142, 98, 146, 176]]) flat(x0, z0, x1, z1, 0.03, '#FACC15'); // the walkways
+    // the control room
+    wzone(8, 6, 72, 46, '#CBD5E1', 'CONTROL ROOM');
+    for (let k = 0; k < 4; k++) { box(12 + k * 15, 0, 22, 24 + k * 15, 3, 26, '#1E293B'); wscreen(13 + k * 15, 23 + k * 15, 3, 7, 22.1, t + k, 180 + k * 25); }
+    wscreen(12, 68, 6, 18, 0.3, t, 210);
+    if (live) { const top = live.top(); faceText(`COLUMN TOP ${top.toFixed(1)} °C`, 40, 15, 0.35, Math.abs(top - 120) <= 6 ? '#86EFAC' : '#FCA5A5', 2.2, 6); faceText(`BOTTOM LEVEL ${Math.round(live.S.lvl)} %`, 40, 10, 0.35, live.S.lvl >= 30 && live.S.lvl <= 70 ? '#86EFAC' : '#FCA5A5', 2.2, 6); }
+    else faceText('CDU-1  98%  ON SPEC', 40, 12, 0.35, '#86EFAC', 2.4, 6);
+    wglass(8, 6, 72, 46, 10);
+    // the crude unit: the furnace, the columns, the pipe rack, pump P-101 and its safety kit
+    wzone(84, 6, 178, 90, '#A8A29E', 'CRUDE UNIT');
+    box(86, 0, 10, 106, 16, 28, '#78716C'); cylLit(96, 19, 2, 16, 26, '#57534E');
+    { const f = live ? live.S.f / 100 : 0.7, q = [P(89, 2, 28.05), P(103, 2, 28.05), P(103, 2 + 9 * f, 28.05), P(89, 2 + 9 * f, 28.05)], g = x.createLinearGradient(0, q[0][1], 0, q[3][1]); g.addColorStop(0, '#FDE047'); g.addColorStop(1, `rgba(239,68,68,${0.5 + 0.3 * Math.sin(t * 9)})`); quad(q, g, '#7C2D12'); faceText('F-101 FURNACE', 96, 14, 28.1, '#FDE68A', 1.6, 4); }
+    for (const [cx, r, h, nm] of [[126, 4.5, 48, 'C-101'], [152, 3.4, 36, 'C-102']]) { cylLit(cx, 20, r, 0, h, '#CBD5E1'); for (let y = 8; y < h - 2; y += 8) cylLit(cx, 20, r + 0.7, y, 0.5, '#64748B', false);
+      const on = live ? Math.abs(live.top() - 120) <= 6 : true; refDot(cx, h + 1.5, 20, on ? '#22C55E' : (Math.floor(t * 3) % 2 ? '#EF4444' : '#7F1D1D'), 0.9); groundText(nm, cx, 28, 1.8, 'rgba(15,23,42,0.6)'); }
+    for (const px of [88, 112, 138, 164]) box(px - 0.4, 0, 33.6, px + 0.4, 8.4, 34.4, '#475569');
+    pipe([[86, 34], [178, 34]], 8.6, 1, '#F59E0B'); pipe([[86, 31], [178, 31]], 6, 1, '#22B573'); pipe([[86, 37], [178, 37]], 7.3, 0.8, '#94A3B8');
+    for (const [gx, gz] of ROUND_AT) { box(gx - 0.2, 0, gz - 0.2, gx + 0.2, 4, gz + 0.2, '#475569'); refDot(gx, 4.6, gz, '#F8FAFC'); }
+    box(110, 0, 60, 132, 1, 68, '#334155'); cylLit(116, 64, 3, 1, 4, '#64748B'); box(120, 1, 61.5, 130, 5.5, 66.5, '#2563EB'); faceText('P-101', 125, 3.4, 66.6, '#fff', 1.4, 2);
+    pipe([[96, 64], [113, 64]], 2.5, 0.9, '#334155'); pipe([[119, 64], [119, 76], [140, 76]], 2.5, 0.8, '#334155');
+    refValve(106, 64, '#EF4444'); refValve(136, 76, '#EF4444');
+    refPost(92, 70, '#DC2626'); refPost(132, 70, '#FACC15'); refDot(132, 5.7, 70, '#DC2626');
+    box(163, 0, 67, 165, 4, 69, '#DC2626'); box(163.5, 4, 66, 164.5, 5, 68, '#B91C1C'); // the fire monitor
+    if (o && o.kind === 'fire' && o.done.includes('Turn the fire monitor on the fire')) { const a = P(164, 5, 67), b = P(118, 3, 64); x.strokeStyle = 'rgba(224,242,254,0.8)'; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.moveTo(a[0], a[1]); x.quadraticCurveTo((a[0] + b[0]) / 2, Math.min(a[1], b[1]) - K * 8, b[0], b[1]); x.stroke(); }
+    pipe([[146, 50], [180, 50]], 3, 0.8, '#EAB308'); refValve(152, 50, '#22C55E'); refValve(168, 56, '#3B82F6', 2.5); box(159, 0, 39, 161, 4, 41, '#FACC15'); faceText('SOUR WATER', 162, 4.5, 50.5, '#713F12', 1.4, 2);
+    refPost(172, 30, '#F59E0B', 7); if (leak) refDot(172, 7.4, 30, Math.floor(t * 4) % 2 ? '#FACC15' : '#78350F', 1.2);
+    box(91.7, 0, 103.7, 92.3, 9, 104.3, '#94A3B8'); { const a = P(92, 9, 104), b = P(92 + 4 * Math.cos(t * 0.7), 8.3, 102), c2 = P(92 + 4 * Math.cos(t * 0.7), 7.7, 102); quad([a, b, c2, P(92, 8, 104)], '#F97316', '#C2410C'); }
+    box(72, 0, 104, 80, 7, 108, '#DC2626'); faceText('BA SETS', 76, 5, 108.1, '#fff', 1.5, 2);
+    if (fire) for (let k = 0; k < 4; k++) flame(114 + k * 2.4, 4 + Math.sin(t * 6 + k), 64 + (k % 2));
+    if (leak) { x.save(); x.globalAlpha = 0.25; for (let k = 0; k < 5; k++) { const p = P(158 + k * 3 + Math.sin(t + k) * 2, 3 + ((t * 2 + k) % 5), 50); x.fillStyle = '#BEF264'; x.beginPath(); x.arc(p[0], p[1], K * (1.5 + k * 0.3), 0, Math.PI * 2); x.fill(); } x.restore(); }
+    // the tank yard, inside its bund
+    wzone(188, 6, 254, 92, '#B4BBC5', 'TANK YARD');
+    for (const [a, b, c2, d] of [[188, 6, 254, 7], [188, 91, 254, 92], [188, 6, 189, 92], [253, 6, 254, 92]]) box(a, 0, b, c2, 1.5, d, '#9CA3AF');
+    for (const [cx, cz, band] of [[202, 24, '#22B573'], [232, 24, '#22B573'], [202, 64, '#F59E0B'], [232, 64, '#F59E0B']]) tank(cx, cz, 9, 14, '#F1F5F9', band);
+    for (const [px, pz] of PERMIT_AT) box(px - 0.6, 0, pz - 0.6, px + 0.6, 2.5, pz + 0.6, '#FACC15');
+    // the loading pump skid, P-201
+    wzone(148, 104, 182, 140, '#78716C', 'P-201');
+    box(154, 0, 108, 158, 7, 109, '#F8FAFC'); faceText('LINE-UP', 156, 6, 109.1, '#0F172A', 1.2, 2);
+    box(160, 0, 118, 174, 1, 126, '#334155'); cylLit(164, 122, 2.6, 1, 3.5, '#64748B'); box(167, 1, 119.5, 173, 5, 124.5, '#16A34A'); refValve(158, 122, '#22C55E', 3); refValve(174, 128, '#EF4444', 3);
+    box(165.7, 3.5, 117.7, 166.3, 6, 118.3, '#94A3B8'); box(176, 0, 108, 179, 6, 110, '#334155'); refDot(177.5, 5, 110.1, o && o.kind === 'startup' && o.next > 3 ? '#22C55E' : '#EF4444', 0.6);
+    box(164.8, 0, 131.8, 165.2, 4, 132.2, '#475569'); refDot(165, 4.6, 132, '#F8FAFC');
+    pipe([[150, 122], [161, 122]], 2.5, 0.9, '#334155'); pipe([[164, 128], [182, 128], [192, 120]], 2.5, 0.8, '#334155');
+    // the loading gantry: four arms over the bay, a tanker under them
+    wzone(186, 104, 254, 172, '#78716C', 'LOADING GANTRY');
+    const lo = o && o.kind === 'loading' ? o : null, armDown = lo && lo.done.includes('Lower the loading arm') && !lo.done.includes('Raise the arm and close the hatch'), hatchOpen = lo && lo.done.includes('Open the compartment hatch') && !lo.done.includes('Seal the hatch and sign the docket');
+    for (const [ax, az] of [[190, 120], [252, 120], [190, 152], [252, 152]]) box(ax - 0.6, 0, az - 0.6, ax + 0.6, 15, az + 0.6, '#F59E0B');
+    for (const bz of [118, 154]) box(188, 14.5, bz - 0.5, 254, 15.5, bz + 0.5, '#475569'); for (const [, [ax]] of Object.entries(REF_ARM)) box(ax - 0.4, 14.6, 118, ax + 0.4, 15.4, 154, '#64748B'); // the gantry's open steel
+    box(198, 1, 140, 238, 8, 148, '#F8FAFC'); box(198, 6.5, 140, 238, 7.2, 148, '#EF4444'); box(240, 1, 140, 250, 8, 148, '#1D4ED8'); box(241, 5, 147.9, 249, 7.5, 148.2, '#BAE6FD');
+    for (const wx of [202, 214, 228, 245]) box(wx - 1.4, 0, 139.5, wx + 1.4, 2, 148.5, '#111827');
+    for (let c = 0; c < 3; c++) { const hx = 206 + c * 12, op = hatchOpen && lo.comp === c; box(hx - 2, 8, 142, hx + 2, op ? 8.3 : 8.6, 146, op ? '#1E293B' : '#94A3B8'); if (op) box(hx - 2, 8.6, 141.6, hx + 2, 11, 142, '#94A3B8'); groundText('C' + (c + 1), hx, 138, 1.6, 'rgba(15,23,42,0.6)'); }
+    for (const [nm, [ax, col]] of Object.entries(REF_ARM)) { const dn = armDown && lo.arm === nm; box(ax - 0.6, dn ? 8.6 : 11, 143.4, ax + 0.6, 15, 144.6, col); groundText(nm.split(' ')[0], ax, 134, 1.5, col); }
+    if (lo && lo.done.includes('Chock the wheels')) for (const wx of [226, 230]) box(wx - 0.8, 0, 149, wx + 0.8, 1.2, 150.5, '#FACC15');
+    box(189.5, 0, 151.5, 190.5, 6, 152.5, '#475569'); box(181, 0, 146, 183, 5, 147, '#334155');
+    { const on = lo && lo.done.includes('Wait for the green earth light') && !lo.done.includes('Unclip the earth clamp'), clipped = lo && lo.done.includes('Clip on the earth clamp') && !lo.done.includes('Unclip the earth clamp'); refDot(182, 5.6, 147.1, on ? '#22C55E' : clipped ? '#FACC15' : '#7F1D1D');
+      if (clipped) { const a = P(190, 4, 152), b = P(200, 2, 146); x.strokeStyle = '#16A34A'; x.lineWidth = Math.max(1.5, K * 0.25); x.beginPath(); x.moveTo(a[0], a[1]); x.quadraticCurveTo((a[0] + b[0]) / 2, Math.max(a[1], b[1]) + K * 2, b[0], b[1]); x.stroke(); } }
+    box(246, 0, 122, 250, 6, 124, '#1E293B'); wscreen(246.2, 249.8, 3.5, 5.5, 124.05, t, 140); if (lo) faceText(`${(lo.litres || 0).toLocaleString('en-NG')} L`, 248, 2.6, 124.1, '#86EFAC', 1, 2);
+    // lockers, PPE and the muster point
+    wzone(8, 120, 72, 172, '#E7E5E4', 'LOCKERS & PPE');
+    for (let k = 0; k < 12; k++) box(10 + k * 5, 0, 122, 14.4 + k * 5, 8, 125, k % 2 ? '#64748B' : '#475569');
+    box(12, 0, 136, 60, 2.8, 139, '#78350F'); for (let k = 0; k < 6; k++) cylLit(16 + k * 8, 137.5, 1.1, 2.8, 1, ['#FACC15', '#F97316', '#F8FAFC', '#22C55E', '#FACC15', '#F8FAFC'][k]);
+    { const p = P(100, 0.05, 150), r = K * 8; x.strokeStyle = '#22C55E'; x.lineWidth = Math.max(2, K * 0.5); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); groundText('MUSTER POINT', 100, 150, 2, '#15803D'); }
+    groundText('FIRE TEAM', 130, 168, 1.8, '#B91C1C');
+    wwall('LEKKI FREE ZONE REFINERY', 130, 17, '#B45309', 3.6);
+    if (alarm) { const on = Math.floor(t * 3) % 2; for (const lx of [40, 130, 220]) refDot(lx, 18, 0.5, on ? (fire ? '#EF4444' : '#FACC15') : '#334155', 1.4); }
+    // the rings on everything you can use now, and a flash where you just did
+    for (const v of refSpots()) { const p = P(v.x, 0.06, v.z), r = K * (2.2 + 0.25 * Math.sin(t * 4 + v.x)); x.strokeStyle = 'rgba(56,189,248,0.9)'; x.lineWidth = Math.max(2, K * 0.3); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke();
+      if (Math.hypot(me.x - v.x, me.z - v.z) < 40) { const q = P(v.x, 8, v.z); x.font = '700 11px "Plus Jakarta Sans", sans-serif'; const w = x.measureText(v.name).width + 12; x.fillStyle = 'rgba(15,23,42,0.75)'; x.beginPath(); x.roundRect(q[0] - w / 2, q[1] - 9, w, 18, 9); x.fill(); x.fillStyle = '#BAE6FD'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.name, q[0], q[1]); } }
+    if (REF.flash && now - REF.flash.at < 700) { const f = REF.flash, p = P(f.x, 0.08, f.z), k2 = (now - f.at) / 700, r = K * (2 + k2 * 6); x.strokeStyle = f.ok ? `rgba(74,222,128,${1 - k2})` : `rgba(248,113,113,${1 - k2})`; x.lineWidth = Math.max(3, K * 0.5); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
+    // WYRD, floating with you on the floor
+    { const w = REF.wyrd, tk = gridTask(), ri = refInside(tk);
+      const [tx, tz] = w.until > now ? [w.tx, w.tz] : o ? [me.x + 6, me.z - 6] : ri ? [ri[0] + 5, ri[1] - 4] : [R.desk ? 47 : 47, 51];
+      w.x += (tx - w.x) * 0.04; w.z += (tz - w.z) * 0.04; drawWyrd(now, w.x, w.z); }
+  }
   const WORK_ROOMS = {
-    refinery: { w: 180, d: 120, floor: '#9CA3AF', wall: '#E5E7EB', trim: '#F59E0B', desk: [30, 40, '🛢️ Start a refinery shift', () => openPhone('refinery')],
+    refinery: { w: 260, d: 180, floor: '#9CA3AF', wall: '#E5E7EB', trim: '#F59E0B', desk: [40, 56, '🛢️ Start a refinery shift', () => openPhone('refinery')],
       // where a shift's tasks are, inside (the same names the shift uses outside)
-      spots: { control: [30, 36], unit: [94, 52], tanks: [154, 74], bay: [148, 84] },
-      draw(R, now) {
-        const t = now / 1000;
-        for (const [x0, z0, x1, z1] of [[4, 34, 176, 37], [56, 4, 59, 116], [4, 72, 176, 75], [116, 37, 119, 116]]) flat(x0, z0, x1, z1, 0.03, '#FACC15'); // the walkways
-        wzone(8, 6, 52, 32, '#CBD5E1', 'CONTROL ROOM'); for (let k = 0; k < 3; k++) { box(12 + k * 13, 0, 18, 22 + k * 13, 3, 22, '#1E293B'); wscreen(12 + k * 13, 22 + k * 13, 3, 6.5, 18.1, t + k, 190 + k * 30); }
-        wscreen(12, 48, 6, 15, 0.3, t, 200); faceText('CDU-1  98%  ON SPEC', 30, 12, 0.35, '#86EFAC', 2.2, 6); wglass(8, 6, 52, 32, 9);
-        wzone(64, 6, 124, 46, '#A8A29E', 'CRUDE UNIT'); for (const [cx, h] of [[78, 30], [93, 38], [108, 26]]) { cylLit(cx, 22, 3, 0, h, '#CBD5E1'); for (let y = 7; y < h - 2; y += 7) cylLit(cx, 22, 3.6, y, 0.6, '#64748B', false); }
-        pipe([[66, 34], [122, 34]], 4, 0.9, '#F59E0B'); pipe([[66, 31], [122, 31]], 5.5, 0.9, '#22B573');
-        wzone(132, 8, 176, 70, '#B4BBC5', 'TANK YARD'); for (const [cx, cz] of [[144, 22], [164, 22], [144, 46], [164, 46]]) tank(cx, cz, 6, 9, '#F1F5F9', cz < 30 ? '#22B573' : '#F59E0B');
-        wzone(120, 80, 176, 116, '#78716C', 'LOADING GANTRY'); for (const px of [124, 172]) box(px - 0.5, 0, 88, px + 0.5, 10, 89, '#F59E0B'); box(122, 10, 86, 174, 11, 92, '#334155'); tanker(148, 100, '#F8FAFC');
-        wzone(8, 80, 48, 116, '#E7E5E4', 'LOCKERS & PPE'); for (let k = 0; k < 8; k++) box(10 + k * 4.4, 0, 82, 13.8 + k * 4.4, 8, 85, k % 2 ? '#64748B' : '#475569'); for (let k = 0; k < 5; k++) cylLit(14 + k * 6, 92, 1.1, 2.8, 1, ['#FACC15', '#F97316', '#F8FAFC', '#22C55E', '#FACC15'][k]);
-        box(10, 0, 92, 40, 2.8, 95, '#78350F');
-        { const p = P(88, 0.05, 98), r = K * 7; x.strokeStyle = '#22C55E'; x.lineWidth = Math.max(2, K * 0.5); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); groundText('MUSTER POINT', 88, 98, 2, '#15803D'); }
-        wwall('LEKKI FREE ZONE REFINERY', 90, 16.5, '#B45309', 3.4);
-      } },
+      spots: { control: [40, 36], unit: [120, 84], tanks: [216, 44], bay: [196, 118] },
+      draw(R, now) { refDraw(R, now); } },
     market: { w: 160, d: 110, floor: '#C2A878', wall: '#E7D5B5', trim: '#EA580C', desk: [80, 92, '🧺 Help at a stall', 'market'],
       draw(R, now) {
         const COL = ['#EF4444', '#F59E0B', '#22C55E', '#3B82F6', '#EC4899', '#A855F7'], GOODS = ['#DC2626', '#F97316', '#FACC15', '#16A34A', '#7C2D12', '#F8FAFC'];
@@ -7688,6 +7836,13 @@
   const me = { x: 7.5 * T, z: 10.5 * T }; // on the road beside the Central Mosque
   let sector = SECTORS[0];
   { const in0 = new URLSearchParams(location.search).get('in'); if (in0) setTimeout(() => { const p = PLACES.find((v) => v[0] === in0); if (p && ENTERABLE.has(in0)) enterPlace(p); }, 1200); } // ?in=mall opens a building straight away
+  { const d = new URLSearchParams(location.search).get('refdemo'); if (d) setTimeout(() => { // ?in=refinery&refdemo=fire tries a refinery task on the floor, with no shift (for testing)
+    const sh = (a) => [...a].sort(() => Math.random() - 0.5), seq = { startup: ['Check the valve line-up', 'Open the suction valve', 'Vent and prime the pump', 'Start the motor', 'Slowly open the discharge valve', 'Check the pressure and the flow'], fire: ['Raise the alarm', "Hit the pump's emergency stop", 'Close the block valves either side', 'Turn the fire monitor on the fire', 'Count everyone at the muster point', 'Brief the fire team when they arrive'], leak: ['Raise the alarm and call it in', 'Move upwind and test the air', 'Put on breathing apparatus', 'Isolate the leaking line', 'Drain and purge the line', 'Gas-test again before anyone goes back'] };
+    const rd = (k) => ({ tag: 'G-' + k, label: 'Gauge G-' + (100 + k), read: (k % 2 ? 9 : 4) + ' bar', lim: 'normal 3 to 6 bar' }), pm = (k) => ({ tag: 'J-' + k, label: 'Hot work job ' + (k + 1), read: `LEL ${k % 3 ? 2 : 14} %, O₂ 20.9 %, H₂S 0 ppm`, lim: 'LEL < 10 %, O₂ 19.5 to 23.5 %, H₂S < 5 ppm' });
+    const tk = seq[d] ? { type: 'seq', name: d, title: { fire: 'Pump seal fire', leak: 'H₂S leak', startup: 'Start the loading pump' }[d], steps: sh(seq[d]) }
+      : d === 'loading' ? { type: 'loading', title: 'Load a tanker', product: 'AGO (diesel)', litres: 15000, caps: [10000, 15000, 20000], steps: sh(['Chock the wheels', 'Clip on the earth clamp', 'Wait for the green earth light', 'Open the compartment hatch', 'Lower the loading arm', 'Load to the preset', 'Raise the arm and close the hatch', 'Seal the hatch and sign the docket', 'Unclip the earth clamp']) }
+      : { type: 'checks', title: d === 'permits' ? 'Gas tests and permits' : 'Rounds on the crude unit', opts: d === 'permits' ? ['Issue the permit', 'Refuse it'] : ['Normal', 'Report it'], items: [0, 1, 2, 3, 4, 5].map(d === 'permits' ? pm : rd) };
+    gridDo(tk); }, 2600); }
   { const at0 = new URLSearchParams(location.search).get('at'); if (at0) { const [ai, aj] = at0.split(',').map(Number); if (isFinite(ai) && isFinite(aj)) { me.x = ai * T; me.z = aj * T; } } } // a link can start the view at a spot: ?at=column,row
   if (/^(localhost|127.0.0.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('room')) setTimeout(() => { const r = new URLSearchParams(location.search).get('room'); if (r === 'arena') enterRoom('arena', 'arena:preview', 'The Arena · Preview', {}); if (r === 'yacht') enterRoom('yacht', 'yacht:preview', 'Lagoon cruise', { charter: 'cruise', until: Date.now() + 180000 }); if (r === 'cruise') { const mp = PLACES.find((p) => p[0] === 'marina'); window.__cruiseDbg = { ok: startCruise('cruise'), home: mp && waterNear((mp[1] + mp[3]) * T, (mp[2] + mp[4] / 2) * T), len: CRUISE && CRUISE.total, n: CRUISE && CRUISE.path.length }; } if (r === 'nml') enterRoom('home', 'home:preview', "No Man's Land mansion", { style: 'nml' }); if (r === 'bunker') enterRoom('bunker', 'bunker:preview', 'The bunker', { up: { key: 'home:preview', title: 'Mansion' } }); }, 1500); // a local preview only
   // testing on a local copy: ?task=marshal | turnaround | atc opens that airport task with sample data (nothing is paid)
@@ -10802,6 +10957,9 @@
       if (!next && inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
       if (!next && inside.kind === 'work' && WORK_ROOMS[inside.place]) { const Wd = WORK_ROOMS[inside.place], dk = Wd.desk; if (dk && Math.hypot(me.x - dk[0], me.z - dk[1]) < 10) next = { label: dk[2], run: () => workDesk(inside, dk) }; }
+      if (!next && refHere()) { // the refinery: the kit in front of you, or your task's spot
+        const sp = refSpots().map((v) => [Math.hypot(me.x - v.x, me.z - v.z), v]).filter((v) => v[0] < 6).sort((a, b) => a[0] - b[0])[0];
+        if (sp) next = { label: sp[1].label, run: () => refDo(sp[1]) }; else if (!REF.hot) { const tk = gridNear(); if (tk) next = { label: `⚡ ${tk.title}`, run: () => gridDo(tk) }; } }
       if (!next && inside.kind === 'store') { const it = inside.layout.find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 7); if (it && STORE[it.k]) next = { label: `🛒 ${STORE[it.k].name}`, run: () => openPhone('store', it.k) }; }
       if (!next && inside.kind === 'boutique') { const m = boutiqueSpots(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 8); if (m) next = { label: `👔 ${OUTFITS[m.id].brand} · ${OUTFITS[m.id].name}`, run: () => openPhone('fashion', { id: m.id }) }; }
       if (!next && (inside.kind === 'hq' || inside.kind === 'home')) { const dv = devNear(inside); if (dv) next = devAction(inside, dv); }
@@ -11387,6 +11545,7 @@
   const gpClose = () => { clearInterval(gpTimer); gpEl.classList.remove('on'); };
   function gpShow(html) { gpEl.innerHTML = html; gpEl.classList.add('on'); }
   function gridDo(tk) {
+    REF.hot = null; refGuideOff();
     const done = (score, note) => { clearInterval(gpTimer); tk.done = true; tk.score = Math.round(Math.max(0, Math.min(100, score))); tk.note = note; gridSave();
       gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><button class="gpx2">✕</button></div><div class="gpbig">${tk.score}<small>/100</small></div><p>${esc(note)}</p><button class="gpgo">${gridTask() ? 'Next task' : 'Finish the shift'}</button>`);
       gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); if (!gridTask()) gridFinish(); else coachSay(`Next: ${gridTask().title}, at ${gridTask().spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }; };
@@ -11449,6 +11608,7 @@
     if (tk.type === 'cdu') { // the crude column for 75 seconds: hold the top at 114 to 126 °C and the bottom level at 30 to 70 %
       const S = { t: 0, f: 70, r: 30, q: 60, lvl: 50, inBand: 0 }, log = []; tk.result = { log };
       const topNow = () => 60 + S.f - 0.6 * S.r + (tk.swap && S.t >= 25 ? 14 : 0) + 0.3 * (S.q - 60);
+      REF.live = { S, top: topNow }; // the furnace, the column light and the big screen follow your sliders
       const draw = () => { const top = topNow(), okT = Math.abs(top - 120) <= 6, okL = S.lvl >= 30 && S.lvl <= 70;
         const stat = `<div class="gphd"><b>${esc(tk.title)}</b><span>${Math.max(0, 75 - S.t)} s</span></div>
           <div class="gpcdu"><div class="gpcol"><i style="height:${Math.round(S.lvl)}%" class="${okL ? '' : 'bad'}"></i><em style="bottom:30%"></em><em style="bottom:70%"></em></div>
@@ -11473,8 +11633,14 @@
           ${tk.items.map((it) => `<div class="gpunit"><b>${esc(it.label)}</b><span>${esc(it.read)}</span><small class="gplim">${esc(it.lim)}</small><div class="gpopts sm">${[['ok', tk.opts[0]], ['act', tk.opts[1]]].map(([k, l]) => `<button data-tg="${esc(it.tag)}" data-a="${k}" class="${pick[it.tag] === k ? 'sel' : ''}">${esc(l)}</button>`).join('')}</div></div>`).join('')}
           <button class="gpgo" ${Object.keys(pick).length < tk.items.length ? 'disabled' : ''}>${permit ? 'Sign the permits' : 'Log the rounds'}</button>`);
         gpEl.querySelectorAll('[data-tg]').forEach((b) => (b.onclick = () => { pick[b.dataset.tg] = b.dataset.a; draw(); }));
-        gpEl.querySelector('.gpgo').onclick = () => { const wrong = tk.items.filter((it) => pick[it.tag] !== truth(it));
-          done((tk.items.length - wrong.length) / tk.items.length * 100, !wrong.length ? (permit ? 'Every call safe. Nobody gets hurt on your watch.' : 'Nothing missed. The unit runs safe.') : wrong.map((it) => `${it.tag}: should have been “${truth(it) === 'ok' ? tk.opts[0] : tk.opts[1]}”`).join('. ') + '.'); }; };
+        gpEl.querySelector('.gpgo').onclick = verdict; };
+      const verdict = () => { const wrong = tk.items.filter((it) => pick[it.tag] !== truth(it));
+        done((tk.items.length - wrong.length) / tk.items.length * 100, !wrong.length ? (permit ? 'Every call safe. Nobody gets hurt on your watch.' : 'Nothing missed. The unit runs safe.') : wrong.map((it) => `${it.tag}: should have been “${truth(it) === 'ok' ? tk.opts[0] : tk.opts[1]}”`).join('. ') + '.'); };
+      if (refHere()) return refHands({ kind: permit ? 'permits' : 'rounds', free: true, title: tk.title, items: tk.items, at: permit ? PERMIT_AT : ROUND_AT, finish: verdict, // walk to each dial or job site and read it there
+        lead: permit ? 'Six jobs in the tank yard are waiting on a gas test: the yellow posts.' : 'Six dials on the crude unit to read: the white gauges.',
+        pick: (sp) => { const it = tk.items[sp.i]; gpShow(`<div class="gphd"><b>${esc(it.label)}</b><button class="gpx2">✕</button></div><div class="gpfreq"><b>${esc(it.read)}</b><small>${esc(it.lim)}</small></div><div class="gpopts">${[['ok', tk.opts[0]], ['act', tk.opts[1]]].map(([k, l]) => `<button data-a="${k}">${esc(l)}</button>`).join('')}</div>`);
+          gpEl.querySelector('.gpx2').onclick = gpClose;
+          gpEl.querySelectorAll('[data-a]').forEach((b) => (b.onclick = () => { pick[it.tag] = b.dataset.a; REF.hot.done.push(it.tag); gpClose(); const left = tk.items.length - REF.hot.done.length; refGuide(left ? `Logged. ${left} to go. ${REF_WHY[REF.hot.kind]}` : `That's all six. Happy with your calls? Then ${permit ? 'sign the permits' : 'log the rounds'}.`); })); } });
       draw(); return; }
     if (tk.type === 'seq') { // a procedure in the right order
       const ORDER = { startup: ['Check the valve line-up', 'Open the suction valve', 'Vent and prime the pump', 'Start the motor', 'Slowly open the discharge valve', 'Check the pressure and the flow'], fire: ['Raise the alarm', 'Hit the pump\'s emergency stop', 'Close the block valves either side', 'Turn the fire monitor on the fire', 'Count everyone at the muster point', 'Brief the fire team when they arrive'], leak: ['Raise the alarm and call it in', 'Move upwind and test the air', 'Put on breathing apparatus', 'Isolate the leaking line', 'Drain and purge the line', 'Gas-test again before anyone goes back'] }[tk.name];
@@ -11483,6 +11649,8 @@
       const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>step ${Math.min(next + 1, ORDER.length)} of ${ORDER.length}</span></div><p>${lead}${strikes ? ` <b style="color:#F87171">Strikes: ${strikes}</b>` : ''}</p>
           <div class="gpopts">${tk.steps.map((s2) => `<button data-st="${esc(s2)}" ${ORDER.indexOf(s2) < next ? 'disabled class="dn"' : ''}>${esc(s2)}</button>`).join('')}</div>`);
         gpEl.querySelectorAll('[data-st]').forEach((b) => (b.onclick = () => { clicks.push(b.dataset.st); if (b.dataset.st === ORDER[next]) { next++; if (next >= ORDER.length) return done(100 - strikes * 15, strikes ? `Done, with ${strikes} strike${strikes > 1 ? 's' : ''}. The order is what keeps people alive.` : 'Textbook. Calm, in order, everybody home tonight.'); } else strikes++; draw(); })); };
+      if (refHere()) return refHands({ kind: tk.name, title: tk.title, lead, order: ORDER, steps: tk.steps, clicks, // on the floor: done on the kit itself
+        finish: (s2, h) => done(100 - s2 * 15 - h * 5, s2 ? `Done, with ${s2} strike${s2 > 1 ? 's' : ''}. The order is what keeps people alive.` : h ? 'Done right, with a little help. Next time, from memory.' : 'Textbook. Calm, in order, everybody home tonight.') });
       draw(); return; }
     if (tk.type === 'loading') { // the docket: the right arm, the right compartment, then the routine in order
       const ORDER = ['Chock the wheels', 'Clip on the earth clamp', 'Wait for the green earth light', 'Open the compartment hatch', 'Lower the loading arm', 'Load to the preset', 'Raise the arm and close the hatch', 'Seal the hatch and sign the docket', 'Unclip the earth clamp'];
@@ -11490,6 +11658,9 @@
       const st = { arm: null, comp: null, clicks: [] }; tk.result = st; let next = 0, strikes = 0;
       const L = (n) => n.toLocaleString('en-NG') + ' L', right = Math.min(...tk.caps.filter((c) => c >= tk.litres));
       const draw = () => { const ph = st.arm == null ? 'arm' : st.comp == null ? 'comp' : 'steps';
+        if (ph === 'steps' && refHere()) return refHands({ kind: 'loading', title: tk.title, lead: `Docket: ${L(tk.litres)} of ${tk.product} into C${st.comp + 1}.`, order: ORDER, steps: tk.steps, clicks: st.clicks, arm: st.arm, comp: st.comp, litres: tk.litres,
+          pos: { arm: [REF_ARM[st.arm][0], 130], hatch: [206 + st.comp * 12, 136] },
+          finish: (s2, h) => { const okC = tk.caps[st.comp] === right; done(Math.max(0, 100 - s2 * 12 - h * 5 - (okC ? 0 : 40)), `${okC ? '' : `C${tk.caps.indexOf(right) + 1} (${L(right)}) was the right compartment. `}${s2 ? `${s2} strike${s2 > 1 ? 's' : ''}: at a gantry, a spark is all it takes.` : 'Earthed, loaded, sealed. The driver signs and rolls out.'}`); } });
         gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>${ph === 'steps' ? `step ${Math.min(next + 1, 9)} of 9` : ph === 'arm' ? 'the arm' : 'the compartment'}</span></div>
           <div class="gpdocket"><small>LOADING DOCKET</small><b>${L(tk.litres)} of ${esc(tk.product)}</b><span>Tanker: ${tk.caps.map((c, k) => `C${k + 1} ${L(c)}`).join(' · ')}</span></div>
           ${ph === 'arm' ? `<p>Pick the loading arm for the product on the docket.</p><div class="gpopts">${ARMS.map(([a, col]) => `<button data-arm="${esc(a)}"><i class="gpdot" style="background:${col}"></i>${esc(a)}</button>`).join('')}</div>`
