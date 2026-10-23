@@ -507,6 +507,9 @@
   #wyrdGuide .wgnear { margin-top: 8px; font-size: 12px; font-weight: 700; color: #67E8F9; min-height: 1.2em; } #wyrdGuide .wgnear:empty { display: none; }
   #wyrdGuide.shake { animation: wgEdge 6s linear infinite, wgShake .4s; } @keyframes wgShake { 20%, 60% { margin-left: -6px; } 40%, 80% { margin-left: 6px; } }
   #wyrdGuide.min p, #wyrdGuide.min .wgl, #wyrdGuide.min .wgb { display: none; } #wyrdGuide.min .wgx { transform: rotate(180deg); }
+  body.onFloor #gridTask { left: auto; right: 14px; top: 84px; width: min(340px, calc(100vw - 28px)); max-height: calc(100dvh - 190px); transform: translateX(24px); background: linear-gradient(160deg, rgba(15,23,42,.88), rgba(30,27,20,.88)); }
+  body.onFloor #gridTask.on { transform: none; }
+  @media (max-width: 760px) { body.onFloor #gridTask { top: auto; right: 8px; left: 8px; width: auto; bottom: calc(66px + env(safe-area-inset-bottom)); max-height: 40dvh; padding: 12px; transform: translateY(24px); } body.onFloor #gridTask.on { transform: none; } }
   @media (max-width: 520px) { #wyrdGuide { top: calc(72px + env(safe-area-inset-top)); width: calc(100vw - 24px); } #wyrdGuide .wgl { max-height: 70px; } }
   /* live chat: someone typing (three bouncing dots in a bubble), and read ticks turning blue */
   #phone .typing { display: none; align-items: center; gap: 4px; width: max-content; margin: 2px 0 8px; padding: 9px 13px; border-radius: 18px 18px 18px 6px; background: rgba(0,240,255,.1); box-shadow: inset 0 0 0 1px rgba(0,240,255,.18); color: #8FB6C2; font: 600 12px 'Rajdhani', sans-serif; }
@@ -6558,6 +6561,7 @@
   const wg = document.createElement('div'); wg.id = 'wyrdGuide'; document.body.append(wg);
   function refGuideOff() { wg.classList.remove('on'); clearInterval(refGuide.t); }
   function refGuide(say, bad) {
+    if (refGuide.min === undefined) refGuide.min = matchMedia('(max-width: 760px)').matches; // folded to one line on a phone, so it never hides you
     const o = REF.hot; if (!o) return; const n = o.free ? o.items.length : o.order.length, k = o.free ? o.done.length : o.next;
     wg.innerHTML = `<div class="wgh"><i class="orb"></i><div class="wgt"><b>WYRD <em>guiding</em></b><small>${esc(o.title)}</small></div><span class="wgn">${k}<small>/${n}</small></span><button class="wgx" aria-label="Fold">▾</button></div>
       <div class="wgbar">${Array.from({ length: n }, (_, j) => `<i class="${j < k ? 'ok' : j === k ? 'now' : ''}"></i>`).join('')}</div>
@@ -8366,7 +8370,7 @@
     if (trip && !inside) tripStep(dt);
     if (drive && !inside) driveStep(dt);
     if (MOBILE && phoneEl0.style.display === 'block') { if (stickId == null) stickEl.classList.remove('show'); requestAnimationFrame(frame); return; }
-    if (inside) { const e = Math.min(1, dt * 3); cam.x += (inside.w / 2 + (me.x - inside.w / 2) * 0.3 - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * 0.3 - cam.z) * e; }
+    if (inside) { const e = Math.min(1, dt * 3), fl = refHere() ? 0.9 : 0.3; cam.x += (inside.w / 2 + (me.x - inside.w / 2) * fl - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * fl - cam.z) * e; } // big work floors follow you closely
     else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
     // each sector its own angle: the camera glides there
     if (pose && inside) { me.x = pose.x; me.z = pose.z; }
@@ -11055,6 +11059,7 @@
   let act = null;
   function updateAct() {
     let next = null;
+    document.body.classList.toggle('onFloor', refHere()); // on a work floor the task panels dock to the side, so you can see yourself work
     // at a building's door: within reach of the middle of its front (not anywhere round it, so walking past on a road doesn't keep asking)
     const door = (type) => PLACES.find((p) => p[0] === type && Math.hypot(me.x - (p[1] + p[3] / 2) * T, me.z - (p[2] + p[4]) * T) < Math.max(10, p[3] * T * 0.35));
     if (inside) {
