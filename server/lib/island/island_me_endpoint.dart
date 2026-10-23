@@ -420,7 +420,7 @@ class IslandMeEndpoint extends Endpoint {
       });
 
   /// Hand in a shift: [results] is what the player did in each task, as JSON. The server replays and scores it, adds
-  /// the experience, and pays by the level it keeps and the score it worked out: one paid shift every 40 minutes,
+  /// the experience, and pays by the level it keeps and the score it worked out: one paid shift per slot (20 minutes at the refinery, 40 elsewhere),
   /// within the daily cap.
   Future<String> gridFinish(Session session, int workId, String results) => _money(session, (u) async {
         try {
@@ -433,11 +433,11 @@ class IslandMeEndpoint extends Endpoint {
             note = 'You\'ve worked enough for today (₦${_n(dailyCap)}). The shift counts for your experience; pay starts again tomorrow.';
           } else {
             pay = min(GridCareer.payFor(w.level, score), dailyCap - earned);
-            final bucket = DateTime.now().millisecondsSinceEpoch ~/ (40 * 60000);
+            final slot = GridCareer.slotMinutes(w.track), bucket = DateTime.now().millisecondsSinceEpoch ~/ (slot * 60000);
             final r = await Bank.post(session, u, key: 'island:shift:${u.uuid}:${GridCareer.placeOf(w.track)}:$bucket', amount: pay, kind: 'job', counter: 'city:services', memo: GridCareer.memoOf(w.track));
             if (r.repeat) {
               pay = 0;
-              note = 'One paid shift every 40 minutes. This one counts for your experience.';
+              note = 'One paid shift every $slot minutes here. This one counts for your experience.';
             }
           }
           if (pay > 0) await GridCareer.setPaid(session, w.id!, pay);

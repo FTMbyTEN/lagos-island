@@ -18,8 +18,11 @@ class GridRefused implements Exception {
 abstract final class GridCareer {
   static const tracks = ['control', 'lineman', 'solar', 'plant', 'marshal', 'atc', 'process', 'loader', 'hse'];
 
-  /// the refinery's tracks (Process Operator, Loading Bay, Safety Officer): paid on their own 40-minute slot
+  /// the refinery's tracks (Process Operator, Loading Bay, Safety Officer): paid on their own 20-minute slot
   static const refineryTracks = {'process', 'loader', 'hse'};
+
+  /// how often a track pays: one paid shift per slot (the refinery every 20 minutes, the Grid and the airport every 40)
+  static int slotMinutes(String track) => refineryTracks.contains(track) ? 20 : 40;
 
   /// which workplace pays a track, and the line on the receipt
   static String placeOf(String track) => airportTracks.contains(track) ? 'airport' : refineryTracks.contains(track) ? 'refinery' : 'grid';
