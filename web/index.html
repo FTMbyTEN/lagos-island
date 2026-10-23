@@ -6515,7 +6515,7 @@
     alarm: ['Fire alarm call point', 92, 74], estop: ['P-101 emergency stop', 132, 74], block: ['P-101 block valves', 106, 70], monitor: ['Fire monitor', 164, 72],
     muster: ['Muster point', 100, 150], fireteam: ['Fire team gate', 130, 166],
     h2s: ['H₂S alarm', 172, 34], upwind: ['Wind sock (upwind)', 92, 104], ba: ['Breathing apparatus', 76, 112], iso: ['Sour-water isolation valve', 152, 54], drain: ['Drain and purge point', 168, 60], gastest: ['Gas detector', 160, 44],
-    lineup: ['Valve line-up board', 156, 112], suction: ['P-201 suction valve', 156, 126], vent: ['P-201 vent', 166, 118], starter: ['P-201 motor starter', 177, 113], discharge: ['P-201 discharge valve', 176, 131], gauge: ['P-201 pressure gauge', 165, 136],
+    lineup: ['Valve line-up board', 156, 112], suction: ['P-201 suction valve', 156, 126], vent: ['P-201 vent', 166, 115], starter: ['P-201 motor starter', 177, 113], discharge: ['P-201 discharge valve', 176, 131], gauge: ['P-201 pressure gauge', 165, 136],
     chocks: ['Wheel chocks', 228, 156], clamp: ['Earth clamp', 190, 156], elight: ['Earth light', 182, 150], hatch: ['Compartment hatch', 206, 136], meter: ['Preset meter', 248, 128], arm: ['Loading arm', 210, 130],
   };
   const REF_STEP = { // each procedure step → the kit it's done on
@@ -6569,6 +6569,30 @@
     if (s) s.onclick = () => { o.hints++; refPoint(o.order[o.next]); refGuide('Follow me. I’m hovering over the kit you need next.'); };
     if (f) f.onclick = () => { REF.hot = null; refGuideOff(); o.finish(); };
   }
+  REF.tipAt = {};
+  const REF_TIP = { // what WYRD tells you about the kit as you pass it
+    alarm: 'The fire alarm call point. Break the glass and the whole site knows in a second.', estop: 'P-101\'s emergency stop. One push kills the motor: the first thing you hit when the pump is the trouble.',
+    block: 'Block valves either side of P-101. Close them and the pump is cut off from the fuel feeding it.', monitor: 'The fire monitor: a water cannon on a swivel. Aim it at the base of the fire, not the flames.',
+    muster: 'The muster point. In an alarm everyone comes here, and someone counts heads.', fireteam: 'Where the fire team comes in. Meet them here and tell them what is burning and who is missing.',
+    h2s: 'The H₂S alarm. Rotten-egg gas: at high levels you stop smelling it, and that is when it kills.', upwind: 'The wind sock. In a gas leak, always move upwind: the gas goes where the sock points.',
+    ba: 'Breathing apparatus. Your own air for twenty minutes. Nobody goes near a sour leak without it.', iso: 'The sour-water isolation valve. Shut it and the leak has nothing more to give.',
+    drain: 'The drain and purge point: empty the line, then push nitrogen through so nothing toxic stays inside.', gastest: 'The gas detector. Nobody goes back in until it reads clean.',
+    lineup: 'The valve line-up board. Check every valve is where it should be before anything starts.', suction: 'P-201\'s suction valve. Open it first: a pump must never run dry.',
+    vent: 'The vent: let the air out until liquid comes, and the pump is primed.', starter: 'The motor starter. Only once the pump is full of liquid.',
+    discharge: 'The discharge valve. Open it slowly, or the line hammers.', gauge: 'The pressure gauge. Steady pressure, steady flow: the pump is happy.',
+    chocks: 'Wheel chocks. A tanker that rolls with an arm in it is a disaster.', clamp: 'The earth clamp. Static on a tanker is a spark waiting to happen.', elight: 'The earth light. Green means the tanker is earthed. No green, no load.',
+    hatch: 'The compartment hatches. One product, one compartment.', meter: 'The preset meter. It stops the flow at the litres on the docket.', arm: 'The loading arms, colour-coded: red petrol, yellow diesel, blue kerosene, grey jet fuel.',
+  };
+  // the floor's sounds: a pump's hum when you're near one, the alarm in an emergency (only once sound is on)
+  function refSound(now, emergency, alarm) {
+    const c = AX.ctx; if (!c || c.state !== 'running' || !CITY.on) return;
+    if (!REF.snd) { const hum = c.createOscillator(), hg = c.createGain(), al = c.createOscillator(), ag = c.createGain(); hum.type = 'sawtooth'; hum.frequency.value = 50; al.type = 'square'; al.frequency.value = 880; hg.gain.value = 0; ag.gain.value = 0;
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 180; hum.connect(lp); lp.connect(hg); hg.connect(c.destination); al.connect(ag); ag.connect(c.destination); hum.start(); al.start(); REF.snd = { hg, ag, al };
+      setInterval(() => { if (performance.now() - REF.sndAt > 400) { REF.snd.hg.gain.value = 0; REF.snd.ag.gain.value = 0; } }, 300); }
+    REF.sndAt = now; const d = Math.min(Math.hypot(me.x - 120, me.z - 64), Math.hypot(me.x - 166, me.z - 122)), tt = now / 1000;
+    REF.snd.hg.gain.setTargetAtTime(Math.max(0, 1 - d / 40) * 0.05, c.currentTime, 0.2);
+    REF.snd.ag.gain.setTargetAtTime(alarm ? (Math.floor(tt * 3) % 2 ? 0.035 : 0) : 0, c.currentTime, 0.02); REF.snd.al.frequency.value = emergency && Math.floor(tt) % 2 ? 660 : 880;
+  }
   function refValve(vx, vz, col, h = 4) { box(vx - 0.3, 0, vz - 0.3, vx + 0.3, h, vz + 0.3, '#475569'); const p = P(vx, h + 0.3, vz); x.strokeStyle = col; x.lineWidth = Math.max(2, K * 0.35); x.beginPath(); x.ellipse(p[0], p[1], K * 1.3, K * 1.3 * sp, 0, 0, Math.PI * 2); x.stroke(); }
   function refPost(px, pz, col, h = 5) { box(px - 0.3, 0, pz - 0.3, px + 0.3, h, pz + 0.3, '#64748B'); box(px - 1.1, h - 1.6, pz - 0.6, px + 1.1, h + 0.4, pz + 0.6, col); }
   const refDot = (px, py, pz, col, r = 0.8) => { const p = P(px, py, pz); x.fillStyle = col; x.beginPath(); x.arc(p[0], p[1], K * r, 0, Math.PI * 2); x.fill(); };
@@ -6582,7 +6606,7 @@
     wscreen(12, 68, 6, 18, 0.3, t, 210);
     if (live) { const top = live.top(); faceText(`COLUMN TOP ${top.toFixed(1)} °C`, 40, 15, 0.35, Math.abs(top - 120) <= 6 ? '#86EFAC' : '#FCA5A5', 2.2, 6); faceText(`BOTTOM LEVEL ${Math.round(live.S.lvl)} %`, 40, 10, 0.35, live.S.lvl >= 30 && live.S.lvl <= 70 ? '#86EFAC' : '#FCA5A5', 2.2, 6); }
     else faceText('CDU-1  98%  ON SPEC', 40, 12, 0.35, '#86EFAC', 2.4, 6);
-    wglass(8, 6, 72, 46, 10);
+    wglass(8, 6, 72, 46, 10); for (const dx of [34, 46]) box(dx - 0.4, 0, 45.6, dx + 0.4, 10, 46.4, '#334155'); box(34, 9, 45.6, 46, 10, 46.4, '#334155'); groundText('CONTROL ROOM DOOR', 40, 48.5, 1.4, 'rgba(15,23,42,0.5)');
     // the crude unit: the furnace, the columns, the pipe rack, pump P-101 and its safety kit
     wzone(84, 6, 178, 90, '#A8A29E', 'CRUDE UNIT');
     box(86, 0, 10, 106, 16, 28, '#78716C'); cylLit(96, 19, 2, 16, 26, '#57534E');
@@ -6606,7 +6630,7 @@
     if (leak) { x.save(); x.globalAlpha = 0.25; for (let k = 0; k < 5; k++) { const p = P(158 + k * 3 + Math.sin(t + k) * 2, 3 + ((t * 2 + k) % 5), 50); x.fillStyle = '#BEF264'; x.beginPath(); x.arc(p[0], p[1], K * (1.5 + k * 0.3), 0, Math.PI * 2); x.fill(); } x.restore(); }
     // the tank yard, inside its bund
     wzone(188, 6, 254, 92, '#B4BBC5', 'TANK YARD');
-    for (const [a, b, c2, d] of [[188, 6, 254, 7], [188, 91, 254, 92], [188, 6, 189, 92], [253, 6, 254, 92]]) box(a, 0, b, c2, 1.5, d, '#9CA3AF');
+    for (const [a, b, c2, d] of [[188, 6, 254, 7], [188, 91, 211, 92], [223, 91, 254, 92], [188, 6, 189, 92], [253, 6, 254, 92]]) box(a, 0, b, c2, 1.5, d, '#9CA3AF');
     for (const [cx, cz, band] of [[202, 24, '#22B573'], [232, 24, '#22B573'], [202, 64, '#F59E0B'], [232, 64, '#F59E0B']]) tank(cx, cz, 9, 14, '#F1F5F9', band);
     for (const [px, pz] of PERMIT_AT) box(px - 0.6, 0, pz - 0.6, px + 0.6, 2.5, pz + 0.6, '#FACC15');
     // the loading pump skid, P-201
@@ -6642,6 +6666,13 @@
     for (const v of refSpots()) { const p = P(v.x, 0.06, v.z), r = K * (2.2 + 0.25 * Math.sin(t * 4 + v.x)); x.strokeStyle = 'rgba(56,189,248,0.9)'; x.lineWidth = Math.max(2, K * 0.3); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke();
       if (Math.hypot(me.x - v.x, me.z - v.z) < 40) { const q = P(v.x, 8, v.z); x.font = '700 11px "Plus Jakarta Sans", sans-serif'; const w = x.measureText(v.name).width + 12; x.fillStyle = 'rgba(15,23,42,0.75)'; x.beginPath(); x.roundRect(q[0] - w / 2, q[1] - 9, w, 18, 9); x.fill(); x.fillStyle = '#BAE6FD'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.name, q[0], q[1]); } }
     if (REF.flash && now - REF.flash.at < 700) { const f = REF.flash, p = P(f.x, 0.08, f.z), k2 = (now - f.at) / 700, r = K * (2 + k2 * 6); x.strokeStyle = f.ok ? `rgba(74,222,128,${1 - k2})` : `rgba(248,113,113,${1 - k2})`; x.lineWidth = Math.max(3, K * 0.5); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
+    // where to go when it isn't a task: suit up first, hand over at the end
+    { const ppeDue = GJ.shift && gridTask() && REF.ppe !== GJ.shift.id, mark = ppeDue ? [36, 142, '🦺 Suit up here'] : REF.handover && GJ.shift ? [40, 56, '📝 Hand over here'] : null;
+      if (mark) { const p = P(mark[0], 0.06, mark[1]), r = K * (3 + Math.sin(t * 4) * 0.4); x.strokeStyle = '#FACC15'; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke();
+        const q = P(mark[0], 10, mark[1]); x.font = '800 12px "Plus Jakarta Sans", sans-serif'; const w = x.measureText(mark[2]).width + 16; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(q[0] - w / 2, q[1] - 11, w, 22, 11); x.fill(); x.fillStyle = '#FDE68A'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(mark[2], q[0], q[1]); } }
+    // WYRD's word on whatever kit you walk past (once a minute each, never mid-procedure)
+    if (!o) for (const [k, e] of Object.entries(REF_EQUIP)) if (REF_TIP[k] && Math.hypot(me.x - e[1], me.z - e[2]) < 7 && now - (REF.tipAt[k] || -1e9) > 60000) { REF.tipAt[k] = now; bubbles.set('wyrd', { text: REF_TIP[k], until: now + 6500 }); break; }
+    refSound(now, fire || leak, alarm);
     // WYRD, floating with you on the floor
     { const w = REF.wyrd, tk = gridTask(), ri = refInside(tk);
       const [tx, tz] = w.until > now ? [w.tx, w.tz] : o ? [me.x + 6, me.z - 6] : ri ? [ri[0] + 5, ri[1] - 4] : [R.desk ? 47 : 47, 51];
@@ -6651,6 +6682,11 @@
     refinery: { w: 260, d: 180, floor: '#9CA3AF', wall: '#E5E7EB', trim: '#F59E0B', desk: [40, 56, '🛢️ Start a refinery shift', () => openPhone('refinery')],
       // where a shift's tasks are, inside (the same names the shift uses outside)
       spots: { control: [40, 36], unit: [120, 84], tanks: [216, 44], bay: [196, 118] },
+      // what you walk round: the control room's glass (a door at 34 to 46), its consoles, and every machine on the floor
+      solids: [[8, 45.6, 34, 46.4], [46, 45.6, 72, 46.4], [71.6, 6, 72.4, 46], [12, 22, 24, 26], [27, 22, 39, 26], [42, 22, 54, 26], [57, 22, 69, 26],
+        [86, 10, 106, 28], [121.5, 15.5, 130.5, 24.5], [148.6, 16.6, 155.4, 23.4], [110, 60, 132, 68], [72, 104, 80, 108], [163, 67, 165, 69], [159, 39, 161, 41],
+        [194, 16, 210, 32], [224, 16, 240, 32], [194, 56, 210, 72], [224, 56, 240, 72], [188, 6, 254, 7], [188, 6, 189, 92], [253, 6, 254, 92], [188, 91, 211, 92], [223, 91, 254, 92],
+        [154, 108, 158, 109], [160, 118, 174, 126], [176, 108, 179, 110], [198, 140, 250, 148], [246, 122, 250, 124], [10, 122, 70, 125], [12, 136, 60, 139]],
       draw(R, now) { refDraw(R, now); } },
     market: { w: 160, d: 110, floor: '#C2A878', wall: '#E7D5B5', trim: '#EA580C', desk: [80, 92, '🧺 Help at a stall', 'market'],
       draw(R, now) {
@@ -7781,8 +7817,21 @@
 
   // ================= moving =================
   const onFerry = (px, pz) => at(Math.floor(px / T), Math.floor(pz / T)) === FERRYLANE;
+  // what's solid in a room: its furniture (not rugs, dance floors, podiums or booths, which you stand on or in), its built-in
+  // walls, and a workplace's machines. Cached per room until its layout changes
+  const SOLID_SKIP = new Set(['rug', 'dance', 'podium', 'booth']);
+  function roomSolids(R) {
+    const sig = R.key + ':' + (R.layout ? R.layout.length + ':' + R.layout.reduce((a, v) => a + v.x * 3 + v.z * 7 + (v.r || 0), 0) : 0);
+    if (R._solidSig === sig) return R._solids;
+    const out = [];
+    for (const it of R.layout || []) { if (SOLID_SKIP.has(it.k) || isRugK(it)) continue; const f = fpOf(it); if (f) out.push([f[0] + 0.4, f[1] + 0.4, f[2] - 0.4, f[3] - 0.4]); }
+    out.push(...bmBlocks(R));
+    if (R.kind === 'work' && WORK_ROOMS[R.place] && WORK_ROOMS[R.place].solids) out.push(...WORK_ROOMS[R.place].solids);
+    R._solidSig = sig; return (R._solids = out);
+  }
   function walkable(px, pz) {
     if (inside && inside.kind === 'yacht') return onDeck(px, pz);
+    if (inside && roomSolids(inside).some((b) => px > b[0] - 0.9 && px < b[2] + 0.9 && pz > b[1] - 0.9 && pz < b[3] + 0.9)) return false; // you walk round things, not through them
     if (inside) return px > 1.5 && pz > 1.5 && px < inside.w - 1.5 && pz < inside.d - 1.5 && !(inside.kind === 'arena' && (pz < 23 || px < ARENA_SIDE + 1 || px > inside.w - ARENA_SIDE - 1 || (pz > inside.d - ARENA_SIDE - 1 && Math.abs(px - inside.w / 2) > ARENA_GATE - 1.5)));
     const t = at(Math.floor(px / T), Math.floor(pz / T));
     if (t === W0) return false;
@@ -8231,8 +8280,8 @@
         let tx = 0, tz = 0; if (top) { const [wx, wz] = toWorldDir(ix / L, (iz / L) * sp), wl = Math.hypot(wx, wz) || 1; tx = wx / wl * top; tz = wz / wl * top; if (pose) pose = null; }
         const e = Math.min(1, dt * (top ? 9 : 14)); me.vx = (me.vx || 0) + (tx - (me.vx || 0)) * e; me.vz = (me.vz || 0) + (tz - (me.vz || 0)) * e;
         if (Math.hypot(me.vx, me.vz) < 0.3 && !top) me.vx = me.vz = 0;
-        else { const nx = me.x + me.vx * dt, nz = me.z + me.vz * dt; // slide along walls rather than stick to them
-          if (walkable(nx, nz)) { me.x = nx; me.z = nz; } else if (walkable(nx, me.z)) { me.x = nx; me.vz = 0; } else if (walkable(me.x, nz)) { me.z = nz; me.vx = 0; } else me.vx = me.vz = 0; }
+        else { const nx = me.x + me.vx * dt, nz = me.z + me.vz * dt; // slide along walls rather than stick to them (and out of anything you're already standing in)
+          if (walkable(nx, nz) || !walkable(me.x, me.z)) { me.x = nx; me.z = nz; } else if (walkable(nx, me.z)) { me.x = nx; me.vz = 0; } else if (walkable(me.x, nz)) { me.z = nz; me.vx = 0; } else me.vx = me.vz = 0; }
       } else me.vx = me.vz = 0;
       if (L > 0.08) {
         const [wx, wz] = toWorldDir(ix / L, (iz / L) * sp), wl = Math.hypot(wx, wz) || 1;
@@ -10946,10 +10995,12 @@
       else if (inside.kind === 'bunker' && inside.up && Math.hypot(me.x - inside.w / 2, me.z - (inside.d - 6)) < 6) { const up = inside.up; next = { label: '⬆ Up to the house', run: () => enterRoom('home', up.key, up.title, { stairs: true, style: 'nml' }) }; }
       if (!next && inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
+      if (!next && refHere() && REF.handover && GJ.shift && Math.hypot(me.x - 40, me.z - 56) < 10) next = { label: '📝 Hand over and finish the shift', run: () => { REF.handover = false; gridFinish(); } }; // a refinery shift ends with the handover in the control room
+      if (!next && refHere() && GJ.shift && gridTask() && REF.ppe !== GJ.shift.id && Math.hypot(me.x - 36, me.z - 142) < 9) next = { label: '🦺 Put on your PPE', run: () => { REF.ppe = GJ.shift.id; REF.flash = { x: 36, z: 142, ok: true, at: performance.now() }; coachSay('Hard hat, coverall, boots, gloves, glasses, and the gas monitor clipped on. Now you can work. Follow the yellow beacon.', [['On my way', null, true]], 'Suited up'); } };
       if (!next && inside.kind === 'work' && WORK_ROOMS[inside.place]) { const Wd = WORK_ROOMS[inside.place], dk = Wd.desk; if (dk && Math.hypot(me.x - dk[0], me.z - dk[1]) < 10) next = { label: dk[2], run: () => workDesk(inside, dk) }; }
       if (!next && refHere()) { // the refinery: the kit in front of you, or your task's spot
         const sp = refSpots().map((v) => [Math.hypot(me.x - v.x, me.z - v.z), v]).filter((v) => v[0] < 6).sort((a, b) => a[0] - b[0])[0];
-        if (sp) next = { label: sp[1].label, run: () => refDo(sp[1]) }; else if (!REF.hot) { const tk = gridNear(); if (tk) next = { label: `⚡ ${tk.title}`, run: () => gridDo(tk) }; } }
+        if (sp) next = { label: sp[1].label, run: () => refDo(sp[1]) }; else if (!REF.hot) { const tk = gridNear(); if (tk) next = REF.ppe === (GJ.shift && GJ.shift.id) ? { label: `⚡ ${tk.title}`, run: () => gridDo(tk) } : { label: '🦺 Suit up first: lockers & PPE', run: () => { Object.assign(REF.wyrd, { tx: 39, tz: 139, until: performance.now() + 7000 }); coachSay('No PPE, no work. The lockers are at the back left: follow me there and suit up.', [['Going', null, true]], 'Safety first'); } }; } }
       if (!next && inside.kind === 'store') { const it = inside.layout.find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 7); if (it && STORE[it.k]) next = { label: `🛒 ${STORE[it.k].name}`, run: () => openPhone('store', it.k) }; }
       if (!next && inside.kind === 'boutique') { const m = boutiqueSpots(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 8); if (m) next = { label: `👔 ${OUTFITS[m.id].brand} · ${OUTFITS[m.id].name}`, run: () => openPhone('fashion', { id: m.id }) }; }
       if (!next && (inside.kind === 'hq' || inside.kind === 'home')) { const dv = devNear(inside); if (dv) next = devAction(inside, dv); }
@@ -11537,8 +11588,8 @@
   function gridDo(tk) {
     REF.hot = null; refGuideOff();
     const done = (score, note) => { clearInterval(gpTimer); tk.done = true; tk.score = Math.round(Math.max(0, Math.min(100, score))); tk.note = note; gridSave();
-      gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><button class="gpx2">✕</button></div><div class="gpbig">${tk.score}<small>/100</small></div><p>${esc(note)}</p><button class="gpgo">${gridTask() ? 'Next task' : 'Finish the shift'}</button>`);
-      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); if (!gridTask()) gridFinish(); else coachSay(`Next: ${gridTask().title}, at ${gridTask().spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }; };
+      gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><button class="gpx2">✕</button></div><div class="gpbig">${tk.score}<small>/100</small></div><p>${esc(note)}</p><button class="gpgo">${gridTask() ? 'Next task' : refHere() ? 'Go and hand over' : 'Finish the shift'}</button>`);
+      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); if (!gridTask() && refHere()) { REF.handover = true; Object.assign(REF.wyrd, { tx: 46, tz: 52, until: performance.now() + 8000 }); coachSay('Every task done. Walk back to the control room desk and hand over to the next shift: that closes it and pays you.', [['On my way', null, true]], 'Handover'); } else if (!gridTask()) gridFinish(); else coachSay(`Next: ${gridTask().title}, at ${gridTask().spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }; };
     if (tk.type === 'van') { gpShow(`<div class="gphd"><b>Collect the crew van</b><button class="gpx2">✕</button></div><p>Sign out van GC-02, check the ladder, the tester, the earthing kit and the spares.</p><div class="gpchk">${['Ladder secured', 'Voltage tester working', 'Earthing kit complete', 'Spare fuses and insulators', 'Radio checked with control'].map((t2, k) => `<label><input type="checkbox" data-c="${k}"> ${t2}</label>`).join('')}</div><button class="gpgo">Sign out the van</button>`);
       gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { const n2 = gpEl.querySelectorAll('[data-c]:checked').length; tk.result = { checked: n2 }; done(n2 * 20, n2 === 5 ? 'Every check done. Control has you on the radio.' : `You skipped ${5 - n2} check${5 - n2 > 1 ? 's' : ''}. On a real call-out that can cost a life.`); }; return; }
     if (tk.type === 'balance') { // supply against demand for 90 seconds: keep the frequency inside 49.8 to 50.2 Hz
