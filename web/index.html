@@ -1297,6 +1297,13 @@
   /* make room under it */
   #ask, #deco { bottom: calc(70px + env(safe-area-inset-bottom)) !important; } #stick { bottom: calc(74px + env(safe-area-inset-bottom)) !important; }
   body:not(.touch) #leave { bottom: calc(74px + env(safe-area-inset-bottom)) !important; }
+  /* the leave door: no white pill; the joystick: dark glass with a glowing thumb, phones only */
+  #leave.btn { background: transparent !important; box-shadow: none !important; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 10px rgba(0,0,0,.35); }
+  .touch #leave { bottom: calc(222px + env(safe-area-inset-bottom)) !important; left: 30px; }
+  body:not(.touch) #stick { display: none !important; }
+  #stick { width: 124px; height: 124px; background: radial-gradient(circle, rgba(15,23,42,.18) 0 38%, rgba(15,23,42,.38) 70%, rgba(15,23,42,.5)); border: 1.5px solid rgba(255,255,255,.35); box-shadow: 0 10px 30px rgba(15,23,42,.3), inset 0 0 18px rgba(255,255,255,.12); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  #stick::before { content: ''; position: absolute; inset: 10px; border-radius: 50%; background: conic-gradient(from -8deg, rgba(255,255,255,.7) 0 16deg, transparent 16deg 90deg, rgba(255,255,255,.7) 90deg 106deg, transparent 106deg 180deg, rgba(255,255,255,.7) 180deg 196deg, transparent 196deg 270deg, rgba(255,255,255,.7) 270deg 286deg, transparent 286deg); -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 4px), #000 calc(50% - 3px) 50%, transparent 50%); mask: radial-gradient(circle, transparent 0 calc(50% - 4px), #000 calc(50% - 3px) 50%, transparent 50%); opacity: .8; }
+  #knob { left: 37px; top: 37px; width: 50px; height: 50px; background: radial-gradient(circle at 35% 30%, #fff, #E0E7FF 45%, #A5B4FC); border: 2px solid rgba(255,255,255,.9); box-shadow: 0 6px 16px rgba(15,23,42,.35), 0 0 18px rgba(165,180,252,.6); transition: transform .08s; }
 </style>
 </head>
 <body>
@@ -1726,7 +1733,7 @@
 
   // ================= the camera: a real 3D view, turned and tilted for each sector =================
   const cv = document.getElementById('c'); let x = cv.getContext('2d');
-  const isTouch = matchMedia('(pointer: coarse)').matches;
+  const isTouch = matchMedia('(pointer: coarse)').matches && !matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (isTouch) document.body.classList.add('touch');
   let W = 0, H = 0, DPR = 1;
   let quality = 1; // drops when frames run slow
