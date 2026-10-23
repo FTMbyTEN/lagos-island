@@ -4455,12 +4455,14 @@
     dressAcc(p, L.acc || []); // their accessories (on once the models have loaded)
     // facing: the way they're moving
     const dx = p.x == null ? 0 : px - p.x, dz = p.z == null ? 0 : pz - p.z, dt = p.t ? Math.min(0.1, (now - p.t) / 1000) : 0, speed = dt ? Math.hypot(dx, dz) / dt : 0;
-    if (Math.hypot(dx, dz) > 0.02) p.ang = Math.atan2(dx, dz);
+    p.spd = (p.spd || 0) + (Math.min(60, speed) - (p.spd || 0)) * Math.min(1, dt * 8); // smoothed, so one uneven frame can't flick the walk to a jog
+    if (Math.hypot(dx, dz) > 0.02) { const want = Math.atan2(dx, dz); let d = want - (p.ang ?? want); d = Math.atan2(Math.sin(d), Math.cos(d)); p.ang = (p.ang ?? want) + d * Math.min(1, dt * 14); } // turns into a new heading, not snapping
     p.x = px; p.z = pz; p.t = now;
     // what they're doing
     const inWater = inside && inside.kind === 'beach' && pz < SHORE - 3, partying = inside && (inside.kind === 'club' || partyAt(inside.key));
-    const want = pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : speed > 22 ? 'Sprint_Loop' : speed > 13 ? 'Jog_Fwd_Loop' : speed > 1 ? 'Walk_Loop' : partying && pose !== 'stand' ? 'Dance_Loop' : 'Idle_Loop';
+    const want = pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : p.spd > 18 ? 'Sprint_Loop' : p.spd > 13 ? 'Jog_Fwd_Loop' : p.spd > 1.2 ? 'Walk_Loop' : partying && pose !== 'stand' ? 'Dance_Loop' : 'Idle_Loop';
     if (p.cur !== want && p.acts[want]) { const next = p.acts[want].reset().play(); if (p.cur && p.acts[p.cur]) p.acts[p.cur].crossFadeTo(next, 0.25, false); p.cur = want; }
+    if (p.acts[p.cur]) p.acts[p.cur].timeScale = p.cur === 'Walk_Loop' ? Math.max(0.6, Math.min(1.4, p.spd / 10)) : p.cur === 'Sprint_Loop' ? Math.max(0.8, Math.min(1.3, p.spd / 24)) : p.cur === 'Jog_Fwd_Loop' ? Math.max(0.8, Math.min(1.3, p.spd / 15)) : 1; // feet that keep up with the ground
     p.mixer.update(dt);
     p.root.position.set(px, pose === 'sit' ? Math.max(0, (seatY || 2) - 1.9) : inWater ? -3 : standY, pz); p.root.rotation.y = p.ang;
     // dressed for the day
@@ -6236,8 +6238,7 @@
       for (let k = 0; k < 10; k++) { const sx = 2 + k * 1.4, sy = 7 - k * 0.7; box(sx, 0, FZ + 3, sx + 1.4, sy, FZ + 13, '#F8FAFC'); box(sx, sy - 0.05, FZ + 6, sx + 1.4, sy + 0.02, FZ + 10, '#B91C1C'); }
       box(0.2, 7, FZ + 1, 2, 7.3, FZ + 15, '#E5E7EB'); for (const rz of [FZ + 3, FZ + 13]) { const p0 = P(2, 8, rz), p1 = P(16, 1, rz); x.strokeStyle = '#D4AF37'; x.lineWidth = Math.max(1.5, K * 0.3); x.beginPath(); x.moveTo(p0[0], p0[1]); x.lineTo(p1[0], p1[1]); x.stroke(); }
       chandelier(9, 16, FZ + 8, false);
-      // performers: dancers on the two front podiums, an aerialist turning in a hoop over the floor
-      if (PEOPLE.ok) for (const [px, pz, k] of [[30, 22, 0], [66, 22, 1]]) person3d(px, pz, '#FFFFFF', 'perf:' + R.key + k, now, parseLook(k ? 'f,2,0,1,0,zara_dress' : 'f,4,1,0,0,dior_gown', 'perf' + k), null, 0, 1.6);
+      // an aerialist's hoop turning over the floor (the podiums are for real players now)
       { const hx = 48, hz = 30, hy = 14, an = t * 0.8, hp = P(hx, hy, hz), r = K * 2.2; const top = P(hx, 18, hz); x.strokeStyle = '#E5E7EB'; x.lineWidth = 1; x.beginPath(); x.moveTo(top[0], top[1]); x.lineTo(hp[0], hp[1] - r * 0.9); x.stroke(); x.strokeStyle = '#EC4899'; x.lineWidth = Math.max(2, K * 0.3); x.beginPath(); x.ellipse(hp[0], hp[1], r * Math.abs(Math.cos(an)) + 1, r, 0, 0, Math.PI * 2); x.stroke(); x.fillStyle = '#FBCFE8'; x.beginPath(); x.ellipse(hp[0] + Math.cos(an) * r * 0.3, hp[1] + r * 0.2, K * 0.35, K * 1, Math.sin(an) * 0.6, 0, Math.PI * 2); x.fill(); }
       // the show stage in the wing: a pink runway, a lit stage, CO2 jets and sparkler fountains on the drop
       flat(WX + 0.8, 0.2, R.w, FZ, 0.016, '#F5F0F3');
@@ -6246,20 +6247,8 @@
       const sp2 = () => { const tt = performance.now() / 1000, fire = beat > 0.6 || Math.sin(tt * 1.3) > 0.97; if (!fire) return; for (const fx of [WX + 9, R.w - 9]) for (let k = 0; k < 14; k++) { const u = Math.random(), p = P(fx + (Math.random() - 0.5) * 1.2, 2.2 + u * 9, 9 + (Math.random() - 0.5)); x.fillStyle = Math.random() < 0.5 ? '#FFFFFF' : '#FDE68A'; x.fillRect(p[0], p[1], 2, 2); } };
       sp2(); glow.push(sp2);
     }
-    // ---- the people: a crowd dancing on every dance floor, dressed for this club; a bartender behind the bar; two bouncers in
-    // black at the doorway from the foyer
+    // ---- the people: only real Lagosians who came in (no made-up crowd, bar staff or bouncers)
     R._crowd = [];
-    if (PEOPLE.ok) {
-      const WEAR = CLUB_WEAR[LK.theme] || ['st_tee'];
-      const R4 = rnd(R.key.length * 31 + 7); let k = 0;
-      for (const it of R.layout.filter((v) => v.k === 'dance')) for (const [ox, oz] of [[-4.5, -2.5], [3.5, -1.5], [-1, 2.5], [5, 3], [-5.5, 3]]) {
-        const g = R4() < 0.5 ? 'f' : 'm', look = `${g},${Math.floor(R4() * 6)},${Math.floor(R4() * 4)},${Math.floor(R4() * 4)},${Math.floor(R4() * 5)},${WEAR[k % WEAR.length]}`;
-        const px = it.x + ox + Math.sin(t * 0.4 + k) * 0.6, pz = it.z + oz + Math.cos(t * 0.33 + k) * 0.4, key = 'crowd:' + R.key + ':' + k, L = parseLook(look, 'crowd' + k);
-        R._crowd.push({ x: px, z: pz, f: () => person3d(px, pz, '#FFFFFF', key, now, L, null, 0) }); k++; // drawn with the furniture, in depth order, so the floor is under them
-      }
-      person3d(5 + PL.bar[0], 34 + PL.bar[1], '#FFFFFF', 'barkeep:' + R.key, now, parseLook(`m,2,1,0,0,${LK.theme === 'lekki' ? 'st_polo' : 'ralph_suit'}`, 'barkeep'), 'stand', 0);
-      for (const [bx, bz, s] of [[39, 68, 0], [53, 68, 1]]) person3d(bx, bz, '#FFFFFF', 'bouncer:' + R.key + s, now, parseLook(`m,${s ? 0 : 1},1,${s ? 2 : 0},0,ralph_suit`, 'bouncer' + s), 'stand', 0);
-    }
     // ---- more of each club's own character: its ceiling rig, its walls, a signature piece or two
     const glowAt = (gx, gy, gz, r, col) => { const p = P(gx, gy, gz), rr = K * r; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], rr); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], rr, 0, Math.PI * 2); x.fill(); x.restore(); };
     if (LK.theme === 'quilox') {
@@ -8236,13 +8225,18 @@
       if (keys.has('w') || keys.has('arrowup')) iz -= 1;
       if (keys.has('s') || keys.has('arrowdown')) iz += 1;
       const L = Math.hypot(ix, iz);
+      // inside: a body with weight. It speeds up and slows down instead of snapping; Shift (or the stick pushed right out) runs
+      if (inside) {
+        const run = keys.has('shift') || (stickId != null && L > 0.9), top = L > 0.08 ? (run ? 26 : 11) * Math.min(1, L) : 0;
+        let tx = 0, tz = 0; if (top) { const [wx, wz] = toWorldDir(ix / L, (iz / L) * sp), wl = Math.hypot(wx, wz) || 1; tx = wx / wl * top; tz = wz / wl * top; if (pose) pose = null; }
+        const e = Math.min(1, dt * (top ? 9 : 14)); me.vx = (me.vx || 0) + (tx - (me.vx || 0)) * e; me.vz = (me.vz || 0) + (tz - (me.vz || 0)) * e;
+        if (Math.hypot(me.vx, me.vz) < 0.3 && !top) me.vx = me.vz = 0;
+        else { const nx = me.x + me.vx * dt, nz = me.z + me.vz * dt; // slide along walls rather than stick to them
+          if (walkable(nx, nz)) { me.x = nx; me.z = nz; } else if (walkable(nx, me.z)) { me.x = nx; me.vz = 0; } else if (walkable(me.x, nz)) { me.z = nz; me.vx = 0; } else me.vx = me.vz = 0; }
+      } else me.vx = me.vz = 0;
       if (L > 0.08) {
         const [wx, wz] = toWorldDir(ix / L, (iz / L) * sp), wl = Math.hypot(wx, wz) || 1;
-        if (inside) {
-          if (pose) { pose = null; }
-          const speed = 12 * Math.min(1, L), nx = me.x + (wx / wl) * speed * dt, nz = me.z + (wz / wl) * speed * dt;
-          if (walkable(nx, nz)) { me.x = nx; me.z = nz; } else if (walkable(nx, me.z)) me.x = nx; else if (walkable(me.x, nz)) me.z = nz;
-        } else { // look around the island
+        if (inside) { /* moved above */ } else { // look around the island
           const speed = (keys.has('shift') ? 160 : 80) * Math.min(1, L) / (cam.user || 1);
           cam.follow = false; cam.x += (wx / wl) * speed * dt; cam.z += (wz / wl) * speed * dt;
         }
@@ -8755,10 +8749,6 @@
   // a club's music starts loading while you're still at its door (and plays the moment you're in)
   function clubWarm(room) {
     if (CITY.on && !CITY.master && AX.ctx) cityStart(); // only once sound is allowed (after a tap)
-    // its dancers' outfits start downloading too, so the crowd is dressed when you walk in
-    if (!clubWarm.dressed) clubWarm.dressed = new Set();
-    if (window.__three && !clubWarm.dressed.has(room)) { const pl = PLACES.find((v) => v[0] === 'club' && 'place:club:' + v[1] === room);
-      if (pl) { clubWarm.dressed.add(room); for (const o of CLUB_WEAR[clubLook(pl[5].replace(' (open every night)', '')).theme] || []) for (const g of ['m', 'f']) for (const [gk] of ((WEAR[o] || WEAR._)[g] || [])) wearLoad(WEAR_FIT[gk][0]); } }
     const s = clubSrc(room); if (!s || !s.a.src || s.warm) return;
     s.warm = true; s.a.preload = 'auto'; try { s.a.load(); } catch {}
   }
