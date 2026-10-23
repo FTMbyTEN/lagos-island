@@ -504,6 +504,7 @@
   #wyrdGuide .wgl { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 3px; max-height: 120px; overflow-y: auto; } #wyrdGuide .wgl li { font-size: 12px; padding: 4px 8px; border-radius: 8px; background: rgba(34,197,94,.12); color: #BBF7D0; } #wyrdGuide .wgl li::before { content: '✓ '; font-weight: 800; } #wyrdGuide .wgl li.q { background: rgba(250,204,21,.12); color: #FDE68A; } #wyrdGuide .wgl li.q::before { content: '→ '; }
   #wyrdGuide .wgb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } #wyrdGuide .wgb button { border: 0; border-radius: 999px; padding: 7px 13px; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; } #wyrdGuide .wgb button.main { background: linear-gradient(135deg, #FACC15, #F97316); color: #1C1917; }
   #wyrdGuide .wgb em { font-style: normal; font-size: 12px; font-weight: 800; color: #F87171; } #wyrdGuide .wgb em.h { color: #FDE68A; }
+  .soonWrap { position: relative; } .soonStamp { position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -50%) rotate(-14deg); padding: 8px 18px; border: 4px double #DC2626; border-radius: 10px; color: #DC2626; background: rgba(255,255,255,.82); font: 900 26px 'Plus Jakarta Sans', sans-serif; font-style: normal; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 0 2px rgba(220,38,38,.15); pointer-events: none; mix-blend-mode: multiply; } /* a rubber stamp over what isn't open yet */
   #wyrdGuide .wgnear { margin-top: 8px; font-size: 12px; font-weight: 700; color: #67E8F9; min-height: 1.2em; } #wyrdGuide .wgnear:empty { display: none; }
   #wyrdGuide.shake { animation: wgEdge 6s linear infinite, wgShake .4s; } @keyframes wgShake { 20%, 60% { margin-left: -6px; } 40%, 80% { margin-left: 6px; } }
   #wyrdGuide.min p, #wyrdGuide.min .wgl, #wyrdGuide.min .wgb { display: none; } #wyrdGuide.min .wgx { transform: rotate(180deg); }
@@ -6966,7 +6967,7 @@
         [14, 101, 90, 103], [16, 118, 38, 122], [42, 118, 64, 122], [68, 118, 90, 122], [8, 149.6, 46, 150.4], [58, 149.6, 96, 150.4], [95.6, 100, 96.4, 150],
         [110, 104, 208, 108], [110, 128, 208, 132], [226, 112, 271, 115], [230, 140, 266, 143]],
       draw(R, now) { plantDraw(R, now); } },
-    airport: { w: 180, d: 110, floor: '#E2E8F0', wall: '#F8FAFC', trim: '#0EA5E9', desk: [40, 30, '✈️ Fly somewhere', 'airport'],
+    airport: { w: 180, d: 110, floor: '#E2E8F0', wall: '#F8FAFC', trim: '#0EA5E9', desk: [40, 30, '✈️ Flights: coming soon', 'airport'],
       draw(R, now) {
         for (let k = 0; k < 6; k++) { const bx = 10 + k * 13; box(bx, 0, 14, bx + 10, 4, 20, '#1E3A8A'); box(bx, 0, 20, bx + 10, 1.4, 22, '#64748B'); }
         groundText('CHECK-IN', 46, 26, 2.2, '#1E3A8A');
@@ -8376,7 +8377,7 @@
     }
     el.innerHTML = `<div class="rsec">YOUR JET</div><div class="pcard"><div class="row"><span><b style="font-size:17px">🛩️ ${esc(j.tail)}</b><br><span class="dim">${esc(j.name)}</span></span><b style="color:${LIVERY[j.livery]}">■■■</b></div>
         <div class="dim" style="margin-top:6px">Repaint</div>${sw(j.livery)}<label class="row" style="margin-top:6px"><span>Show my name on the hangar</span><input type="checkbox" id="jName" ${j.showName ? 'checked' : ''}></label></div>
-      <div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-own="${d[0]}"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}</b><small>Your jet · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">${naira(jetFee(d))} fuel</span></button>`).join('')}</div>`;
+      <div class="soonWrap"><i class="soonStamp">Coming SOON!!!</i><div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-own="${d[0]}" disabled style="opacity:.45"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}</b><small>Your jet · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">${naira(jetFee(d))} fuel</span></button>`).join('')}</div></div>`;
     const save = async (patch) => { try { const r = await my('setJet', { livery: patch.livery ?? j.livery, showName: patch.showName ?? j.showName }); j = r.jet; hangarsLoad(); } catch (e) { fail(e); } };
     el.querySelectorAll('[data-liv]').forEach((b) => (b.onclick = async () => { el.querySelectorAll('[data-liv]').forEach((o) => o.classList.toggle('on', o === b)); await save({ livery: +b.dataset.liv }); }));
     el.querySelector('#jName').onchange = (e) => save({ showName: e.target.checked });
@@ -10453,9 +10454,8 @@
           <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#FACC15">✈ Departures</h3>${rows([0, 1, 2, 3, 4].map((k) => { const s = s0 + k, d = AIR.dep(s), st = AIR.depStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} ${esc(d[1])} <span class="dim">${d[2]}</span></span><b style="color:${stCol(st)}">Gate ${AIR.gate(s)} · ${st}</b></div>`; }))}</div>
           <div class="pcard" style="background:#0B1220;color:#E2E8F0"><h3 style="color:#38BDF8">🛬 Arrivals</h3>${rows([-1, 0, 1, 2].map((k) => { const s = s0 + k, d = AIR.arr(s), st = AIR.arrStatus(s, s0); return `<div class="row"><span>${AIR.hhmm(s)} · ${d[3]} from ${esc(d[1])}</span><b style="color:${stCol(st)}">${st}</b></div>`; }))}</div>
           <div id="myJetBox"></div><div id="airWorkBox"></div>
-          <div class="pcard" style="background:#7F1D1D;color:#FEF2F2"><b>✈️ The airport is closed for now</b><br><small>No flights are leaving, and nobody is charged. Flights will be back soon.</small></div>
           <div class="rsec">FLY SOMEWHERE</div>
-          <div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-fly="${d[0]}" disabled style="opacity:.45"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}${d[0] === 'island' ? '' : ' <span class="dim">' + d[2] + '</span>'}</b><small>${d[0] === 'island' ? 'Round the island and back' : 'There, a look round, and home'} · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">G${naira(d[4])}</span></button>`).join('')}</div>
+          <div class="soonWrap"><i class="soonStamp">Coming SOON!!!</i><div class="lst">${[AIR_JOY, ...AIR_DEST].map((d) => `<button class="li" data-fly="${d[0]}" disabled style="opacity:.45"><span class="ic">${d[3]}</span><span class="lt"><b>${esc(d[1])}${d[0] === 'island' ? '' : ' <span class="dim">' + d[2] + '</span>'}</b><small>${d[0] === 'island' ? 'Round the island and back' : 'There, a look round, and home'} · ${Math.round(d[5] / 6) / 10} min</small></span><span class="lr">G${naira(d[4])}</span></button>`).join('')}</div></div>
           <div class="lock">Paid from your wallet. Everyone who books the same flight in the same minute is on the same jet.</div>`);
         myJetBox($('myJetBox')); airWorkBox($('airWorkBox'));
         pbody.querySelectorAll('[data-fly]').forEach((b) => (b.onclick = async () => {
