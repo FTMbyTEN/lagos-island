@@ -509,6 +509,8 @@
   #wyrdGuide.min p, #wyrdGuide.min .wgl, #wyrdGuide.min .wgb { display: none; } #wyrdGuide.min .wgx { transform: rotate(180deg); }
   body.onFloor #gridTask { left: auto; right: 14px; top: 84px; width: min(340px, calc(100vw - 28px)); max-height: calc(100dvh - 190px); transform: translateX(24px); background: linear-gradient(160deg, rgba(15,23,42,.88), rgba(30,27,20,.88)); }
   body.onFloor #gridTask.on { transform: none; }
+  body.onFloor #coach { left: auto; right: 14px; top: 84px; bottom: auto; width: min(380px, calc(100vw - 28px)); transform: translateX(24px); } body.onFloor #coach.on { transform: none; }
+  @media (max-width: 760px) { body.onFloor #coach { left: 8px; right: 8px; width: auto; top: calc(124px + env(safe-area-inset-top)); } }
   @media (max-width: 760px) { body.onFloor #gridTask { top: auto; right: 8px; left: 8px; width: auto; bottom: calc(66px + env(safe-area-inset-bottom)); max-height: 40dvh; padding: 12px; transform: translateY(24px); } body.onFloor #gridTask.on { transform: none; } }
   @media (max-width: 520px) { #wyrdGuide { top: calc(72px + env(safe-area-inset-top)); width: calc(100vw - 24px); } #wyrdGuide .wgl { max-height: 70px; } }
   /* live chat: someone typing (three bouncing dots in a bubble), and read ticks turning blue */
@@ -6515,8 +6517,9 @@
   const wscreen = (x0, x1, y0, y1, z, t, hue) => { const q = [P(x0, y0, z), P(x1, y0, z), P(x1, y1, z), P(x0, y1, z)], g = x.createLinearGradient(q[0][0], q[3][1], q[1][0], q[0][1]); g.addColorStop(0, `hsl(${hue},70%,${18 + Math.sin(t) * 4}%)`); g.addColorStop(1, `hsl(${hue + 40},70%,30%)`); quad(q, g, '#0F172A'); };
   // ---- the refinery floor: the machines, and the job done on them by hand, with WYRD alongside
   const REF = { hot: null, live: null, wyrd: { x: 52, z: 64, tx: 0, tz: 0, until: 0 }, flash: null };
-  const refHere = () => !!(inside && inside.kind === 'work' && (inside.place === 'refinery' || inside.place === 'grid')); // a floor where the job is done by hand
+  const refHere = () => !!(inside && inside.kind === 'work' && (inside.place === 'refinery' || inside.place === 'grid' || inside.place === 'hospital')); // a floor where the job is done by hand
   const floorOf = () => WORK_ROOMS[inside.place];
+  const gridFloor = () => refHere() && inside.place !== 'hospital'; // the floors a Grid career shift runs on
   const REF_EQUIP = { // the kit each step is done on: [its name, x, z where you stand to use it]
     alarm: ['Fire alarm call point', 92, 74], estop: ['P-101 emergency stop', 132, 74], block: ['P-101 block valves', 106, 70], monitor: ['Fire monitor', 164, 72],
     muster: ['Muster point', 100, 150], fireteam: ['Fire team gate', 130, 166],
@@ -6538,10 +6541,10 @@
     const o = REF.hot; if (!o || !refHere()) return [];
     if (o.free) return o.items.map((it, k) => ({ i: k, label: `📟 ${it.label}`, name: it.label, x: o.at[k][0], z: o.at[k][1], step: it.tag })).filter((v) => !o.done.includes(v.step));
     const seen = {}, out = [];
-    for (const s of o.order) { if (o.done.includes(s)) continue; const k = REF_STEP[s]; if (!k || seen[k]) continue; seen[k] = 1; const e = REF_EQUIP[k], p = (o.pos && o.pos[k]) || [e[1], e[2]]; out.push({ step: s, key: k, label: `🔧 ${s}`, name: e[0], x: p[0], z: p[1] }); }
+    for (const s of o.order) { if (o.done.includes(s)) continue; const k = (o.stepKit || REF_STEP)[s]; if (!k || seen[k]) continue; seen[k] = 1; const e = (o.kit || REF_EQUIP)[k], p = (o.pos && o.pos[k]) || [e[1], e[2]]; out.push({ step: s, key: k, label: `🔧 ${s}`, name: e[0], x: p[0], z: p[1] }); }
     return out;
   }
-  const refKitPos = (s) => { const o = REF.hot, k = REF_STEP[s], e = REF_EQUIP[k]; return (o.pos && o.pos[k]) || [e[1], e[2]]; };
+  const refKitPos = (s) => { const o = REF.hot, k = (o.stepKit || REF_STEP)[s], e = (o.kit || REF_EQUIP)[k]; return (o.pos && o.pos[k]) || [e[1], e[2]]; };
   function refPoint(s) { const p = refKitPos(s); Object.assign(REF.wyrd, { tx: p[0] + 3, tz: p[1] - 3, until: performance.now() + 6000 }); }
   function refHands(o) { // a procedure done on the kit itself
     Object.assign(o, { next: 0, strikes: 0, hints: 0, done: [] }); REF.hot = o; gpClose();
@@ -6573,7 +6576,7 @@
     const p = wg.querySelector('p'); let c = 0; clearInterval(refGuide.t); refGuide.t = setInterval(() => { c += 2; p.textContent = say.slice(0, c); if (c >= say.length) clearInterval(refGuide.t); }, 16);
     wg.querySelector('.wgx').onclick = () => { refGuide.min = !refGuide.min; wg.classList.toggle('min', refGuide.min); };
     const h = wg.querySelector('[data-h]'), s = wg.querySelector('[data-s]'), f = wg.querySelector('[data-f]');
-    if (h) h.onclick = () => { o.hints++; const want = o.order[o.next]; refGuide(`Next is something you do at the ${REF_EQUIP[REF_STEP[want]][0].replace(/^[a-z]/, (m) => m)}. ${REF_WHY[o.kind] || ''}`); };
+    if (h) h.onclick = () => { o.hints++; const want = o.order[o.next]; refGuide(`Next is something you do at the ${(o.kit || REF_EQUIP)[(o.stepKit || REF_STEP)[want]][0].replace(/^[a-z]/, (m) => m)}. ${REF_WHY[o.kind] || ''}`); };
     if (s) s.onclick = () => { o.hints++; refPoint(o.order[o.next]); refGuide('Follow me. I’m hovering over the kit you need next.'); };
     if (f) f.onclick = () => { REF.hot = null; refGuideOff(); o.finish(); };
   }
@@ -6682,7 +6685,7 @@
       if (Math.hypot(me.x - v.x, me.z - v.z) < 40) { const q = P(v.x, 8, v.z); x.font = '700 11px "Plus Jakarta Sans", sans-serif'; const w = x.measureText(v.name).width + 12; x.fillStyle = 'rgba(15,23,42,0.75)'; x.beginPath(); x.roundRect(q[0] - w / 2, q[1] - 9, w, 18, 9); x.fill(); x.fillStyle = '#BAE6FD'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.name, q[0], q[1]); } }
     if (REF.flash && now - REF.flash.at < 700) { const f = REF.flash, p = P(f.x, 0.08, f.z), k2 = (now - f.at) / 700, r = K * (2 + k2 * 6); x.strokeStyle = f.ok ? `rgba(74,222,128,${1 - k2})` : `rgba(248,113,113,${1 - k2})`; x.lineWidth = Math.max(3, K * 0.5); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
     // where to go when it isn't a task: suit up first, hand over at the end
-    { const ppeDue = GJ.shift && gridTask() && REF.ppe !== GJ.shift.id, mark = ppeDue ? [F.ppe[0], F.ppe[1], '🦺 Suit up here'] : REF.handover && GJ.shift ? [F.handover[0], F.handover[1], '📝 Hand over here'] : null;
+    { const st = F.shift ? F.shift() : { due: GJ.shift && gridTask() && REF.ppe !== GJ.shift.id, hand: REF.handover && GJ.shift }, mark = st.due ? [F.ppe[0], F.ppe[1], F.ppeLabel || '🦺 Suit up here'] : st.hand ? [F.handover[0], F.handover[1], '📝 Hand over here'] : null;
       if (mark) { const p = P(mark[0], 0.06, mark[1]), r = K * (3 + Math.sin(t * 4) * 0.4); x.strokeStyle = '#FACC15'; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke();
         const q = P(mark[0], 10, mark[1]); x.font = '800 12px "Plus Jakarta Sans", sans-serif'; const w = x.measureText(mark[2]).width + 16; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(q[0] - w / 2, q[1] - 11, w, 22, 11); x.fill(); x.fillStyle = '#FDE68A'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(mark[2], q[0], q[1]); } }
     // WYRD's word on whatever kit you walk past (once a minute each, never mid-procedure)
@@ -6753,6 +6756,118 @@
     const alarm = fq && fq.tripped; if (alarm) { const on = Math.floor(t * 3) % 2; for (const lx of [40, 140, 240]) refDot(lx, 18, 0.5, on ? '#EF4444' : '#334155', 1.4); }
     kitFloor(R, now, o, !!alarm, !!alarm);
   }
+  // ---- the General Hospital floor: triage, the emergency room, the ward, the pharmacy, theatre and the lab; a shift worked by hand
+  const HOSP_EQUIP = { // [its name, x, z where you stand to use it]
+    trolley: ['Patient on trolley 1', 114, 38], crashphone: ['Crash call alarm', 97, 24], defib: ['Defibrillator cart', 133, 49], oxygen: ['Oxygen and bag-valve mask', 101, 47],
+    sink: ['Ward sink', 246, 86], chart: ['Bed 2 chart', 213, 38], pharm: ['Pharmacy counter', 46, 137], bed: ['Bed 2 patient', 221, 26],
+    locker: ['Theatre locker', 103, 123], scrub: ['Scrub sink', 100, 160], gown: ['Gown rack', 164, 160], gloves: ['Glove station', 152, 160], tray: ['Instrument tray', 149, 137], optable: ['Operating table', 132, 146],
+    hygiene: ['Hand-wash station', 70, 90], monitor: ['Patient monitor', 128, 30], fridge: ['Vaccine fridge', 75, 122], micro: ['Lab bench', 216, 124],
+  };
+  const HOSP_STEP = {
+    'Check for response and breathing': 'trolley', 'Call the crash team': 'crashphone', 'Start chest compressions': 'trolley', 'Attach the defibrillator pads': 'defib', 'Shock, then straight back to compressions': 'defib', 'Give oxygen with the bag-valve mask': 'oxygen',
+    'Wash your hands': 'sink', 'Read the chart: drug, dose, time': 'chart', 'Collect the dose from the pharmacy': 'pharm', "Check the patient's wristband": 'bed', 'Give the medicine': 'bed', 'Sign the chart': 'chart',
+    'Take off your watch and jewellery': 'locker', 'Scrub hands and forearms': 'scrub', 'Put on the sterile gown': 'gown', 'Put on sterile gloves': 'gloves', 'Count the instruments': 'tray', 'Time out: confirm patient, procedure and site': 'optable',
+  };
+  const HOSP_ORDER = {
+    resus: ['Check for response and breathing', 'Call the crash team', 'Start chest compressions', 'Attach the defibrillator pads', 'Shock, then straight back to compressions', 'Give oxygen with the bag-valve mask'],
+    meds: ['Wash your hands', 'Read the chart: drug, dose, time', 'Collect the dose from the pharmacy', "Check the patient's wristband", 'Give the medicine', 'Sign the chart'],
+    scrub: ['Take off your watch and jewellery', 'Scrub hands and forearms', 'Put on the sterile gown', 'Put on sterile gloves', 'Count the instruments', 'Time out: confirm patient, procedure and site'],
+  };
+  const HOSP_TASK = {
+    triage: { title: 'Triage the waiting room', at: [44, 64], lead: 'Four people just came in. Read each one\'s vitals and give them a colour.' },
+    resus: { title: 'Cardiac arrest in Emergency', at: [114, 56], lead: '🚨 The patient on trolley 1 has collapsed. Do it in order.' },
+    meds: { title: 'The 2 pm medicine round', at: [220, 48], lead: 'Bed 2 is due a dose. The five rights: right patient, drug, dose, time, and write it down.' },
+    scrub: { title: 'Scrub in for theatre', at: [118, 160], lead: 'Surgery in ten minutes. Get sterile, in order, and run the final check.' },
+  };
+  Object.assign(REF_WHY, { resus: 'Is it safe and are they breathing? Call for help. Push hard and fast, and only stop to shock.', meds: 'Clean hands, the right drug and dose, the right patient, then write it down.', scrub: 'Nothing on your hands, clean hands, then gown, then gloves, then count and check.', triage: 'Red: airway, breathing, circulation or chest pain in danger. Yellow: needs a doctor soon. Green: can wait.' });
+  const HOSP_TIP = {
+    trolley: 'A resus trolley. Firm under the patient so chest compressions actually push on the heart.', crashphone: 'The crash call. One press brings the whole resuscitation team running.',
+    defib: 'The defibrillator. Pads on the bare chest, everyone stands clear, then the shock.', oxygen: 'Oxygen and the bag-valve mask: two breaths after every thirty compressions.',
+    sink: 'Hand hygiene: the cheapest, best way to stop infections moving from bed to bed.', chart: 'The drug chart. Never give anything that is not written and signed.',
+    pharm: 'The pharmacy. Check the name, the strength and the expiry date twice.', bed: 'Check the wristband against the chart, every time, even if you know the patient.',
+    locker: 'Watches and rings hide germs. They come off before you scrub.', scrub: 'Five minutes, fingertips up, forearms to the elbow.', gown: 'The sterile gown: touch only the inside as it goes on.', gloves: 'Closed gloving: your hands never touch the outside of the glove.',
+    tray: 'Count every instrument and swab before and after. Nothing gets left inside anyone.', optable: 'The time out: the whole team stops and confirms the patient, the operation and the side.',
+    hygiene: 'Wash, then scrubs. Every shift starts here.', monitor: 'Heart rate, blood pressure, oxygen. Watch the trend, not just the number.', fridge: 'Vaccines live between 2 and 8 °C. Check the thermometer.', micro: 'The lab: blood counts, malaria films, cultures. Doctors decide on what comes back from here.',
+  };
+  const HOSP = { shift: null }; // this shift: its tasks, whether you've washed and changed, the scores
+  const hospTask = () => HOSP.shift && HOSP.shift.tasks.find((tk) => !tk.done);
+  function hospStart() {
+    if (HOSP.shift && !hospTask()) { // the handover: the shift's scores
+      const sc = Math.round(HOSP.shift.tasks.reduce((a, tk) => a + tk.score, 0) / HOSP.shift.tasks.length); HOSP.shift = null; refGuideOff();
+      try { const b = +(store.get('li.hospBest') || 0); if (sc > b) store.set('li.hospBest', String(sc)); } catch {}
+      return coachSay(`Handover done. Shift score ${sc}/100. ${sc > 85 ? 'The ward is calmer for having you on it.' : sc > 60 ? 'Safe, but slow in places. Order is speed in a hospital.' : 'Go over the procedures with me: in here, the order saves lives.'} This is a practice shift: hospital pay comes with the next server update.`, [['Thanks, WYRD', null, true]], 'Shift over');
+    }
+    if (HOSP.shift) { const tk = hospTask(); return coachSay(HOSP.shift.ppe ? `You're on shift. Next: ${tk.title}. Follow the yellow beacon.` : 'Hands first: the wash station by the lockers, then scrubs. Then we start.', [['On my way', null, true]], 'On shift'); }
+    const kinds = ['triage', ...['resus', 'meds', 'scrub'].sort(() => Math.random() - 0.5).slice(0, 2)];
+    HOSP.shift = { ppe: false, tasks: kinds.map((k) => ({ kind: k, ...HOSP_TASK[k], done: false, score: 0 })) };
+    Object.assign(REF.wyrd, { tx: 73, tz: 87, until: performance.now() + 8000 });
+    coachSay(`Welcome to your shift at General Hospital. Three jobs today: ${HOSP.shift.tasks.map((tk) => tk.title.toLowerCase()).join(', ')}. First, wash your hands and change: the station by the lockers.`, [['Let\'s go', null, true]], 'Hospital shift');
+  }
+  function hospDone(tk, score, note) {
+    tk.done = true; tk.score = Math.round(Math.max(0, Math.min(100, score))); gpEl.classList.remove('on');
+    gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><button class="gpx2">✕</button></div><div class="gpbig">${tk.score}<small>/100</small></div><p>${esc(note)}</p><button class="gpgo">${hospTask() ? 'Next task' : 'Go and hand over'}</button>`);
+    gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); const n = hospTask();
+      if (n) coachSay(`Next: ${n.title}. Follow the yellow beacon.`, [['On my way', null, true]]); else { Object.assign(REF.wyrd, { tx: 50, tz: 46, until: performance.now() + 8000 }); coachSay('Every job done. Back to reception to hand over.', [['On my way', null, true]], 'Handover'); } };
+  }
+  function hospDo(tk) {
+    REF.hot = null; refGuideOff();
+    if (tk.kind === 'triage') {
+      const R = Math.random, said = ['Chest pain since this morning', 'High fever and headache', 'Cut hand, bleeding stopped', 'Short of breath, lips bluish', 'Sprained ankle', 'Vomiting since last night', 'Severe belly pain'];
+      const items = [0, 1, 2, 3].map((k) => { const hr = 70 + Math.round(R() * 70), sys = 85 + Math.round(R() * 60), o2 = 86 + Math.round(R() * 13), tmp = +(36.5 + R() * 3.2).toFixed(1), c = said[Math.floor(R() * said.length)];
+        const red = o2 < 90 || hr > 130 || sys < 90 || /Chest|breath/.test(c), yel = !red && (tmp >= 39 || hr > 110 || /belly|fever|Vomiting/.test(c));
+        return { tag: 'p' + k, label: `Patient ${k + 1}`, c, hr, sys, o2, tmp, right: red ? 'red' : yel ? 'yellow' : 'green' }; });
+      const pick = {};
+      return refHands({ kind: 'triage', free: true, title: tk.title, lead: tk.lead, items, at: [[16, 58], [30, 58], [58, 58], [72, 58]],
+        finish: () => { const wrong = items.filter((it) => pick[it.tag] !== it.right); hospDone(tk, (4 - wrong.length) / 4 * 100, wrong.length ? wrong.map((it) => `${it.label} was ${it.right.toUpperCase()}`).join('. ') + '. ' + REF_WHY.triage : 'Every colour right. The sickest were seen first.'); },
+        pick: (sp) => { const it = items[sp.i], row = (l, v, bad) => `<div class="gprow2"><span>${l}</span><b style="color:${bad ? '#F87171' : '#E2E8F0'}">${v}</b></div>`;
+          gpShow(`<div class="gphd"><b>${it.label}</b><button class="gpx2">✕</button></div><p>“${esc(it.c)}”</p>${row('Heart rate', it.hr + ' /min', it.hr > 110)}${row('Blood pressure', it.sys + ' systolic', it.sys < 90)}${row('Oxygen', it.o2 + ' %', it.o2 < 92)}${row('Temperature', it.tmp + ' °C', it.tmp >= 39)}
+            <div class="gpopts">${[['red', '🔴 Red: see now'], ['yellow', '🟡 Yellow: soon'], ['green', '🟢 Green: can wait']].map(([k, l]) => `<button data-a="${k}">${l}</button>`).join('')}</div>`);
+          gpEl.querySelector('.gpx2').onclick = gpClose;
+          gpEl.querySelectorAll('[data-a]').forEach((b) => (b.onclick = () => { pick[it.tag] = b.dataset.a; it.call = b.dataset.a; REF.hot.done.push(sp.step); gpClose(); const left = 4 - REF.hot.done.length; refGuide(left ? `Tagged ${b.dataset.a}. ${left} to go.` : 'Everyone has a colour. Sure of them? Then send them through.'); })); } });
+    }
+    const order = HOSP_ORDER[tk.kind], steps = [...order].sort(() => Math.random() - 0.5);
+    refHands({ kind: tk.kind, title: tk.title, lead: tk.lead, order, steps, clicks: [], kit: HOSP_EQUIP, stepKit: HOSP_STEP,
+      finish: (s2, h) => hospDone(tk, 100 - s2 * 15 - h * 5, s2 ? `Done, with ${s2} strike${s2 > 1 ? 's' : ''}. ${REF_WHY[tk.kind]}` : h ? 'Done right, with a little help. Next time from memory.' : 'Textbook. Calm, clean and in order.') });
+  }
+  function hospAct() { // the hospital's own buttons: wash and change, then each job at its place
+    const S = HOSP.shift; if (!S) return null; const tk = hospTask();
+    if (!S.ppe && tk && Math.hypot(me.x - 70, me.z - 90) < 9) return { label: '🧼 Wash your hands and put on scrubs', run: () => { S.ppe = true; REF.flash = { x: 70, z: 90, ok: true, at: performance.now() }; coachSay(`Clean hands, scrubs on. First job: ${tk.title}. Follow the yellow beacon.`, [['On my way', null, true]], 'Ready'); } };
+    if (tk && !REF.hot && Math.hypot(me.x - tk.at[0], me.z - tk.at[1]) < 12) return S.ppe ? { label: `🩺 ${tk.title}`, run: () => hospDo(tk) } : { label: '🧼 Wash your hands first', run: () => { Object.assign(REF.wyrd, { tx: 73, tz: 87, until: performance.now() + 7000 }); coachSay('Hands before patients. The wash station is by the lockers: follow me.', [['Going', null, true]], 'Hand hygiene'); } };
+    return null;
+  }
+  function hospBed(bx, bz, who) { box(bx, 0, bz, bx + 10, 2.4, bz + 16, '#F8FAFC'); box(bx + 0.4, 2.4, bz + 4, bx + 9.6, 2.9, bz + 16, '#93C5FD'); box(bx, 2.4, bz, bx + 10, 3.6, bz + 2.5, '#E2E8F0');
+    if (who) { box(bx + 2.5, 2.9, bz + 5, bx + 7.5, 4, bz + 13, '#BFDBFE'); refDot(bx + 5, 4.4, bz + 3.5, who, 1.4); } box(bx + 10.5, 0, bz + 2, bx + 11, 9, bz + 2.5, '#94A3B8'); box(bx + 10, 7.5, bz + 1.6, bx + 11.6, 9, bz + 2.2, '#E0F2FE'); }
+  function hospDraw(R, now) {
+    const t = now / 1000, o = REF.hot, arrest = o && o.kind === 'resus' && o.next < 5, S = HOSP.shift, tk = hospTask();
+    for (const [x0, z0, x1, z1] of [[4, 100, 256, 106], [84, 4, 90, 186], [172, 4, 178, 186]]) flat(x0, z0, x1, z1, 0.03, '#BAE6FD'); // the corridors
+    // reception and triage
+    wzone(8, 8, 82, 66, '#F1F5F9', 'RECEPTION & TRIAGE'); box(20, 0, 30, 68, 4, 34, '#F8FAFC'); box(19.6, 4, 29.6, 68.4, 4.4, 34.4, '#DC2626'); wscreen(36, 52, 6, 11, 0.3, t, 200); faceText('GENERAL HOSPITAL · RECEPTION', 44, 13, 0.35, '#DC2626', 1.8, 2);
+    for (const [cx, cz] of [[16, 54], [30, 54], [58, 54], [72, 54]]) box(cx - 2, 0, cz - 2, cx + 2, 2.2, cz + 2, '#0EA5E9');
+    if (o && o.kind === 'triage' && PEOPLE.ok) o.items.forEach((it, k) => { const at = [[16, 54], [30, 54], [58, 54], [72, 54]][k]; person3d(at[0], at[1] - 0.5, '#FFFFFF', 'patient:' + k, now, parseLook(`${k % 2 ? 'f' : 'm'},${k},${k % 4},${(k + 1) % 4},0,st_tee`, 'patient' + k), 'sit', 2.2); if (it.call) groundText({ red: '🔴', yellow: '🟡', green: '🟢' }[it.call], at[0], at[1] + 5, 2.6, '#000'); });
+    // the emergency room
+    wzone(92, 8, 170, 72, '#FEE2E2', 'EMERGENCY'); for (const tx of [104, 142]) box(tx, 0, 26, tx + 18, 3, 34, '#E2E8F0'); box(108, 3, 27, 118, 4.2, 33, '#BFDBFE'); refDot(105.8, 4.5, 30, '#7C5A44', 1.3);
+    box(126, 0, 24, 127, 8, 25, '#64748B'); box(124, 8, 23, 130, 12, 24.4, '#0F172A'); { const pts = []; for (let i = 0; i <= 20; i++) { const u = i / 20, ph = (t * 1.2 + u) % 1; pts.push(P(124.5 + u * 5, 10 + (arrest ? 0 : ph > 0.9 ? 1.4 : ph > 0.85 ? -0.6 : 0), 24.45)); } x.strokeStyle = arrest ? '#F87171' : '#4ADE80'; x.lineWidth = 1.5; x.beginPath(); pts.forEach((p, i) => (i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]))); x.stroke(); }
+    box(130, 0, 42, 136, 4, 46, '#DC2626'); box(131, 4, 43, 135, 6, 45.5, '#FACC15'); refPost(97, 20, '#DC2626'); cylLit(100, 42, 1, 0, 6, '#16A34A'); cylLit(102.4, 42, 1, 0, 6, '#16A34A');
+    if (o && o.kind === 'resus' && o.done.includes('Start chest compressions') && arrest) { const p = P(113, 5 + Math.abs(Math.sin(t * 10)) * 0.6, 30); x.fillStyle = 'rgba(248,113,113,0.5)'; x.beginPath(); x.arc(p[0], p[1], K * 1.2, 0, Math.PI * 2); x.fill(); }
+    // the ward
+    wzone(180, 8, 254, 94, '#F1F5F9', 'WARD'); for (let i = 0; i < 6; i++) hospBed(186 + (i % 3) * 22, i < 3 ? 12 : 54, i === 1 || i % 2 ? ['#7C5A44', '#C68642', '#3B2219'][i % 3] : null);
+    box(211, 0, 33, 215, 3, 34, '#F8FAFC'); box(244, 0, 88, 252, 4, 92, '#E2E8F0'); groundText('BED 2', 213, 10, 1.6, '#0369A1');
+    // the pharmacy
+    wzone(8, 110, 82, 176, '#DCFCE7', 'PHARMACY'); for (let k = 0; k < 5; k++) box(10 + k * 12, 0, 112, 20 + k * 12, 10, 115, '#F8FAFC'); box(14, 0, 128, 78, 4, 132, '#16A34A'); box(70, 0, 116, 80, 10, 120, '#E0F2FE');
+    // theatre, behind glass
+    wzone(92, 110, 170, 176, '#E0E7FF', 'THEATRE'); box(122, 0, 136, 142, 3.4, 142, '#94A3B8'); cylLit(132, 139, 3.5, 15, 0.8, '#F8FAFC'); box(108, 0, 132, 114, 8, 138, '#64748B'); box(146, 0, 130, 152, 3.6, 134, '#CBD5E1');
+    box(96, 0, 152, 104, 4, 156, '#E2E8F0'); box(160, 0, 152, 168, 7, 154, '#3B82F6'); box(150, 0, 152, 154, 4, 154, '#F8FAFC'); box(100, 0, 114, 106, 4, 118, '#64748B');
+    wglass(92, 110, 170, 176, 10); for (const dx of [124, 140]) box(dx - 0.4, 0, 175.6, dx + 0.4, 10, 176.4, '#334155');
+    // the lab
+    wzone(180, 110, 254, 176, '#FEF9C3', 'LAB'); box(186, 0, 114, 250, 3.6, 120, '#F8FAFC'); for (let k = 0; k < 4; k++) { cylLit(194 + k * 14, 117, 1, 3.6, 2.5, '#64748B'); } box(240, 0, 140, 250, 10, 148, '#E0F2FE');
+    // lockers and the hand-wash station
+    wzone(8, 70, 82, 98, '#E7E5E4', 'STAFF'); for (let k = 0; k < 10; k++) box(10 + k * 5, 0, 72, 14.4 + k * 5, 8, 75, k % 2 ? '#64748B' : '#475569'); box(66, 0, 84, 74, 4, 87, '#E2E8F0'); cylLit(70, 85.5, 0.4, 4, 2, '#94A3B8');
+    wwall('LAGOS ISLAND GENERAL HOSPITAL', 130, 17, '#DC2626', 3.2);
+    // where your shift sends you: a yellow beacon on the next job
+    if (S && S.ppe && tk && !o) { const base = P(tk.at[0], 0, tk.at[1]), top = P(tk.at[0], 22, tk.at[1]); x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createLinearGradient(base[0], base[1], top[0], top[1]); g.addColorStop(0, 'rgba(250,204,21,0.55)'); g.addColorStop(1, 'rgba(250,204,21,0)'); x.fillStyle = g; x.fillRect(base[0] - K * 1.2, top[1], K * 2.4, base[1] - top[1]); x.restore();
+      x.font = '800 12px "Plus Jakarta Sans", sans-serif'; const lbl = `🩺 ${tk.title}`, w = x.measureText(lbl).width + 16; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(top[0] - w / 2, top[1] - 12, w, 22, 11); x.fill(); x.fillStyle = '#FDE68A'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(lbl, top[0], top[1] - 1); }
+    kitFloor(R, now, o, arrest, arrest);
+  }
   const WORK_ROOMS = {
     refinery: { w: 260, d: 180, floor: '#9CA3AF', wall: '#E5E7EB', trim: '#F59E0B', desk: [40, 56, '🛢️ Start a refinery shift', () => openPhone('refinery')],
       // where a shift's tasks are, inside (the same names the shift uses outside)
@@ -6787,14 +6902,14 @@
         box(104, 0, 76, 136, 4, 80, '#3F2A18'); box(103.6, 4, 75.6, 136.4, 4.4, 80.4, '#D4AF37'); groundText('POOL BAR', 120, 72, 1.8, '#B08A43');
         box(66, 0, 90, 72, 4, 94, '#D4AF37'); // a luggage trolley
       } },
-    hospital: { w: 150, d: 100, floor: '#E0F2FE', wall: '#F8FAFC', trim: '#DC2626', desk: [30, 22, '🏥 See a doctor', null],
-      draw(R, now) {
-        box(14, 0, 14, 46, 4, 18, '#F8FAFC'); box(13.6, 4, 13.6, 46.4, 4.4, 18.4, '#DC2626'); wwall('TRIAGE', 30, 12, '#DC2626', 2.4);
-        wzone(56, 6, 146, 50, '#F1F5F9', 'WARD'); for (let k = 0; k < 6; k++) { const bx = 62 + k * 14; box(bx, 0, 10, bx + 7, 2.2, 22, '#F8FAFC'); box(bx + 0.4, 2.2, 13, bx + 6.6, 2.6, 22, '#93C5FD'); box(bx, 2.2, 10, bx + 7, 3.4, 12, '#E2E8F0'); box(bx + 8.5, 0, 8, bx + 9, 9, 26, '#BFDBFE'); }
-        wzone(8, 60, 50, 94, '#DCFCE7', 'PHARMACY'); for (let k = 0; k < 4; k++) box(10 + k * 10, 0, 62, 18 + k * 10, 10, 64, '#F8FAFC'); box(12, 0, 74, 46, 4, 78, '#16A34A');
-        wzone(96, 60, 146, 96, '#E0E7FF', 'THEATRE'); box(112, 0, 74, 130, 3.4, 80, '#94A3B8'); cylLit(121, 77, 3, 14, 0.8, '#F8FAFC'); wglass(96, 60, 146, 96, 10);
-        wwall('GENERAL HOSPITAL', 90, 15.5, '#DC2626', 3);
-      } },
+    hospital: { w: 260, d: 186, floor: '#E0F2FE', wall: '#F8FAFC', trim: '#DC2626', desk: [44, 40, '🏥 Hospital shift', () => hospStart()],
+      ppe: [70, 90], handover: [44, 40], ppeLabel: '🧼 Wash hands here', kit: HOSP_EQUIP, tips: HOSP_TIP, hum: [],
+      shift: () => ({ due: HOSP.shift && !HOSP.shift.ppe && hospTask(), hand: HOSP.shift && !hospTask() }),
+      solids: [[20, 30, 68, 34], [14, 52, 18, 56], [28, 52, 32, 56], [56, 52, 60, 56], [70, 52, 74, 56], [104, 26, 122, 34], [142, 26, 160, 34], [126, 23, 130, 25], [130, 42, 136, 46], [99, 41, 103.4, 43],
+        [186, 12, 197, 28], [208, 12, 219, 28], [230, 12, 241, 28], [186, 54, 197, 70], [208, 54, 219, 70], [230, 54, 241, 70], [244, 88, 252, 92],
+        [10, 112, 70, 115], [14, 128, 78, 132], [70, 116, 80, 120], [122, 136, 142, 142], [108, 132, 114, 138], [146, 130, 152, 134], [96, 152, 104, 156], [160, 152, 168, 154], [150, 152, 154, 154], [100, 114, 106, 118],
+        [92, 175.6, 124, 176.4], [140, 175.6, 170, 176.4], [169.6, 110, 170.4, 176], [186, 114, 250, 120], [240, 140, 250, 148], [10, 72, 60, 75], [66, 84, 74, 87]],
+      draw(R, now) { hospDraw(R, now); } },
     bank: { w: 140, d: 100, floor: '#F5F5F4', wall: '#F1F5F9', trim: '#B8860B', desk: [70, 40, '🏦 Your money', null],
       draw(R, now) {
         for (let k = 0; k < 6; k++) { const bx = 22 + k * 17; box(bx, 0, 24, bx + 14, 4.4, 30, '#3F2A18'); box(bx - 0.2, 4.4, 23.8, bx + 14.2, 4.8, 30.2, '#D4AF37'); quad([P(bx, 4.8, 30.1), P(bx + 14, 4.8, 30.1), P(bx + 14, 10, 30.1), P(bx, 10, 30.1)], 'rgba(186,230,253,0.3)', 'rgba(255,255,255,0.8)'); faceText(String(k + 1), bx + 7, 9, 30.2, '#B8860B', 1.6); }
@@ -7952,6 +8067,7 @@
   { const d = new URLSearchParams(location.search).get('refdemo'); if (d) setTimeout(() => { // ?in=refinery&refdemo=fire tries a refinery task on the floor, with no shift (for testing)
     const sh = (a) => [...a].sort(() => Math.random() - 0.5), seq = { startup: ['Check the valve line-up', 'Open the suction valve', 'Vent and prime the pump', 'Start the motor', 'Slowly open the discharge valve', 'Check the pressure and the flow'], fire: ['Raise the alarm', "Hit the pump's emergency stop", 'Close the block valves either side', 'Turn the fire monitor on the fire', 'Count everyone at the muster point', 'Brief the fire team when they arrive'], leak: ['Raise the alarm and call it in', 'Move upwind and test the air', 'Put on breathing apparatus', 'Isolate the leaking line', 'Drain and purge the line', 'Gas-test again before anyone goes back'] };
     const rd = (k) => ({ tag: 'G-' + k, label: 'Gauge G-' + (100 + k), read: (k % 2 ? 9 : 4) + ' bar', lim: 'normal 3 to 6 bar' }), pm = (k) => ({ tag: 'J-' + k, label: 'Hot work job ' + (k + 1), read: `LEL ${k % 3 ? 2 : 14} %, O₂ 20.9 %, H₂S 0 ppm`, lim: 'LEL < 10 %, O₂ 19.5 to 23.5 %, H₂S < 5 ppm' });
+    if (d === 'hospital') return hospStart(); // ?in=hospital&refdemo=hospital starts a shift
     const tk = d === 'turbines' ? { type: 'turbine', title: 'Turbine checks', units: [{ u: 1, temp: 540, vib: 3.1, oil: 3.2 }, { u: 2, temp: 631, vib: 4.2, oil: 2.8 }, { u: 3, temp: 566, vib: 9.4, oil: 2.6 }] }
       : d === 'balance' ? { type: 'balance', title: 'Evening peak: a turbine trips', sun: 0 } : seq[d] ?{ type: 'seq', name: d, title: { fire: 'Pump seal fire', leak: 'H₂S leak', startup: 'Start the loading pump' }[d], steps: sh(seq[d]) }
       : d === 'loading' ? { type: 'loading', title: 'Load a tanker', product: 'AGO (diesel)', litres: 15000, caps: [10000, 15000, 20000], steps: sh(['Chock the wheels', 'Clip on the earth clamp', 'Wait for the green earth light', 'Open the compartment hatch', 'Lower the loading arm', 'Load to the preset', 'Raise the arm and close the hatch', 'Seal the hatch and sign the docket', 'Unclip the earth clamp']) }
@@ -11072,8 +11188,9 @@
       else if (inside.kind === 'bunker' && inside.up && Math.hypot(me.x - inside.w / 2, me.z - (inside.d - 6)) < 6) { const up = inside.up; next = { label: '⬆ Up to the house', run: () => enterRoom('home', up.key, up.title, { stairs: true, style: 'nml' }) }; }
       if (!next && inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
-      if (!next && refHere() && REF.handover && GJ.shift && Math.hypot(me.x - floorOf().handover[0], me.z - floorOf().handover[1]) < 10) next = { label: '📝 Hand over and finish the shift', run: () => { REF.handover = false; gridFinish(); } }; // a refinery shift ends with the handover in the control room
-      if (!next && refHere() && GJ.shift && gridTask() && REF.ppe !== GJ.shift.id && Math.hypot(me.x - floorOf().ppe[0], me.z - floorOf().ppe[1]) < 9) next = { label: '🦺 Put on your PPE', run: () => { REF.ppe = GJ.shift.id; REF.flash = { x: floorOf().ppe[0], z: floorOf().ppe[1], ok: true, at: performance.now() }; coachSay('Hard hat, coverall, boots, gloves, glasses, and the gas monitor clipped on. Now you can work. Follow the yellow beacon.', [['On my way', null, true]], 'Suited up'); } };
+      if (!next && gridFloor() && REF.handover && GJ.shift && Math.hypot(me.x - floorOf().handover[0], me.z - floorOf().handover[1]) < 10) next = { label: '📝 Hand over and finish the shift', run: () => { REF.handover = false; gridFinish(); } }; // a refinery shift ends with the handover in the control room
+      if (!next && gridFloor() && GJ.shift && gridTask() && REF.ppe !== GJ.shift.id && Math.hypot(me.x - floorOf().ppe[0], me.z - floorOf().ppe[1]) < 9) next = { label: '🦺 Put on your PPE', run: () => { REF.ppe = GJ.shift.id; REF.flash = { x: floorOf().ppe[0], z: floorOf().ppe[1], ok: true, at: performance.now() }; coachSay('Hard hat, coverall, boots, gloves, glasses, and the gas monitor clipped on. Now you can work. Follow the yellow beacon.', [['On my way', null, true]], 'Suited up'); } };
+      if (!next && refHere() && inside.place === 'hospital') next = hospAct(); // the hospital: wash and change, then each job at its place
       if (!next && inside.kind === 'work' && WORK_ROOMS[inside.place]) { const Wd = WORK_ROOMS[inside.place], dk = Wd.desk; if (dk && Math.hypot(me.x - dk[0], me.z - dk[1]) < 10) next = { label: dk[2], run: () => workDesk(inside, dk) }; }
       if (!next && refHere()) { // the refinery: the kit in front of you, or your task's spot
         const sp = refSpots().map((v) => [Math.hypot(me.x - v.x, me.z - v.z), v]).filter((v) => v[0] < 6).sort((a, b) => a[0] - b[0])[0];
