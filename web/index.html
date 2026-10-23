@@ -504,6 +504,8 @@
   #wyrdGuide .wgl { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 3px; max-height: 120px; overflow-y: auto; } #wyrdGuide .wgl li { font-size: 12px; padding: 4px 8px; border-radius: 8px; background: rgba(34,197,94,.12); color: #BBF7D0; } #wyrdGuide .wgl li::before { content: '✓ '; font-weight: 800; } #wyrdGuide .wgl li.q { background: rgba(250,204,21,.12); color: #FDE68A; } #wyrdGuide .wgl li.q::before { content: '→ '; }
   #wyrdGuide .wgb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } #wyrdGuide .wgb button { border: 0; border-radius: 999px; padding: 7px 13px; font: 700 12.5px 'Plus Jakarta Sans', sans-serif; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; } #wyrdGuide .wgb button.main { background: linear-gradient(135deg, #FACC15, #F97316); color: #1C1917; }
   #wyrdGuide .wgb em { font-style: normal; font-size: 12px; font-weight: 800; color: #F87171; } #wyrdGuide .wgb em.h { color: #FDE68A; }
+  #wyrdGuide .wgnear { margin-top: 8px; font-size: 12px; font-weight: 700; color: #67E8F9; min-height: 1.2em; } #wyrdGuide .wgnear:empty { display: none; }
+  #wyrdGuide.shake { animation: wgEdge 6s linear infinite, wgShake .4s; } @keyframes wgShake { 20%, 60% { margin-left: -6px; } 40%, 80% { margin-left: 6px; } }
   #wyrdGuide.min p, #wyrdGuide.min .wgl, #wyrdGuide.min .wgb { display: none; } #wyrdGuide.min .wgx { transform: rotate(180deg); }
   @media (max-width: 520px) { #wyrdGuide { top: calc(72px + env(safe-area-inset-top)); width: calc(100vw - 24px); } #wyrdGuide .wgl { max-height: 70px; } }
   /* live chat: someone typing (three bouncing dots in a bubble), and read ticks turning blue */
@@ -6510,7 +6512,8 @@
   const wscreen = (x0, x1, y0, y1, z, t, hue) => { const q = [P(x0, y0, z), P(x1, y0, z), P(x1, y1, z), P(x0, y1, z)], g = x.createLinearGradient(q[0][0], q[3][1], q[1][0], q[0][1]); g.addColorStop(0, `hsl(${hue},70%,${18 + Math.sin(t) * 4}%)`); g.addColorStop(1, `hsl(${hue + 40},70%,30%)`); quad(q, g, '#0F172A'); };
   // ---- the refinery floor: the machines, and the job done on them by hand, with WYRD alongside
   const REF = { hot: null, live: null, wyrd: { x: 52, z: 64, tx: 0, tz: 0, until: 0 }, flash: null };
-  const refHere = () => !!(inside && inside.kind === 'work' && inside.place === 'refinery');
+  const refHere = () => !!(inside && inside.kind === 'work' && (inside.place === 'refinery' || inside.place === 'grid')); // a floor where the job is done by hand
+  const floorOf = () => WORK_ROOMS[inside.place];
   const REF_EQUIP = { // the kit each step is done on: [its name, x, z where you stand to use it]
     alarm: ['Fire alarm call point', 92, 74], estop: ['P-101 emergency stop', 132, 74], block: ['P-101 block valves', 106, 70], monitor: ['Fire monitor', 164, 72],
     muster: ['Muster point', 100, 150], fireteam: ['Fire team gate', 130, 166],
@@ -6525,7 +6528,7 @@
     'Chock the wheels': 'chocks', 'Clip on the earth clamp': 'clamp', 'Wait for the green earth light': 'elight', 'Open the compartment hatch': 'hatch', 'Lower the loading arm': 'arm', 'Load to the preset': 'meter', 'Raise the arm and close the hatch': 'arm', 'Seal the hatch and sign the docket': 'hatch', 'Unclip the earth clamp': 'clamp',
   };
   const REF_ARM = { 'PMS (petrol)': [196, '#EF4444'], 'AGO (diesel)': [210, '#EAB308'], 'DPK (kerosene)': [224, '#3B82F6'], 'Jet A-1': [238, '#64748B'] };
-  const REF_WHY = { fire: 'People first, then cut the fuel, then fight the fire, then count heads.', leak: 'Warn everyone, get yourself safe and masked, then fix the line, then prove it.', startup: 'Liquid in before power on, then build the pressure slowly.', loading: 'No spark before the earth, no product before the hatch and the arm.', rounds: 'Read each gauge against its normal range.', permits: 'Every reading must be safe before you sign.' };
+  const REF_WHY = { fire: 'People first, then cut the fuel, then fight the fire, then count heads.', leak: 'Warn everyone, get yourself safe and masked, then fix the line, then prove it.', startup: 'Liquid in before power on, then build the pressure slowly.', loading: 'No spark before the earth, no product before the hatch and the arm.', rounds: 'Read each gauge against its normal range.', permits: 'Every reading must be safe before you sign.', turbines: 'Too hot: reduce load. Shaking or short of oil: shut it down. Otherwise keep it running.' };
   const ROUND_AT = [[92, 42], [112, 46], [138, 44], [150, 70], [100, 62], [176, 44]], PERMIT_AT = [[216, 22], [216, 66], [194, 44], [240, 44], [202, 86], [232, 86]];
   // what you can use right now: each kit once, offering its first step still to do (or each reading, on a round)
   function refSpots() {
@@ -6558,10 +6561,11 @@
     const o = REF.hot; if (!o) return; const n = o.free ? o.items.length : o.order.length, k = o.free ? o.done.length : o.next;
     wg.innerHTML = `<div class="wgh"><i class="orb"></i><div class="wgt"><b>WYRD <em>guiding</em></b><small>${esc(o.title)}</small></div><span class="wgn">${k}<small>/${n}</small></span><button class="wgx" aria-label="Fold">▾</button></div>
       <div class="wgbar">${Array.from({ length: n }, (_, j) => `<i class="${j < k ? 'ok' : j === k ? 'now' : ''}"></i>`).join('')}</div>
+      <div class="wgnear"></div>
       <p class="${bad ? 'bad' : ''}"></p>
       ${o.free ? '' : `<ol class="wgl">${o.order.slice(0, o.next).map((s) => `<li>${esc(s)}</li>`).join('')}<li class="q">Step ${o.next + 1}: your call</li></ol>`}
-      <div class="wgb">${o.free ? (o.done.length >= n ? '<button data-f class="main">✔ ' + (o.kind === 'permits' ? 'Sign the permits' : 'Log the rounds') + '</button>' : '') : '<button data-h>💡 Hint</button><button data-s>📍 Show me</button>'}${o.strikes ? `<em>✖ ${o.strikes} strike${o.strikes > 1 ? 's' : ''}</em>` : ''}${o.hints ? `<em class="h">${o.hints} hint${o.hints > 1 ? 's' : ''} (−${o.hints * 5})</em>` : ''}</div>`;
-    wg.classList.toggle('min', !!refGuide.min); wg.classList.add('on');
+      <div class="wgb">${o.free ? (o.done.length >= n ? '<button data-f class="main">✔ ' + (o.kind === 'permits' ? 'Sign the permits' : o.kind === 'turbines' ? 'Log the decisions' : 'Log the rounds') + '</button>' : '') : '<button data-h>💡 Hint</button><button data-s>📍 Show me</button>'}${o.strikes ? `<em>✖ ${o.strikes} strike${o.strikes > 1 ? 's' : ''}</em>` : ''}${o.hints ? `<em class="h">${o.hints} hint${o.hints > 1 ? 's' : ''} (−${o.hints * 5})</em>` : ''}</div>`;
+    wg.classList.toggle('min', !!refGuide.min); wg.classList.add('on'); if (bad) { wg.classList.remove('shake'); void wg.offsetWidth; wg.classList.add('shake'); }
     const p = wg.querySelector('p'); let c = 0; clearInterval(refGuide.t); refGuide.t = setInterval(() => { c += 2; p.textContent = say.slice(0, c); if (c >= say.length) clearInterval(refGuide.t); }, 16);
     wg.querySelector('.wgx').onclick = () => { refGuide.min = !refGuide.min; wg.classList.toggle('min', refGuide.min); };
     const h = wg.querySelector('[data-h]'), s = wg.querySelector('[data-s]'), f = wg.querySelector('[data-f]');
@@ -6584,12 +6588,12 @@
     hatch: 'The compartment hatches. One product, one compartment.', meter: 'The preset meter. It stops the flow at the litres on the docket.', arm: 'The loading arms, colour-coded: red petrol, yellow diesel, blue kerosene, grey jet fuel.',
   };
   // the floor's sounds: a pump's hum when you're near one, the alarm in an emergency (only once sound is on)
-  function refSound(now, emergency, alarm) {
+  function refSound(now, emergency, alarm, hum) {
     const c = AX.ctx; if (!c || c.state !== 'running' || !CITY.on) return;
     if (!REF.snd) { const hum = c.createOscillator(), hg = c.createGain(), al = c.createOscillator(), ag = c.createGain(); hum.type = 'sawtooth'; hum.frequency.value = 50; al.type = 'square'; al.frequency.value = 880; hg.gain.value = 0; ag.gain.value = 0;
       const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 180; hum.connect(lp); lp.connect(hg); hg.connect(c.destination); al.connect(ag); ag.connect(c.destination); hum.start(); al.start(); REF.snd = { hg, ag, al };
       setInterval(() => { if (performance.now() - REF.sndAt > 400) { REF.snd.hg.gain.value = 0; REF.snd.ag.gain.value = 0; } }, 300); }
-    REF.sndAt = now; const d = Math.min(Math.hypot(me.x - 120, me.z - 64), Math.hypot(me.x - 166, me.z - 122)), tt = now / 1000;
+    REF.sndAt = now; const d = Math.min(1e9, ...hum.map(([hx, hz]) => Math.hypot(me.x - hx, me.z - hz))), tt = now / 1000;
     REF.snd.hg.gain.setTargetAtTime(Math.max(0, 1 - d / 40) * 0.05, c.currentTime, 0.2);
     REF.snd.ag.gain.setTargetAtTime(alarm ? (Math.floor(tt * 3) % 2 ? 0.035 : 0) : 0, c.currentTime, 0.02); REF.snd.al.frequency.value = emergency && Math.floor(tt) % 2 ? 660 : 880;
   }
@@ -6662,26 +6666,94 @@
     groundText('FIRE TEAM', 130, 168, 1.8, '#B91C1C');
     wwall('LEKKI FREE ZONE REFINERY', 130, 17, '#B45309', 3.6);
     if (alarm) { const on = Math.floor(t * 3) % 2; for (const lx of [40, 130, 220]) refDot(lx, 18, 0.5, on ? (fire ? '#EF4444' : '#FACC15') : '#334155', 1.4); }
+    kitFloor(R, now, o, fire || leak, alarm);
+  }
+  // what every hands-on floor shares: the rings on the kit, where to suit up and hand over, WYRD's tips, the sounds, WYRD himself
+  function kitFloor(R, now, o, emergency, alarm) {
+    const t = now / 1000, F = WORK_ROOMS[R.place];
+    { const el = wg.querySelector('.wgnear'); if (el && o) { let best = null; for (const v of refSpots()) { const d = Math.hypot(me.x - v.x, me.z - v.z); if (!best || d < best[0]) best = [d, v]; } // the guide card says what you're nearest
+      const txt = best ? (best[0] < 6 ? `🔧 At the ${best[1].name}: use the action button` : `📍 Nearest: ${best[1].name} · ${Math.round(best[0] / 2)} m`) : ''; if (el.textContent !== txt) el.textContent = txt; } }
     // the rings on everything you can use now, and a flash where you just did
     for (const v of refSpots()) { const p = P(v.x, 0.06, v.z), r = K * (2.2 + 0.25 * Math.sin(t * 4 + v.x)); x.strokeStyle = 'rgba(56,189,248,0.9)'; x.lineWidth = Math.max(2, K * 0.3); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke();
       if (Math.hypot(me.x - v.x, me.z - v.z) < 40) { const q = P(v.x, 8, v.z); x.font = '700 11px "Plus Jakarta Sans", sans-serif'; const w = x.measureText(v.name).width + 12; x.fillStyle = 'rgba(15,23,42,0.75)'; x.beginPath(); x.roundRect(q[0] - w / 2, q[1] - 9, w, 18, 9); x.fill(); x.fillStyle = '#BAE6FD'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(v.name, q[0], q[1]); } }
     if (REF.flash && now - REF.flash.at < 700) { const f = REF.flash, p = P(f.x, 0.08, f.z), k2 = (now - f.at) / 700, r = K * (2 + k2 * 6); x.strokeStyle = f.ok ? `rgba(74,222,128,${1 - k2})` : `rgba(248,113,113,${1 - k2})`; x.lineWidth = Math.max(3, K * 0.5); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); }
     // where to go when it isn't a task: suit up first, hand over at the end
-    { const ppeDue = GJ.shift && gridTask() && REF.ppe !== GJ.shift.id, mark = ppeDue ? [36, 142, '🦺 Suit up here'] : REF.handover && GJ.shift ? [40, 56, '📝 Hand over here'] : null;
+    { const ppeDue = GJ.shift && gridTask() && REF.ppe !== GJ.shift.id, mark = ppeDue ? [F.ppe[0], F.ppe[1], '🦺 Suit up here'] : REF.handover && GJ.shift ? [F.handover[0], F.handover[1], '📝 Hand over here'] : null;
       if (mark) { const p = P(mark[0], 0.06, mark[1]), r = K * (3 + Math.sin(t * 4) * 0.4); x.strokeStyle = '#FACC15'; x.lineWidth = Math.max(2, K * 0.4); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke();
         const q = P(mark[0], 10, mark[1]); x.font = '800 12px "Plus Jakarta Sans", sans-serif'; const w = x.measureText(mark[2]).width + 16; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(q[0] - w / 2, q[1] - 11, w, 22, 11); x.fill(); x.fillStyle = '#FDE68A'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(mark[2], q[0], q[1]); } }
     // WYRD's word on whatever kit you walk past (once a minute each, never mid-procedure)
-    if (!o) for (const [k, e] of Object.entries(REF_EQUIP)) if (REF_TIP[k] && Math.hypot(me.x - e[1], me.z - e[2]) < 7 && now - (REF.tipAt[k] || -1e9) > 60000) { REF.tipAt[k] = now; bubbles.set('wyrd', { text: REF_TIP[k], until: now + 6500 }); break; }
-    refSound(now, fire || leak, alarm);
+    if (!o) for (const [k, e] of Object.entries(F.kit || {})) if ((F.tips || {})[k] && Math.hypot(me.x - e[1], me.z - e[2]) < 7 && now - (REF.tipAt[k] || -1e9) > 60000) { REF.tipAt[k] = now; bubbles.set('wyrd', { text: (F.tips || {})[k], until: now + 6500 }); break; }
+    refSound(now, emergency, alarm, F.hum || []);
     // WYRD, floating with you on the floor
     { const w = REF.wyrd, tk = gridTask(), ri = refInside(tk);
-      const [tx, tz] = w.until > now ? [w.tx, w.tz] : o ? [me.x + 6, me.z - 6] : ri ? [ri[0] + 5, ri[1] - 4] : [R.desk ? 47 : 47, 51];
+      const [tx, tz] = w.until > now ? [w.tx, w.tz] : o ? [me.x + 6, me.z - 6] : ri ? [ri[0] + 5, ri[1] - 4] : [F.desk[0] + 7, F.desk[1] - 5];
       w.x += (tx - w.x) * 0.04; w.z += (tz - w.z) * 0.04; drawWyrd(now, w.x, w.z); }
+  }
+  // ---- the power station floor: three gas turbines, the transformer yard, the switchgear, the control room
+  const GT_X = [44, 112, 180];
+  const PLANT_KIT = { // the kit WYRD talks you through: [its name, x, z]
+    lcp1: ['GT-1 control panel', 44, 56], lcp2: ['GT-2 control panel', 112, 56], lcp3: ['GT-3 control panel', 180, 56],
+    intake: ['Air intake filters', 24, 48], co2: ['CO₂ fire suppression', 98, 50], gen: ['Generator', 125, 42],
+    xfmr: ['Step-up transformers', 220, 48], switch: ['Switchgear', 160, 114], console: ['Grid control console', 30, 128], ppe: ['Lockers & PPE', 246, 150],
+  };
+  const PLANT_TIP = {
+    lcp1: 'Each turbine\'s local control panel: exhaust temperature, vibration, oil pressure. Read them like a doctor reads a pulse.',
+    lcp2: 'Limits to remember: exhaust under 600 °C, vibration under 8 mm/s, oil over 2 bar. Break one and the machine is in danger.',
+    lcp3: 'Too hot: ease the load. Shaking or starved of oil: shut it down before it eats itself.',
+    intake: 'The air intake. A gas turbine swallows tonnes of air a minute; Harmattan dust clogs these filters fast.',
+    co2: 'CO₂ bottles. If the enclosure catches fire, they flood it and smother the flames. Nobody stays inside when they go.',
+    gen: 'The generator. The turbine spins it at 3,000 rpm: that is the island\'s 50 Hz.',
+    xfmr: 'Step-up transformers: 11 kV from the generators up to 132 kV for the lines. Never inside the fence when they are live.',
+    switch: 'The switchgear. Breakers that connect each turbine and feeder to the busbar. Green: open. Red: closed and live.',
+    console: 'Grid control. Demand moves every second; you move generation to match it. The frequency tells you who is winning.',
+    ppe: 'Hard hat, ear defenders, boots, gloves. The hall is loud enough to damage hearing in minutes.',
+  };
+  const PLANT = { call: {} }; // the calls you made on each turbine this shift: keep, reduce or shut
+  function plantDraw(R, now) {
+    const t = now / 1000, o = REF.hot, live = REF.grid && gpEl.classList.contains('on') ? REF.grid : null, fq = live ? live.freq() : null;
+    for (const [x0, z0, x1, z1] of [[4, 88, 276, 93], [98, 93, 103, 186], [216, 4, 221, 93], [216, 93, 221, 186]]) flat(x0, z0, x1, z1, 0.03, '#FACC15'); // the walkways
+    // the turbine hall
+    wzone(6, 6, 214, 86, '#475569', 'TURBINE HALL', 'rgba(250,204,21,0.5)');
+    for (let k = 0; k < 3; k++) {
+      const tx = GT_X[k], u = k + 1, call = PLANT.call[u], tripped = fq && fq.tripped && u === 2;
+      const load = live ? live.S['t' + u] / 400 : call === 'shut' ? 0 : call === 'reduce' ? 0.45 : 0.85, run = tripped ? 0 : load;
+      box(tx - 30, 0, 18, tx - 20, 16, 42, '#94A3B8'); for (let f = 0; f < 5; f++) box(tx - 30.2, 2 + f * 2.8, 42, tx - 19.8, 3.4 + f * 2.8, 42.3, '#64748B'); // the intake filter house
+      cylLit(tx - 25, 30, 3.2, 16, 22, '#71717A'); if (run > 0.05) { x.save(); x.globalAlpha = 0.18 * run; for (let h = 0; h < 3; h++) { const p = P(tx - 25 + Math.sin(t + h) * 1.5, 40 + ((t * 4 + h * 3) % 9), 30); x.fillStyle = '#E2E8F0'; x.beginPath(); x.arc(p[0], p[1], K * (2 + h), 0, Math.PI * 2); x.fill(); } x.restore(); } // the stack, its heat shimmer
+      box(tx - 20, 0, 22, tx + 6, 10, 38, '#F59E0B'); box(tx - 20, 10, 22, tx + 6, 10.4, 38, '#D97706'); faceText('GT-' + u, tx - 7, 6, 38.1, '#1C1917', 2.2, 2); // the acoustic enclosure
+      box(tx + 6, 0, 24, tx + 20, 9, 36, '#16A34A'); { const a = t * 18 * run, c0 = [tx + 13, 4.5]; for (let s = 0; s < 3; s++) { const an = a + s * 2.09, p = P(c0[0] + Math.cos(an) * 3, c0[1] + Math.sin(an) * 3, 36.1); refDot(c0[0] + Math.cos(an) * 3, c0[1] + Math.sin(an) * 3, 36.1, '#BBF7D0', 0.45); } } // the generator, its shaft turning
+      refDot(tx - 7, 11.2, 30, tripped || call === 'shut' ? (Math.floor(t * 3) % 2 ? '#EF4444' : '#7F1D1D') : call === 'reduce' ? '#F59E0B' : '#22C55E', 0.9);
+      box(tx - 2, 0, 50, tx + 2, 6, 51.2, '#1E293B'); wscreen(tx - 1.6, tx + 1.6, 3.4, 5.6, 51.25, t + k, tripped ? 0 : 150); // its local control panel
+      for (let b = 0; b < 3; b++) cylLit(tx - 15 + b * 1.6, 47, 0.6, 0, 4, '#DC2626'); // CO2 bottles
+      pipe([[tx + 20, 30], [214, 30]], 3 + k * 0.6, 0.6, '#0F172A'); // the cable out to the transformers
+      groundText(tripped ? 'TRIPPED' : run > 0.05 ? Math.round(run * 133) + ' MW' : 'OFF', tx - 7, 46, 1.6, tripped || run <= 0.05 ? '#F87171' : '#86EFAC');
+    }
+    // the transformer yard, fenced
+    wzone(222, 6, 274, 86, '#9CA3AF', 'TRANSFORMERS');
+    for (const [k, z] of [[1, 20], [2, 46], [3, 72]]) { box(232, 0, z - 7, 258, 12, z + 7, '#64748B'); for (let f = 0; f < 6; f++) box(258, 1, z - 6 + f * 2.2, 263, 10, z - 5 + f * 2.2, '#94A3B8'); for (let b = 0; b < 3; b++) cylLit(237 + b * 8, z, 0.8, 12, 5, '#E5E7EB'); faceText('T' + k, 245, 6, z + 7.1, '#F8FAFC', 2, 2); }
+    for (let z = 8; z < 86; z += 6) if (z < 40 || z > 56) box(223.8, 0, z, 224.2, 7, z + 0.4, '#94A3B8'); groundText('⚡ DANGER 132 kV', 230, 48, 1.5, '#B91C1C');
+    // the control room
+    wzone(8, 100, 96, 150, '#CBD5E1', 'GRID CONTROL');
+    box(14, 0, 101, 90, 15, 103, '#0F172A');
+    if (fq) { const ok = fq.f >= 49.8 && fq.f <= 50.2; faceText(`${fq.f.toFixed(2)} Hz`, 52, 10.5, 103.1, ok ? '#86EFAC' : '#FCA5A5', 3.6, 8); faceText(`DEMAND ${Math.round(fq.dem)} MW   GENERATION ${Math.round(fq.gen)} MW`, 52, 5, 103.1, '#BAE6FD', 1.6, 4); }
+    else { faceText('50.00 Hz', 52, 10.5, 103.1, '#86EFAC', 3.6, 8); faceText('LAGOS ISLAND GRID · ALL FEEDERS IN', 52, 5, 103.1, '#BAE6FD', 1.6, 4); }
+    for (let k = 0; k < 3; k++) { box(16 + k * 26, 0, 118, 38 + k * 26, 3, 122, '#1E293B'); wscreen(17 + k * 26, 37 + k * 26, 3, 7, 118.1, t + k, 200 + k * 20); }
+    wglass(8, 100, 96, 150, 10); for (const dx of [46, 58]) box(dx - 0.4, 0, 149.6, dx + 0.4, 10, 150.4, '#334155'); box(46, 9, 149.6, 58, 10, 150.4, '#334155');
+    // the switchgear room
+    wzone(106, 100, 214, 150, '#A8A29E', 'SWITCHGEAR');
+    for (const row of [104, 128]) for (let i = 0; i < 10; i++) { const sx = 110 + i * 10; box(sx, 0, row, sx + 8, 9, row + 4, '#CBD5E1'); refDot(sx + 4, 7, row + 4.1, (i + row) % 7 ? '#EF4444' : '#22C55E', 0.5); }
+    // lockers, PPE, the muster point
+    wzone(224, 110, 274, 184, '#E7E5E4', 'LOCKERS & PPE');
+    for (let k = 0; k < 9; k++) box(226 + k * 5, 0, 112, 230.4 + k * 5, 8, 115, k % 2 ? '#64748B' : '#475569'); box(230, 0, 140, 266, 2.8, 143, '#78350F'); for (let k = 0; k < 5; k++) cylLit(234 + k * 7, 141.5, 1.1, 2.8, 1, ['#FACC15', '#F97316', '#F8FAFC', '#22C55E', '#FACC15'][k]);
+    { const p = P(150, 0.05, 172), r = K * 8; x.strokeStyle = '#22C55E'; x.lineWidth = Math.max(2, K * 0.5); x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.stroke(); groundText('MUSTER POINT', 150, 172, 2, '#15803D'); }
+    wwall('NATIONAL GRID · LAGOS ISLAND POWER STATION', 140, 17, '#CA8A04', 3);
+    const alarm = fq && fq.tripped; if (alarm) { const on = Math.floor(t * 3) % 2; for (const lx of [40, 140, 240]) refDot(lx, 18, 0.5, on ? '#EF4444' : '#334155', 1.4); }
+    kitFloor(R, now, o, !!alarm, !!alarm);
   }
   const WORK_ROOMS = {
     refinery: { w: 260, d: 180, floor: '#9CA3AF', wall: '#E5E7EB', trim: '#F59E0B', desk: [40, 56, '🛢️ Start a refinery shift', () => openPhone('refinery')],
       // where a shift's tasks are, inside (the same names the shift uses outside)
       spots: { control: [40, 36], unit: [120, 84], tanks: [216, 44], bay: [196, 118] },
+      ppe: [36, 142], handover: [40, 56], kit: REF_EQUIP, tips: REF_TIP, hum: [[120, 64], [166, 122]],
       // what you walk round: the control room's glass (a door at 34 to 46), its consoles, and every machine on the floor
       solids: [[8, 45.6, 34, 46.4], [46, 45.6, 72, 46.4], [71.6, 6, 72.4, 46], [12, 22, 24, 26], [27, 22, 39, 26], [42, 22, 54, 26], [57, 22, 69, 26],
         [86, 10, 106, 28], [121.5, 15.5, 130.5, 24.5], [148.6, 16.6, 155.4, 23.4], [110, 60, 132, 68], [72, 104, 80, 108], [163, 67, 165, 69], [159, 39, 161, 41],
@@ -6749,15 +6821,14 @@
         for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) { const tx = 40 + c * 26, tz = 40 + r * 20; cylLit(tx, tz, 4.5, 0, 3, '#F8FAFC'); for (let s = 0; s < 6; s++) { const a = s / 6 * Math.PI * 2; cylLit(tx + Math.cos(a) * 6.2, tz + Math.sin(a) * 6.2, 0.9, 0, 2.4, '#4338CA'); } }
         for (let k = 0; k < 4; k++) { box(144, 0, 30 + k * 18, 158, 7, 32 + k * 18, '#F8FAFC'); flat(144, 32 + k * 18, 158, 44 + k * 18, 0.03, ['#E0E7FF', '#FCE7F3', '#DCFCE7', '#FEF3C7'][k]); }
       } },
-    grid: { w: 170, d: 110, floor: '#64748B', wall: '#CBD5E1', trim: '#FACC15', desk: [30, 90, '⚡ Grid shift', () => openPhone('grid')],
-      draw(R, now) {
-        const t = now / 1000;
-        for (let k = 0; k < 3; k++) { const tx = 30 + k * 45; flat(tx - 16, 12, tx + 20, 32, 0.03, '#334155'); box(tx - 14, 0, 14, tx + 14, 8, 30, '#F59E0B'); cylLit(tx + 14, 22, 5, 0, 10, '#94A3B8'); const p = P(tx, 9, 22); x.fillStyle = (Math.floor(t * 2) + k) % 2 ? '#22C55E' : '#15803D'; x.beginPath(); x.arc(p[0], p[1], Math.max(2, K * 0.5), 0, Math.PI * 2); x.fill(); } // the turbines
-        wzone(150, 40, 168, 100, '#475569', ''); for (let k = 0; k < 4; k++) { box(152, 0, 44 + k * 14, 166, 7, 52 + k * 14, '#64748B'); for (let f = 0; f < 4; f++) box(151.5, 1, 45 + k * 14 + f * 2, 152, 6, 46 + k * 14 + f * 2, '#94A3B8'); } groundText('TRANSFORMERS', 159, 100, 1.6, '#FACC15');
-        box(10, 0, 70, 60, 4, 76, '#1E293B'); for (let k = 0; k < 5; k++) wscreen(12 + k * 10, 20 + k * 10, 4, 8, 76.1, t + k, 120); groundText('CONTROL DESK', 35, 82, 1.8, '#FDE68A');
-        for (let k = 0; k < 3; k++) box(0, 10 + k * 2, 0.2, R.w - 22, 10.5 + k * 2, 2.2, '#475569'); // cable trays along the back wall
-        wwall('NATIONAL GRID · POWER STATION', 85, 16.5, '#CA8A04', 2.6);
-      } },
+    grid: { w: 280, d: 190, floor: '#64748B', wall: '#CBD5E1', trim: '#FACC15', desk: [70, 138, '⚡ Grid shift', () => openPhone('grid')],
+      spots: { control: [30, 126], turbine: [112, 60] }, // where a shift's tasks are, inside
+      ppe: [246, 150], handover: [70, 138], kit: PLANT_KIT, tips: PLANT_TIP, hum: [[44, 44], [112, 44], [180, 44]],
+      solids: [...GT_X.flatMap((tx) => [[tx - 30, 18, tx - 20, 42], [tx - 20, 22, tx + 6, 38], [tx + 6, 24, tx + 20, 36], [tx - 2, 50, tx + 2, 51.2], [tx - 15.6, 46.4, tx - 11.2, 47.6]]),
+        [232, 13, 263, 27], [232, 39, 263, 53], [232, 65, 263, 79], [223.8, 8, 224.2, 40], [223.8, 56, 224.2, 86],
+        [14, 101, 90, 103], [16, 118, 38, 122], [42, 118, 64, 122], [68, 118, 90, 122], [8, 149.6, 46, 150.4], [58, 149.6, 96, 150.4], [95.6, 100, 96.4, 150],
+        [110, 104, 208, 108], [110, 128, 208, 132], [226, 112, 271, 115], [230, 140, 266, 143]],
+      draw(R, now) { plantDraw(R, now); } },
     airport: { w: 180, d: 110, floor: '#E2E8F0', wall: '#F8FAFC', trim: '#0EA5E9', desk: [40, 30, '✈️ Fly somewhere', 'airport'],
       draw(R, now) {
         for (let k = 0; k < 6; k++) { const bx = 10 + k * 13; box(bx, 0, 14, bx + 10, 4, 20, '#1E3A8A'); box(bx, 0, 20, bx + 10, 1.4, 22, '#64748B'); }
@@ -7877,7 +7948,8 @@
   { const d = new URLSearchParams(location.search).get('refdemo'); if (d) setTimeout(() => { // ?in=refinery&refdemo=fire tries a refinery task on the floor, with no shift (for testing)
     const sh = (a) => [...a].sort(() => Math.random() - 0.5), seq = { startup: ['Check the valve line-up', 'Open the suction valve', 'Vent and prime the pump', 'Start the motor', 'Slowly open the discharge valve', 'Check the pressure and the flow'], fire: ['Raise the alarm', "Hit the pump's emergency stop", 'Close the block valves either side', 'Turn the fire monitor on the fire', 'Count everyone at the muster point', 'Brief the fire team when they arrive'], leak: ['Raise the alarm and call it in', 'Move upwind and test the air', 'Put on breathing apparatus', 'Isolate the leaking line', 'Drain and purge the line', 'Gas-test again before anyone goes back'] };
     const rd = (k) => ({ tag: 'G-' + k, label: 'Gauge G-' + (100 + k), read: (k % 2 ? 9 : 4) + ' bar', lim: 'normal 3 to 6 bar' }), pm = (k) => ({ tag: 'J-' + k, label: 'Hot work job ' + (k + 1), read: `LEL ${k % 3 ? 2 : 14} %, O₂ 20.9 %, H₂S 0 ppm`, lim: 'LEL < 10 %, O₂ 19.5 to 23.5 %, H₂S < 5 ppm' });
-    const tk = seq[d] ? { type: 'seq', name: d, title: { fire: 'Pump seal fire', leak: 'H₂S leak', startup: 'Start the loading pump' }[d], steps: sh(seq[d]) }
+    const tk = d === 'turbines' ? { type: 'turbine', title: 'Turbine checks', units: [{ u: 1, temp: 540, vib: 3.1, oil: 3.2 }, { u: 2, temp: 631, vib: 4.2, oil: 2.8 }, { u: 3, temp: 566, vib: 9.4, oil: 2.6 }] }
+      : d === 'balance' ? { type: 'balance', title: 'Evening peak: a turbine trips', sun: 0 } : seq[d] ?{ type: 'seq', name: d, title: { fire: 'Pump seal fire', leak: 'H₂S leak', startup: 'Start the loading pump' }[d], steps: sh(seq[d]) }
       : d === 'loading' ? { type: 'loading', title: 'Load a tanker', product: 'AGO (diesel)', litres: 15000, caps: [10000, 15000, 20000], steps: sh(['Chock the wheels', 'Clip on the earth clamp', 'Wait for the green earth light', 'Open the compartment hatch', 'Lower the loading arm', 'Load to the preset', 'Raise the arm and close the hatch', 'Seal the hatch and sign the docket', 'Unclip the earth clamp']) }
       : { type: 'checks', title: d === 'permits' ? 'Gas tests and permits' : 'Rounds on the crude unit', opts: d === 'permits' ? ['Issue the permit', 'Refuse it'] : ['Normal', 'Report it'], items: [0, 1, 2, 3, 4, 5].map(d === 'permits' ? pm : rd) };
     gridDo(tk); }, 2600); }
@@ -10995,12 +11067,12 @@
       else if (inside.kind === 'bunker' && inside.up && Math.hypot(me.x - inside.w / 2, me.z - (inside.d - 6)) < 6) { const up = inside.up; next = { label: '⬆ Up to the house', run: () => enterRoom('home', up.key, up.title, { stairs: true, style: 'nml' }) }; }
       if (!next && inside.kind === 'dealer' && inside.dealer === 'polanco' && Math.hypot(me.x - (inside.w - 8), me.z - 28) < 7) next = { label: '⬆ Up to the Executive Office', run: () => enterRoom('office', 'place:dealer:polanco:office', 'Polanco · Executive Office', { stairs: true }) };
       else if (inside.kind === 'office' && me.x > inside.w - 12 && me.z > inside.d - 14) next = { label: '⬇ Down to the showroom', run: () => enterRoom('dealer', 'place:dealer:polanco', 'Polanco', { stairs: true, dealer: 'polanco' }) };
-      if (!next && refHere() && REF.handover && GJ.shift && Math.hypot(me.x - 40, me.z - 56) < 10) next = { label: '📝 Hand over and finish the shift', run: () => { REF.handover = false; gridFinish(); } }; // a refinery shift ends with the handover in the control room
-      if (!next && refHere() && GJ.shift && gridTask() && REF.ppe !== GJ.shift.id && Math.hypot(me.x - 36, me.z - 142) < 9) next = { label: '🦺 Put on your PPE', run: () => { REF.ppe = GJ.shift.id; REF.flash = { x: 36, z: 142, ok: true, at: performance.now() }; coachSay('Hard hat, coverall, boots, gloves, glasses, and the gas monitor clipped on. Now you can work. Follow the yellow beacon.', [['On my way', null, true]], 'Suited up'); } };
+      if (!next && refHere() && REF.handover && GJ.shift && Math.hypot(me.x - floorOf().handover[0], me.z - floorOf().handover[1]) < 10) next = { label: '📝 Hand over and finish the shift', run: () => { REF.handover = false; gridFinish(); } }; // a refinery shift ends with the handover in the control room
+      if (!next && refHere() && GJ.shift && gridTask() && REF.ppe !== GJ.shift.id && Math.hypot(me.x - floorOf().ppe[0], me.z - floorOf().ppe[1]) < 9) next = { label: '🦺 Put on your PPE', run: () => { REF.ppe = GJ.shift.id; REF.flash = { x: floorOf().ppe[0], z: floorOf().ppe[1], ok: true, at: performance.now() }; coachSay('Hard hat, coverall, boots, gloves, glasses, and the gas monitor clipped on. Now you can work. Follow the yellow beacon.', [['On my way', null, true]], 'Suited up'); } };
       if (!next && inside.kind === 'work' && WORK_ROOMS[inside.place]) { const Wd = WORK_ROOMS[inside.place], dk = Wd.desk; if (dk && Math.hypot(me.x - dk[0], me.z - dk[1]) < 10) next = { label: dk[2], run: () => workDesk(inside, dk) }; }
       if (!next && refHere()) { // the refinery: the kit in front of you, or your task's spot
         const sp = refSpots().map((v) => [Math.hypot(me.x - v.x, me.z - v.z), v]).filter((v) => v[0] < 6).sort((a, b) => a[0] - b[0])[0];
-        if (sp) next = { label: sp[1].label, run: () => refDo(sp[1]) }; else if (!REF.hot) { const tk = gridNear(); if (tk) next = REF.ppe === (GJ.shift && GJ.shift.id) ? { label: `⚡ ${tk.title}`, run: () => gridDo(tk) } : { label: '🦺 Suit up first: lockers & PPE', run: () => { Object.assign(REF.wyrd, { tx: 39, tz: 139, until: performance.now() + 7000 }); coachSay('No PPE, no work. The lockers are at the back left: follow me there and suit up.', [['Going', null, true]], 'Safety first'); } }; } }
+        if (sp) next = { label: sp[1].label, run: () => refDo(sp[1]) }; else if (!REF.hot) { const tk = gridNear(); if (tk) next = REF.ppe === (GJ.shift && GJ.shift.id) ? { label: `⚡ ${tk.title}`, run: () => gridDo(tk) } : { label: '🦺 Suit up first: lockers & PPE', run: () => { Object.assign(REF.wyrd, { tx: floorOf().ppe[0] + 3, tz: floorOf().ppe[1] - 3, until: performance.now() + 7000 }); coachSay('No PPE, no work. Follow me to the lockers and suit up.', [['Going', null, true]], 'Safety first'); } }; } }
       if (!next && inside.kind === 'store') { const it = inside.layout.find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 7); if (it && STORE[it.k]) next = { label: `🛒 ${STORE[it.k].name}`, run: () => openPhone('store', it.k) }; }
       if (!next && inside.kind === 'boutique') { const m = boutiqueSpots(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 8); if (m) next = { label: `👔 ${OUTFITS[m.id].brand} · ${OUTFITS[m.id].name}`, run: () => openPhone('fashion', { id: m.id }) }; }
       if (!next && (inside.kind === 'hq' || inside.kind === 'home')) { const dv = devNear(inside); if (dv) next = devAction(inside, dv); }
@@ -11558,7 +11630,7 @@
   function airSpot(kind) { const p = PLACES.find((v) => v[0] === 'airport'); if (!p) return null; const c = (p[1] + p[3]) * T, d = (p[2] + p[4]) * T;
     return { apron: { x: c - 40, z: d - 24, name: 'the apron' }, tower: { x: c - 6, z: d - 7, name: 'the control tower' } }[kind]; }
   function gridSpot(kind) { const p = gridPlace(); if (!p) return null; const a = p[1] * T, b = p[2] * T, c = (p[1] + p[3]) * T, d = (p[2] + p[4]) * T;
-    return { control: { x: (a + c) / 2, z: d - 8, name: 'the WYRD control centre' }, solar: { x: a + 30, z: b + 12, name: 'the solar farm' }, turbine: { x: a + 23, z: b + 40, name: 'the turbine hall' }, gate: { x: (a + c) / 2, z: d + 2, name: 'the Grid gatehouse' } }[kind]; }
+    const o = { control: { x: (a + c) / 2, z: d - 8, name: 'the WYRD control centre' }, solar: { x: a + 30, z: b + 12, name: 'the solar farm' }, turbine: { x: a + 23, z: b + 40, name: 'the turbine hall' }, gate: { x: (a + c) / 2, z: d + 2, name: 'the Grid gatehouse' } }[kind]; return o && Object.assign({ grid: kind }, o); }
   function refSpot(kind) { const p = PLACES.find((v) => v[0] === 'refinery' && v[4] > 5); if (!p) return null; const a = p[1] * T, b = p[2] * T, d = (p[2] + p[4]) * T;
     return Object.assign({ ref: kind }, { control: { x: a + 13, z: b + 54, name: 'the refinery control room' }, unit: { x: a + 48, z: b + 31, name: 'the crude unit' }, tanks: { x: a + 17, z: b + 34, name: 'the tank yard' }, bay: { x: a + 17, z: d - 1, name: 'the loading gantry' } }[kind]); }
   function faultSpot(seed) { const dist = SECTORS.filter((s2) => ['lagos', 'ikoyi', 'vi', 'lekki', 'ajah', 'hqrow'].includes(s2.id) && !s2.sand), R2 = rnd(seed), sct = dist[Math.floor(R2() * dist.length)], [i0, j0, i1, j1] = sct.rect, pool = roadTiles.filter(([i, j]) => i >= i0 && i <= i1 && j >= j0 && j <= j1), [ti, tj] = pool[Math.floor(R2() * pool.length)] || [i0, j0]; return { x: ti * T + T / 2, z: tj * T + T / 2, name: `a feeder fault in ${sct.name}` }; }
@@ -11578,7 +11650,7 @@
     x.font = '800 12px "Plus Jakarta Sans", sans-serif'; const lbl = `⚡ ${tk.title}`, w = x.measureText(lbl).width + 16; x.fillStyle = 'rgba(15,23,42,0.85)'; x.beginPath(); x.roundRect(top[0] - w / 2, top[1] - 12, w, 22, 11); x.fill(); x.fillStyle = '#FDE68A'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(lbl, top[0], top[1] - 1);
   }
   function gridJobFx() {} // the plant's own marking is the beacon
-  const refInside = (tk) => inside && inside.kind === 'work' && inside.place === 'refinery' && tk && tk.spot && tk.spot.ref ? WORK_ROOMS.refinery.spots[tk.spot.ref] : null; // a refinery task's spot inside the refinery
+  const refInside = (tk) => { if (!inside || inside.kind !== 'work' || !tk || !tk.spot) return null; const W = WORK_ROOMS[inside.place], k = inside.place === 'refinery' ? tk.spot.ref : inside.place === 'grid' ? tk.spot.grid : null; return W && W.spots && k ? W.spots[k] || null : null; }; // a refinery task's spot inside the refinery
   const gridNear = () => { const tk = gridTask(); if (!tk || !tk.spot) return null; const ri = refInside(tk); if (ri) return Math.hypot(me.x - ri[0], me.z - ri[1]) < 12 ? tk : null; return !inside && Math.hypot(me.x - tk.spot.x, me.z - tk.spot.z) < 18 ? tk : null; };
   // ---- the task screens
   const gpEl = document.createElement('div'); gpEl.id = 'gridTask'; document.body.append(gpEl);
@@ -11589,12 +11661,13 @@
     REF.hot = null; refGuideOff();
     const done = (score, note) => { clearInterval(gpTimer); tk.done = true; tk.score = Math.round(Math.max(0, Math.min(100, score))); tk.note = note; gridSave();
       gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><button class="gpx2">✕</button></div><div class="gpbig">${tk.score}<small>/100</small></div><p>${esc(note)}</p><button class="gpgo">${gridTask() ? 'Next task' : refHere() ? 'Go and hand over' : 'Finish the shift'}</button>`);
-      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); if (!gridTask() && refHere()) { REF.handover = true; Object.assign(REF.wyrd, { tx: 46, tz: 52, until: performance.now() + 8000 }); coachSay('Every task done. Walk back to the control room desk and hand over to the next shift: that closes it and pays you.', [['On my way', null, true]], 'Handover'); } else if (!gridTask()) gridFinish(); else coachSay(`Next: ${gridTask().title}, at ${gridTask().spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }; };
+      gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { gpClose(); if (!gridTask() && refHere()) { REF.handover = true; Object.assign(REF.wyrd, { tx: floorOf().handover[0] + 6, tz: floorOf().handover[1] - 4, until: performance.now() + 8000 }); coachSay('Every task done. Walk back to the desk and hand over to the next shift: that closes it and pays you.', [['On my way', null, true]], 'Handover'); } else if (!gridTask()) gridFinish(); else coachSay(`Next: ${gridTask().title}, at ${gridTask().spot.name}. Follow the yellow beacon.`, [['On my way', null, true]]); }; };
     if (tk.type === 'van') { gpShow(`<div class="gphd"><b>Collect the crew van</b><button class="gpx2">✕</button></div><p>Sign out van GC-02, check the ladder, the tester, the earthing kit and the spares.</p><div class="gpchk">${['Ladder secured', 'Voltage tester working', 'Earthing kit complete', 'Spare fuses and insulators', 'Radio checked with control'].map((t2, k) => `<label><input type="checkbox" data-c="${k}"> ${t2}</label>`).join('')}</div><button class="gpgo">Sign out the van</button>`);
       gpEl.querySelector('.gpx2').onclick = gpClose; gpEl.querySelector('.gpgo').onclick = () => { const n2 = gpEl.querySelectorAll('[data-c]:checked').length; tk.result = { checked: n2 }; done(n2 * 20, n2 === 5 ? 'Every check done. Control has you on the radio.' : `You skipped ${5 - n2} check${5 - n2 > 1 ? 's' : ''}. On a real call-out that can cost a life.`); }; return; }
     if (tk.type === 'balance') { // supply against demand for 90 seconds: keep the frequency inside 49.8 to 50.2 Hz
       const S = { t: 0, t1: 300, t2: 300, t3: 250, imp: 100, inBand: 0, ticks: 0, low: 50 }, scen = tk.title, sun = tk.sun || 0, log = []; tk.result = { log };
       const demandAt = (s2) => { const base = scen.includes('peak') ? 1180 + s2 * 2.4 : scen.includes('Morning') ? 820 + s2 * 2.8 : 1050; return base + Math.sin(s2 / 6) * 30 + (s2 > 40 && s2 < 55 && scen.includes('peak') ? 140 : 0); };
+      REF.grid = { S, freq: () => { const dem = demandAt(S.t), tripped = scen.includes('trips') && S.t >= 20, gen = S.t1 + (tripped ? 0 : S.t2) + S.t3 + S.imp + sun * 0.6; return { f: 50 + (gen - dem) / 400, tripped, dem, gen }; } }; // the hall and the big screen follow your sliders
       const draw = () => { const dem = Math.round(demandAt(S.t)), tripped = scen.includes('trips') && S.t >= 20, gen = Math.round(S.t1 + (tripped ? 0 : S.t2) + S.t3 + S.imp + sun * 0.6), f = 50 + (gen - dem) / 400, ok = f >= 49.8 && f <= 50.2;
         const stat = `<div class="gphd"><b>${esc(scen)}</b><span>${Math.max(0, 90 - S.t)} s</span></div>
           <div class="gpfreq ${ok ? 'ok' : 'bad'}"><b>${f.toFixed(2)} Hz</b><small>keep it between 49.80 and 50.20</small></div>
@@ -11717,7 +11790,18 @@
       const pick = {}; tk.result = { picks: pick }; const draw = () => { gpShow(`<div class="gphd"><b>${esc(tk.title)}</b><span>3 machines</span></div><p>Limits: exhaust under 600 °C (reduce load if over), vibration under 8 mm/s and oil over 2 bar (shut down if not).</p>
           ${units.map((un) => `<div class="gpunit"><b>Turbine ${un.u}</b><span>${un.temp} °C · ${un.vib} mm/s · ${un.oil} bar</span><div class="gpopts sm">${[['keep', 'Keep running'], ['reduce', 'Reduce load'], ['shut', 'Shut down']].map(([k, l]) => `<button data-u="${un.u}" data-a="${k}" class="${pick[un.u] === k ? 'sel' : ''}">${l}</button>`).join('')}</div></div>`).join('')}<button class="gpgo">Log the decisions</button>`);
         gpEl.querySelectorAll('[data-u]').forEach((b) => (b.onclick = () => { pick[b.dataset.u] = b.dataset.a; draw(); }));
-        gpEl.querySelector('.gpgo').onclick = () => { const ok = units.filter((un) => pick[un.u] === un.right).length; done(ok / 3 * 100, ok === 3 ? 'Every call right. The plant runs safe and earns.' : `${3 - ok} wrong call${3 - ok > 1 ? 's' : ''}. ${units.filter((un) => pick[un.u] !== un.right).map((un) => `Turbine ${un.u} needed: ${{ keep: 'keep running', reduce: 'reduce load', shut: 'shut down' }[un.right]}`).join('. ')}.`); }; };
+        gpEl.querySelector('.gpgo').onclick = verdict; };
+      const verdict = () => { const ok = units.filter((un) => pick[un.u] === un.right).length; done(ok / 3 * 100, ok === 3 ? 'Every call right. The plant runs safe and earns.' : `${3 - ok} wrong call${3 - ok > 1 ? 's' : ''}. ${units.filter((un) => pick[un.u] !== un.right).map((un) => `Turbine ${un.u} needed: ${{ keep: 'keep running', reduce: 'reduce load', shut: 'shut down' }[un.right]}`).join('. ')}.`); };
+      PLANT.call = {};
+      if (refHere() && inside.place === 'grid') return refHands({ kind: 'turbines', free: true, title: tk.title, finish: verdict, lead: 'Three turbines to check at their own control panels.', // on the floor: read each machine at its panel
+        items: units.map((un) => ({ tag: 'u' + un.u, label: `GT-${un.u} control panel` })), at: units.map((un) => [GT_X[un.u - 1] || GT_X[0], 56]),
+        pick: (sp) => { const un = units[sp.i], lim = (v, bad) => `<b style="color:${bad ? '#F87171' : '#4ADE80'}">${v}</b>`;
+          gpShow(`<div class="gphd"><b>GT-${un.u}</b><button class="gpx2">✕</button></div>
+            <div class="gprow2"><span>Exhaust (under 600 °C)</span>${lim(un.temp + ' °C', un.temp > 600)}</div><div class="gprow2"><span>Vibration (under 8 mm/s)</span>${lim(un.vib + ' mm/s', un.vib >= 8)}</div><div class="gprow2"><span>Oil pressure (over 2 bar)</span>${lim(un.oil + ' bar', un.oil < 2)}</div>
+            <div class="gpopts">${[['keep', '✅ Keep running'], ['reduce', '⬇️ Reduce load'], ['shut', '⛔ Shut down']].map(([k, l]) => `<button data-a="${k}">${l}</button>`).join('')}</div>`);
+          gpEl.querySelector('.gpx2').onclick = gpClose;
+          gpEl.querySelectorAll('[data-a]').forEach((b) => (b.onclick = () => { pick[un.u] = b.dataset.a; PLANT.call[un.u] = b.dataset.a; REF.hot.done.push(sp.step); gpClose(); const left = units.length - REF.hot.done.length;
+            refGuide(left ? `${{ keep: 'Left running.', reduce: 'Load eased off.', shut: 'Shut down: the shaft is winding down.' }[b.dataset.a]} ${left} to go.` : 'All three called. Happy with them? Then log your decisions.'); })); } });
       draw(); }
   }
   // the end of a shift: the report, the pay, the experience, and the next step in the career

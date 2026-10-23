@@ -63,7 +63,7 @@ The game is served by the WYRD Serverpod server and shares its database, account
   - the naira ledger (`Bank`, `WorldAuthority.citizen`);
   - the operator check (`DroneService.isOperator`).
 
-Handy links: `?night=1` forces night lighting; `?at=column,row` starts the view at a spot (for example `?at=56,24` for the airport); `?in=mall` opens a building straight away (also `shops`, `arcade`, `homestore`, `club`, `casino`, `refinery`). `?in=refinery&refdemo=fire` (or `leak`, `startup`, `loading`, `rounds`, `permits`) tries a refinery task on the floor without a shift.
+Handy links: `?night=1` forces night lighting; `?at=column,row` starts the view at a spot (for example `?at=56,24` for the airport); `?in=mall` opens a building straight away (also `shops`, `arcade`, `homestore`, `club`, `casino`, `refinery`). `?in=refinery&refdemo=fire` (or `leak`, `startup`, `loading`, `rounds`, `permits`) tries a refinery task on the floor without a shift; `?in=grid&refdemo=turbines` (or `balance`) does the same at the power station.
 
 ## Privacy
 
