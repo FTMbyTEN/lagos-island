@@ -3424,23 +3424,23 @@
         //  departure: up the taxiway from the apron, lined up on 27, the take-off roll and the climb out over the island
         { const T60 = ((Date.now() + CLOCK.off) / 1000) % 60, xe = c - 13, zr = rm, rr = 2, zl = zr + 2 * rr, za = d - 28;
           const ease = (u) => u * u * (3 - 2 * u), lerp = (p0, p1, u) => p0 + (p1 - p0) * u, arc = (cx0, cz0, r0, an) => [cx0 + Math.cos(an) * r0, cz0 + Math.sin(an) * r0, 0];
-          const arr = (s) => { // [x, z, alt] at second s of the arrival
-            if (s < 12) { const u = s / 12; return [lerp(c + 75, c - 6, u), zr, 26 * (1 - u) * (1 - u * 0.35)]; }
-            if (s < 20) { const u = (s - 12) / 8; return [lerp(c - 6, a + 42, 1 - (1 - u) * (1 - u)), zr, 0]; } // braking
-            if (s < 23.5) return arc(a + 42, zr + rr, rr, -Math.PI / 2 - (s - 20) / 3.5 * Math.PI); // round on the runway
-            if (s < 31) return [lerp(a + 42, xe - 3, ease((s - 23.5) / 7.5)), zl, 0]; // back along it
-            if (s < 33) return arc(xe - 3, zl + 3, 3, -Math.PI / 2 + (s - 31) / 2 * Math.PI / 2); // onto the taxiway
-            return [xe, lerp(zl + 3, za, ease(Math.min(1, (s - 33) / 5))), 0];
+          const arr = (s) => { // [x, z, alt] at second s of the arrival: wide, steady turns, never a spin on the spot
+            if (s < 12) { const u = s / 12; return [lerp(c + 75, c - 6, u), zr, 26 * Math.pow(1 - u, 1.35)]; } // the approach, gliding down to the threshold
+            if (s < 20) { const u = (s - 12) / 8; return [lerp(c - 6, a + 46, 1 - (1 - u) * (1 - u)), zr, 0]; } // braking
+            if (s < 25) return arc(a + 46, zr + rr, rr, -Math.PI / 2 - ease((s - 20) / 5) * Math.PI); // a slow turn round on the runway (the hangars are right beside it)
+            if (s < 31) return [lerp(a + 46, xe - 4, ease((s - 25) / 6)), zl, 0]; // back along the taxi lane
+            if (s < 34) return arc(xe - 4, zl + 4, 4, -Math.PI / 2 + ease((s - 31) / 3) * Math.PI / 2); // onto the taxiway
+            return [xe, lerp(zl + 4, za, ease(Math.min(1, (s - 34) / 4))), 0];
           };
           const dep = (s) => { // the departure, from second 40
-            if (s < 4) return [xe, lerp(za, zl + 3, ease(s / 4)), 0];
-            if (s < 6) return arc(xe - 3, zl + 3, 3, -(s - 4) / 2 * Math.PI / 2); // lining up
-            if (s < 13) { const u = (s - 6) / 7; return [lerp(xe - 3, a + 55, u * u), zl, 0]; } // the take-off roll, faster and faster
-            const u = (s - 13) / 7; return [lerp(a + 55, a - 140, u), zl, 34 * u * u + 6 * u]; // airborne, climbing out
+            if (s < 4) return [xe, lerp(za, zr + 6, ease(s / 4)), 0];
+            if (s < 7) return arc(xe - 6, zr + 6, 6, -ease((s - 4) / 3) * Math.PI / 2); // a wide turn onto the runway's centre line
+            if (s < 13) { const u = (s - 7) / 6; return [lerp(xe - 6, a + 60, u * u), zr, 0]; } // the take-off roll, faster and faster
+            const u = (s - 13) / 7; return [lerp(a + 60, a - 150, u), zr, 50 * u * u + 8 * u]; // rotate, then climb away
           };
           const fly = (path, s, end, liv, st) => {
             const p0 = path(s), p1 = path(Math.min(end - 0.001, s + 0.12)), dx = p1[0] - p0[0], dz = p1[1] - p0[1], moving = Math.hypot(dx, dz) > 0.002;
-            const ang = moving ? (st.ang = Math.atan2(dz, dx)) : st.ang, pitch = Math.max(-0.12, Math.min(0.22, Math.atan2(p1[2] - p0[2], Math.hypot(dx, dz) || 1) * 0.8));
+            const ang = moving ? (st.ang = Math.atan2(dz, dx)) : st.ang, pitch = p0[2] > 0.2 || p1[2] > 0.2 ? Math.max(0.03, Math.min(0.24, Math.atan2(p1[2] - p0[2], Math.hypot(dx, dz) || 1) * 0.8 + 0.06)) : 0; // nose a touch up in the air (even coming down, as real ones fly), level on the ground
             if (p0[2] > 0.3) { const sh = P(p0[0] + p0[2] * 0.4, 0, p0[1] + p0[2] * 0.2); x.fillStyle = 'rgba(20,40,60,' + Math.max(0.05, 0.25 - p0[2] / 200) + ')'; x.beginPath(); x.ellipse(sh[0], sh[1], K * 6, K * 2 * sp, 0, 0, Math.PI * 2); x.fill(); }
             if (!car3d(p0[0], p0[1], 'jet', ang + JET_TURN, 12, liv, p0[2], pitch)) plane(p0[0], p0[1], p0[2], 0.55, liv, Math.cos(ang) >= 0 ? 1 : -1); // the drawn plane until the model loads
           };
@@ -7805,7 +7805,7 @@
     if (kind === 'club') { clubWarm(key); const s = clubSrc(key); if (s && CITY.master) { CITY.master.gain.value = Math.max(CITY.master.gain.value, 0.5); s.g.gain.value = 0.6; if (s.a.src && s.a.paused) s.a.play().catch(() => {}); } } // straight in, music on
     if (kind === 'tower') bubbles.set('wyrd', { text: `Welcome to my tower, ${myName || 'friend'}. Ask me anything.`, until: performance.now() + 6000 });
   }
-  function leaveRoom() { if (!touring) coachHide(); closeInverter();
+  function leaveRoom() { if (!touring) coachHide(); closeInverter(); gpClose(); REF.hot = null; refGuideOff(); if (phone.style.display === 'block') closePhone(); actFrom = null; // walking out puts away whatever the building opened
     if (!inside) return;
     pose = null;
     if (deco && deco.dirty) bmSave(inside);
@@ -11225,7 +11225,10 @@
     if (!inside && exitHold) { if (Math.hypot(me.x - exitHold.x, me.z - exitHold.z) < 14) next = null; else exitHold = null; } // just came out: walk away first
     act = next; actBtn.style.display = next && playing && card.style.display !== 'block' ? 'block' : 'none'; if (next) actBtn.textContent = next.label;
   }
-  actBtn.onclick = () => act && act.run();
+  let actFrom = null; // where you were when a button opened a panel or the phone: walk away from there and it closes
+  actBtn.onclick = () => { if (!act) return; actFrom = { x: me.x, z: me.z, room: inside }; act.run(); };
+  setInterval(() => { if (!actFrom) return; const gone = actFrom.room !== inside || Math.hypot(me.x - actFrom.x, me.z - actFrom.z) > 22, ph = phone.style.display === 'block', gp = gpEl.classList.contains('on');
+    if (!ph && !gp) { actFrom = null; return; } if (gone) { if (ph) closePhone(); if (gp) gpClose(); actFrom = null; } }, 500);
   // walking up to a home or an HQ door: what's inside starts loading now (once per door)
   let warmedDoor = '';
   function warmDoor(key) { if (!key || key === warmedDoor || !signedIn()) return; warmedDoor = key; my('room', { key }).catch(() => {}); my('myFurniture', { room: key }).catch(() => {}); my('myCars').catch(() => {}); }
