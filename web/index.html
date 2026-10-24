@@ -4529,6 +4529,7 @@
   }
   // draw someone as a 3D person (false: not ready, draw them flat): place, face, dress and animate, then render in turn
   function person3d(px, pz, color, name, now, L, pose, seatY, standY = 0) { // standY: standing on something (a stage)
+    if (REC && REC.off) { px += REC.off[0]; pz += REC.off[1]; } // (live 3D: someone drawn inside a shifted part of a room)
     if (!PEOPLE.ok) { initPeople(); return false; }
     if (pose === 'sleep') return false;
     const hairKey = (L.g === 'f' ? HAIR_F : HAIR_M)[L.style % 4], key = name, THREE = G3.T;
@@ -4616,7 +4617,7 @@
     return { css: col, a: 1 };
   }
   function v3bucket(col, glowy) { const c = v3col(col), key = c.css + '|' + c.a.toFixed(2) + (glowy ? '|g' : ''); let b = REC.buckets.get(key); if (!b) { b = { c, glowy, pos: [], nor: [] }; REC.buckets.set(key, b); } return b; }
-  const v3tri = (b, a, p, q, n) => { b.pos.push(a[0], a[1], a[2], p[0], p[1], p[2], q[0], q[1], q[2]); for (let i = 0; i < 3; i++) b.nor.push(n[0], n[1], n[2]); };
+  const v3tri = (b, a, p, q, n) => { const o = REC.off, ox = o ? o[0] : 0, oz = o ? o[1] : 0; b.pos.push(a[0] + ox, a[1], a[2] + oz, p[0] + ox, p[1], p[2] + oz, q[0] + ox, q[1], q[2] + oz); /* (+ the part's shift: a club moves its stage and bar by moving the 2D camera) */ for (let i = 0; i < 3; i++) b.nor.push(n[0], n[1], n[2]); };
   const v3quad = (b, a, p, q, r, n) => { v3tri(b, a, p, q, n); v3tri(b, a, q, r, n); };
   const V3REC = {
     box(x0, y0, z0, x1, y1, z1, col) {
@@ -4624,13 +4625,14 @@
       const wx = x1 - x0, wz = z1 - z0, back = x1 <= 0.3 || z1 <= 0.3, wallish = Math.min(wx, wz) < 1.3 && Math.max(wx, wz) > 4;
       if (back && Math.min(wx, wz) < 1.6 && Math.max(wx, wz) > 20) return; // the outer walls are built separately, so they can fade
       if (wallish && !back) { if (y0 >= 2.6) return; y1 = Math.min(y1, 2.6); } // walls down (Sims-style): inner walls stop at the knee so they never hide the room
+      if (REC.solids && y0 < 1.2 && y1 > 0.8) { const o = REC.off || [0, 0]; REC.solids.push([x0 + o[0], z0 + o[1], x1 + o[0], z1 + o[1]]); } // what stands at body height is solid
       const b = v3bucket(col);
       v3quad(b, [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1]); v3quad(b, [x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [0, 0, -1]);
       v3quad(b, [x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [1, 0, 0]); v3quad(b, [x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [-1, 0, 0]);
       v3quad(b, [x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0], [0, 1, 0]);
     },
     flat(x0, z0, x1, z1, y, fill) { if (typeof fill !== 'string') return; const b = v3bucket(fill); v3quad(b, [x0, y, z1], [x1, y, z1], [x1, y, z0], [x0, y, z0], [0, 1, 0]); },
-    cyl(cx, cz, r, y0, h, col, cap = true) { const b = v3bucket(col), n = r > 1.5 ? 24 : 16; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
+    cyl(cx, cz, r, y0, h, col, cap = true) { if (REC.solids && r >= 0.3 && y0 < 1.2 && y0 + h > 0.8) { const o = REC.off || [0, 0]; REC.solids.push([cx - r + o[0], cz - r + o[1], cx + r + o[0], cz + r + o[1]]); } const b = v3bucket(col), n = r > 1.5 ? 24 : 16; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
       v3quad(b, [cx + c0 * r, y0, cz + s0 * r], [cx + c1 * r, y0, cz + s1 * r], [cx + c1 * r, y0 + h, cz + s1 * r], [cx + c0 * r, y0 + h, cz + s0 * r], [(c0 + c1) / 2, 0, (s0 + s1) / 2]);
       if (cap) v3tri(b, [cx, y0 + h, cz], [cx + c1 * r, y0 + h, cz + s1 * r], [cx + c0 * r, y0 + h, cz + s0 * r], [0, 1, 0]); } },
     pyramid(x0, z0, x1, z1, y, h, col) { const b = v3bucket(col), t = [(x0 + x1) / 2, y + h, (z0 + z1) / 2]; v3tri(b, [x0, y, z1], [x1, y, z1], t, [0, 0.6, 0.8]); v3tri(b, [x1, y, z0], [x0, y, z0], t, [0, 0.6, -0.8]); v3tri(b, [x1, y, z1], [x1, y, z0], t, [0.8, 0.6, 0]); v3tri(b, [x0, y, z0], [x0, y, z1], t, [-0.8, 0.6, 0]); },
@@ -4645,7 +4647,7 @@
     pipe(pts, y, w, col) { for (let i = 1; i < pts.length; i++) { const [ax, az] = pts[i - 1], [bx, bz] = pts[i], r = w / 2; V3REC.box(Math.min(ax, bx) - r, y - r, Math.min(az, bz) - r, Math.max(ax, bx) + r, y + r, Math.max(az, bz) + r, col); } },
     palm(tx, tz, h) { V3REC.cyl(tx, tz, 0.35, 0, h, '#8B5E3C'); for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2, b = v3bucket('#2F855A'), c = [tx, h, tz], e = [tx + Math.cos(a) * 3.6, h - 1.6, tz + Math.sin(a) * 3.6], s = [tx + Math.cos(a + 0.4) * 1.4, h + 0.3, tz + Math.sin(a + 0.4) * 1.4]; v3tri(b, c, s, e, [0, 1, 0]); v3tri(b, c, e, s, [0, 1, 0]); } },
     tree(tx, tz, r, col) { V3REC.cyl(tx, tz, r * 0.15, 0, r * 1.1, '#8B5E3C'); V3REC.sphere(tx, r * 1.4, tz, r * 0.9, col || '#3F8F4F'); },
-    text(txt, px, py, pz, col, size, ground, side) { if (!txt || !REC.labels) return; REC.labels.push({ txt: String(txt), px, py, pz, col: typeof col === 'string' ? col : '#FFFFFF', size, ground, side }); },
+    text(txt, px, py, pz, col, size, ground, side) { if (!txt || !REC.labels) return; const o = REC.off || [0, 0]; REC.labels.push({ txt: String(txt), px: px + o[0], py, pz: pz + o[1], col: typeof col === 'string' ? col : '#FFFFFF', size, ground, side }); },
     rope(x0, y0, z0, x1, y1, z1, col) { const n = 8; let px = x0, py = y0, pz = z0; for (let i = 1; i <= n; i++) { const u = i / n, qx = x0 + (x1 - x0) * u, qz = z0 + (z1 - z0) * u, qy = y0 + (y1 - y0) * u - Math.sin(u * Math.PI) * 0.7; V3REC.box(Math.min(px, qx) - 0.09, Math.min(py, qy) - 0.09, Math.min(pz, qz) - 0.09, Math.max(px, qx) + 0.09, Math.max(py, qy) + 0.09, Math.max(pz, qz) + 0.09, col); px = qx; py = qy; pz = qz; } },
   };
   // a label as a textured plane (on a wall facing +z, or flat on the floor)
@@ -4668,7 +4670,7 @@
     { const n = 16 * 6, geo = new T3.BoxGeometry(1.8, 0.08, 1.8), mat = new T3.MeshBasicMaterial({ toneMapped: false }), im = new T3.InstancedMesh(geo, mat, n), o = new T3.Object3D(); let k = 0;
       for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { o.position.set(33 + i * 2, 0.05, 25 + j * 2); o.updateMatrix(); im.setMatrixAt(k++, o.matrix); }
       im.instanceColor = new T3.InstancedBufferAttribute(new Float32Array(n * 3), 3); grp.add(im); ex.floor = im; }
-    ex.lights = [0, 1, 2, 3].map((k) => { const l = new T3.PointLight(0x22d3ee, 260, 70, 1.6); l.position.set(24 + k * 20, 14, 26); grp.add(l); return l; });
+    ex.lights = [0, 1].map((k) => { const l = new T3.PointLight(0x22d3ee, 260, 70, 1.6); l.position.set(30 + k * 40, 14, 26); grp.add(l); return l; });
     { // a soft halo round each light, so the lights read as lights (a bright core fading out, drawn additively)
       const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,0.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
       const tex = new T3.CanvasTexture(c); ex.halos = ex.lights.map((l) => { const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false })); s.position.copy(l.position); grp.add(s); return s; }); }
@@ -4700,6 +4702,7 @@
     ex.warm.forEach(([s, sc], k) => { const f = sc * (0.9 + 0.12 * Math.sin(t * 9 + k * 1.7) + 0.06 * Math.sin(t * 23 + k)); s.scale.set(f, f, 1); });
     ex.spot.intensity = 700 + beat * 900;
     v3insideLive(R, now);
+    v3stageLive(R, now);
     if (V3.env) { V3.env.sea.offset.set(t * 0.004, -t * 0.012); V3.env.foam.material.opacity = 0.35 + 0.25 * Math.sin(t * 1.2); V3.env.foam.position.z = -41 + Math.sin(t * 0.6) * 1.5; if (V3.env.stars) V3.env.stars.material.opacity = 0.7 + 0.15 * Math.sin(t * 0.8); }
     { const p = ex.lasers.geometry.attributes.position, cx = 72; for (let k = 0; k < 6; k++) { const sw = Math.sin(t * 1.3 + k * 0.9); p.setXYZ(k * 2, cx + (k < 3 ? -5 : 5), 8, 11.6); p.setXYZ(k * 2 + 1, cx + sw * 26 + (k - 3) * 3 - 24, 0.1, 30 + Math.cos(t * 0.9 + k) * 8); } p.needsUpdate = true; ex.lasers.material.opacity = 0.25 + beat * 0.7; }
   }
@@ -4720,11 +4723,11 @@
     for (const L of REC.labels) grp.add(v3label(L));
     REC = null;
     V3.extras = v3extras(R, grp);
-    V3.env = null; V3.inside = v3inside(R, grp); // inside the building only: no beach round it
+    V3.env = null; V3.inside = v3inside(R, grp); V3.stage = v3stage(R, grp); // inside the building only: no beach round it
     // the room's own lighting: dim and warm, a cool moon through the open side, shadows from a high key light (not on phones)
     const key = new T3.DirectionalLight(0xfff1d6, 1.1); key.position.set(R.w * 0.8, 70, R.d * 1.2); key.target.position.set(R.w / 2, 0, R.d / 2);
     if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(2048, 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
-    grp.add(key, key.target, new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, 0.55));
+    key.intensity = 0.7; grp.add(key, key.target, new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, 0.32)); // a darker base: the club's own lights make the colour
     G3.scene.add(grp); V3.groups = grp; V3.key = R.key;
   }
   // what the room draws, without the people: its shell and its furniture (recorded, or run only for the glows each frame)
@@ -4891,6 +4894,45 @@
     inn.haze.forEach((s, k) => { s.material.opacity = 0.18 + 0.12 * Math.sin(t * 0.5 + k) + beat * 0.15; s.position.x += Math.sin(t * 0.2 + k) * 0.01; });
     const cp = V3.cam.position; // a wall fades when the camera is on its outside
     for (const w of inn.walls) { const out = w.userData.cut === 'xr' ? cp.x > R.w : w.userData.cut === 'zf' ? cp.z > R.d : w.userData.cut === 'zb' ? cp.z < 0 : cp.x < 0; const o = out ? 0.08 : 1; w.material.opacity += (o - w.material.opacity) * 0.15; w.material.depthWrite = w.material.opacity > 0.9; w.visible = w.material.opacity > 0.02; }
+  }
+  // the DJ booth, the bar and the club's lights, in live 3D (where this club has them: its stage and bar are shifted)
+  function v3stage(R, grp) {
+    const T3 = G3.T, st = {}, cx = 72, by = 6.5, bz = (9 + 11.6) / 2, bx = 26, bzz = 6;
+    // the decks: vinyl spinning on each, a strobe dot going round
+    st.platters = [cx - 4.2, cx + 4.2].map((dx) => { const g = new T3.Group(); g.position.set(dx - 0.2, by + 0.55, bz);
+      g.add(new T3.Mesh(new T3.CylinderGeometry(1.2, 1.2, 0.08, 32), new T3.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.25, metalness: 0.4 })));
+      const lab = new T3.Mesh(new T3.CylinderGeometry(0.36, 0.36, 0.1, 20), new T3.MeshBasicMaterial({ color: 0x22d3ee, toneMapped: false })); g.add(lab);
+      const dot = new T3.Mesh(new T3.BoxGeometry(0.18, 0.12, 0.18), new T3.MeshBasicMaterial({ color: 0xffffff, toneMapped: false })); dot.position.set(1.0, 0.02, 0); g.add(dot); grp.add(g); return { g, lab }; });
+    // the neon arch behind the DJ
+    { const pts = []; for (let i = 0; i <= 24; i++) { const u = i / 24, a = Math.PI * u; pts.push(new T3.Vector3(cx - Math.cos(a) * 6.6, 2.8 + Math.sin(a) * 6 + (u > 0.05 && u < 0.95 ? 4.2 : 4.2 * Math.min(u, 1 - u) / 0.05), 4.62)); }
+      const arch = new T3.Mesh(new T3.TubeGeometry(new T3.CatmullRomCurve3(pts), 64, 0.16, 8), new T3.MeshBasicMaterial({ color: 0xf472b6, toneMapped: false })); grp.add(arch); st.arch = arch; }
+    // CO2 jets either side, firing on the drops
+    { const c = document.createElement('canvas'); c.width = 32; c.height = 128; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 128, 0, 0); gr.addColorStop(0, 'rgba(255,255,255,0.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(14, 128); g.lineTo(18, 128); g.lineTo(32, 0); g.lineTo(0, 0); g.fill();
+      const tex = new T3.CanvasTexture(c); st.jets = [cx - 13, cx + 13].map((jx) => { const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0, toneMapped: false })); s.center.set(0.5, 0); s.position.set(jx, 2.7, 12); s.scale.set(5, 14, 1); grp.add(s); return s; }); }
+    // the bar: a backlit wall of bottles, a glowing strip under the counter, warm pendants
+    { const c = document.createElement('canvas'); c.width = 16; c.height = 128; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#7C2D12'); gr.addColorStop(0.5, '#F59E0B'); gr.addColorStop(1, '#7C2D12'); g.fillStyle = gr; g.fillRect(0, 0, 16, 128);
+      const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace; const wall = new T3.Mesh(new T3.PlaneGeometry(44, 10.5), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); wall.rotation.y = Math.PI / 2; wall.position.set(bx + 2.45, 8.4, bzz + 34); grp.add(wall); st.barWall = wall;
+      const n = 3 * 28, geo = new T3.CylinderGeometry(0.2, 0.24, 1.3, 8), im = new T3.InstancedMesh(geo, new T3.MeshStandardMaterial({ roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.92 }), n), o = new T3.Object3D(), cl = new T3.Color(); let k = 0;
+      const BC = ['#16A34A', '#B45309', '#F8FAFC', '#7C2D12', '#1D4ED8', '#DC2626', '#FACC15', '#0F766E'];
+      for (let r = 0; r < 3; r++) for (let i = 0; i < 28; i++) { o.position.set(bx + 2.9, 4.45 + r * 3, bzz + 13 + i * 1.5); o.updateMatrix(); im.setMatrixAt(k, o.matrix); im.setColorAt(k, cl.setStyle(BC[(i * 3 + r * 5) % BC.length])); k++; }
+      grp.add(im);
+      const strip = new T3.Mesh(new T3.BoxGeometry(0.12, 0.35, 44), new T3.MeshBasicMaterial({ color: 0xf59e0b, toneMapped: false })); strip.position.set(bx + 8.5, 0.45, bzz + 34); grp.add(strip); st.barStrip = strip;
+      const top = new T3.Mesh(new T3.BoxGeometry(0.1, 0.1, 44), new T3.MeshBasicMaterial({ color: 0xfde68a, toneMapped: false })); top.position.set(bx + 8.85, 4.62, bzz + 34); grp.add(top); }
+    // the club's lights: a darker base for contrast, two moving coloured spots sweeping the floor, a glow off the dance
+    // floor, warm light over the bar
+    st.moving = [0, 1].map((k) => { const s = new T3.SpotLight(k ? 0xf472b6 : 0x22d3ee, 1400, 90, 0.32, 0.5, 1.2); s.position.set(36 + k * 24, 17.5, 22); s.target.position.set(48, 0, 30); grp.add(s, s.target); return s; });
+    st.floorGlow = new T3.PointLight(0x22d3ee, 260, 30, 1.4); st.floorGlow.position.set(48, 2.5, 30); grp.add(st.floorGlow);
+    st.barLight = new T3.PointLight(0xffb35c, 320, 38, 1.4); st.barLight.position.set(bx + 7, 10, bzz + 34); grp.add(st.barLight);
+    return st;
+  }
+  function v3stageLive(R, now) {
+    const st = V3.stage; if (!st) return; const t = now / 1000, beat = clubBeat(R.key), hue = 165 + Math.sin(t * 0.6) * 35;
+    st.platters.forEach(({ g, lab }, k) => { g.rotation.y -= 0.058 * (k ? 1.04 : 1); lab.material.color.setHSL(((hue + k * 40) % 360) / 360, 0.9, 0.55); });
+    st.arch.material.color.setHSL(((hue + 180) % 360) / 360, 1, 0.55 + beat * 0.2);
+    st.jets.forEach((j) => { const on = beat > 0.62 ? (beat - 0.6) * 2.2 : 0; j.material.opacity += (Math.min(0.9, on) - j.material.opacity) * 0.25; j.scale.set(4 + on * 3, 10 + on * 10, 1); });
+    st.moving.forEach((s, k) => { s.target.position.set(48 + Math.sin(t * (0.7 + k * 0.2) + k * 2) * 26, 0, 32 + Math.cos(t * (0.5 + k * 0.3) + k) * 14); s.color.setHSL(((hue + k * 120 + t * 20) % 360) / 360, 1, 0.6); s.intensity = 900 + beat * 1600; });
+    st.floorGlow.color.setHSL((hue % 360) / 360, 1, 0.55); st.floorGlow.intensity = 140 + beat * 420;
+    st.barStrip.material.color.setHSL(((hue + 20) % 360) / 360, 1, 0.55); st.barLight.intensity = 280 + Math.sin(t * 2) * 20;
   }
   // the switch in the room
   function v3button() {
@@ -6418,6 +6460,7 @@
     // draw a part of the room moved by (ox, oz): the camera is shifted the other way while it draws, and anything it leaves
     // to draw later (night glows, labels) is shifted the same when its turn comes
     const shift = (ox, oz, f) => {
+      if (REC) { const s = REC.off; REC.off = [(s ? s[0] : 0) + ox, (s ? s[1] : 0) + oz]; try { return f(); } finally { REC.off = s; } } // recording: the shift goes into the coordinates
       if (!ox && !oz) return f();
       const wrap = (fn) => () => { cam.x -= ox; cam.z -= oz; try { fn(); } finally { cam.x += ox; cam.z += oz; } };
       const g0 = glow.push, a0 = afterCars.push;
@@ -8472,12 +8515,23 @@
   // what's solid in a room: its furniture (not rugs, dance floors, podiums or booths, which you stand on or in), its built-in
   // walls, and a workplace's machines. Cached per room until its layout changes
   const SOLID_SKIP = new Set(['rug', 'dance', 'podium', 'booth']);
+  // a club's own fixtures as solid footprints (the bar, the stage and its steps, the booths, partitions, posts, the pool):
+  // taken once from its drawing, the same recording the live 3D view uses, so 2D and 3D agree on what you can't walk through
+  function v3shellSolids(R) {
+    const prev = REC, realX = x, realGlow = glow; REC = { mode: 'build', buckets: new Map(), labels: [], solids: [] };
+    x = V3.dummy || (V3.dummy = document.createElement('canvas').getContext('2d')); glow = [];
+    let out = [];
+    try { drawClubShell(R, performance.now()); out = REC.solids; } catch (e) { out = []; } finally { REC = prev; x = realX; glow = realGlow; afterCars.length = 0; G3.queue.length = 0; }
+    if (R.theme === 'lekki') out.push([R.w - 17.2, 8.8, R.w - 1.8, 51.2]); // the pool
+    return out.filter((b) => (b[2] - b[0]) * (b[3] - b[1]) > 0.2 && (b[2] - b[0]) < R.w * 0.8);
+  }
   function roomSolids(R) {
     const sig = R.key + ':' + (R.layout ? R.layout.length + ':' + R.layout.reduce((a, v) => a + v.x * 3 + v.z * 7 + (v.r || 0), 0) : 0);
     if (R._solidSig === sig) return R._solids;
     const out = [];
     for (const it of R.layout || []) { if (SOLID_SKIP.has(it.k) || isRugK(it)) continue; const f = fpOf(it); if (f) out.push([f[0] + 0.4, f[1] + 0.4, f[2] - 0.4, f[3] - 0.4]); }
     out.push(...bmBlocks(R));
+    if (R.kind === 'club') out.push(...(R._shell || (R._shell = v3shellSolids(R)))); // the club's bar, stage, booths and pool
     if (R.kind === 'work' && WORK_ROOMS[R.place] && WORK_ROOMS[R.place].solids) out.push(...WORK_ROOMS[R.place].solids);
     R._solidSig = sig; return (R._solids = out);
   }
