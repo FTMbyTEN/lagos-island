@@ -4683,6 +4683,7 @@
     ex.lights.forEach((l, k) => { l.color.setHSL(((hue + k * 40) % 360) / 360, 1, 0.55); l.intensity = 160 + beat * 520 + Math.sin(t * 3 + k) * 40; });
     ex.halos.forEach((s, k) => { s.material.color.copy(ex.lights[k].color); const sc = 9 + beat * 9 + Math.sin(t * 3 + k) * 1.2; s.scale.set(sc, sc, 1); s.material.opacity = 0.55 + beat * 0.4; });
     ex.spot.intensity = 700 + beat * 900;
+    if (V3.env) { V3.env.sea.offset.set(t * 0.004, -t * 0.012); V3.env.foam.material.opacity = 0.35 + 0.25 * Math.sin(t * 1.2); V3.env.foam.position.z = -41 + Math.sin(t * 0.6) * 1.5; if (V3.env.stars) V3.env.stars.material.opacity = 0.7 + 0.15 * Math.sin(t * 0.8); }
     { const p = ex.lasers.geometry.attributes.position, cx = 72; for (let k = 0; k < 6; k++) { const sw = Math.sin(t * 1.3 + k * 0.9); p.setXYZ(k * 2, cx + (k < 3 ? -5 : 5), 8, 11.6); p.setXYZ(k * 2 + 1, cx + sw * 26 + (k - 3) * 3 - 24, 0.1, 30 + Math.cos(t * 0.9 + k) * 8); } p.needsUpdate = true; ex.lasers.material.opacity = 0.25 + beat * 0.7; }
   }
   // record the room once into meshes
@@ -4691,7 +4692,7 @@
     if (V3.groups) { G3.scene.remove(V3.groups); V3.groups.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); }
     REC = { mode: 'build', buckets: new Map(), labels: [] };
     const realX = x, realGlow = glow; x = V3.dummy || (V3.dummy = document.createElement('canvas').getContext('2d')); glow = [];
-    try { v3pass(R, now); } finally { x = realX; glow = realGlow; afterCars.length = 0; }
+    try { v3pass(R, now); v3envRec(R); } finally { x = realX; glow = realGlow; afterCars.length = 0; }
     const grp = new T3.Group(); grp.name = 'room3d';
     for (const b of REC.buckets.values()) {
       if (!b.pos.length) continue; const geo = new T3.BufferGeometry(); geo.setAttribute('position', new T3.Float32BufferAttribute(b.pos, 3)); geo.setAttribute('normal', new T3.Float32BufferAttribute(b.nor, 3));
@@ -4702,6 +4703,7 @@
     for (const L of REC.labels) grp.add(v3label(L));
     REC = null;
     V3.extras = v3extras(R, grp);
+    V3.env = v3envLive(R, grp);
     // the room's own lighting: dim and warm, a cool moon through the open side, shadows from a high key light (not on phones)
     const key = new T3.DirectionalLight(0xfff1d6, 1.1); key.position.set(R.w * 0.8, 70, R.d * 1.2); key.target.position.set(R.w / 2, 0, R.d / 2);
     if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(2048, 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
@@ -4720,7 +4722,7 @@
     const c = G3.canvas; if (!c.parentNode) { c.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none'; document.body.prepend(c); }
     c.style.display = 'block'; cv.style.background = 'transparent'; V3.prevHemi = V3.prevHemi ?? null;
     const r = G3.renderer; r.shadowMap.enabled = !MOBILE; r.shadowMap.type = G3.T.PCFSoftShadowMap; r.outputColorSpace = G3.T.SRGBColorSpace;
-    G3.scene.fog = new G3.T.Fog(0x0b1020, 150, 360); r.toneMappingExposure = 1.2; // depth: the far side of the room softens into the night
+    G3.scene.fog = new G3.T.Fog(night > 0.5 ? 0x0b1020 : 0xbfe3f5, 220, 760); r.toneMappingExposure = 1.2; // depth: the far side of the room softens into the night
     G3.scene.children.forEach((o) => { if (o.isHemisphereLight || o.isDirectionalLight) { if (o.userData.base == null) o.userData.base = o.intensity; if (!o.parent || o.parent === G3.scene) o.intensity = o.userData.base * 0.15; } });
     if (!V3.cam) V3.cam = new G3.T.PerspectiveCamera(42, 1, 0.5, 900);
     V3.yaw = cam.yaw; V3.tx = me.x; V3.tz = me.z; V3.on = true;
@@ -4765,6 +4767,53 @@
     v3live(R, now);
     const r = G3.renderer; if (G3.w !== W || G3.h !== H || G3.dpr !== DPR) { r.setPixelRatio(DPR); r.setSize(W, H, false); G3.w = W; G3.h = H; G3.dpr = DPR; }
     r.setClearColor(night > 0.5 ? 0x070b1a : 0x0f172a, 1); r.clear(); r.render(G3.scene, cam3);
+  }
+  // a laptop's trackpad or a mouse in live 3D: two fingers swipe to turn and tilt, a pinch (ctrl) or a wheel notch zooms,
+  // shift + wheel turns
+  function v3wheel(e) {
+    const dx = e.deltaX, dy = e.deltaY, notch = e.deltaMode !== 0 || Math.abs(dy) >= 50;
+    if (e.ctrlKey || (notch && !dx && !e.shiftKey)) { V3.dist = Math.max(25, Math.min(180, V3.dist * Math.exp(dy * (e.ctrlKey ? 0.012 : 0.0016)))); return; }
+    if (e.shiftKey) { V3.yaw -= (dy || dx) * 0.004; V3.dragAt = performance.now(); return; }
+    V3.yaw -= dx * 0.005; V3.pitch = Math.max(0.18, Math.min(1.35, V3.pitch + dy * 0.003)); V3.dragAt = performance.now();
+  }
+  // the world round the club (recorded with the room): the beach all round, palms along it, a pier out into the sea with
+  // boats tied up, a lifeguard tower, the Lagos skyline far off across the lagoon
+  function v3envRec(R) {
+    flat(-260, -40, R.w + 260, R.d + 220, -0.06, night > 0.5 ? '#8A7350' : '#D9BE8A'); // sand (moonlit at night)
+    for (let k = 0; k < 18; k++) { const R2 = rnd(k * 29 + 3); palm(R.w + 12 + R2() * 70, -20 + k * 7 + R2() * 4, 12 + R2() * 6); }
+    for (let k = 0; k < 10; k++) { const R2 = rnd(k * 41 + 7); palm(-18 - R2() * 50, 10 + k * 12, 11 + R2() * 6); }
+    for (let k = 0; k < 8; k++) { const R2 = rnd(k * 53 + 1); palm(10 + k * 24 + R2() * 8, R.d + 18 + R2() * 20, 12 + R2() * 5); }
+    // the pier, out past the back wall into the water, with lamps and two boats
+    const px = R.w + 40; box(px - 3, 0.6, -150, px + 3, 1.1, -30, '#8B5A2B'); for (let z = -148; z < -30; z += 8) for (const sx of [px - 3, px + 2.6]) box(sx, -6, z, sx + 0.4, 1.1, z + 0.4, '#5C3A1B');
+    for (let z = -140; z < -30; z += 22) { box(px + 2.6, 1.1, z, px + 2.9, 6, z + 0.3, '#1F2937'); box(px + 2.3, 6, z - 0.3, px + 3.2, 6.6, z + 0.6, '#FDE68A'); }
+    for (const [bx, bz, col] of [[px + 12, -110, '#F8FAFC'], [px - 13, -80, '#F43F5E']]) { box(bx - 3, 0.2, bz - 9, bx + 3, 3, bz + 9, col); box(bx - 2, 3, bz - 3, bx + 2, 6, bz + 4, '#E2E8F0'); box(bx - 0.1, 6, bz - 0.1, bx + 0.1, 16, bz + 0.1, '#94A3B8'); }
+    // a lifeguard tower on the beach
+    { const lx = R.w + 30, lz = R.d + 30; for (const [ox, oz] of [[-2, -2], [2, -2], [-2, 2], [2, 2]]) box(lx + ox - 0.2, 0, lz + oz - 0.2, lx + ox + 0.2, 8, lz + oz + 0.2, '#F8FAFC'); box(lx - 2.6, 8, lz - 2.6, lx + 2.6, 12, lz + 2.6, '#DC2626'); pyramid(lx - 3, lz - 3, lx + 3, lz + 3, 12, 2.5, '#F8FAFC'); }
+  }
+  // the living parts of the world: the sky (stars and the moon by night, blue by day), the sea with its waves moving in,
+  // the skyline's lights
+  function v3envLive(R, grp) {
+    const T3 = G3.T, nt = night > 0.5, env = {};
+    { const c = document.createElement('canvas'); c.width = 16; c.height = 256; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 256);
+      if (nt) { gr.addColorStop(0, '#020617'); gr.addColorStop(0.45, '#0B1033'); gr.addColorStop(0.62, '#3B2A6B'); gr.addColorStop(0.7, '#1E1B4B'); gr.addColorStop(1, '#0B1020'); } else { gr.addColorStop(0, '#0EA5E9'); gr.addColorStop(0.55, '#7DD3FC'); gr.addColorStop(0.68, '#FDE68A'); gr.addColorStop(1, '#E0F2FE'); }
+      g.fillStyle = gr; g.fillRect(0, 0, 16, 256); const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
+      const sky = new T3.Mesh(new T3.SphereGeometry(700, 32, 16), new T3.MeshBasicMaterial({ map: tex, side: T3.BackSide, fog: false, depthWrite: false, toneMapped: false })); sky.position.set(R.w / 2, 0, R.d / 2); sky.renderOrder = -10; grp.add(sky); }
+    if (nt) { const n = 900, pos = new Float32Array(n * 3); for (let k = 0; k < n; k++) { const R2 = rnd(k * 13 + 5), th = R2() * Math.PI * 2, ph = 0.08 + R2() * 1.3, r = 640; pos[k * 3] = R.w / 2 + Math.cos(th) * Math.cos(ph) * r; pos[k * 3 + 1] = Math.sin(ph) * r; pos[k * 3 + 2] = R.d / 2 + Math.sin(th) * Math.cos(ph) * r; }
+      const geo = new T3.BufferGeometry(); geo.setAttribute('position', new T3.BufferAttribute(pos, 3)); env.stars = new T3.Points(geo, new T3.PointsMaterial({ color: 0xffffff, size: 2.2, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.85 })); grp.add(env.stars);
+      const moon = new T3.Mesh(new T3.SphereGeometry(16, 24, 12), new T3.MeshBasicMaterial({ color: 0xfef9c3, fog: false })); moon.position.set(R.w * 0.9, 210, -520); grp.add(moon);
+      const mh = new T3.Sprite(new T3.SpriteMaterial({ color: 0xfef9c3, transparent: true, opacity: 0.35, blending: T3.AdditiveBlending, fog: false, depthWrite: false })); mh.scale.set(150, 150, 1); mh.position.copy(moon.position); grp.add(mh); }
+    // the sea: a wide plane behind the club, a moving pattern of light on it
+    { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = nt ? '#0B2E4A' : '#0E7490'; g.fillRect(0, 0, 128, 128); g.strokeStyle = nt ? 'rgba(165,243,252,0.35)' : 'rgba(255,255,255,0.45)'; g.lineWidth = 2;
+      for (let k = 0; k < 14; k++) { const y = k * 9 + 4; g.beginPath(); for (let px = 0; px <= 128; px += 8) g.lineTo(px, y + Math.sin(px * 0.1 + k) * 2.5); g.stroke(); }
+      const tex = new T3.CanvasTexture(c); tex.wrapS = tex.wrapT = T3.RepeatWrapping; tex.repeat.set(30, 12); tex.colorSpace = T3.SRGBColorSpace;
+      const sea = new T3.Mesh(new T3.PlaneGeometry(1600, 600), new T3.MeshStandardMaterial({ map: tex, roughness: 0.25, metalness: 0.3, emissive: nt ? 0x061a2b : 0x0b4a5c, emissiveIntensity: 0.6 })); sea.rotation.x = -Math.PI / 2; sea.position.set(R.w / 2, -0.4, -340); grp.add(sea); env.sea = tex;
+      const foam = new T3.Mesh(new T3.PlaneGeometry(1600, 4), new T3.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.55, fog: true })); foam.rotation.x = -Math.PI / 2; foam.position.set(R.w / 2, -0.3, -41); grp.add(foam); env.foam = foam; }
+    // the skyline across the water: towers with lit windows, far to the west
+    { const c = document.createElement('canvas'); c.width = 64; c.height = 128; const g = c.getContext('2d'); g.fillStyle = '#0F172A'; g.fillRect(0, 0, 64, 128); for (let y = 4; y < 128; y += 8) for (let px = 4; px < 64; px += 8) { const R2 = rnd(y * 7 + px); if (R2() < (nt ? 0.55 : 0.2)) { g.fillStyle = nt ? (R2() < 0.8 ? '#FDE68A' : '#93C5FD') : '#94A3B8'; g.fillRect(px, y, 4, 4); } }
+      const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace; tex.wrapS = tex.wrapT = T3.RepeatWrapping;
+      for (let k = 0; k < 22; k++) { const R2 = rnd(k * 97 + 11), w = 14 + R2() * 18, h = 40 + R2() * 130, m = new T3.Mesh(new T3.BoxGeometry(w, h, w), new T3.MeshBasicMaterial({ map: tex, color: nt ? 0xffffff : 0x9ca3af, fog: true }));
+        m.material.map = tex.clone(); m.material.map.needsUpdate = true; m.material.map.repeat.set(w / 16, h / 32); m.position.set(-420 + k * 44 + R2() * 20, h / 2 - 1, -460 - R2() * 80); grp.add(m); } }
+    return env;
   }
   // the switch in the room
   function v3button() {
@@ -8447,12 +8496,12 @@
     stick = { x: dx / max, z: dy / max };
   }
   const pts = new Map(); let pinch0 = 0, user0 = 1, dragged = false;
-  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY, furn: !!(inside && deco && pts.size === 0 && bmDown(e.clientX, e.clientY)) }); dragged = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); user0 = cam.user; V3.dist0 = V3.dist; } });
+  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY, furn: !!(inside && deco && pts.size === 0 && bmDown(e.clientX, e.clientY)) }); dragged = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); user0 = cam.user; V3.dist0 = V3.dist; V3.yaw0 = V3.yaw; V3.pitch0 = V3.pitch; V3.ang0 = Math.atan2(b.y - a.y, b.x - a.x); V3.mid0 = (a.y + b.y) / 2; } });
   cv.addEventListener('pointermove', (e) => {
     if (inside && deco && deco.carry && !pts.size) bmMove(e.clientX, e.clientY, e.altKey); // what you carry follows the mouse
     const p = pts.get(e.pointerId); if (!p) return;
     if (p.furn) { bmMove(e.clientX, e.clientY, e.altKey); dragged = true; return; }
-    if (pts.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()]; const f = Math.hypot(a.x - b.x, a.y - b.y) / (pinch0 || 1); if (V3_LIVE) { V3.dist = Math.max(25, Math.min(180, V3.dist0 / f)); return; } cam.user = Math.max(0.45, Math.min(2.4, user0 * f)); return; }
+    if (pts.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()]; const f = Math.hypot(a.x - b.x, a.y - b.y) / (pinch0 || 1); if (V3_LIVE) { V3.dist = Math.max(25, Math.min(180, V3.dist0 / f)); const ang = Math.atan2(b.y - a.y, b.x - a.x), my = (a.y + b.y) / 2; let da = ang - V3.ang0; da = Math.atan2(Math.sin(da), Math.cos(da)); V3.yaw = V3.yaw0 - da; V3.pitch = Math.max(0.18, Math.min(1.35, V3.pitch0 + (my - V3.mid0) * 0.004)); V3.dragAt = performance.now(); return; } /* live 3D: pinch zooms, a twist turns, two fingers up or down tilt */ cam.user = Math.max(0.45, Math.min(2.4, user0 * f)); return; }
     const dx = e.clientX - p.x, dy = e.clientY - p.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) dragged = true;
     if (dragged) { if (V3_LIVE) { V3.dragAt = performance.now(); V3.yaw -= dx * 0.006; V3.pitch = Math.max(0.18, Math.min(1.35, V3.pitch + dy * 0.004)); p.x = e.clientX; p.y = e.clientY; return; } cam.follow = false; const [wx, wz] = toWorldDir(dx / K, dy / K); cam.x -= wx; cam.z -= wz; }
@@ -8461,7 +8510,7 @@
   cv.addEventListener('pointerup', (e) => { const was = pts.get(e.pointerId); pts.delete(e.pointerId); if (was && was.furn) { if (deco) { bmUp(e.shiftKey); setDeco(); } return; } if (was && !dragged && pts.size === 0) tapAt(e.clientX, e.clientY); });
   cv.addEventListener('pointercancel', (e) => pts.delete(e.pointerId));
   cv.addEventListener('dblclick', () => { if (!V3_LIVE) return; const vx = me.vx || 0, vz = me.vz || 0; if (Math.hypot(vx, vz) > 1) V3.yaw = Math.atan2(-vx, -vz); V3.dist = 95; V3.pitch = 0.72; V3.dragAt = 0; }); // live 3D: back behind you
-  cv.addEventListener('wheel', (e) => { e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.12 : 1 / 1.12); }, { passive: false });
+  cv.addEventListener('wheel', (e) => { if (V3_LIVE) { e.preventDefault(); e.stopPropagation(); return v3wheel(e); } e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.12 : 1 / 1.12); }, { passive: false });
   const card = document.getElementById('card');
   function tapAt(sx, sy) {
     if (inside) return tapInside(sx, sy);
