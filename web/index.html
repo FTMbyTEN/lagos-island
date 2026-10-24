@@ -543,6 +543,7 @@
   #phone .ccMeta button { box-shadow: inset 0 0 0 1px var(--ppLine), 0 6px 14px -8px rgba(15,23,42,.25); }
   #phone .wReal { background: linear-gradient(var(--ppCard), var(--ppCard)) padding-box, linear-gradient(135deg, #22C55E, #065F46) border-box; border: 1.5px solid transparent; box-shadow: 0 12px 26px -16px rgba(22,163,74,.55); }
   #phone .wReal .ic2 { background: linear-gradient(135deg, #22C55E, #065F46); color: #fff; }
+  #v3btn { position: fixed; right: 14px; top: calc(140px + env(safe-area-inset-top)); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; width: 58px; height: 58px; border: 0; border-radius: 18px; cursor: pointer; color: #fff; background: linear-gradient(135deg, #334155, #0F172A); box-shadow: 0 10px 24px -10px rgba(15,23,42,.6), inset 0 0 0 1px rgba(255,255,255,.18); font-family: 'Plus Jakarta Sans', sans-serif; } #v3btn b { font: 900 18px 'Plus Jakarta Sans', sans-serif; } #v3btn small { font-size: 9.5px; font-weight: 700; opacity: .8; } #v3btn.on { background: linear-gradient(135deg, #06B6D4, #6366F1 60%, #A855F7); box-shadow: 0 10px 26px -8px rgba(99,102,241,.8), inset 0 0 0 1px rgba(255,255,255,.3); }
   .soonWrap { position: relative; } .soonStamp { position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -50%) rotate(-14deg); padding: 8px 18px; border: 4px double #DC2626; border-radius: 10px; color: #DC2626; background: rgba(255,255,255,.82); font: 900 26px 'Plus Jakarta Sans', sans-serif; font-style: normal; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 0 2px rgba(220,38,38,.15); pointer-events: none; mix-blend-mode: multiply; } /* a rubber stamp over what isn't open yet */
   #wyrdGuide .wgnear { margin-top: 8px; font-size: 12px; font-weight: 700; color: #67E8F9; min-height: 1.2em; } #wyrdGuide .wgnear:empty { display: none; }
   #wyrdGuide.shake { animation: wgEdge 6s linear infinite, wgShake .4s; } @keyframes wgShake { 20%, 60% { margin-left: -6px; } 40%, 80% { margin-left: 6px; } }
@@ -1952,14 +1953,16 @@
     co = Math.cos(cam.yaw); si = Math.sin(cam.yaw); sp = Math.sin(cam.pitch); cp = Math.cos(cam.pitch);
     K = 4.6 * cam.zoom * cam.user * Math.min(1.25, Math.max(0.75, Math.min(W, H) / 700));
   }
+  var V3_LIVE = false, REC = null; // live 3D rooms (see V3): the projection goes through the 3D camera; the drawing kit records
   // world (x, y up, z) to screen [sx, sy, depth]
   function P(wx, wy, wz) {
+    if (V3_LIVE) return V3.P(wx, wy, wz);
     const dx = wx - cam.x, dz = wz - cam.z;
     const rx = dx * co - dz * si, rz = dx * si + dz * co;
     return [W / 2 + K * rx, H * 0.55 + K * (rz * sp - wy * cp), rz * cp + wy * sp];
   }
   const viewDot = (nx, ny, nz) => { const rz = nx * si + nz * co; return ny * cp + rz * sp; }; // > 0: faces you
-  const toWorldDir = (dx, dy) => { const rz = dy / sp; return [dx * co + rz * si, -dx * si + rz * co]; };
+  const toWorldDir = (dx, dy) => { if (V3_LIVE) return V3.dir(dx, dy); const rz = dy / sp; return [dx * co + rz * si, -dx * si + rz * co]; };
 
   // ---- colour and light: soft light from the north-west
   const LIGHT = (() => { const l = [-0.5, 1, -0.35]; const n = Math.hypot(...l); return l.map((v) => v / n); })();
@@ -1975,9 +1978,10 @@
 
   // ================= drawing kit: flat quads, boxes, roofs, domes, trees, people =================
   const quad = (pts, fill, stroke) => { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) x.lineTo(pts[i][0], pts[i][1]); x.closePath(); x.fillStyle = fill; x.fill(); if (stroke) { x.strokeStyle = stroke; x.lineWidth = 1; x.stroke(); } };
-  const flat = (x0, z0, x1, z1, y, fill, stroke) => quad([P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)], fill, stroke);
+  const flat = (x0, z0, x1, z1, y, fill, stroke) => REC ? (REC.mode === 'build' && V3REC.flat(x0, z0, x1, z1, y, fill)) : quad([P(x0, y, z0), P(x1, y, z0), P(x1, y, z1), P(x0, y, z1)], fill, stroke);
   // a box from (x0, y0, z0) to (x1, y1, z1); win: window colour (a grid of windows on the walls)
   function box(x0, y0, z0, x1, y1, z1, col, win, winRows) {
+    if (REC) { if (REC.mode === 'build') V3REC.box(x0, y0, z0, x1, y1, z1, col); return; }
     const faces = [
       [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], 0, 0, 1],
       [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], 0, 0, -1],
@@ -2021,6 +2025,7 @@
     }
   }
   function pyramid(x0, z0, x1, z1, y, h, col) {
+    if (REC) { if (REC.mode === 'build') V3REC.pyramid(x0, z0, x1, z1, y, h, col); return; }
     const top = P((x0 + x1) / 2, y + h, (z0 + z1) / 2);
     const sides = [[[x0, z1], [x1, z1], 0, 0.6, 0.8], [[x1, z0], [x0, z0], 0, 0.6, -0.8], [[x1, z1], [x1, z0], 0.8, 0.6, 0], [[x0, z0], [x0, z1], -0.8, 0.6, 0]];
     for (const [a, b, nx, ny, nz] of sides) if (viewDot(nx, ny, nz) > 0) quad([P(a[0], y, a[1]), P(b[0], y, b[1]), top], lit(col, nx, ny, nz));
@@ -2035,6 +2040,7 @@
   // a tree: each one its own shape (seeded by where it stands): a tapering trunk that forks, and a lumpy crown of
   // leaf clusters in three tones (shade underneath, leaf, sun on top). Wide umbrella trees (almond, flame tree) or taller ovals (neem).
   function tree(tx, tz, r, col) {
+    if (REC) { if (REC.mode === 'build') V3REC.tree(tx, tz, r, col); return; }
     const R = rnd(Math.round(tx * 31 + tz * 17)), c0 = col || C.tree, base = P(tx, 0, tz), rr = r * K;
     const broad = R() < 0.5, h = r * (broad ? 1.25 : 1.45) + R() * r * 0.3, lean = (R() - 0.5) * 0.35 * rr, top = P(tx, h, tz);
     const tx0 = top[0] + lean, cw = broad ? 1.35 : 0.95, ch = broad ? 0.72 : 1.05, cy = top[1] - rr * ch * 0.5;
@@ -2130,6 +2136,7 @@
     { const p = P(hx, hb + 2.3, hz); x.strokeStyle = 'rgba(30,41,59,0.8)'; x.lineWidth = Math.max(1, K * 0.18); x.beginPath(); for (let k = 0; k < 2; k++) { const an = t * 9 + k * Math.PI / 2, e1 = P(hx + Math.cos(an) * 4.5, hb + 2.3, hz + Math.sin(an) * 4.5), e2 = P(hx - Math.cos(an) * 4.5, hb + 2.3, hz - Math.sin(an) * 4.5); x.moveTo(e1[0], e1[1]); x.lineTo(e2[0], e2[1]); } x.stroke(); }
   }
   function palm(tx, tz, h) {
+    if (REC) { if (REC.mode === 'build') V3REC.palm(tx, tz, h); return; }
     const base = P(tx, 0, tz), top = P(tx + 0.6, h, tz), s = K, t = performance.now() / 1400 + tx;
     x.fillStyle = 'rgba(25,55,30,0.22)'; x.beginPath(); x.ellipse(base[0] + s * 2, base[1], s * 3.2, s * 1.2 * sp, 0, 0, Math.PI * 2); x.fill();
     // a ringed, leaning trunk
@@ -2207,6 +2214,7 @@
   }
   // letters laid flat on the ground (a word engraved in the land)
   function groundText(text, cx, cz, size, fill, shadow) {
+    if (REC) { if (REC.mode === 'build') V3REC.text(text, cx, 0, cz, fill, size, true); return; }
     const o = P(cx, 0.06, cz), ex = P(cx + 1, 0.06, cz), ez = P(cx, 0.06, cz + 1);
     x.save(); x.transform(ex[0] - o[0], ex[1] - o[1], ez[0] - o[0], ez[1] - o[1], o[0], o[1]);
     x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = `900 ${size}px "Plus Jakarta Sans", sans-serif`;
@@ -2224,7 +2232,7 @@
   const arenaLive = () => { const now = Date.now(); return arenaShows.some((s) => s.live || (s.startsAt && now >= Date.parse(s.startsAt) && now < Date.parse(s.startsAt) + (s.minutes || 60) * 60000)); };
   setTimeout(function poll() { if (typeof signedIn === 'function' && signedIn()) my('shows').then((l) => { if (Array.isArray(l)) arenaShows = l; }).catch(() => {}); setTimeout(poll, 120000); }, 4000);
   // a flat disc on the ground (or at height y)
-  function disk(cx, cz, y, r, col) { const p = P(cx, y, cz); x.fillStyle = col; x.beginPath(); x.ellipse(p[0], p[1], r * K, r * K * sp, 0, 0, Math.PI * 2); x.fill(); }
+  function disk(cx, cz, y, r, col) { if (REC) { if (REC.mode === 'build') V3REC.disk(cx, cz, y, r, col); return; } const p = P(cx, y, cz); x.fillStyle = col; x.beginPath(); x.ellipse(p[0], p[1], r * K, r * K * sp, 0, 0, Math.PI * 2); x.fill(); }
   // a cone (a minaret cap): shaded across its width
   function cone(cx, cz, y, r, h, col) {
     const b0 = P(cx, y, cz), t0 = P(cx, y + h, cz), rr = r * K, g = x.createLinearGradient(b0[0] - rr, 0, b0[0] + rr, 0);
@@ -4577,11 +4585,175 @@
     for (const [m, list] of Object.entries(G3.pool)) for (let k = used[m] || 0; k < list.length; k++) list[k].visible = false;
     for (const p of PEOPLE.inst.values()) if (!shown.has(p.root)) p.root.visible = false;
     for (const o of ACC_SHOW.values()) if (!shown.has(o)) o.visible = false;
+    if (V3_LIVE) { G3.queue.length = 0; return; } // a live 3D room renders the whole scene itself
     r.setClearColor(0x000000, 0); r.clear(); r.render(G3.scene, G3.cam);
     x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.drawImage(G3.canvas, 0, 0, W * DPR, H * DPR); x.restore();
     G3.queue.length = 0;
   }
 
+  // ================= live 3D rooms (pilot: Club Lekki) =================
+  // Inside a building the same layout becomes a real 3D scene, Sims-style: the room is recorded once from the very
+  // drawing code the 2D view uses (box, flat, cylLit, pipe, palm... make meshes instead of shapes, merged by colour so the
+  // whole room is a few dozen draws), the people and furniture models join it, and a perspective camera orbits your
+  // character (drag to turn, wheel or pinch to zoom). Walls you'd look through come down to knee height, as in The Sims.
+  // Names, bubbles, glows and the job rings still draw on the 2D canvas over it, through the same camera.
+  // The switch: the 🧊 button in the room (remembered), ?3d=0 / ?3d=1; anything without WebGL stays 2D.
+  REC = null; // while set, the drawing kit records (build) or does nothing (skip) instead of drawing
+  const V3 = { live: false, key: null, room: null, yaw: 0, pitch: 0.72, dist: 95, tx: 0, tz: 0, groups: null, extras: null, dummy: null, btn: null, t0: 0,
+    pref: (() => { const q = new URLSearchParams(location.search).get('3d'); if (q === '0' || q === '1') { try { localStorage.setItem('li.3d', q); } catch {} return q === '1'; } try { return localStorage.getItem('li.3d') !== '0'; } catch { return true; } })() };
+  V3.eligible = (R) => !!(R && R.kind === 'club' && R.theme === 'lekki'); // the pilot room
+  V3.want = (R) => V3.pref && V3.eligible(R) && G3.ok && !!G3.renderer && !deco;
+  // the projection while live: world to screen through the 3D camera (so everything drawn in 2D lands in the right place)
+  V3.v = null;
+  V3.P = (wx, wy, wz) => { const v = V3.v || (V3.v = new G3.T.Vector3()); v.set(wx, wy, wz).applyMatrix4(V3.cam.matrixWorldInverse); const d = -v.z; v.applyMatrix4(V3.cam.projectionMatrix); return [(v.x + 1) / 2 * W, (1 - v.y) / 2 * H, -d]; };
+  V3.dir = (dx, dy) => { const s = Math.sin(V3.yaw), c = Math.cos(V3.yaw), down = dy / (sp || 1); return [dx * c + down * s, -dx * s + down * c]; }; // screen right/down to the floor
+  V3.floor = (sx, sy) => { const T3 = G3.T, rc = V3.rc || (V3.rc = new T3.Raycaster()), nd = new T3.Vector2(sx / W * 2 - 1, 1 - sy / H * 2); rc.setFromCamera(nd, V3.cam); const o = rc.ray.origin, d = rc.ray.direction; if (Math.abs(d.y) < 1e-4) return [V3.tx, V3.tz]; const k = -o.y / d.y; return [o.x + d.x * k, o.z + d.z * k]; };
+  // ---- recording the room: geometry grouped by colour, then merged
+  function v3col(col) {
+    if (typeof col !== 'string') return { css: '#64748B', a: 1 };
+    const m = col.match(/rgba\(([^)]+)\)/); if (m) { const p = m[1].split(',').map(Number); return { css: `rgb(${p[0]},${p[1]},${p[2]})`, a: p[3] ?? 1 }; }
+    const h = col.match(/hsla\(([^)]+)\)/); if (h) { const p = h[1].split(','); return { css: `hsl(${p[0]},${p[1]},${p[2]})`, a: parseFloat(p[3]) || 1 }; }
+    return { css: col, a: 1 };
+  }
+  function v3bucket(col, glowy) { const c = v3col(col), key = c.css + '|' + c.a.toFixed(2) + (glowy ? '|g' : ''); let b = REC.buckets.get(key); if (!b) { b = { c, glowy, pos: [], nor: [] }; REC.buckets.set(key, b); } return b; }
+  const v3tri = (b, a, p, q, n) => { b.pos.push(a[0], a[1], a[2], p[0], p[1], p[2], q[0], q[1], q[2]); for (let i = 0; i < 3; i++) b.nor.push(n[0], n[1], n[2]); };
+  const v3quad = (b, a, p, q, r, n) => { v3tri(b, a, p, q, n); v3tri(b, a, q, r, n); };
+  const V3REC = {
+    box(x0, y0, z0, x1, y1, z1, col) {
+      if (x1 < x0) [x0, x1] = [x1, x0]; if (z1 < z0) [z0, z1] = [z1, z0]; if (y1 < y0) [y0, y1] = [y1, y0];
+      const wx = x1 - x0, wz = z1 - z0, back = x1 <= 0.3 || z1 <= 0.3, wallish = Math.min(wx, wz) < 1.3 && Math.max(wx, wz) > 4;
+      if (wallish && !back) { if (y0 >= 2.6) return; y1 = Math.min(y1, 2.6); } // walls down (Sims-style): inner walls stop at the knee so they never hide the room
+      const b = v3bucket(col);
+      v3quad(b, [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1]); v3quad(b, [x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [0, 0, -1]);
+      v3quad(b, [x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [1, 0, 0]); v3quad(b, [x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [-1, 0, 0]);
+      v3quad(b, [x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0], [0, 1, 0]);
+    },
+    flat(x0, z0, x1, z1, y, fill) { if (typeof fill !== 'string') return; const b = v3bucket(fill); v3quad(b, [x0, y, z1], [x1, y, z1], [x1, y, z0], [x0, y, z0], [0, 1, 0]); },
+    cyl(cx, cz, r, y0, h, col, cap = true) { const b = v3bucket(col), n = 14; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
+      v3quad(b, [cx + c0 * r, y0, cz + s0 * r], [cx + c1 * r, y0, cz + s1 * r], [cx + c1 * r, y0 + h, cz + s1 * r], [cx + c0 * r, y0 + h, cz + s0 * r], [(c0 + c1) / 2, 0, (s0 + s1) / 2]);
+      if (cap) v3tri(b, [cx, y0 + h, cz], [cx + c1 * r, y0 + h, cz + s1 * r], [cx + c0 * r, y0 + h, cz + s0 * r], [0, 1, 0]); } },
+    pyramid(x0, z0, x1, z1, y, h, col) { const b = v3bucket(col), t = [(x0 + x1) / 2, y + h, (z0 + z1) / 2]; v3tri(b, [x0, y, z1], [x1, y, z1], t, [0, 0.6, 0.8]); v3tri(b, [x1, y, z0], [x0, y, z0], t, [0, 0.6, -0.8]); v3tri(b, [x1, y, z1], [x1, y, z0], t, [0.8, 0.6, 0]); v3tri(b, [x0, y, z0], [x0, y, z1], t, [-0.8, 0.6, 0]); },
+    cone(cx, y, cz, r, h, col) { const b = v3bucket(col), n = 10, t = [cx, y + h, cz]; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2; v3tri(b, [cx + Math.cos(a1) * r, y, cz + Math.sin(a1) * r], [cx + Math.cos(a0) * r, y, cz + Math.sin(a0) * r], t, [0, 1, 0]); } },
+    disk(cx, cz, y, r, col) { const b = v3bucket(col), n = 16; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2; v3tri(b, [cx, y, cz], [cx + Math.cos(a1) * r, y, cz + Math.sin(a1) * r], [cx + Math.cos(a0) * r, y, cz + Math.sin(a0) * r], [0, 1, 0]); } },
+    sphere(cx, cy, cz, r, col) { const b = v3bucket(col), la = 8, lo = 12; const pt = (i, j) => { const th = i / la * Math.PI, ph = j / lo * Math.PI * 2; return [cx + r * Math.sin(th) * Math.cos(ph), cy + r * Math.cos(th), cz + r * Math.sin(th) * Math.sin(ph)]; };
+      for (let i = 0; i < la; i++) for (let j = 0; j < lo; j++) { const a = pt(i, j), p = pt(i + 1, j), q = pt(i + 1, j + 1), s = pt(i, j + 1), m = [(a[0] + q[0]) / 2 - cx, (a[1] + q[1]) / 2 - cy, (a[2] + q[2]) / 2 - cz]; v3quad(b, a, s, q, p, m); } },
+    pipe(pts, y, w, col) { for (let i = 1; i < pts.length; i++) { const [ax, az] = pts[i - 1], [bx, bz] = pts[i], r = w / 2; V3REC.box(Math.min(ax, bx) - r, y - r, Math.min(az, bz) - r, Math.max(ax, bx) + r, y + r, Math.max(az, bz) + r, col); } },
+    palm(tx, tz, h) { V3REC.cyl(tx, tz, 0.35, 0, h, '#8B5E3C'); for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2, b = v3bucket('#2F855A'), c = [tx, h, tz], e = [tx + Math.cos(a) * 3.6, h - 1.6, tz + Math.sin(a) * 3.6], s = [tx + Math.cos(a + 0.4) * 1.4, h + 0.3, tz + Math.sin(a + 0.4) * 1.4]; v3tri(b, c, s, e, [0, 1, 0]); v3tri(b, c, e, s, [0, 1, 0]); } },
+    tree(tx, tz, r, col) { V3REC.cyl(tx, tz, r * 0.15, 0, r * 1.1, '#8B5E3C'); V3REC.sphere(tx, r * 1.4, tz, r * 0.9, col || '#3F8F4F'); },
+    text(txt, px, py, pz, col, size, ground) { if (!txt || !REC.labels) return; REC.labels.push({ txt: String(txt), px, py, pz, col: typeof col === 'string' ? col : '#FFFFFF', size, ground }); },
+  };
+  // a label as a textured plane (on a wall facing +z, or flat on the floor)
+  function v3label(L) {
+    const T3 = G3.T, S = 48, c = document.createElement('canvas'), g = c.getContext('2d'); g.font = `900 ${S}px "Plus Jakarta Sans", sans-serif`;
+    const w = Math.ceil(g.measureText(L.txt).width) + 8; c.width = Math.min(2048, w); c.height = Math.ceil(S * 1.3);
+    g.font = `900 ${S}px "Plus Jakarta Sans", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = v3col(L.col).css; g.fillText(L.txt, c.width / 2, c.height / 2);
+    const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace; const ww = c.width / S * L.size, hh = c.height / S * L.size;
+    const m = new T3.Mesh(new T3.PlaneGeometry(ww, hh), new T3.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: T3.DoubleSide }));
+    if (L.ground) { m.rotation.x = -Math.PI / 2; m.position.set(L.px, 0.08, L.pz); } else m.position.set(L.px, L.py, L.pz + 0.06);
+    return m;
+  }
+  // the room's own living parts: the LED wall, the dance floor, the sea on the back wall, coloured lights, lasers
+  function v3extras(R, grp) {
+    const T3 = G3.T, ex = {}, cx = 48 + 24; // Club Lekki's stage sits 24 to the right
+    { const c = document.createElement('canvas'); c.width = 256; c.height = 96; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
+      const m = new T3.Mesh(new T3.PlaneGeometry(40, 14), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(cx, 10, 0.25); grp.add(m); ex.led = { c, g: c.getContext('2d'), tex }; }
+    { const c = document.createElement('canvas'); c.width = 512; c.height = 128; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
+      const m = new T3.Mesh(new T3.PlaneGeometry(R.w - 2, 17), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(R.w / 2, 9, 0.12); m.renderOrder = -1; grp.add(m); ex.sea = { c, g: c.getContext('2d'), tex, at: 0 }; }
+    { const n = 16 * 6, geo = new T3.BoxGeometry(1.8, 0.08, 1.8), mat = new T3.MeshBasicMaterial({ toneMapped: false }), im = new T3.InstancedMesh(geo, mat, n), o = new T3.Object3D(); let k = 0;
+      for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { o.position.set(33 + i * 2, 0.05, 25 + j * 2); o.updateMatrix(); im.setMatrixAt(k++, o.matrix); }
+      im.instanceColor = new T3.InstancedBufferAttribute(new Float32Array(n * 3), 3); grp.add(im); ex.floor = im; }
+    ex.lights = [0, 1, 2, 3].map((k) => { const l = new T3.PointLight(0x22d3ee, 260, 70, 1.6); l.position.set(24 + k * 20, 14, 26); grp.add(l); return l; });
+    ex.spot = new T3.SpotLight(0xffffff, 900, 60, 0.45, 0.6, 1.4); ex.spot.position.set(cx, 18, 14); ex.spot.target.position.set(cx, 2.7, 7); grp.add(ex.spot, ex.spot.target);
+    { const pos = new Float32Array(6 * 2 * 3), geo = new T3.BufferGeometry(); geo.setAttribute('position', new T3.BufferAttribute(pos, 3)); const ln = new T3.LineSegments(geo, new T3.LineBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.7, blending: T3.AdditiveBlending, toneMapped: false })); grp.add(ln); ex.lasers = ln; }
+    return ex;
+  }
+  function v3live(R, now) { // the parts that move, each frame
+    const ex = V3.extras, t = now / 1000, beat = clubBeat(R.key), hue = 165 + Math.sin(t * 0.6) * 35, T3 = G3.T, col = new T3.Color();
+    { const { g, c, tex } = ex.led; for (let i = 0; i < 20; i++) for (let j = 0; j < 7; j++) { const w = Math.sin(i * 0.5 + t * 3) * 0.5 + Math.cos(j * 0.9 - t * 2) * 0.5; g.fillStyle = `hsl(${hue + ((i * 7 + j * 11) % 44) - 22},95%,${45 + w * 20 + beat * 25}%)`; g.fillRect(i * 12.8 + 1, j * 13.7 + 1, 11, 11.5); } tex.needsUpdate = true; }
+    if (now - ex.sea.at > 120) { ex.sea.at = now; const { g, c, tex } = ex.sea, nt = night > 0.5, H2 = c.height;
+      let gr = g.createLinearGradient(0, 0, 0, H2 * 0.6); gr.addColorStop(0, nt ? '#0B1033' : '#38BDF8'); gr.addColorStop(1, nt ? '#3B2A6B' : '#FDE68A'); g.fillStyle = gr; g.fillRect(0, 0, c.width, H2 * 0.6);
+      gr = g.createLinearGradient(0, H2 * 0.6, 0, H2 * 0.9); gr.addColorStop(0, nt ? '#0E3A5B' : '#0EA5E9'); gr.addColorStop(1, nt ? '#082032' : '#0E7490'); g.fillStyle = gr; g.fillRect(0, H2 * 0.6, c.width, H2 * 0.3); g.fillStyle = '#E8CF9B'; g.fillRect(0, H2 * 0.9, c.width, H2 * 0.1);
+      if (nt) { g.fillStyle = '#FEF9C3'; g.beginPath(); g.arc(c.width * 0.72, H2 * 0.25, 9, 0, Math.PI * 2); g.fill(); for (let k = 0; k < 40; k++) { const R2 = rnd(k * 7 + 3); g.fillStyle = `rgba(255,255,255,${0.4 + 0.5 * Math.abs(Math.sin(t * 1.5 + k))})`; g.fillRect(R2() * c.width, R2() * H2 * 0.5, 1.5, 1.5); } }
+      g.strokeStyle = nt ? 'rgba(165,243,252,0.4)' : 'rgba(255,255,255,0.6)'; for (let r = 0; r < 4; r++) { const y = H2 * (0.64 + r * 0.06), sh = (t * 20 * (1 + r * 0.3)) % 40; g.beginPath(); for (let px = -40 + sh; px < c.width; px += 40) { g.moveTo(px, y); g.lineTo(px + 18, y + 1); } g.stroke(); }
+      tex.needsUpdate = true; }
+    { const im = ex.floor; let k = 0; for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { const d = Math.hypot(i - 7.5, (j - 2.5) * 1.6), ring = Math.max(0, Math.cos(d * 0.9 - t * 5)), w = 0.5 + 0.5 * Math.sin((i - j) * 0.5 + t * 2.2); col.setHSL(((hue + d * 12 + t * 30) % 360) / 360, 1, 0.12 + ring * (0.25 + beat * 0.3) + w * 0.08); im.setColorAt(k++, col); } im.instanceColor.needsUpdate = true; }
+    ex.lights.forEach((l, k) => { l.color.setHSL(((hue + k * 40) % 360) / 360, 1, 0.55); l.intensity = 160 + beat * 520 + Math.sin(t * 3 + k) * 40; });
+    ex.spot.intensity = 700 + beat * 900;
+    { const p = ex.lasers.geometry.attributes.position, cx = 72; for (let k = 0; k < 6; k++) { const sw = Math.sin(t * 1.3 + k * 0.9); p.setXYZ(k * 2, cx + (k < 3 ? -5 : 5), 8, 11.6); p.setXYZ(k * 2 + 1, cx + sw * 26 + (k - 3) * 3 - 24, 0.1, 30 + Math.cos(t * 0.9 + k) * 8); } p.needsUpdate = true; ex.lasers.material.opacity = 0.25 + beat * 0.7; }
+  }
+  // record the room once into meshes
+  function v3build(R, now) {
+    const T3 = G3.T;
+    if (V3.groups) { G3.scene.remove(V3.groups); V3.groups.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } }); }
+    REC = { mode: 'build', buckets: new Map(), labels: [] };
+    const realX = x, realGlow = glow; x = V3.dummy || (V3.dummy = document.createElement('canvas').getContext('2d')); glow = [];
+    try { v3pass(R, now); } finally { x = realX; glow = realGlow; afterCars.length = 0; }
+    const grp = new T3.Group(); grp.name = 'room3d';
+    for (const b of REC.buckets.values()) {
+      if (!b.pos.length) continue; const geo = new T3.BufferGeometry(); geo.setAttribute('position', new T3.Float32BufferAttribute(b.pos, 3)); geo.setAttribute('normal', new T3.Float32BufferAttribute(b.nor, 3));
+      const mat = new T3.MeshStandardMaterial({ color: new T3.Color().setStyle(b.c.css), roughness: 0.78, metalness: 0.05, side: T3.DoubleSide, transparent: b.c.a < 0.99, opacity: b.c.a, depthWrite: b.c.a >= 0.99 });
+      const m = new T3.Mesh(geo, mat); m.castShadow = !MOBILE; m.receiveShadow = !MOBILE; grp.add(m);
+    }
+    for (const L of REC.labels) grp.add(v3label(L));
+    REC = null;
+    V3.extras = v3extras(R, grp);
+    // the room's own lighting: dim and warm, a cool moon through the open side, shadows from a high key light (not on phones)
+    const key = new T3.DirectionalLight(0xfff1d6, 1.1); key.position.set(R.w * 0.8, 70, R.d * 1.2); key.target.position.set(R.w / 2, 0, R.d / 2);
+    if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(2048, 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
+    grp.add(key, key.target, new T3.HemisphereLight(0xbcd6ff, 0x2a1d10, 0.55));
+    G3.scene.add(grp); V3.groups = grp; V3.key = R.key;
+  }
+  // what the room draws, without the people: its shell and its furniture (recorded, or run only for the glows each frame)
+  function v3pass(R, now) {
+    flat(0, 0, R.w, R.d, 0, R.floor);
+    box(0, 0, -1.2, R.w, 18, 0, R.wall); box(-1.2, 0, -1.2, 0, 18, R.d, R.wall);
+    box(0, 17.2, -1.3, R.w, 18, 0.1, R.trim); box(-1.3, 17.2, -1.3, 0.1, 18, R.d, R.trim);
+    drawClubShell(R, now);
+    for (const it of R.layout) furnDraw(it, now);
+  }
+  function v3enter() {
+    const c = G3.canvas; if (!c.parentNode) { c.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none'; document.body.prepend(c); }
+    c.style.display = 'block'; cv.style.background = 'transparent'; V3.prevHemi = V3.prevHemi ?? null;
+    const r = G3.renderer; r.shadowMap.enabled = !MOBILE; r.shadowMap.type = G3.T.PCFSoftShadowMap; r.outputColorSpace = G3.T.SRGBColorSpace;
+    G3.scene.children.forEach((o) => { if (o.isHemisphereLight || o.isDirectionalLight) { if (o.userData.base == null) o.userData.base = o.intensity; if (!o.parent || o.parent === G3.scene) o.intensity = o.userData.base * 0.15; } });
+    if (!V3.cam) V3.cam = new G3.T.PerspectiveCamera(42, 1, 0.5, 900);
+    V3.yaw = cam.yaw; V3.tx = me.x; V3.tz = me.z; V3.on = true;
+  }
+  function v3leave() {    V3.live = false; V3_LIVE = false; V3.on = false; if (G3.canvas) G3.canvas.style.display = 'none'; cv.style.background = '';
+    if (V3.groups) { G3.scene.remove(V3.groups); V3.groups = null; V3.key = null; }
+    G3.scene.children.forEach((o) => { if (o.userData && o.userData.base != null) o.intensity = o.userData.base; });
+    if (G3.renderer) G3.renderer.shadowMap.enabled = false;
+  }
+  // the frame inside a live 3D room
+  function v3draw(R, now) {
+    if (!V3.on) v3enter();
+    if (V3.key !== R.key) v3build(R, now);
+    // this frame's glows and furniture models, from the room's own drawing (nothing is drawn: it only collects)
+    REC = { mode: 'skip' }; const realX = x; x = V3.dummy; glow = [];
+    try { v3pass(R, now); } finally { x = realX; REC = null; }
+    const glows = glow.splice(0), afters = afterCars.splice(0);
+    // the camera: following you, orbiting where you drag it
+    const e = 0.08; V3.tx += (me.x - V3.tx) * e; V3.tz += (me.z - V3.tz) * e;
+    const ch = Math.cos(V3.pitch), cam3 = V3.cam; cam3.aspect = W / H; cam3.updateProjectionMatrix();
+    cam3.position.set(V3.tx + Math.sin(V3.yaw) * ch * V3.dist, 3 + Math.sin(V3.pitch) * V3.dist, V3.tz + Math.cos(V3.yaw) * ch * V3.dist); cam3.lookAt(V3.tx, 3, V3.tz); cam3.updateMatrixWorld();
+    { const cz = cam3.position.z, cxx = cam3.position.x; V3.groups.children.forEach((m) => { if (m.isMesh && m.userData.backWall) m.visible = m.userData.backWall === 'z' ? cz > 0 : cxx > 0; }); }
+    V3.live = true; V3_LIVE = true;
+    x.clearRect(0, 0, W, H);
+    // the people (their models are in the 3D scene; their names and bubbles go on the canvas over it)
+    for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
+    person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind + ',' + pose.y : ''));
+    flush3d();
+    void glows; void afters; // (the 2D glows and overlays don't belong over a lit 3D room: it has its own lights and lasers)
+    v3live(R, now);
+    const r = G3.renderer; if (G3.w !== W || G3.h !== H || G3.dpr !== DPR) { r.setPixelRatio(DPR); r.setSize(W, H, false); G3.w = W; G3.h = H; G3.dpr = DPR; }
+    r.setClearColor(night > 0.5 ? 0x070b1a : 0x0f172a, 1); r.clear(); r.render(G3.scene, cam3);
+  }
+  // the switch in the room
+  function v3button() {
+    if (!V3.btn) { const b = V3.btn = document.createElement('button'); b.id = 'v3btn'; b.onclick = () => { V3.pref = !V3.pref; try { localStorage.setItem('li.3d', V3.pref ? '1' : '0'); } catch {} if (!V3.pref) v3leave(); v3button(); tickerSay(V3.pref ? 'Live 3D on. Drag to look around, scroll or pinch to zoom.' : 'Back to the 2D view.'); }; document.body.append(b); }
+    const show = !!(inside && V3.eligible(inside) && G3.ok); V3.btn.style.display = show ? 'flex' : 'none'; V3.btn.innerHTML = V3.pref ? '<b>3D</b><small>live</small>' : '<b>2D</b><small>try 3D</small>'; V3.btn.classList.toggle('on', V3.pref);
+  }
+  setInterval(() => { v3button(); if (V3.on && !(inside && V3.want(inside))) v3leave(); }, 500);
   // ---- the dealer's showcase: a car's full 3D model on a deep blue stage, its stats, its price (Need for Speed style)
   // [maker, class, hp, 0-100 km/h s, top km/h, engine, handling 0-1, braking 0-1]
   const CAR_STATS = {
@@ -4754,6 +4926,7 @@
   }
   // ---- shapes for the industry and the screens
   function cyl(cx, cz, r, h, col) {
+    if (REC) { if (REC.mode === 'build') V3REC.cyl(cx, cz, r, 0, h, col); return; }
     const b0 = P(cx, 0, cz), t0 = P(cx, h, cz), rr = r * K;
     x.fillStyle = shadeHex(col, 0.82); x.beginPath(); x.moveTo(b0[0] - rr, b0[1]); x.lineTo(t0[0] - rr, t0[1]); x.lineTo(t0[0] + rr, t0[1]); x.lineTo(b0[0] + rr, b0[1]); x.fill();
     x.beginPath(); x.ellipse(b0[0], b0[1], rr, rr * sp, 0, 0, Math.PI); x.fill();
@@ -4774,6 +4947,7 @@
   }
   // text painted on a wall that faces +z, at (px, py, pz), [size] in world units
   function faceText(txt, px, py, pz, col, size, blur, weight = 900) {
+    if (REC) { if (REC.mode === 'build') V3REC.text(txt, px, py, pz, col, size, false); return; }
     const o = P(px, py, pz), e = P(px + 1, py, pz), u = P(px, py + 1, pz);
     x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]);
     x.font = `${weight} ${size}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
@@ -4783,6 +4957,7 @@
   const camN = (rx, rz) => [rx * co + rz * si, -rx * si + rz * co];
   // a cylinder lit like the boxes: its side shaded left to right, its top a lit disc with a rim (cap false: a band, no top)
   function cylLit(cx, cz, r, y0, h, col, cap = true) {
+    if (REC) { if (REC.mode === 'build') V3REC.cyl(cx, cz, r, y0, h, col, cap); return; }
     const b0 = P(cx, y0, cz), t0 = P(cx, y0 + h, cz), rr = r * K, ry = rr * sp;
     const g = x.createLinearGradient(b0[0] - rr, 0, b0[0] + rr, 0);
     for (const [s, rx, rz] of [[0, -1, 0], [0.3, -0.7, 0.7], [0.55, 0, 1], [0.8, 0.7, 0.7], [1, 1, 0]]) { const [nx, nz] = camN(rx, rz); g.addColorStop(s, lit(col, nx, 0, nz)); }
@@ -4805,6 +4980,7 @@
   }
   // an LPG sphere on legs
   function sphere(cx, cz, r, col) {
+    if (REC) { if (REC.mode === 'build') V3REC.sphere(cx, r * 1.3, cz, r, col); return; }
     const y = r * 1.3, c = P(cx, y, cz), rr = r * K;
     const sh = P(cx + 1.5, 0.05, cz + 1.5); x.fillStyle = 'rgba(20,30,45,0.18)'; x.beginPath(); x.ellipse(sh[0], sh[1], rr, rr * sp, 0, 0, Math.PI * 2); x.fill();
     x.strokeStyle = '#64748B'; x.lineWidth = Math.max(1.2, K * 0.35);
@@ -4816,6 +4992,7 @@
   }
   // a pipe through world points [x, z] at height y, with a shine along its top
   function pipe(pts, y, w, col) {
+    if (REC) { if (REC.mode === 'build') V3REC.pipe(pts, y, w, col); return; }
     const s = pts.map(([px, pz]) => P(px, y, pz));
     x.lineCap = 'round'; x.lineJoin = 'round';
     for (const [lw, c, dy] of [[w * K, shadeHex(col, 0.8), 0], [w * K * 0.35, shadeHex(col, 1.25), -w * K * 0.2]]) {
@@ -6010,6 +6187,8 @@
   }
   function drawInterior(now) {
     const R = inside;
+    if (V3.want(R)) return v3draw(R, now); // live 3D (the pilot room)
+    if (V3.on) v3leave();
     x.fillStyle = R.kind === 'beach' || R.kind === 'yacht' ? (night > 0.5 ? '#0B1E3A' : '#2E7FB8') : '#0F172A'; x.fillRect(0, 0, W, H);
     if (R.kind === 'beach') drawBeachShell(R, now);
     else if (R.kind === 'yacht') drawYachtShell(R, now);
@@ -6325,6 +6504,7 @@
         box(ux - 2.6, 0.55, uz + 1.4, ux - 0.4, 1.3, uz + 2, '#F8FAFC'); box(ux + 0.4, 0.55, uz + 1.4, ux + 2.6, 1.3, uz + 2, '#F8FAFC');
         box(ux - 0.08, 0, uz - 0.08, ux + 0.08, 6, uz + 0.08, '#E5E7EB'); // the pole
         const c0 = P(ux, 6.6, uz), col = UMB[k % UMB.length];
+        if (REC) { if (REC.mode === 'build') V3REC.cone(ux, 5.4, uz, 4, 1.2, col); return; } // in live 3D, a real canopy
         for (let s = 0; s < 8; s++) { const a0 = s / 8 * Math.PI * 2, a1 = (s + 1) / 8 * Math.PI * 2, e0 = P(ux + Math.cos(a0) * 4, 5.4, uz + Math.sin(a0) * 4), e1 = P(ux + Math.cos(a1) * 4, 5.4, uz + Math.sin(a1) * 4); quad([c0, e0, e1, c0], s % 2 ? col : '#F8FAFC', 'rgba(0,0,0,0.12)'); }
       });
       { const lx = 124, lz = 88; for (const [ox, oz] of [[-1.2, -1.2], [1.2, -1.2], [-1.2, 1.2], [1.2, 1.2]]) box(lx + ox - 0.15, 0, lz + oz - 0.15, lx + ox + 0.15, 5, lz + oz + 0.15, '#F8FAFC'); box(lx - 1.5, 5, lz - 1.5, lx + 1.5, 5.4, lz + 1.5, '#DC2626'); box(lx - 1.5, 5.4, lz + 1.1, lx + 1.5, 7, lz + 1.5, '#DC2626'); box(lx - 0.05, 7, lz - 0.05, lx + 0.05, 9.5, lz + 0.05, '#E5E7EB'); quad([P(lx, 9.4, lz), P(lx + 1.6 + Math.sin(t * 3) * 0.2, 9, lz), P(lx, 8.6, lz)], '#FACC15', null); } // the lifeguard chair
@@ -7941,7 +8121,7 @@
     if (kind === 'club') { clubWarm(key); const s = clubSrc(key); if (s && CITY.master) { CITY.master.gain.value = Math.max(CITY.master.gain.value, 0.5); s.g.gain.value = 0.6; if (s.a.src && s.a.paused) s.a.play().catch(() => {}); } } // straight in, music on
     if (kind === 'tower') bubbles.set('wyrd', { text: `Welcome to my tower, ${myName || 'friend'}. Ask me anything.`, until: performance.now() + 6000 });
   }
-  function leaveRoom() { PERF.warmUntil = performance.now() + 4000; if (!touring) coachHide(); closeInverter(); gpClose(); REF.hot = null; refGuideOff(); if (phone.style.display === 'block') closePhone(); actFrom = null; // walking out puts away whatever the building opened
+  function leaveRoom() { if (V3.on) v3leave(); PERF.warmUntil = performance.now() + 4000; if (!touring) coachHide(); closeInverter(); gpClose(); REF.hot = null; refGuideOff(); if (phone.style.display === 'block') closePhone(); actFrom = null; // walking out puts away whatever the building opened
     if (!inside) return;
     pose = null;
     if (deco && deco.dirty) bmSave(inside);
@@ -8106,6 +8286,7 @@
     decoEl.querySelectorAll('[data-c]').forEach((b) => (b.onclick = () => { if (!deco.pick) return; const before = bmSnapshot(); deco.pick.c = b.dataset.c; bmCommit(before); setDeco(); }));
   }
   function floorAt(sx, sy) { // the screen point to a spot on the floor
+    if (V3_LIVE) return V3.floor(sx, sy);
     const rx = (sx - W / 2) / K, rz = (sy - H * 0.55) / (K * sp);
     return [cam.x + rx * co + rz * si, cam.z - rx * si + rz * co];
   }
@@ -8230,7 +8411,7 @@
   });
   addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
   addEventListener('blur', () => keys.clear());
-  const zoomBy = (f) => { cam.user = Math.max(0.45, Math.min(2.4, cam.user * f)); };
+  const zoomBy = (f) => { if (V3_LIVE) { V3.dist = Math.max(25, Math.min(180, V3.dist / f)); return; } cam.user = Math.max(0.45, Math.min(2.4, cam.user * f)); };
   document.getElementById('zoomin').onclick = () => zoomBy(1.25);
   addEventListener('wheel', (e) => { if (e.target !== cv) return; e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1); }, { passive: false }); // zoom with the wheel (or a trackpad's two fingers)
   document.getElementById('zoomout').onclick = () => zoomBy(1 / 1.25);
@@ -8248,15 +8429,15 @@
     stick = { x: dx / max, z: dy / max };
   }
   const pts = new Map(); let pinch0 = 0, user0 = 1, dragged = false;
-  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY, furn: !!(inside && deco && pts.size === 0 && bmDown(e.clientX, e.clientY)) }); dragged = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); user0 = cam.user; } });
+  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY, furn: !!(inside && deco && pts.size === 0 && bmDown(e.clientX, e.clientY)) }); dragged = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); user0 = cam.user; V3.dist0 = V3.dist; } });
   cv.addEventListener('pointermove', (e) => {
     if (inside && deco && deco.carry && !pts.size) bmMove(e.clientX, e.clientY, e.altKey); // what you carry follows the mouse
     const p = pts.get(e.pointerId); if (!p) return;
     if (p.furn) { bmMove(e.clientX, e.clientY, e.altKey); dragged = true; return; }
-    if (pts.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()]; cam.user = Math.max(0.45, Math.min(2.4, user0 * Math.hypot(a.x - b.x, a.y - b.y) / (pinch0 || 1))); return; }
+    if (pts.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()]; const f = Math.hypot(a.x - b.x, a.y - b.y) / (pinch0 || 1); if (V3_LIVE) { V3.dist = Math.max(25, Math.min(180, V3.dist0 / f)); return; } cam.user = Math.max(0.45, Math.min(2.4, user0 * f)); return; }
     const dx = e.clientX - p.x, dy = e.clientY - p.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) dragged = true;
-    if (dragged) { cam.follow = false; const [wx, wz] = toWorldDir(dx / K, dy / K); cam.x -= wx; cam.z -= wz; }
+    if (dragged) { if (V3_LIVE) { V3.yaw -= dx * 0.006; V3.pitch = Math.max(0.18, Math.min(1.35, V3.pitch + dy * 0.004)); p.x = e.clientX; p.y = e.clientY; return; } cam.follow = false; const [wx, wz] = toWorldDir(dx / K, dy / K); cam.x -= wx; cam.z -= wz; }
     p.x = e.clientX; p.y = e.clientY;
   });
   cv.addEventListener('pointerup', (e) => { const was = pts.get(e.pointerId); pts.delete(e.pointerId); if (was && was.furn) { if (deco) { bmUp(e.shiftKey); setDeco(); } return; } if (was && !dragged && pts.size === 0) tapAt(e.clientX, e.clientY); });
