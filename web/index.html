@@ -4629,18 +4629,19 @@
       v3quad(b, [x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0], [0, 1, 0]);
     },
     flat(x0, z0, x1, z1, y, fill) { if (typeof fill !== 'string') return; const b = v3bucket(fill); v3quad(b, [x0, y, z1], [x1, y, z1], [x1, y, z0], [x0, y, z0], [0, 1, 0]); },
-    cyl(cx, cz, r, y0, h, col, cap = true) { const b = v3bucket(col), n = 14; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
+    cyl(cx, cz, r, y0, h, col, cap = true) { const b = v3bucket(col), n = r > 1.5 ? 24 : 16; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
       v3quad(b, [cx + c0 * r, y0, cz + s0 * r], [cx + c1 * r, y0, cz + s1 * r], [cx + c1 * r, y0 + h, cz + s1 * r], [cx + c0 * r, y0 + h, cz + s0 * r], [(c0 + c1) / 2, 0, (s0 + s1) / 2]);
       if (cap) v3tri(b, [cx, y0 + h, cz], [cx + c1 * r, y0 + h, cz + s1 * r], [cx + c0 * r, y0 + h, cz + s0 * r], [0, 1, 0]); } },
     pyramid(x0, z0, x1, z1, y, h, col) { const b = v3bucket(col), t = [(x0 + x1) / 2, y + h, (z0 + z1) / 2]; v3tri(b, [x0, y, z1], [x1, y, z1], t, [0, 0.6, 0.8]); v3tri(b, [x1, y, z0], [x0, y, z0], t, [0, 0.6, -0.8]); v3tri(b, [x1, y, z1], [x1, y, z0], t, [0.8, 0.6, 0]); v3tri(b, [x0, y, z0], [x0, y, z1], t, [-0.8, 0.6, 0]); },
     cone(cx, y, cz, r, h, col) { const b = v3bucket(col), n = 10, t = [cx, y + h, cz]; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2; v3tri(b, [cx + Math.cos(a1) * r, y, cz + Math.sin(a1) * r], [cx + Math.cos(a0) * r, y, cz + Math.sin(a0) * r], t, [0, 1, 0]); } },
     disk(cx, cz, y, r, col) { const b = v3bucket(col), n = 16; for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2; v3tri(b, [cx, y, cz], [cx + Math.cos(a1) * r, y, cz + Math.sin(a1) * r], [cx + Math.cos(a0) * r, y, cz + Math.sin(a0) * r], [0, 1, 0]); } },
-    sphere(cx, cy, cz, r, col) { const b = v3bucket(col), la = 8, lo = 12; const pt = (i, j) => { const th = i / la * Math.PI, ph = j / lo * Math.PI * 2; return [cx + r * Math.sin(th) * Math.cos(ph), cy + r * Math.cos(th), cz + r * Math.sin(th) * Math.sin(ph)]; };
+    sphere(cx, cy, cz, r, col) { const b = v3bucket(col), la = 12, lo = 18; const pt = (i, j) => { const th = i / la * Math.PI, ph = j / lo * Math.PI * 2; return [cx + r * Math.sin(th) * Math.cos(ph), cy + r * Math.cos(th), cz + r * Math.sin(th) * Math.sin(ph)]; };
       for (let i = 0; i < la; i++) for (let j = 0; j < lo; j++) { const a = pt(i, j), p = pt(i + 1, j), q = pt(i + 1, j + 1), s = pt(i, j + 1), m = [(a[0] + q[0]) / 2 - cx, (a[1] + q[1]) / 2 - cy, (a[2] + q[2]) / 2 - cz]; v3quad(b, a, s, q, p, m); } },
     pipe(pts, y, w, col) { for (let i = 1; i < pts.length; i++) { const [ax, az] = pts[i - 1], [bx, bz] = pts[i], r = w / 2; V3REC.box(Math.min(ax, bx) - r, y - r, Math.min(az, bz) - r, Math.max(ax, bx) + r, y + r, Math.max(az, bz) + r, col); } },
     palm(tx, tz, h) { V3REC.cyl(tx, tz, 0.35, 0, h, '#8B5E3C'); for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2, b = v3bucket('#2F855A'), c = [tx, h, tz], e = [tx + Math.cos(a) * 3.6, h - 1.6, tz + Math.sin(a) * 3.6], s = [tx + Math.cos(a + 0.4) * 1.4, h + 0.3, tz + Math.sin(a + 0.4) * 1.4]; v3tri(b, c, s, e, [0, 1, 0]); v3tri(b, c, e, s, [0, 1, 0]); } },
     tree(tx, tz, r, col) { V3REC.cyl(tx, tz, r * 0.15, 0, r * 1.1, '#8B5E3C'); V3REC.sphere(tx, r * 1.4, tz, r * 0.9, col || '#3F8F4F'); },
-    text(txt, px, py, pz, col, size, ground) { if (!txt || !REC.labels) return; REC.labels.push({ txt: String(txt), px, py, pz, col: typeof col === 'string' ? col : '#FFFFFF', size, ground }); },
+    text(txt, px, py, pz, col, size, ground, side) { if (!txt || !REC.labels) return; REC.labels.push({ txt: String(txt), px, py, pz, col: typeof col === 'string' ? col : '#FFFFFF', size, ground, side }); },
+    rope(x0, y0, z0, x1, y1, z1, col) { const n = 8; let px = x0, py = y0, pz = z0; for (let i = 1; i <= n; i++) { const u = i / n, qx = x0 + (x1 - x0) * u, qz = z0 + (z1 - z0) * u, qy = y0 + (y1 - y0) * u - Math.sin(u * Math.PI) * 0.7; V3REC.box(Math.min(px, qx) - 0.09, Math.min(py, qy) - 0.09, Math.min(pz, qz) - 0.09, Math.max(px, qx) + 0.09, Math.max(py, qy) + 0.09, Math.max(pz, qz) + 0.09, col); px = qx; py = qy; pz = qz; } },
   };
   // a label as a textured plane (on a wall facing +z, or flat on the floor)
   function v3label(L) {
@@ -4649,7 +4650,7 @@
     g.font = `900 ${S}px "Plus Jakarta Sans", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = v3col(L.col).css; g.fillText(L.txt, c.width / 2, c.height / 2);
     const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace; const ww = c.width / S * L.size, hh = c.height / S * L.size;
     const m = new T3.Mesh(new T3.PlaneGeometry(ww, hh), new T3.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: T3.DoubleSide }));
-    if (L.ground) { m.rotation.x = -Math.PI / 2; m.position.set(L.px, 0.08, L.pz); } else m.position.set(L.px, L.py, L.pz + 0.06);
+    if (L.ground) { m.rotation.x = -Math.PI / 2; m.position.set(L.px, 0.08, L.pz); } else if (L.side === 'x') { m.rotation.y = Math.PI / 2; m.position.set(L.px + 0.06, L.py, L.pz); } else m.position.set(L.px, L.py, L.pz + 0.06);
     return m;
   }
   // the room's own living parts: the LED wall, the dance floor, the sea on the back wall, coloured lights, lasers
@@ -4668,6 +4669,15 @@
       const tex = new T3.CanvasTexture(c); ex.halos = ex.lights.map((l) => { const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false })); s.position.copy(l.position); grp.add(s); return s; }); }
     ex.spot = new T3.SpotLight(0xffffff, 900, 60, 0.45, 0.6, 1.4); ex.spot.position.set(cx, 18, 14); ex.spot.target.position.set(cx, 2.7, 7); grp.add(ex.spot, ex.spot.target);
     { const pos = new Float32Array(6 * 2 * 3), geo = new T3.BufferGeometry(); geo.setAttribute('position', new T3.BufferAttribute(pos, 3)); const ln = new T3.LineSegments(geo, new T3.LineBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.7, blending: T3.AdditiveBlending, toneMapped: false })); grp.add(ln); ex.lasers = ln; }
+    { // the warm lights: lanterns over the booths and tiki torches along the terrace, each a little glowing body and a soft
+      // halo that flickers (no real lights: the halos carry it, so they cost nothing)
+      const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,214,140,1)'); gr.addColorStop(0.3, 'rgba(255,170,80,0.5)'); gr.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+      const tex = new T3.CanvasTexture(c), body = new T3.MeshBasicMaterial({ color: 0xffb347, toneMapped: false });
+      ex.warm = [];
+      for (const [wx, wy, wz, sc] of [...[16, 28, 40, 52].map((z) => [90, 9, z, 6]), ...[0, 1, 2, 3, 4, 5].map((k) => [98 + 8 + k * 5.5, 3.8, 2.1, 5])]) {
+        const b = new T3.Mesh(new T3.SphereGeometry(sc > 5 ? 0.7 : 0.35, 12, 8), body); b.position.set(wx, wy, wz); grp.add(b);
+        const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false })); s.position.set(wx, wy, wz); s.scale.set(sc, sc, 1); grp.add(s); ex.warm.push([s, sc]);
+      } }
     return ex;
   }
   function v3live(R, now) { // the parts that move, each frame
@@ -4682,6 +4692,7 @@
     { const im = ex.floor; let k = 0; for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { const d = Math.hypot(i - 7.5, (j - 2.5) * 1.6), ring = Math.max(0, Math.cos(d * 0.9 - t * 5)), w = 0.5 + 0.5 * Math.sin((i - j) * 0.5 + t * 2.2); col.setHSL(((hue + d * 12 + t * 30) % 360) / 360, 1, 0.12 + ring * (0.25 + beat * 0.3) + w * 0.08); im.setColorAt(k++, col); } im.instanceColor.needsUpdate = true; }
     ex.lights.forEach((l, k) => { l.color.setHSL(((hue + k * 40) % 360) / 360, 1, 0.55); l.intensity = 160 + beat * 520 + Math.sin(t * 3 + k) * 40; });
     ex.halos.forEach((s, k) => { s.material.color.copy(ex.lights[k].color); const sc = 9 + beat * 9 + Math.sin(t * 3 + k) * 1.2; s.scale.set(sc, sc, 1); s.material.opacity = 0.55 + beat * 0.4; });
+    ex.warm.forEach(([s, sc], k) => { const f = sc * (0.9 + 0.12 * Math.sin(t * 9 + k * 1.7) + 0.06 * Math.sin(t * 23 + k)); s.scale.set(f, f, 1); });
     ex.spot.intensity = 700 + beat * 900;
     if (V3.env) { V3.env.sea.offset.set(t * 0.004, -t * 0.012); V3.env.foam.material.opacity = 0.35 + 0.25 * Math.sin(t * 1.2); V3.env.foam.position.z = -41 + Math.sin(t * 0.6) * 1.5; if (V3.env.stars) V3.env.stars.material.opacity = 0.7 + 0.15 * Math.sin(t * 0.8); }
     { const p = ex.lasers.geometry.attributes.position, cx = 72; for (let k = 0; k < 6; k++) { const sw = Math.sin(t * 1.3 + k * 0.9); p.setXYZ(k * 2, cx + (k < 3 ? -5 : 5), 8, 11.6); p.setXYZ(k * 2 + 1, cx + sw * 26 + (k - 3) * 3 - 24, 0.1, 30 + Math.cos(t * 0.9 + k) * 8); } p.needsUpdate = true; ex.lasers.material.opacity = 0.25 + beat * 0.7; }
@@ -6506,7 +6517,7 @@
     box(R.w / 2 + 10, 0, R.d - 7, R.w / 2 + 18, 4, R.d - 5, '#27272A'); box(R.w / 2 + 10, 4, R.d - 7, R.w / 2 + 18, 4.3, R.d - 5, '#A855F7');
     for (const [dx, lbl] of [[62, 'WC'], [70, 'WC']]) { const p0 = P(dx, 0, 0.12), p1 = P(dx + 4, 0, 0.12), p2 = P(dx + 4, 9, 0.12), p3 = P(dx, 9, 0.12); quad([p0, p1, p2, p3], '#1F2937', '#A855F7'); const c0 = P(dx + 2, 10.5, 0.12); x.save(); x.font = `800 ${Math.max(7, K * 1.4)}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.fillStyle = '#E9D5FF'; x.fillText(lbl, c0[0], c0[1]); x.restore(); }
     // neon signs
-    const neon = (txt, x0, y0, z0, alongX, col, size) => { const o = P(x0, y0, z0), e = alongX ? P(x0 + 1, y0, z0) : P(x0, y0, z0 + 1), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `800 ${size || 2.6}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
+    const neon = (txt, x0, y0, z0, alongX, col, size) => { if (REC) { if (REC.mode === 'build') V3REC.text(txt, x0, y0, z0, col, (size || 2.6) * 1.1, false, alongX ? 'z' : 'x'); return; } const o = P(x0, y0, z0), e = alongX ? P(x0 + 1, y0, z0) : P(x0, y0, z0 + 1), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `800 ${size || 2.6}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
     neon(LK.sign, 86, 12, 0.15, true, lekki ? '#67E8F9' : `hsl(${LK.hue},95%,72%)`, LK.sign.length > 8 ? 2.4 : 3.4);
     neon('BAR', 10, 10, 0.15, true, '#22D3EE');
     neon(lekki ? 'BEACH VIP' : 'VIP', 0.15, 11, 36, false, lekki ? '#FDA4AF' : '#F5C542');
@@ -6517,7 +6528,7 @@
       x.restore();
     }
     // the VIP rope along the edge of the VIP carpet
-    for (let k = 0; k < 8; k++) { const px = 80, pz = 10 + k * 7; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, '#F5C542'); if (k) { const p0 = P(px, 2.6, pz - 7), p1 = P(px, 2.6, pz), m = P(px, 1.6, pz - 3.5); x.strokeStyle = '#B91C1C'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
+    for (let k = 0; k < 8; k++) { const px = 80, pz = 10 + k * 7; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, '#F5C542'); if (k && REC) { if (REC.mode === 'build') V3REC.rope(px, 2.6, pz - 7, px, 2.6, pz, '#B91C1C'); } else if (k) { const p0 = P(px, 2.6, pz - 7), p1 = P(px, 2.6, pz), m = P(px, 1.6, pz - 3.5); x.strokeStyle = '#B91C1C'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
     // ---- the club, extended: a wall with a wide arch to the east wing (Ozumba's Gold Room cocktail lounge, Lekki's pool
     // terrace by the sea), and the foyer across the front (the door, the red carpet in, the photo wall, the host stand)
     const WX = 98, FZ = 66;
@@ -6559,7 +6570,7 @@
     { const pw0 = 12, pw1 = 34, pz = FZ + 6; box(pw0, 0, pz - 0.5, pw1, 10, pz, '#F8FAFC'); for (let i = 0; i < 6; i++) for (let j = 0; j < 4; j++) faceText(LK.short, pw0 + 2 + i * 3.6, 1.6 + j * 2.4, pz + 0.02, i % 2 ? '#111827' : (lekki ? '#0E7490' : '#B08A43'), 0.55, 0, 800);
       glow.push(() => { const p = P((pw0 + pw1) / 2, 5, pz + 4), r = K * 10; x.save(); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], r); g.addColorStop(0, 'rgba(255,255,255,0.25)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], r, 0, Math.PI * 2); x.fill(); x.restore(); }); }
     box(R.w / 2 + 6, 0, FZ + 12, R.w / 2 + 10, 3.6, FZ + 14, '#111827'); box(R.w / 2 + 5.8, 3.6, FZ + 11.8, R.w / 2 + 10.2, 3.9, FZ + 14.2, `hsl(${hue},90%,55%)`); // the host stand
-    for (let k = 0; k < 6; k++) for (const sx of [R.w / 2 - 4.5, R.w / 2 + 4.5]) { const pz = FZ + 4 + k * 3.5; box(sx - 0.15, 0, pz - 0.15, sx + 0.15, 2.4, pz + 0.15, '#D4AF37'); if (k) { const p0 = P(sx, 2.1, pz - 3.5), p1 = P(sx, 2.1, pz), m = P(sx, 1.4, pz - 1.75); x.strokeStyle = '#7F1D1D'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
+    for (let k = 0; k < 6; k++) for (const sx of [R.w / 2 - 4.5, R.w / 2 + 4.5]) { const pz = FZ + 4 + k * 3.5; box(sx - 0.15, 0, pz - 0.15, sx + 0.15, 2.4, pz + 0.15, '#D4AF37'); if (k && REC) { if (REC.mode === 'build') V3REC.rope(sx, 2.1, pz - 3.5, sx, 2.1, pz, '#B91C1C'); } else if (k) { const p0 = P(sx, 2.1, pz - 3.5), p1 = P(sx, 2.1, pz), m = P(sx, 1.4, pz - 1.75); x.strokeStyle = '#7F1D1D'; x.lineWidth = Math.max(1, K * 0.2); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
     for (const px of [R.w / 2 - 8, R.w / 2 + 14]) { cylLit(px, R.d - 3, 1.2, 0, 1.6, '#27272A'); tree(px, R.d - 3, 2, C.treeLight); }
     if (lekki) { // the front of the house is the beach: sand, a boardwalk in, umbrellas and loungers round the photo wall and the ropes,
       // a lifeguard chair, a surfboard rack, a sandcastle; lanterns over the booths and warm pools of light on the sand at night
@@ -6697,7 +6708,7 @@
     const sign = (txt, x0, y0, z0, col, size) => { const o = P(x0, y0, z0), e = P(x0 + 1, y0, z0), u = P(x0, y0 + 1, z0); x.save(); x.transform(e[0] - o[0], e[1] - o[1], o[0] - u[0], o[1] - u[1], o[0], o[1]); x.font = `800 ${size}px "Plus Jakarta Sans", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 10; x.fillStyle = col; x.fillText(txt, 0, 0); x.restore(); };
     sign('CASHIER', 72, 12.6, 0.15, '#FDE68A', 1.8); sign('ISLAND CASINO', 40, 11.5, 0.15, '#FDE047', 3.6); sign('HIGH ROLLERS', 89, 9.5, 0.15, '#F87171', 1.9);
     // the high-rollers' rope
-    for (let k = 0; k < 7; k++) { const px = 76, pz = 10 + k * 7; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, '#F5C542'); if (k) { const p0 = P(px, 2.6, pz - 7), p1 = P(px, 2.6, pz), m = P(px, 1.6, pz - 3.5); x.strokeStyle = '#B91C1C'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
+    for (let k = 0; k < 7; k++) { const px = 76, pz = 10 + k * 7; box(px - 0.2, 0, pz - 0.2, px + 0.2, 3, pz + 0.2, '#F5C542'); if (k && REC) { if (REC.mode === 'build') V3REC.rope(px, 2.6, pz - 7, px, 2.6, pz, '#B91C1C'); } else if (k) { const p0 = P(px, 2.6, pz - 7), p1 = P(px, 2.6, pz), m = P(px, 1.6, pz - 3.5); x.strokeStyle = '#B91C1C'; x.lineWidth = Math.max(1.5, K * 0.35); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); } }
     // chandeliers, glittering
     x.save(); x.globalCompositeOperation = 'lighter';
     for (const [cx, cz] of [[34, 24], [56, 24], [34, 40], [56, 40], [86, 30]]) {
