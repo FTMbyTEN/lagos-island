@@ -4647,7 +4647,7 @@
     pipe(pts, y, w, col) { for (let i = 1; i < pts.length; i++) { const [ax, az] = pts[i - 1], [bx, bz] = pts[i], r = w / 2; V3REC.box(Math.min(ax, bx) - r, y - r, Math.min(az, bz) - r, Math.max(ax, bx) + r, y + r, Math.max(az, bz) + r, col); } },
     palm(tx, tz, h) { V3REC.cyl(tx, tz, 0.35, 0, h, '#8B5E3C'); for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2, b = v3bucket('#2F855A'), c = [tx, h, tz], e = [tx + Math.cos(a) * 3.6, h - 1.6, tz + Math.sin(a) * 3.6], s = [tx + Math.cos(a + 0.4) * 1.4, h + 0.3, tz + Math.sin(a + 0.4) * 1.4]; v3tri(b, c, s, e, [0, 1, 0]); v3tri(b, c, e, s, [0, 1, 0]); } },
     tree(tx, tz, r, col) { V3REC.cyl(tx, tz, r * 0.15, 0, r * 1.1, '#8B5E3C'); V3REC.sphere(tx, r * 1.4, tz, r * 0.9, col || '#3F8F4F'); },
-    text(txt, px, py, pz, col, size, ground, side) { if (!txt || !REC.labels) return; const o = REC.off || [0, 0]; REC.labels.push({ txt: String(txt), px: px + o[0], py, pz: pz + o[1], col: typeof col === 'string' ? col : '#FFFFFF', size, ground, side }); },
+    text(txt, px, py, pz, col, size, ground, side) { if (!txt || !REC.labels) return; if (!ground && py > 2.4 && !(side === 'x' ? px < 1 : pz < 1)) return; /* lettering on an inner wall that comes down to the knee in 3D would float: only the outer walls keep theirs */ const o = REC.off || [0, 0]; REC.labels.push({ txt: String(txt), px: px + o[0], py, pz: pz + o[1], col: typeof col === 'string' ? col : '#FFFFFF', size, ground, side }); },
     rope(x0, y0, z0, x1, y1, z1, col) { const n = 8; let px = x0, py = y0, pz = z0; for (let i = 1; i <= n; i++) { const u = i / n, qx = x0 + (x1 - x0) * u, qz = z0 + (z1 - z0) * u, qy = y0 + (y1 - y0) * u - Math.sin(u * Math.PI) * 0.7; V3REC.box(Math.min(px, qx) - 0.09, Math.min(py, qy) - 0.09, Math.min(pz, qz) - 0.09, Math.max(px, qx) + 0.09, Math.max(py, qy) + 0.09, Math.max(pz, qz) + 0.09, col); px = qx; py = qy; pz = qz; } },
   };
   // a label as a textured plane (on a wall facing +z, or flat on the floor)
@@ -4661,6 +4661,8 @@
     return m;
   }
   // the room's own living parts: the LED wall, the dance floor, the sea on the back wall, coloured lights, lasers
+  // where this room's dance floor really is (its two halves from the layout), as [x0, z0, x1, z1]
+  const v3dance = (R) => { const ds = (R.layout || []).filter((v) => v.k === 'dance'); if (!ds.length) return [32, 24, 64, 36]; return [Math.min(...ds.map((d) => d.x - 8)), Math.min(...ds.map((d) => d.z - 6)), Math.max(...ds.map((d) => d.x + 8)), Math.max(...ds.map((d) => d.z + 6))]; };
   function v3extras(R, grp) {
     const T3 = G3.T, ex = {}, cx = 48 + 24; // Club Lekki's stage sits 24 to the right
     { const c = document.createElement('canvas'); c.width = 256; c.height = 96; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
@@ -4668,7 +4670,7 @@
     { const c = document.createElement('canvas'); c.width = 512; c.height = 128; const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
       const m = new T3.Mesh(new T3.PlaneGeometry(R.w - 2, 17), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); m.position.set(R.w / 2, 9, 0.12); m.renderOrder = -1; grp.add(m); ex.sea = { c, g: c.getContext('2d'), tex, at: 0 }; }
     { const n = 16 * 6, geo = new T3.BoxGeometry(1.8, 0.08, 1.8), mat = new T3.MeshBasicMaterial({ toneMapped: false }), im = new T3.InstancedMesh(geo, mat, n), o = new T3.Object3D(); let k = 0;
-      for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { o.position.set(33 + i * 2, 0.05, 25 + j * 2); o.updateMatrix(); im.setMatrixAt(k++, o.matrix); }
+      const [dx0, dz0] = v3dance(R); for (let i = 0; i < 16; i++) for (let j = 0; j < 6; j++) { o.position.set(dx0 + 1 + i * 2, 0.05, dz0 + 1 + j * 2); o.updateMatrix(); im.setMatrixAt(k++, o.matrix); }
       im.instanceColor = new T3.InstancedBufferAttribute(new Float32Array(n * 3), 3); grp.add(im); ex.floor = im; }
     ex.lights = [0, 1].map((k) => { const l = new T3.PointLight(0x22d3ee, 260, 70, 1.6); l.position.set(30 + k * 40, 14, 26); grp.add(l); return l; });
     { // a soft halo round each light, so the lights read as lights (a bright core fading out, drawn additively)
@@ -4723,7 +4725,7 @@
     for (const L of REC.labels) grp.add(v3label(L));
     REC = null;
     V3.extras = v3extras(R, grp);
-    V3.env = null; V3.inside = v3inside(R, grp); V3.stage = v3stage(R, grp); // inside the building only: no beach round it
+    V3.env = null; V3.inside = v3inside(R, grp); V3.stage = v3stage(R, grp); V3.candles = v3candles(R, grp); V3.moodNow = null; // inside the building only: no beach round it
     // the room's own lighting: dim and warm, a cool moon through the open side, shadows from a high key light (not on phones)
     const key = new T3.DirectionalLight(0xfff1d6, 1.1); key.position.set(R.w * 0.8, 70, R.d * 1.2); key.target.position.set(R.w / 2, 0, R.d / 2);
     if (!MOBILE) { key.castShadow = true; key.shadow.mapSize.set(2048, 2048); const sc = key.shadow.camera; sc.left = -R.w * 0.75; sc.right = R.w * 0.75; sc.top = R.d * 0.9; sc.bottom = -R.d * 0.9; sc.near = 1; sc.far = 260; key.shadow.bias = -0.0008; key.shadow.normalBias = 0.6; }
@@ -4740,14 +4742,16 @@
   }
   function v3enter() {
     const c = G3.canvas; if (!c.parentNode) { c.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none'; document.body.prepend(c); }
-    c.style.display = 'block'; cv.style.background = 'transparent'; V3.prevHemi = V3.prevHemi ?? null;
+    c.style.display = 'block'; cv.style.background = 'transparent';
+    if (!V3.vig) { const v = V3.vig = document.createElement('div'); v.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;transition:opacity 1.2s;background:radial-gradient(ellipse at 50% 55%, rgba(0,0,0,0) 45%, rgba(8,4,2,0.55) 100%)'; c.after(v); } V3.vig.style.display = 'block'; // a soft cinematic vignette
+ V3.prevHemi = V3.prevHemi ?? null;
     const r = G3.renderer; r.shadowMap.enabled = !MOBILE; r.shadowMap.type = G3.T.PCFSoftShadowMap; r.outputColorSpace = G3.T.SRGBColorSpace;
     G3.scene.fog = new G3.T.Fog(0x0b0b14, 160, 420); r.toneMappingExposure = 1.2; // depth: the far side of the room softens into the night
     G3.scene.children.forEach((o) => { if (o.isHemisphereLight || o.isDirectionalLight) { if (o.userData.base == null) o.userData.base = o.intensity; if (!o.parent || o.parent === G3.scene) o.intensity = o.userData.base * 0.15; } });
     if (!V3.cam) V3.cam = new G3.T.PerspectiveCamera(42, 1, 0.5, 900);
     V3.yaw = cam.yaw; V3.tx = me.x; V3.tz = me.z; V3.on = true;
   }
-  function v3leave() {    V3.live = false; V3_LIVE = false; V3.on = false; if (G3.canvas) G3.canvas.style.display = 'none'; cv.style.background = '';
+  function v3leave() {    V3.live = false; V3_LIVE = false; V3.on = false; if (G3.canvas) G3.canvas.style.display = 'none'; if (V3.vig) V3.vig.style.display = 'none'; cv.style.background = '';
     if (V3.groups) { G3.scene.remove(V3.groups); V3.groups = null; V3.key = null; }
     G3.scene.children.forEach((o) => { if (o.userData && o.userData.base != null) o.intensity = o.userData.base; });
     if (G3.renderer) G3.renderer.shadowMap.enabled = false;
@@ -4897,7 +4901,7 @@
   }
   // the DJ booth, the bar and the club's lights, in live 3D (where this club has them: its stage and bar are shifted)
   function v3stage(R, grp) {
-    const T3 = G3.T, st = {}, cx = 72, by = 6.5, bz = (9 + 11.6) / 2, bx = 26, bzz = 6;
+    const T3 = G3.T, st = {}, cx = 72, by = 6.5, bz = (9 + 11.6) / 2, bx = 0, bzz = 6; // (Club Lekki's bar stands against the left wall, shifted 6 back)
     // the decks: vinyl spinning on each, a strobe dot going round
     st.platters = [cx - 4.2, cx + 4.2].map((dx) => { const g = new T3.Group(); g.position.set(dx - 0.2, by + 0.55, bz);
       g.add(new T3.Mesh(new T3.CylinderGeometry(1.2, 1.2, 0.08, 32), new T3.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.25, metalness: 0.4 })));
@@ -4909,30 +4913,116 @@
     // CO2 jets either side, firing on the drops
     { const c = document.createElement('canvas'); c.width = 32; c.height = 128; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 128, 0, 0); gr.addColorStop(0, 'rgba(255,255,255,0.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(14, 128); g.lineTo(18, 128); g.lineTo(32, 0); g.lineTo(0, 0); g.fill();
       const tex = new T3.CanvasTexture(c); st.jets = [cx - 13, cx + 13].map((jx) => { const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0, toneMapped: false })); s.center.set(0.5, 0); s.position.set(jx, 2.7, 12); s.scale.set(5, 14, 1); grp.add(s); return s; }); }
-    // the bar: a backlit wall of bottles, a glowing strip under the counter, warm pendants
-    { const c = document.createElement('canvas'); c.width = 16; c.height = 128; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#7C2D12'); gr.addColorStop(0.5, '#F59E0B'); gr.addColorStop(1, '#7C2D12'); g.fillStyle = gr; g.fillRect(0, 0, 16, 128);
-      const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace; const wall = new T3.Mesh(new T3.PlaneGeometry(44, 10.5), new T3.MeshBasicMaterial({ map: tex, toneMapped: false })); wall.rotation.y = Math.PI / 2; wall.position.set(bx + 2.45, 8.4, bzz + 34); grp.add(wall); st.barWall = wall;
-      const n = 3 * 28, geo = new T3.CylinderGeometry(0.2, 0.24, 1.3, 8), im = new T3.InstancedMesh(geo, new T3.MeshStandardMaterial({ roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.92 }), n), o = new T3.Object3D(), cl = new T3.Color(); let k = 0;
-      const BC = ['#16A34A', '#B45309', '#F8FAFC', '#7C2D12', '#1D4ED8', '#DC2626', '#FACC15', '#0F766E'];
-      for (let r = 0; r < 3; r++) for (let i = 0; i < 28; i++) { o.position.set(bx + 2.9, 4.45 + r * 3, bzz + 13 + i * 1.5); o.updateMatrix(); im.setMatrixAt(k, o.matrix); im.setColorAt(k, cl.setStyle(BC[(i * 3 + r * 5) % BC.length])); k++; }
-      grp.add(im);
-      const strip = new T3.Mesh(new T3.BoxGeometry(0.12, 0.35, 44), new T3.MeshBasicMaterial({ color: 0xf59e0b, toneMapped: false })); strip.position.set(bx + 8.5, 0.45, bzz + 34); grp.add(strip); st.barStrip = strip;
-      const top = new T3.Mesh(new T3.BoxGeometry(0.1, 0.1, 44), new T3.MeshBasicMaterial({ color: 0xfde68a, toneMapped: false })); top.position.set(bx + 8.85, 4.62, bzz + 34); grp.add(top); }
+    st.bar = v3bar(grp, bx, bzz); // the bar: its bottles, glasses, the champagne bucket, the fridge
     // the club's lights: a darker base for contrast, two moving coloured spots sweeping the floor, a glow off the dance
     // floor, warm light over the bar
     st.moving = [0, 1].map((k) => { const s = new T3.SpotLight(k ? 0xf472b6 : 0x22d3ee, 1400, 90, 0.32, 0.5, 1.2); s.position.set(36 + k * 24, 17.5, 22); s.target.position.set(48, 0, 30); grp.add(s, s.target); return s; });
-    st.floorGlow = new T3.PointLight(0x22d3ee, 260, 30, 1.4); st.floorGlow.position.set(48, 2.5, 30); grp.add(st.floorGlow);
+    st.floorGlow = new T3.PointLight(0x22d3ee, 260, 30, 1.4); { const D = v3dance(R); st.floorGlow.position.set((D[0] + D[2]) / 2, 2.5, (D[1] + D[3]) / 2); st.dance = D; } grp.add(st.floorGlow);
     st.barLight = new T3.PointLight(0xffb35c, 320, 38, 1.4); st.barLight.position.set(bx + 7, 10, bzz + 34); grp.add(st.barLight);
     return st;
   }
+  // the bar, stocked: real bottle shapes (turned on a lathe) on three backlit shelves (champagne in its dark green with gold
+  // foil, amber cognac, clear vodka, blue gin, tequila, red wine, dark rum), a glowing fridge of beers under them, a champagne
+  // bucket and glasses along the counter, a strip of light under its lip
+  function v3bar(grp, bx, bz) {
+    const T3 = G3.T, bar = {}, lathe = (pts) => new T3.LatheGeometry(pts.map(([r, y]) => new T3.Vector2(r, y)), 14);
+    const SHAPES = {
+      champagne: [lathe([[0, 0], [0.26, 0], [0.27, 0.05], [0.27, 0.75], [0.2, 0.95], [0.11, 1.15], [0.1, 1.45], [0.12, 1.5], [0, 1.52]]), 0x14532d, 0.85, 0xd4af37],
+      cognac: [lathe([[0, 0], [0.34, 0], [0.38, 0.2], [0.36, 0.55], [0.22, 0.75], [0.09, 0.85], [0.09, 1.05], [0, 1.08]]), 0xb45309, 0.8, 0x1f2937],
+      vodka: [lathe([[0, 0], [0.22, 0], [0.23, 0.05], [0.23, 1.0], [0.15, 1.15], [0.08, 1.25], [0.08, 1.45], [0, 1.47]]), 0xe0f2fe, 0.55, 0x9ca3af],
+      gin: [lathe([[0, 0], [0.28, 0], [0.29, 0.05], [0.29, 0.8], [0.18, 0.98], [0.09, 1.08], [0.09, 1.25], [0, 1.27]]), 0x1d4ed8, 0.8, 0xe5e7eb],
+      tequila: [lathe([[0, 0], [0.3, 0], [0.31, 0.6], [0.24, 0.72], [0.1, 0.8], [0.1, 0.98], [0, 1]]), 0xfef3c7, 0.6, 0x78350f],
+      wine: [lathe([[0, 0], [0.23, 0], [0.24, 0.05], [0.24, 0.85], [0.16, 1.0], [0.09, 1.1], [0.09, 1.4], [0, 1.42]]), 0x4c0519, 0.9, 0x7f1d1d],
+      rum: [lathe([[0, 0], [0.27, 0], [0.28, 0.05], [0.28, 0.7], [0.13, 0.9], [0.09, 1.05], [0.09, 1.25], [0, 1.27]]), 0x431407, 0.9, 0xd97706],
+    };
+    const kinds = Object.keys(SHAPES), per = {}; kinds.forEach((k) => (per[k] = []));
+    for (let r = 0; r < 3; r++) for (let i = 0; i < 30; i++) per[kinds[(i + r * 3 + (i % 4 === 0 ? 2 : 0)) % kinds.length]].push([bx + 2.85, 3.85 + r * 3, bz + 13 + i * 1.45, (i * 37 + r * 11) % 7 * 0.05]);
+    const o = new T3.Object3D(); bar.glass = [];
+    for (const k of kinds) { const [geo, col, op, cap] = SHAPES[k], list = per[k]; if (!list.length) continue;
+      const mat = new T3.MeshStandardMaterial({ color: col, roughness: 0.08, metalness: 0.15, transparent: true, opacity: op, emissive: col, emissiveIntensity: 0.35 });
+      const im = new T3.InstancedMesh(geo, mat, list.length), capM = new T3.InstancedMesh(new T3.CylinderGeometry(0.1, 0.1, 0.12, 8), new T3.MeshStandardMaterial({ color: cap, metalness: 0.8, roughness: 0.3 }), list.length);
+      list.forEach(([x0, y0, z0, s], i) => { o.position.set(x0, y0, z0); o.scale.setScalar(1.3 + s); o.updateMatrix(); im.setMatrixAt(i, o.matrix); o.position.y = y0 + geo.boundingBox?.max?.y || 0; geo.computeBoundingBox(); o.position.set(x0, y0 + geo.boundingBox.max.y * (1.3 + s), z0); o.updateMatrix(); capM.setMatrixAt(i, o.matrix); });
+      grp.add(im, capM); bar.glass.push(mat); }
+    { // the backlight behind the bottles: a warm glow, brightest in the middle of each shelf
+      const c = document.createElement('canvas'); c.width = 16; c.height = 128; const g = c.getContext('2d');
+      for (let r = 0; r < 3; r++) { const gr = g.createLinearGradient(0, r * 42, 0, r * 42 + 42); gr.addColorStop(0, '#3b1d0a'); gr.addColorStop(0.55, '#f59e0b'); gr.addColorStop(1, '#3b1d0a'); g.fillStyle = gr; g.fillRect(0, r * 42, 16, 42); }
+      const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace; bar.back = new T3.Mesh(new T3.PlaneGeometry(44, 9.6), new T3.MeshBasicMaterial({ map: tex, toneMapped: false, color: 0xffffff }));
+      bar.back.rotation.y = Math.PI / 2; bar.back.position.set(bx + 2.45, 8.4, bz + 34); grp.add(bar.back); }
+    { // the beer fridge under the back shelves, its door glowing, bottles standing in it
+      const fr = new T3.Mesh(new T3.BoxGeometry(1.8, 3, 10), new T3.MeshStandardMaterial({ color: 0x111827, roughness: 0.4 })); fr.position.set(bx + 3.4, 1.5, bz + 20); grp.add(fr);
+      bar.fridge = new T3.Mesh(new T3.PlaneGeometry(9.4, 2.6), new T3.MeshBasicMaterial({ color: 0xbfdbfe, toneMapped: false, transparent: true, opacity: 0.55 })); bar.fridge.rotation.y = Math.PI / 2; bar.fridge.position.set(bx + 4.32, 1.5, bz + 20); grp.add(bar.fridge);
+      const beer = new T3.InstancedMesh(new T3.CylinderGeometry(0.14, 0.16, 0.8, 8), new T3.MeshStandardMaterial({ color: 0x92400e, roughness: 0.2, emissive: 0x3b1d0a }), 24); let k = 0; for (let r = 0; r < 2; r++) for (let i = 0; i < 12; i++) { o.position.set(bx + 3.9, 0.6 + r * 1.3, bz + 15.6 + i * 0.75); o.scale.setScalar(1); o.updateMatrix(); beer.setMatrixAt(k++, o.matrix); } grp.add(beer); }
+    { // along the counter: a champagne bucket, wine glasses, a cocktail shaker
+      const silver = new T3.MeshStandardMaterial({ color: 0xe5e7eb, metalness: 0.95, roughness: 0.15 }), y = 4.62, cx = bx + 7.2;
+      for (const z of [bz + 22, bz + 46]) { const bk = new T3.Mesh(new T3.CylinderGeometry(0.75, 0.55, 1.2, 20, 1, true), silver); bk.position.set(cx, y + 0.6, z); grp.add(bk); const bt = new T3.Mesh(SHAPES.champagne[0], new T3.MeshStandardMaterial({ color: 0x14532d, roughness: 0.1, metalness: 0.2 })); bt.position.set(cx, y + 0.2, z); bt.rotation.z = 0.35; bt.scale.setScalar(1.2); grp.add(bt); }
+      const gl = lathe([[0, 0], [0.28, 0], [0.29, 0.02], [0.04, 0.06], [0.04, 0.5], [0.12, 0.56], [0.24, 0.75], [0.27, 1.0], [0.26, 1.02]]), gm = new T3.MeshStandardMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.45, roughness: 0.05, metalness: 0.3 });
+      const gi = new T3.InstancedMesh(gl, gm, 12); for (let i = 0; i < 12; i++) { o.position.set(cx + (i % 2) * 0.6 - 0.3, y, bz + 26 + i * 1.6); o.scale.setScalar(0.9); o.updateMatrix(); gi.setMatrixAt(i, o.matrix); } grp.add(gi);
+      const sh = new T3.Mesh(new T3.CylinderGeometry(0.22, 0.28, 0.9, 16), silver); sh.position.set(cx, y + 0.45, bz + 40); grp.add(sh); }
+    bar.strip = new T3.Mesh(new T3.BoxGeometry(0.12, 0.35, 44), new T3.MeshBasicMaterial({ color: 0xf59e0b, toneMapped: false })); bar.strip.position.set(bx + 8.5, 0.45, bz + 34); grp.add(bar.strip);
+    bar.top = new T3.Mesh(new T3.BoxGeometry(0.1, 0.1, 44), new T3.MeshBasicMaterial({ color: 0xfde68a, toneMapped: false })); bar.top.position.set(bx + 8.85, 4.62, bz + 34); grp.add(bar.top);
+    return bar;
+  }
+  // cozy touches: a candle on every booth table, flickering
+  function v3candles(R, grp) {
+    const T3 = G3.T, list = [], c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,220,150,1)'); gr.addColorStop(0.3, 'rgba(255,170,80,0.45)'); gr.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    const tex = new T3.CanvasTexture(c), wax = new T3.MeshStandardMaterial({ color: 0xfef3c7, emissive: 0x7c2d12, emissiveIntensity: 0.4 });
+    for (const it of R.layout.filter((v) => v.k === 'booth')) { const f = FURN.booth, w = f[2], tx = it.x - w / 2 + (w / 2) + 1, tz = it.z, y = 2.85;
+      const cd = new T3.Mesh(new T3.CylinderGeometry(0.22, 0.22, 0.5, 12), wax); cd.position.set(tx, y + 0.25, tz); grp.add(cd);
+      const s = new T3.Sprite(new T3.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: T3.AdditiveBlending, toneMapped: false })); s.position.set(tx, y + 0.75, tz); s.scale.set(2.6, 2.6, 1); grp.add(s); list.push({ s, x: tx, z: tz }); }
+    return list;
+  }
+  // the lighting director: a mood for whatever is happening in the club, reached smoothly, then the beat on top.
+  // warmup: nobody on yet, warm amber and slow; live: a set playing, colours cycling; drop: the big hits, white strobes;
+  // guestdj: a player on the decks, gold and a spot on them; lastcall: near dawn, warm white coming up; and moods for events
+  // (vip: gold and deep red; birthday: pink and gold sparkle) that an event sets on the room (R.event) when it happens
+  const V3MOODS = {
+    warmup: { hue: 32, sat: 0.85, lum: 0.5, spots: 0.45, floor: 0.4, haze: 0.25, cycle: 0.1, exp: 1.05 },
+    live: { hue: null, sat: 1, lum: 0.58, spots: 1, floor: 1, haze: 0.4, cycle: 1, exp: 1.2 },
+    drop: { hue: null, sat: 0.2, lum: 0.85, spots: 1.6, floor: 1.4, haze: 0.6, cycle: 2, exp: 1.35 },
+    guestdj: { hue: 45, sat: 0.95, lum: 0.6, spots: 1.1, floor: 0.9, haze: 0.45, cycle: 0.4, exp: 1.2 },
+    lastcall: { hue: 38, sat: 0.35, lum: 0.75, spots: 0.5, floor: 0.35, haze: 0.15, cycle: 0.05, exp: 1.3 },
+    vip: { hue: 42, sat: 0.95, lum: 0.55, spots: 1.1, floor: 0.8, haze: 0.4, cycle: 0.25, exp: 1.15, alt: 350 },
+    birthday: { hue: 320, sat: 0.95, lum: 0.62, spots: 1.2, floor: 1.1, haze: 0.45, cycle: 0.5, exp: 1.25, alt: 45 },
+  };
+  function v3moodOf(R, beat) {
+    if (R.event && V3MOODS[R.event]) return R.event;
+    { const q = V3.eventQ ?? (V3.eventQ = new URLSearchParams(location.search).get('event') || ''); if (q && V3MOODS[q]) return q; } // ?event=vip (or birthday, lastcall...) tries a mood
+    const h = new Date(Date.now() + 3600000).getUTCHours(); if (h >= 5 && h < 7) return 'lastcall';
+    const deck = clubSrc(R.key), set = deck && deck.now; if (set && !set.resident) return 'guestdj';
+    if (!deck || !set || (deck.a && deck.a.paused)) return 'warmup';
+    return beat > 0.72 ? 'drop' : 'live';
+  }
   function v3stageLive(R, now) {
-    const st = V3.stage; if (!st) return; const t = now / 1000, beat = clubBeat(R.key), hue = 165 + Math.sin(t * 0.6) * 35;
-    st.platters.forEach(({ g, lab }, k) => { g.rotation.y -= 0.058 * (k ? 1.04 : 1); lab.material.color.setHSL(((hue + k * 40) % 360) / 360, 0.9, 0.55); });
-    st.arch.material.color.setHSL(((hue + 180) % 360) / 360, 1, 0.55 + beat * 0.2);
+    const st = V3.stage; if (!st) return; const t = now / 1000, beat = clubBeat(R.key), dt = Math.min(0.05, (now - (st.last || now)) / 1000); st.last = now;
+    const mood = v3moodOf(R, beat), M = V3MOODS[mood], liveHue = (165 + Math.sin(t * 0.6) * 35 + t * 12 * M.cycle) % 360, want = M.hue ?? liveHue;
+    const cur = V3.moodNow || (V3.moodNow = { hue: want, sat: M.sat, lum: M.lum, spots: M.spots, floor: M.floor, haze: M.haze, exp: M.exp });
+    const k = 1 - Math.exp(-dt * (mood === 'drop' ? 9 : 1.4)); let dh = want - cur.hue; dh = ((dh + 540) % 360) - 180; cur.hue = (cur.hue + dh * k + 360) % 360;
+    for (const f of ['sat', 'lum', 'spots', 'floor', 'haze', 'exp']) cur[f] += (M[f] - cur[f]) * k;
+    V3.mood = mood; const H = (o) => ((cur.hue + o) % 360 + 360) % 360 / 360, strobe = mood === 'drop' && Math.floor(t * 12) % 2 === 0;
+    // the decks, the arch, the jets
+    st.platters.forEach(({ g, lab }, i) => { g.rotation.y -= (mood === 'warmup' ? 0.02 : 0.058) * (i ? 1.04 : 1); lab.material.color.setHSL(H(i * 40), cur.sat, 0.55); });
+    st.arch.material.color.setHSL(H(180 + (M.alt || 0)), cur.sat, Math.min(0.8, cur.lum + beat * 0.2));
     st.jets.forEach((j) => { const on = beat > 0.62 ? (beat - 0.6) * 2.2 : 0; j.material.opacity += (Math.min(0.9, on) - j.material.opacity) * 0.25; j.scale.set(4 + on * 3, 10 + on * 10, 1); });
-    st.moving.forEach((s, k) => { s.target.position.set(48 + Math.sin(t * (0.7 + k * 0.2) + k * 2) * 26, 0, 32 + Math.cos(t * (0.5 + k * 0.3) + k) * 14); s.color.setHSL(((hue + k * 120 + t * 20) % 360) / 360, 1, 0.6); s.intensity = 900 + beat * 1600; });
-    st.floorGlow.color.setHSL((hue % 360) / 360, 1, 0.55); st.floorGlow.intensity = 140 + beat * 420;
-    st.barStrip.material.color.setHSL(((hue + 20) % 360) / 360, 1, 0.55); st.barLight.intensity = 280 + Math.sin(t * 2) * 20;
+    // the moving spots: sweeping the floor; on a guest DJ one finds the booth; when you're on the dance floor one follows you
+    const D = st.dance || [32, 24, 64, 36], onFloor = me.x > D[0] - 1 && me.x < D[2] + 1 && me.z > D[1] - 1 && me.z < D[3] + 1;
+    st.moving.forEach((s, i) => { let tx = (D[0] + D[2]) / 2 + Math.sin(t * (0.7 + i * 0.2) + i * 2) * 26, tz = (D[1] + D[3]) / 2 + 2 + Math.cos(t * (0.5 + i * 0.3) + i) * 14;
+      if (i === 0 && mood === 'guestdj') { tx = 72; tz = 7.4; } if (i === 1 && onFloor && mood !== 'drop') { tx = me.x; tz = me.z; }
+      s.target.position.x += (tx - s.target.position.x) * 0.08; s.target.position.z += (tz - s.target.position.z) * 0.08;
+      if (strobe) s.color.setRGB(1, 1, 1); else if (i === 1 && onFloor) s.color.setHSL(0.11, 0.35, 0.8); else s.color.setHSL(H(i * 120 + (M.alt || 0) * i), cur.sat, 0.6);
+      s.intensity = (700 + beat * 1500) * cur.spots * (strobe ? 1.6 : 1); });
+    st.floorGlow.color.setHSL(H(0), cur.sat, 0.55); st.floorGlow.intensity = (120 + beat * 420) * cur.floor;
+    // the room's colour lights and their halos, the beams and haze from the booth, the exposure
+    const ex = V3.extras; if (ex) { ex.lights.forEach((l, i) => { l.color.setHSL(H(i * 60 + (M.alt || 0) * i), cur.sat, 0.55); l.intensity = (140 + beat * 450) * cur.spots; });
+      ex.halos.forEach((s, i) => s.material.color.copy(ex.lights[i].color)); ex.spot.intensity = (mood === 'guestdj' ? 1400 : 700 + beat * 900) * Math.max(0.6, cur.spots); }
+    const inn = V3.inside; if (inn) { inn.beams.forEach((b, i) => { b.material.color.setHSL(H(i * 25), cur.sat, 0.7); b.material.opacity = (0.05 + beat * 0.16) * cur.haze * 2.2; }); inn.haze.forEach((s) => (s.material.opacity *= cur.haze * 2)); inn.strip.material.color.setHSL(H(0), cur.sat, 0.55 + beat * 0.15); }
+    G3.renderer.toneMappingExposure = cur.exp;
+    // the bar: warm and gold, brighter when you're near it
+    const nearBar = Math.hypot(me.x - 9, me.z - 40) < 18 || (me.x < 16 && me.z > 14 && me.z < 66); st.barNear = (st.barNear || 0) + ((nearBar ? 1 : 0) - (st.barNear || 0)) * 0.05;
+    const bar = st.bar; if (bar) { bar.strip.material.color.setHSL(mood === 'live' || mood === 'drop' ? H(20) : 0.1, 0.95, 0.55); bar.back.material.color.setScalar(0.75 + st.barNear * 0.3 + Math.sin(t * 0.8) * 0.03); bar.glass.forEach((m) => (m.emissiveIntensity = 0.28 + st.barNear * 0.25)); bar.fridge.material.opacity = 0.5 + 0.05 * Math.sin(t * 2); }
+    st.barLight.intensity = 220 + st.barNear * 260 + Math.sin(t * 2) * 15;
+    // candles: flickering, a little brighter for whoever sits by them
+    (V3.candles || []).forEach((c, i) => { const near = Math.hypot(me.x - c.x, me.z - c.z) < 8 ? 1.35 : 1, f = 2.6 * near * (0.9 + 0.1 * Math.sin(t * 11 + i * 2.1) + 0.05 * Math.sin(t * 27 + i)); c.s.scale.set(f, f, 1); });
+    if (V3.vig) V3.vig.style.opacity = String(mood === 'lastcall' ? 0.35 : mood === 'drop' ? 0.55 : 0.75);
   }
   // the switch in the room
   function v3button() {
@@ -6456,7 +6546,7 @@
     // keeps the classic, stage at the back; Club Lekki's stage is off to the right with a long beach bar out in the room;
     // Quilox puts the DJ on a stage in the middle of the floor, the crowd all round; Secrets Palace holds court from the left
     // with the bar further in; VEIN brings its stage forward onto the floor for the show
-    const PL = { ozumba: { st: [0, 0], bar: [0, 0] }, lekki: { st: [24, 0], bar: [26, 6] }, quilox: { st: [0, 18], bar: [0, 0] }, secret: { st: [-16, 0], bar: [0, 8] }, vein: { st: [0, 8], bar: [0, 0] } }[LK.theme] || { st: [0, 0], bar: [0, 0] };
+    const PL = { ozumba: { st: [0, 0], bar: [0, 0] }, lekki: { st: [24, 0], bar: [0, 6] }, quilox: { st: [0, 18], bar: [0, 0] }, secret: { st: [-16, 0], bar: [0, 8] }, vein: { st: [0, 8], bar: [0, 0] } }[LK.theme] || { st: [0, 0], bar: [0, 0] };
     // draw a part of the room moved by (ox, oz): the camera is shifted the other way while it draws, and anything it leaves
     // to draw later (night glows, labels) is shifted the same when its turn comes
     const shift = (ox, oz, f) => {
@@ -6503,7 +6593,7 @@
     strip(0, 0.2, R.w, 0.2, 15); strip(0.2, 0, 0.2, R.d, 15);
     // the dance floor comes alive: LED tiles over the two halves, rings rippling out from the middle on the beat, a colour wave
     // sweeping across (drawn last, over the floor and the crowd's feet)
-    glow.push(() => { const t2 = performance.now() / 1000, b2 = clubBeat(R.key), X0 = 32, X1 = 64, Z0 = 24, Z1 = 36, s = 2, mx = (X0 + X1) / 2, mz = (Z0 + Z1) / 2;
+    glow.push(() => { const t2 = performance.now() / 1000, b2 = clubBeat(R.key), [X0, Z0, X1, Z1] = v3dance(R), s = 2, mx = (X0 + X1) / 2, mz = (Z0 + Z1) / 2;
       x.save(); x.globalCompositeOperation = 'lighter';
       for (let px = X0; px < X1; px += s) for (let pz = Z0; pz < Z1; pz += s) {
         const d = Math.hypot(px + 1 - mx, (pz + 1 - mz) * 1.6), ring = Math.max(0, Math.cos(d * 0.45 - t2 * 5)), wave = 0.5 + 0.5 * Math.sin((px - pz) * 0.25 + t2 * 2.2);
@@ -6790,7 +6880,7 @@
     } else if (LK.theme === 'lekki') {
       // no rigs: strings of warm bulbs criss-crossing overhead, lanterns, a fire pit in the sand with low seats round it, a hammock
       for (const [x0, z0, x1, z1] of [[6, 10, 92, 54], [6, 54, 92, 10], [6, 32, 92, 32]]) for (let k = 0; k <= 24; k++) { const u = k / 24, sag = Math.sin(u * Math.PI) * 3, p = P(x0 + (x1 - x0) * u, 17 - sag, z0 + (z1 - z0) * u); x.fillStyle = (k + Math.floor(t * 2)) % 5 ? '#FDE68A' : '#FB923C'; x.beginPath(); x.arc(p[0], p[1], Math.max(1, K * 0.22), 0, Math.PI * 2); x.fill(); }
-      { const fx = 12, fz = 40; for (let k = 0; k < 8; k++) { const an = k / 8 * Math.PI * 2; box(fx + Math.cos(an) * 1.6 - 0.25, 0, fz + Math.sin(an) * 1.6 - 0.25, fx + Math.cos(an) * 1.6 + 0.25, 0.6, fz + Math.sin(an) * 1.6 + 0.25, '#57534E'); } for (let k = 0; k < 6; k++) { const an = k / 6 * Math.PI * 2; box(fx + Math.cos(an) * 4.5 - 0.9, 0, fz + Math.sin(an) * 4.5 - 0.5, fx + Math.cos(an) * 4.5 + 0.9, 1, fz + Math.sin(an) * 4.5 + 0.5, '#A16207'); }
+      { const fx = 22, fz = 47; for (let k = 0; k < 8; k++) { const an = k / 8 * Math.PI * 2; box(fx + Math.cos(an) * 1.6 - 0.25, 0, fz + Math.sin(an) * 1.6 - 0.25, fx + Math.cos(an) * 1.6 + 0.25, 0.6, fz + Math.sin(an) * 1.6 + 0.25, '#57534E'); } for (let k = 0; k < 6; k++) { const an = k / 6 * Math.PI * 2; box(fx + Math.cos(an) * 4.5 - 0.9, 0, fz + Math.sin(an) * 4.5 - 0.5, fx + Math.cos(an) * 4.5 + 0.9, 1, fz + Math.sin(an) * 4.5 + 0.5, '#A16207'); }
         glow.push(() => glowAt(fx, 1.4, fz, 4.5 * (0.85 + Math.sin(t * 9) * 0.15), 'rgba(255,150,50,0.85)')); glowAt(fx, 1, fz, 2.4, 'rgba(255,200,90,0.9)'); }
       { const p0 = P(84, 4, 58), p1 = P(94, 4, 60), m = P(89, 2.4, 59); for (const [hx, hz] of [[84, 58], [94, 60]]) box(hx - 0.25, 0, hz - 0.25, hx + 0.25, 5, hz + 0.25, '#78350F'); x.strokeStyle = '#F59E0B'; x.lineWidth = Math.max(2, K * 0.5); x.beginPath(); x.moveTo(p0[0], p0[1]); x.quadraticCurveTo(m[0], m[1], p1[0], p1[1]); x.stroke(); }
     } else {
@@ -8280,7 +8370,7 @@
       R.floor = look.floor; R.wall = look.wall; R.trim = look.trim;
       // the furniture follows the club's plan (see drawClubShell's PL): the stage's speakers move with the stage, the dance
       // floor goes where that club dances, the podiums and bar stools where they fit
-      const plan = { lekki: { st: [24, 0], bar: [26, 6], dance: [[52, 30], [68, 30]], pod: [[50, 22], [86, 22], [50, 42], [86, 42]] },
+      const plan = { lekki: { st: [24, 0], bar: [0, 6], dance: [[52, 30], [68, 30]], pod: [[50, 22], [86, 22], [50, 42], [86, 42]] },
         quilox: { st: [0, 18], bar: [0, 0], dance: [[38, 48], [58, 48]], pod: [[24, 24], [72, 24], [24, 50], [72, 50]] },
         secret: { st: [-16, 0], bar: [0, 8], dance: [[48, 32], [64, 32]], pod: [[44, 22], [76, 22], [44, 44], [76, 44]] },
         vein: { st: [0, 8], bar: [0, 0], dance: [[40, 34], [56, 34]], pod: [[30, 24], [66, 24], [30, 46], [66, 46]] } }[look.theme];
