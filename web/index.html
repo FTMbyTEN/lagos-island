@@ -1400,9 +1400,13 @@
   @media (max-width: 520px) { #hud .bar { grid-template-columns: 18px 64px auto; } #hud .bar span { width: 18px; height: 18px; font-size: 10px; } }
   #clubAct { position: fixed; left: 92px; bottom: calc(126px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 30; display: none; }
   .touch #clubAct { left: 104px; bottom: calc(226px + env(safe-area-inset-bottom)); }
-  #clubAct .ca { position: absolute; left: 0; top: 0; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; cursor: pointer; user-select: none; color: #fff; background: linear-gradient(145deg, rgba(55,48,70,.82), rgba(18,16,26,.88)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14); transition: transform .32s cubic-bezier(.2,1.4,.4,1), opacity .2s; }
+  #clubAct .ca, #pplAct .ca { position: absolute; left: 0; top: 0; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; cursor: pointer; user-select: none; color: #fff; background: linear-gradient(145deg, rgba(55,48,70,.82), rgba(18,16,26,.88)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14); transition: transform .32s cubic-bezier(.2,1.4,.4,1), opacity .2s; }
   #clubAct .ca svg { width: 26px; height: 26px; } #clubAct .opt svg { width: 22px; height: 22px; }
   #clubAct .opt[data-a=dance] { color: #F9A8D4; } #clubAct .opt[data-a=drink] { color: #FCD34D; } #clubAct .opt[data-a=list] { color: #7DD3FC; }
+  #pplAct { position: fixed; left: 92px; bottom: calc(126px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 30; display: none; } .touch #pplAct { left: 104px; bottom: calc(226px + env(safe-area-inset-bottom)); } body.clubFan #pplAct { bottom: calc(266px + env(safe-area-inset-bottom)); } .touch.clubFan #pplAct, body.touch.clubFan #pplAct { bottom: calc(366px + env(safe-area-inset-bottom)); }
+  #pplAct #paMain { font: 900 20px 'Plus Jakarta Sans', sans-serif; background: linear-gradient(145deg, #0EA5E9, #6366F1); } #pplAct #paMain::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid rgba(14,165,233,.6); animation: paP 1.8s ease-out infinite; } @keyframes paP { to { transform: scale(1.35); opacity: 0; } }
+  #pplAct .opt { width: 50px; height: 50px; left: 3px; top: 3px; font-size: 20px; opacity: 0; pointer-events: none; transform: scale(.4); } #pplAct .opt svg { width: 22px; height: 22px; } #pplAct .opt small { position: absolute; top: 100%; margin-top: 2px; white-space: nowrap; font: 800 10px 'Plus Jakarta Sans', sans-serif; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+  #pplAct.open .opt { opacity: 1; pointer-events: auto; } #pplAct.open .opt[data-a=wave] { transform: translate(20px, -74px); } #pplAct.open .opt[data-a=msg] { transform: translate(76px, 0); color: #7DD3FC; } #pplAct.open .opt[data-a=add] { transform: translate(20px, 74px); color: #86EFAC; }
   #clubAct .opt { width: 50px; height: 50px; left: 3px; top: 3px; font-size: 20px; opacity: 0; pointer-events: none; transform: scale(.4); }
   #clubAct .opt small { position: absolute; top: 100%; margin-top: 2px; white-space: nowrap; font: 800 10px 'Plus Jakarta Sans', sans-serif; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
   #clubAct.open .opt { opacity: 1; pointer-events: auto; }
@@ -1410,7 +1414,7 @@
   #clubAct.open #caMain { transform: rotate(-12deg) scale(1.06); }
   #clubAct .opt.on { background: linear-gradient(145deg, #EC4899, #A855F7); color: #fff; box-shadow: 0 0 18px rgba(236,72,153,.6); }
   #clubList { position: fixed; left: 14px; bottom: calc(150px + env(safe-area-inset-bottom)); width: min(260px, calc(100vw - 28px)); max-height: 46dvh; overflow: auto; z-index: 31; display: none; padding: 14px; border-radius: 18px; color: #fff; font: 600 14px 'Plus Jakarta Sans', sans-serif; background: linear-gradient(160deg, rgba(30,22,14,.94), rgba(12,10,8,.94)); border: 1px solid rgba(251,191,36,.45); box-shadow: 0 12px 30px rgba(0,0,0,.5); }
-  #clubList .dr { width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; border-radius: 10px; padding: 8px 6px; } #clubList .dr:hover { background: rgba(251,191,36,.12); } #clubList .dr small { color: #d6c8a8; font-weight: 500; }
+  #clubList .dr { width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; border-radius: 10px; padding: 8px 6px; } #clubList .dr:hover { background: rgba(251,191,36,.12); } #clubList .dr small { color: #d6c8a8; font-weight: 500; } #clubList .pr { font-style: normal; color: #FCD34D; font-weight: 800; margin-left: 6px; } #clubList .drErr { margin: 6px 0 0; color: #FCA5A5; font-size: 12.5px; } #clubList .dr:disabled { opacity: .5; }
   #clubList.on { display: block; } #clubList h4 { margin: 0 0 8px; font-size: 15px; color: #fde68a; } #clubList div.r { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.08); } #clubList i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
   .touch #clubList { bottom: calc(300px + env(safe-area-inset-bottom)); }
   #leave.btn { background: transparent !important; box-shadow: none !important; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 10px rgba(0,0,0,.35); }
@@ -1520,6 +1524,7 @@
 <button id="act"></button>
 <div id="clubAct" aria-label="Club actions"><div id="caMain" class="ca" role="button" title="Things to do"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></div><div class="ca opt" data-a="dance" role="button" title="Dance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M8 9l4-1 3 3 3 1"/><path d="M12 8l-1 6 3 3v4"/><path d="M11 14l-3 3-2 4"/></svg><small>Dance</small></div><div class="ca opt" data-a="drink" role="button" title="Drink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-7 8z"/><path d="M12 12v8"/><path d="M8 20h8"/><path d="M15 4l2-2"/></svg><small>Drink</small></div><div class="ca opt" data-a="list" role="button" title="Who's here"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.8.3 5 2.6 5 5.8"/></svg><small>Who's here</small></div></div>
 <div id="clubList" role="dialog"></div>
+<div id="pplAct" class="fan" aria-label="Someone close"><div id="paMain" class="ca" role="button" title="Someone close"></div><div class="ca opt" data-a="wave" role="button">👋<small>Wave</small></div><div class="ca opt" data-a="msg" role="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg><small>Message</small></div><div class="ca opt" data-a="add" role="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M19 8v6M16 11h6"/></svg><small>Add friend</small></div></div>
 <div id="hud" aria-label="You"><div class="pic"><div class="fig"><img alt=""></div></div><div class="info"><div class="who"></div><div class="bars"></div></div></div>
 <div id="leave" class="btn" role="button" aria-label="Leave the building">🚪<small>Leave</small></div>
 <div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ltop"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lwx" id="lockw"></div></div><div class="lnotes" id="lockn"></div><div class="lbot"><button class="lq" data-lq="ride" aria-label="Ride">🛵</button><button class="lq" data-lq="music" aria-label="Music">🎧</button><div class="lu">Tap to unlock</div><button class="lq" data-lq="wyrd" aria-label="Ask WYRD">✨</button></div></div><div id="pbody"></div><div id="pnav"><button id="pback"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button><button id="phome"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-4v-3h-3v3h-4z"/></svg>Home</button><button id="pclose"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</button></div><span class="hbar"></span></div></div>
@@ -6068,8 +6073,7 @@
   function person(px, pz, color, name, bubble, now, mine, look) {
     const base = P(px, 0, pz), by0 = base[1], s = Math.max(0.75, K / 4.6) * (inside ? 1.12 : 1) * 0.92;
     if (base[0] < -60 || base[0] > W + 60 || base[1] < -140 || base[1] > H + 60) return;
-    const [lk, ps, th] = String(look || '').split('|'), pose = ps ? ps.split(',')[0] || null : null, thought = mine ? THOUGHT : hexThought(th);
-    if (!mine && inside && (inside.kind === 'club' || partyAt(inside.key))) { const was = DANCERS.get(name); DANCERS.set(name, pose === 'dance'); if (pose === 'dance' && was === false) notify(`💃 ${name} is dancing at ${inside.title || 'the club'}`, 'music'); }
+    const [lk, ps, th] = String(look || '').split('|'), pose = ps ? ps.split(',')[0] || null : null, thought = mine ? (THOUGHT ? thoughtIcons(THOUGHT) : '') : hexThought(th);
     const L = parseLook(lk, name), fem = L.g === 'f', seated = pose === 'sit', asleep = pose === 'sleep';
     const seatY = ps ? Number(ps.split(',')[1]) || 2.2 : 0, seatPx = seated ? by0 - P(px, seatY, pz)[1] : 0;
     if (person3d(px, pz, color, name, now, L, pose, seatY)) { personTags(px, pz, name, bubble, now, mine, base, s, P(px, seated ? seatY + 5.5 : 7.6, pz)[1], thought, pose); return; } // the 3D person, then their name and what they said
@@ -6247,7 +6251,7 @@
   }
 
   // a 3D person's name tag, your green ring, and their speech bubble over their head
-  const DANCERS = new Map();
+  const DANCERS = new Map(), NEAR = { who: null }, NEAR_R = 12;
   function personTags(px, pz, name, bubble, now, mine, base, s, headY, thought, pose) {
     if (mine) { // your ring: a soft glowing disc, a bright ring and a sweeping arc; dancing, it turns pink and pulses with the beat
       const dancing = pose === 'dance', b = dancing && inside ? clubBeat(inside.key) : 0, t = now / 1000, rx = 11 * s * (1 + b * 0.18), ry = 4.2 * s * (1 + b * 0.18);
@@ -6257,12 +6261,18 @@
       x.shadowColor = col; x.shadowBlur = 10; x.strokeStyle = col; x.lineWidth = 2.4; x.beginPath(); x.ellipse(base[0], base[1], rx, ry, 0, 0, Math.PI * 2); x.stroke();
       x.strokeStyle = 'rgba(255,255,255,0.9)'; x.lineWidth = 2; x.beginPath(); const a0 = t * (dancing ? 4 : 1.6); x.ellipse(base[0], base[1], rx, ry, 0, a0, a0 + 1.1); x.stroke();
       x.strokeStyle = `hsla(${hue},85%,70%,0.5)`; x.lineWidth = 1; x.beginPath(); x.ellipse(base[0], base[1], rx * 0.62, ry * 0.62, 0, 0, Math.PI * 2); x.stroke(); x.restore(); }
-    if (thought && !(bubble && bubble.until > now) && (mine || !inside || Math.hypot(px - me.x, pz - me.z) < 30)) { // a thought cloud over them
-      x.save(); x.font = 'italic 600 13px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-      const t = '💭 ' + (thought.length > 36 ? thought.slice(0, 35) + '…' : thought), w = x.measureText(t).width + 24, top = headY - 46;
-      x.shadowColor = 'rgba(20,20,60,0.25)'; x.shadowBlur = 10; x.fillStyle = 'rgba(255,255,255,0.95)'; x.beginPath(); x.roundRect(base[0] - w / 2, top, w, 30, 15); x.fill();
-      x.beginPath(); x.arc(base[0] - 4, top + 36, 4, 0, Math.PI * 2); x.arc(base[0] - 8, top + 44, 2.4, 0, Math.PI * 2); x.fill(); x.shadowBlur = 0;
-      x.fillStyle = '#4C1D95'; x.fillText(t, base[0], top + 15.5); x.restore(); }
+    // a thought cloud, icons only, when someone's close: over them if they're near you, over you if anyone's near you
+    if (mine && DRINK.want && inside) { const [ox, oz] = barOff(inside), bp = P(ox + 11, 0, oz + 34), pin = P(ox + 8, 9, oz + 34), dx = bp[0] - base[0], dy = bp[1] - base[1], d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d, t = now / 1000;
+      x.save(); x.fillStyle = '#FBBF24'; x.shadowColor = '#F59E0B'; x.shadowBlur = 10; const r0 = 18 * s + Math.sin(t * 5) * 3;
+      if (d > 40) { const ax = base[0] + ux * r0, ay = base[1] + uy * r0 * 0.5; x.beginPath(); x.moveTo(ax + ux * 14, ay + uy * 14); x.lineTo(ax - uy * 8, ay + ux * 8); x.lineTo(ax + uy * 8, ay - ux * 8); x.closePath(); x.fill(); }
+      pin[0] = Math.max(60, Math.min(W - 60, pin[0])); pin[1] = Math.max(110, Math.min(H - 90, pin[1])); const py = pin[1] - 10 + Math.sin(t * 3) * 4; x.font = '800 12px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; const w = x.measureText('🍸 Bar').width + 20;
+      x.beginPath(); x.roundRect(pin[0] - w / 2, py - 13, w, 26, 13); x.fill(); x.beginPath(); x.moveTo(pin[0] - 6, py + 12); x.lineTo(pin[0], py + 20); x.lineTo(pin[0] + 6, py + 12); x.fill(); x.shadowBlur = 0; x.fillStyle = '#1F1300'; x.fillText('🍸 Bar', pin[0], py + 1); x.restore(); }
+    if (thought && !(bubble && bubble.until > now) && (mine ? NEAR.who : Math.hypot(px - me.x, pz - me.z) < NEAR_R)) {
+      x.save(); x.font = '13px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; const w = Math.max(30, x.measureText(thought).width + 14), cy = headY - 28, t2 = now / 600;
+      x.shadowColor = 'rgba(20,20,60,0.3)'; x.shadowBlur = 10; x.fillStyle = 'rgba(255,255,255,0.96)'; x.beginPath();
+      for (let k = 0; k < 5; k++) { const u = k / 4 - 0.5; x.moveTo(base[0] + u * (w - 14) + 10 - Math.abs(u) * 5, cy + Math.abs(u) * 3); x.arc(base[0] + u * (w - 14), cy + Math.abs(u) * 3, 10 - Math.abs(u) * 5 + Math.sin(t2 + k) * 0.5, 0, Math.PI * 2); }
+      x.fill(); x.beginPath(); x.arc(base[0] - 5, cy + 15, 3, 0, Math.PI * 2); x.arc(base[0] - 8, cy + 21, 1.8, 0, Math.PI * 2); x.fill(); x.shadowBlur = 0;
+      x.fillText(thought, base[0], cy + 1); x.restore(); }
     x.textAlign = 'center'; x.textBaseline = 'middle';
     if (mine || !inside || Math.hypot(px - me.x, pz - me.z) < 10) {
       const fs2 = inside ? 10 : 12, ph2 = inside ? 15 : 19; x.font = `700 ${fs2}px "Plus Jakarta Sans", sans-serif`;
@@ -8722,13 +8732,16 @@
   const DRINK = { want: false }, BARTENDER = { z: 34 };
   const VITALS = (() => { try { const v = JSON.parse(store.get('li.vitals') || 'null'); if (v && v.hp > 0) return v; } catch {} return { hp: 90 }; })();
   const barOpen = () => nightNow() > 0.5;
-  if (location.hostname === 'localhost') window.__li = { get me() { return me; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
+  if (location.hostname === 'localhost') window.__li = { get me() { return me; }, get others() { return others; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
   const barOff = (R) => { const P0 = CLUB_PL[(R.look || clubLook(R.title)).theme]; return P0 ? P0.bar : [0, 0]; }; // where a club's bar is
   // what you're thinking: set on your phone, shown over you to everyone (sent as hex inside your look, the only text the island carries)
   let THOUGHT = store.get('li.thought') || '';
   const thoughtHex = (t) => Array.from(new TextEncoder().encode(t)).slice(0, 90).map((b) => b.toString(16).padStart(2, '0')).join('');
   const hexThought = (h) => { try { return /^[0-9a-f]+$/.test(h || '') ? new TextDecoder().decode(new Uint8Array(h.match(/../g).map((v) => parseInt(v, 16)))).replace(/\uFFFD+$/, '') : ''; } catch { return ''; } };
-  const lookNow = (withPose = true) => myLook + '|' + (withPose && pose ? pose.kind + ',' + pose.y : '') + (THOUGHT ? '|' + thoughtHex(THOUGHT) : '');
+  // a thought as a few icons: emoji you typed stay, and words become their icons
+  const THINK_ICONS = [[/hungr|food|eat|jollof|suya|chop/, '🍲'], [/money|cash|naira|rich|paid|pay|broke/, '💰'], [/love|crush|date|babe/, '❤️'], [/party|club|turn ?up|vibe/, '🎉'], [/danc/, '💃'], [/music|song|dj|beat/, '🎵'], [/drink|beer|wine|champagne/, '🍸'], [/sleep|tired|rest/, '😴'], [/work|job|shift|hustle/, '💼'], [/happy|great|good|lucky|blessed/, '😊'], [/sad|down|cry/, '😢'], [/angry|mad|vex/, '😠'], [/car|drive|ride/, '🚗'], [/home|house|hq/, '🏠'], [/friend|people|link/, '🤝'], [/game|play|win/, '🎮'], [/beach|sea|swim/, '🏖️'], [/sun|hot/, '☀️'], [/rain/, '🌧️'], [/think|idea|plan/, '💡'], [/god|pray|church|mosque/, '🙏'], [/travel|flight|trip/, '✈️'], [/shop|buy|fashion|outfit/, '🛍️'], [/fire|lit/, '🔥'], [/star|famous/, '⭐']];
+  const thoughtIcons = (t) => { t = String(t || ''); const out = [...(t.match(/\p{Extended_Pictographic}/gu) || [])]; const low = t.toLowerCase(); for (const [re, ic] of THINK_ICONS) if (re.test(low) && !out.includes(ic)) out.push(ic); return (out.length ? out : ['💭']).slice(0, 3).join(''); };
+  const lookNow = (withPose = true) => myLook + '|' + (withPose && pose ? pose.kind + ',' + pose.y : '') + (THOUGHT ? '|' + thoughtHex(thoughtIcons(THOUGHT)) : '');
   let myCar = ''; // "model:#colour" of the car you drive ('' on foot)
   // your cars, for parking at your homes: the ones you've starred in the Garage first, then the one you drive, then the dearest
   let myCarsL = [];
@@ -10432,7 +10445,7 @@
             return `<div class="hsky ${ph}"><i class="hsun" style="top:${sunY}%"></i>${ph === 'night' ? '<i class="hstars"></i>' : ''}<div class="hskyT"><div><div class="wt">${wx.temp}°</div><div class="wd">${esc(wx.text)} · ${esc(sector.name)}</div></div><div class="wr"><div class="wxi">${wx.icon}</div></div></div>
               <svg class="hcity" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V44h10v-6h8v8h6V34h9v12h5V30l6-5 6 5v16h7V40h10v6h6V22h3v-6h3v6h3v24h7V38h12v8h5V32h9v14h7V16l5-8 5 8v30h6V42h9v4h5V28h10v18h6V36h8v10h7V26h3v-6h5v6h3v20h6V38h10v8h5V32h8v14h7V42h12v4h7V34h9v12h6V40h12v20z"/><rect x="262" y="20" width="2" height="26" fill="#EF4444"/><path class="hfl" d="M263 20c-2.4-3-.8-6 0-8 .8 2 2.4 5 0 8z"/></svg></div>`; })()}
           <button class="nb" id="hBell" aria-label="Notifications">${pi('inbox')}${unseen ? '<i></i>' : ''}</button></div>
-          <div class="hThink"><span>💭</span><input id="hThinkIn" maxlength="40" placeholder="What are you thinking?" value="${esc(THOUGHT)}"><button id="hThinkGo">${THOUGHT ? 'Update' : 'Share'}</button>${THOUGHT ? '<button id="hThinkX" aria-label="Clear">✕</button>' : ''}</div>
+          <div class="hThink"><span>💭</span><input id="hThinkIn" maxlength="40" placeholder="What are you thinking? (shown as icons)" value="${esc(THOUGHT)}"><button id="hThinkGo">${THOUGHT ? 'Update' : 'Share'}</button>${THOUGHT ? '<button id="hThinkX" aria-label="Clear">✕</button>' : ''}</div>
           ${(() => { const sh = typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks, tk = sh && GJ.shift.tasks.find((v) => !v.done), pl = sh ? PLACE_OF(GJ.shift.track) : null, on = typeof nepaAt === 'function' ? nepaAt(lagosMs()) : true;
             const chips = [sh ? [pl === 'refinery' ? '🛢️' : pl === 'airport' ? '🦺' : '⚡', tk ? tk.title : 'Hand in your shift', pl] : ['💼', 'Find work', 'jobs'], [on ? '💡' : '🔦', on ? 'NEPA: light on' : 'NEPA took light', 'grid'], ['👥', `${online} on the island`, 'people'], ['🏛️', 'Your city', 'gov']];
             return `<div class="hchips">${chips.map(([i, t, a], k) => `<button data-app="${a}" style="--d:${(k * 0.06).toFixed(2)}s"><i>${i}</i>${esc(t)}</button>`).join('')}</div>`; })()}
@@ -12007,6 +12020,17 @@
   const leaveBtn = document.getElementById('leave');
   leaveBtn.onclick = () => { pose = null; leaveRoom(); };
   setInterval(() => { leaveBtn.style.display = inside ? 'grid' : 'none'; }, 300);
+  // someone close: their initial on a button by the door that fans out wave, message and add friend
+  { const pa = document.getElementById('pplAct'), main = document.getElementById('paMain');
+    setInterval(() => { let best = null, bd = NEAR_R; if (typeof others !== 'undefined') for (const o of others.values()) { const d = Math.hypot(o.x - me.x, o.z - me.z); if (d < bd) { bd = d; best = o; } }
+      NEAR.who = best; document.body.classList.toggle('clubFan', document.getElementById('clubAct').style.display === 'block');
+      if (!best) { pa.style.display = 'none'; pa.classList.remove('open'); return; }
+      if (pa.style.display !== 'block' || main.dataset.who !== best.name) { main.dataset.who = best.name; main.textContent = String(best.name || '?').replace(/^@/, '').charAt(0).toUpperCase(); main.title = best.name; pa.style.display = 'block'; } }, 400);
+    main.onclick = () => { main.blur(); pa.classList.toggle('open'); };
+    pa.querySelectorAll('.opt').forEach((b) => (b.onclick = async () => { b.blur(); const o = NEAR.who; if (!o) return; const nm = String(o.name || '').replace(/^@/, ''); pa.classList.remove('open');
+      if (b.dataset.a === 'wave') { const t = `👋 Hi @${nm}!`; bubbles.set('me', { text: t, until: performance.now() + 5000 }); try { await call('say', { id, text: t, key: ikey }); } catch {} }
+      if (b.dataset.a === 'msg') openPhone('newchat', { dm: true, who: nm });
+      if (b.dataset.a === 'add') { if (!signedIn()) return bubbles.set('me', { text: 'Sign in to add friends.', until: performance.now() + 3000 }); try { await my('friendRequest', { handle: nm, note: '' }); notify(`🤝 Friend request sent to @${nm}`, 'link'); } catch (e) { bubbles.set('me', { text: e.message || 'Couldn\'t send that.', until: performance.now() + 3000 }); } } })); }
   // your thought, from the phone
   document.addEventListener('click', (e) => { const t = e.target.closest && e.target.closest('#hThinkGo, #hThinkX'); if (!t) return;
     const inp = document.getElementById('hThinkIn'); THOUGHT = t.id === 'hThinkX' ? '' : (inp ? inp.value.trim().slice(0, 40) : ''); store.set('li.thought', THOUGHT);
@@ -12038,18 +12062,23 @@
       cl.innerHTML = `<h4>👥 At ${esc(inside.title || 'the club')} · ${ppl.length}</h4>` + ppl.map((o) => `<div class="r"><i style="background:${esc(o.color || '#fff')}"></i>${esc(o.name || 'Guest')}</div>`).join(''); };
     document.getElementById('caMain').onclick = (e) => { e.currentTarget.blur(); ca.classList.toggle('open'); if (!ca.classList.contains('open')) cl.classList.remove('on'); sync(); };
     ca.querySelectorAll('.opt').forEach((b) => (b.onclick = () => { b.blur(); const a = b.dataset.a;
-      if (a === 'dance') { pose = pose && pose.kind === 'dance' ? null : { kind: 'dance', x: me.x, z: me.z, y: 0 }; bubbles.set('me', { text: pose ? '💃 Dancing' : '🧍 Stopped dancing', until: performance.now() + 2000 }); if (pose) notify(`💃 You're dancing at ${inside.title || 'the club'}. Everyone here can see you.`, 'music'); }
+      if (a === 'dance') { pose = pose && pose.kind === 'dance' ? null : { kind: 'dance', x: me.x, z: me.z, y: 0 }; }
       if (a === 'drink') { if (!barOpen()) { bubbles.set('me', { text: '🌙 The bartender comes on at night. Come back after 7.', until: performance.now() + 4000 }); }
-        else { DRINK.want = true; cl.classList.remove('on'); notify('🍸 The bar is calling: head to the gold light, the bartender is ready for you.', 'island'); } }
+        else { DRINK.want = true; cl.classList.remove('on'); } }
       if (a === 'list') { delete cl.dataset.menu; if (cl.classList.toggle('on')) list(); }
       sync(); }));
     // at the bar: the bartender takes your order, anything on the shelves
-    const MENU = [['🍾', 'Champagne', 'Moët, on ice'], ['🥃', 'Cognac', 'Hennessy VSOP, neat or on the rocks'], ['🍸', 'Cocktail', 'Chapman, mojito, Long Island'], ['🍷', 'Red wine', 'A glass of Merlot'], ['🍺', 'Cold beer', 'Star or Gulder, straight from the fridge'], ['🥤', 'Mocktail', 'Zobo spritz, no alcohol']];
+    const MENU = [['🍾', 'Champagne', 'Moët, on ice', 'champagne', 15000], ['🥃', 'Cognac', 'Hennessy VSOP, neat or on the rocks', 'cognac', 8000], ['🍸', 'Cocktail', 'Chapman, mojito, Long Island', 'cocktail', 4000], ['🍷', 'Red wine', 'A glass of Merlot', 'wine', 3500], ['🍺', 'Cold beer', 'Star or Gulder, straight from the fridge', 'beer', 1500], ['🥤', 'Mocktail', 'Zobo spritz, no alcohol', 'mocktail', 1200]];
     const atBar = () => { const [ox, oz] = barOff(inside); return me.x - ox < 15 && me.z - oz > 10 && me.z - oz < 58; };
     const serve = () => { DRINK.want = false; cl.dataset.menu = '1'; cl.classList.add('on');
-      cl.innerHTML = `<h4>🤵 Bartender: "Good evening! What will it be?"</h4>` + MENU.map(([i, n, d], k) => `<button class="r dr" data-k="${k}">${i} <span><b>${n}</b><br><small>${d}</small></span></button>`).join('');
-      cl.querySelectorAll('.dr').forEach((b) => (b.onclick = () => { const [i, n] = MENU[+b.dataset.k]; cl.classList.remove('on'); delete cl.dataset.menu; pose = { kind: 'drink', x: me.x, z: me.z, y: 0 }; VITALS.hp = Math.min(100, VITALS.hp + 3);
-        bubbles.set('me', { text: `${i} ${n}, cheers!`, until: performance.now() + 4500 }); setTimeout(() => { if (pose && pose.kind === 'drink') pose = null; }, 7000); })); };
+      cl.innerHTML = `<h4>🤵 Bartender: "Good evening! What will it be?"</h4>` + MENU.map(([i, n, d, , pr], k) => `<button class="r dr" data-k="${k}">${i} <span><b>${n}</b> <em class="pr">${naira(pr)}</em><br><small>${d}</small></span></button>`).join('') + '<p class="drErr"></p>';
+      cl.querySelectorAll('.dr').forEach((b) => (b.onclick = async () => { const [i, n, , id] = MENU[+b.dataset.k], er = cl.querySelector('.drErr');
+        if (!signedIn()) { er.textContent = 'Sign in to buy a drink.'; return; }
+        cl.querySelectorAll('.dr').forEach((x) => (x.disabled = true)); er.textContent = '';
+        try { const v = await my('buyDrink', { item: id, order: Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }); if (v && v.error) throw new Error(v.error); pnaira.textContent = naira(v.naira); if (me$) me$.naira = v.naira; }
+        catch (e) { er.textContent = e.message === 'signin' ? 'Sign in to buy a drink.' : e.message || 'The bar couldn\'t take that. Try again.'; cl.querySelectorAll('.dr').forEach((x) => (x.disabled = false)); return; }
+        cl.classList.remove('on'); delete cl.dataset.menu; pose = { kind: 'drink', x: me.x, z: me.z, y: 0 }; VITALS.hp = Math.min(100, VITALS.hp + 3);
+        setTimeout(() => { if (pose && pose.kind === 'drink') pose = null; }, 7000); })); };
     setInterval(() => { const on = clubby(); ca.style.display = on ? 'block' : 'none'; if (!on) { ca.classList.remove('open'); cl.classList.remove('on'); delete cl.dataset.menu; DRINK.want = false; return; }
       if (DRINK.want && barOpen() && atBar()) serve(); if (cl.dataset.menu && !atBar()) { cl.classList.remove('on'); delete cl.dataset.menu; }
       if (cl.classList.contains('on') && !cl.dataset.menu) list(); sync(); }, 300); }
