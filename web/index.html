@@ -1368,6 +1368,18 @@
   #ask, #deco { bottom: calc(70px + env(safe-area-inset-bottom)) !important; } #stick { bottom: calc(74px + env(safe-area-inset-bottom)) !important; }
   body:not(.touch) #leave { bottom: calc(74px + env(safe-area-inset-bottom)) !important; }
   /* the leave door: no white pill; the joystick: dark glass with a glowing thumb, phones only */
+  #clubAct { position: fixed; left: 92px; bottom: calc(126px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 30; display: none; }
+  .touch #clubAct { left: 104px; bottom: calc(226px + env(safe-area-inset-bottom)); }
+  #clubAct .ca { position: absolute; left: 0; top: 0; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; cursor: pointer; user-select: none; background: radial-gradient(circle at 35% 30%, rgba(60,45,30,.92), rgba(15,12,10,.92)); border: 1.5px solid rgba(251,191,36,.7); box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 14px rgba(251,191,36,.25); transition: transform .32s cubic-bezier(.2,1.4,.4,1), opacity .2s; }
+  #clubAct .opt { width: 50px; height: 50px; left: 3px; top: 3px; font-size: 20px; opacity: 0; pointer-events: none; transform: scale(.4); }
+  #clubAct .opt small { position: absolute; top: 100%; margin-top: 2px; white-space: nowrap; font: 800 10px 'Plus Jakarta Sans', sans-serif; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+  #clubAct.open .opt { opacity: 1; pointer-events: auto; }
+  #clubAct.open .opt[data-a=dance] { transform: translate(20px, -74px); } #clubAct.open .opt[data-a=drink] { transform: translate(76px, 0); } #clubAct.open .opt[data-a=list] { transform: translate(20px, 74px); }
+  #clubAct.open #caMain { transform: rotate(-12deg) scale(1.06); }
+  #clubAct .opt.on { border-color: #f472b6; box-shadow: 0 0 16px rgba(244,114,182,.7); }
+  #clubList { position: fixed; left: 14px; bottom: calc(150px + env(safe-area-inset-bottom)); width: min(260px, calc(100vw - 28px)); max-height: 46dvh; overflow: auto; z-index: 31; display: none; padding: 14px; border-radius: 18px; color: #fff; font: 600 14px 'Plus Jakarta Sans', sans-serif; background: linear-gradient(160deg, rgba(30,22,14,.94), rgba(12,10,8,.94)); border: 1px solid rgba(251,191,36,.45); box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+  #clubList.on { display: block; } #clubList h4 { margin: 0 0 8px; font-size: 15px; color: #fde68a; } #clubList div.r { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.08); } #clubList i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .touch #clubList { bottom: calc(300px + env(safe-area-inset-bottom)); }
   #leave.btn { background: transparent !important; box-shadow: none !important; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 10px rgba(0,0,0,.35); }
   .touch #leave { bottom: calc(222px + env(safe-area-inset-bottom)) !important; left: 30px; }
   body:not(.touch) #stick { display: none !important; }
@@ -1473,6 +1485,8 @@
 <div id="phoneBtn" class="btn" role="button" aria-label="Open your phone"><b id="pbadge"></b></div>
 <div id="joins" aria-live="polite"></div>
 <button id="act"></button>
+<div id="clubAct" aria-label="Club actions"><div id="caMain" class="ca" role="button" title="Things to do">🏢</div><div class="ca opt" data-a="dance" role="button" title="Dance">💃<small>Dance</small></div><div class="ca opt" data-a="drink" role="button" title="Drink">🍸<small>Drink</small></div><div class="ca opt" data-a="list" role="button" title="Who's here">👥<small>Who's here</small></div></div>
+<div id="clubList" role="dialog"></div>
 <div id="leave" class="btn" role="button" aria-label="Leave the building">🚪<small>Leave</small></div>
 <div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ltop"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lwx" id="lockw"></div></div><div class="lnotes" id="lockn"></div><div class="lbot"><button class="lq" data-lq="ride" aria-label="Ride">🛵</button><button class="lq" data-lq="music" aria-label="Music">🎧</button><div class="lu">Tap to unlock</div><button class="lq" data-lq="wyrd" aria-label="Ask WYRD">✨</button></div></div><div id="pbody"></div><div id="pnav"><button id="pback"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button><button id="phome"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-4v-3h-3v3h-4z"/></svg>Home</button><button id="pclose"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</button></div><span class="hbar"></span></div></div>
 <div id="hello">
@@ -4544,7 +4558,7 @@
     p.x = px; p.z = pz; p.t = now;
     // what they're doing
     const inWater = inside && inside.kind === 'beach' && pz < SHORE - 3, partying = inside && (inside.kind === 'club' || partyAt(inside.key));
-    const want = pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : p.spd > 18 ? 'Sprint_Loop' : p.spd > 13 ? 'Jog_Fwd_Loop' : p.spd > 1.2 ? 'Walk_Loop' : partying && pose !== 'stand' ? 'Dance_Loop' : 'Idle_Loop';
+    const want = pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : p.spd > 18 ? 'Sprint_Loop' : p.spd > 13 ? 'Jog_Fwd_Loop' : p.spd > 1.2 ? 'Walk_Loop' : partying && pose === 'dance' ? 'Dance_Loop' : 'Idle_Loop';
     if (p.cur !== want && p.acts[want]) { const next = p.acts[want].reset().play(); if (p.cur && p.acts[p.cur]) p.acts[p.cur].crossFadeTo(next, 0.25, false); p.cur = want; }
     if (p.acts[p.cur]) p.acts[p.cur].timeScale = p.cur === 'Walk_Loop' ? Math.max(0.6, Math.min(1.4, p.spd / 10)) : p.cur === 'Sprint_Loop' ? Math.max(0.8, Math.min(1.3, p.spd / 24)) : p.cur === 'Jog_Fwd_Loop' ? Math.max(0.8, Math.min(1.3, p.spd / 15)) : 1; // feet that keep up with the ground
     p.mixer.update(dt);
@@ -11867,7 +11881,7 @@
       if (!next && inside.kind === 'boutique') { const m = boutiqueSpots(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 8); if (m) next = { label: `👔 ${OUTFITS[m.id].brand} · ${OUTFITS[m.id].name}`, run: () => openPhone('fashion', { id: m.id }) }; }
       if (!next && (inside.kind === 'hq' || inside.kind === 'home')) { const dv = devNear(inside); if (dv) next = devAction(inside, dv); }
       if (!next && inside.kind === 'dealer') { const c = showroomCars(inside).find((v) => Math.hypot(v.x - me.x, v.z - me.z) < 9); if (c) next = { label: `🔑 See the ${c.v[0]}`, run: () => openShowcase(c.id) }; }
-      if (next) { /* a car to buy comes first */ } else if (pose) next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
+      if (next) { /* a car to buy comes first */ } else if (pose && pose.kind !== 'dance' && pose.kind !== 'drink') next = { label: pose.kind === 'sleep' ? '🌅 Wake up' : '🧍 Stand up', run: () => { const z = pose.z + 3; pose = null; me.z = Math.min(inside.d - 4, z); } };
       else if (near && near[1] === 'play') next = { label: '🎰 Play', run: () => openPhone('casino') };
       else if (near) next = { label: near[1] === 'sleep' ? '🛏️ Sleep' : '🪑 Sit', run: () => { const st = seatOf(near[0]); pose = { kind: near[1], x: st.x, z: st.z, y: st.y }; me.x = pose.x; me.z = pose.z; } };
       else next = null;
@@ -11920,6 +11934,20 @@
   const leaveBtn = document.getElementById('leave');
   leaveBtn.onclick = () => { pose = null; leaveRoom(); };
   setInterval(() => { leaveBtn.style.display = inside ? 'grid' : 'none'; }, 300);
+  // in a club: a button by the door that fans out three things to do, dance, drink, or see who's here (you stand still
+  // until you choose to dance)
+  { const ca = document.getElementById('clubAct'), cl = document.getElementById('clubList'), esc = (t) => String(t).replace(/[&<>"]/g, (c) => '&#' + c.charCodeAt(0) + ';');
+    const clubby = () => inside && (inside.kind === 'club' || partyAt(inside.key));
+    const sync = () => ca.querySelector('[data-a=dance]').classList.toggle('on', !!(pose && pose.kind === 'dance'));
+    const list = () => { const ppl = [{ name: myName ? myName + ' (you)' : 'You', color: myColor }, ...others.values()];
+      cl.innerHTML = `<h4>👥 At ${esc(inside.name || 'the club')} · ${ppl.length}</h4>` + ppl.map((o) => `<div class="r"><i style="background:${esc(o.color || '#fff')}"></i>${esc(o.name || 'Guest')}</div>`).join(''); };
+    document.getElementById('caMain').onclick = (e) => { e.currentTarget.blur(); ca.classList.toggle('open'); if (!ca.classList.contains('open')) cl.classList.remove('on'); sync(); };
+    ca.querySelectorAll('.opt').forEach((b) => (b.onclick = () => { b.blur(); const a = b.dataset.a;
+      if (a === 'dance') { pose = pose && pose.kind === 'dance' ? null : { kind: 'dance', x: me.x, z: me.z, y: 0 }; bubbles.set('me', { text: pose ? '💃 Dancing' : '🧍 Stopped dancing', until: performance.now() + 2000 }); }
+      if (a === 'drink') { pose = { kind: 'drink', x: me.x, z: me.z, y: 0 }; const d = ['🍸 A cocktail', '🍾 Champagne', '🥃 Cognac on ice', '🍺 A cold beer', '🍷 Red wine'][Math.floor(Math.random() * 5)]; bubbles.set('me', { text: d + ', cheers!', until: performance.now() + 4000 }); setTimeout(() => { if (pose && pose.kind === 'drink') pose = null; }, 6000); }
+      if (a === 'list') { if (cl.classList.toggle('on')) list(); }
+      sync(); }));
+    setInterval(() => { const on = clubby(); ca.style.display = on ? 'block' : 'none'; if (!on) { ca.classList.remove('open'); cl.classList.remove('on'); } else if (cl.classList.contains('on')) list(); sync(); }, 300); }
 
   // ---- a shift (market, okada, club) or a paid gig is a route the server deals: real stops on the island, in order.
   // The server checks each stop in person (your own position) and that you travelled there; a beacon marks the next
