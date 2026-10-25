@@ -543,7 +543,8 @@
   #phone .ccMeta button { box-shadow: inset 0 0 0 1px var(--ppLine), 0 6px 14px -8px rgba(15,23,42,.25); }
   #phone .wReal { background: linear-gradient(var(--ppCard), var(--ppCard)) padding-box, linear-gradient(135deg, #22C55E, #065F46) border-box; border: 1.5px solid transparent; box-shadow: 0 12px 26px -16px rgba(22,163,74,.55); }
   #phone .wReal .ic2 { background: linear-gradient(135deg, #22C55E, #065F46); color: #fff; }
-  #v3btn { position: fixed; right: 14px; top: calc(140px + env(safe-area-inset-top)); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; width: 58px; height: 58px; border: 0; border-radius: 18px; cursor: pointer; color: #fff; background: linear-gradient(135deg, #334155, #0F172A); box-shadow: 0 10px 24px -10px rgba(15,23,42,.6), inset 0 0 0 1px rgba(255,255,255,.18); font-family: 'Plus Jakarta Sans', sans-serif; } #v3btn b { font: 900 18px 'Plus Jakarta Sans', sans-serif; } #v3btn small { font-size: 9.5px; font-weight: 700; opacity: .8; } #v3btn.on { background: linear-gradient(135deg, #06B6D4, #6366F1 60%, #A855F7); box-shadow: 0 10px 26px -8px rgba(99,102,241,.8), inset 0 0 0 1px rgba(255,255,255,.3); }
+  #v3btn { position: fixed; right: 12px; top: calc(156px + env(safe-area-inset-top)); gap: 2px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; width: 58px; height: 58px; border: 0; border-radius: 18px; cursor: pointer; color: #fff; background: linear-gradient(145deg, rgba(51,65,85,.82), rgba(15,23,42,.88)); box-shadow: 0 10px 24px -10px rgba(15,23,42,.6), inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 0 1px rgba(255,255,255,.12); font-family: 'Plus Jakarta Sans', sans-serif; } #v3btn b { font: 900 18px 'Plus Jakarta Sans', sans-serif; } #v3btn small { font-size: 10px; font-weight: 900; letter-spacing: .5px; } #v3btn svg { width: 22px; height: 22px; transition: transform .5s; } #v3btn.on svg { transform: rotateY(180deg); animation: cubeSpin 6s linear infinite; } @keyframes cubeSpin { to { transform: rotateY(540deg); } }
+  #v3btn .sw { position: absolute; bottom: -7px; width: 26px; height: 12px; border-radius: 8px; background: #1E293B; box-shadow: 0 0 0 1.5px rgba(255,255,255,.7); } #v3btn .sw u { position: absolute; left: 2px; top: 2px; width: 8px; height: 8px; border-radius: 50%; background: #94A3B8; transition: left .25s, background .25s; } #v3btn.on .sw u { left: 16px; background: #4ADE80; box-shadow: 0 0 6px #4ADE80; } #v3btn.on { background: linear-gradient(135deg, #06B6D4, #6366F1 60%, #A855F7); box-shadow: 0 10px 26px -8px rgba(99,102,241,.8), inset 0 0 0 1px rgba(255,255,255,.3); }
   .soonWrap { position: relative; } .soonStamp { position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -50%) rotate(-14deg); padding: 8px 18px; border: 4px double #DC2626; border-radius: 10px; color: #DC2626; background: rgba(255,255,255,.82); font: 900 26px 'Plus Jakarta Sans', sans-serif; font-style: normal; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 0 2px rgba(220,38,38,.15); pointer-events: none; mix-blend-mode: multiply; } /* a rubber stamp over what isn't open yet */
   #wyrdGuide .wgnear { margin-top: 8px; font-size: 12px; font-weight: 700; color: #67E8F9; min-height: 1.2em; } #wyrdGuide .wgnear:empty { display: none; }
   #wyrdGuide.shake { animation: wgEdge 6s linear infinite, wgShake .4s; } @keyframes wgShake { 20%, 60% { margin-left: -6px; } 40%, 80% { margin-left: 6px; } }
@@ -1190,8 +1191,9 @@
   /* the app button lives in the right-hand column under full screen, out of the way of the joystick and the cards:
      a small round icon on phones, the labelled pill on wide screens; away while the phone, a dialog or the passport is up */
   #tApp, .touch #tApp { left: auto !important; bottom: auto !important; right: calc(12px + env(safe-area-inset-right)) !important; top: calc(108px + env(safe-area-inset-top)) !important; width: 38px; height: 38px; padding: 0 !important; justify-content: center; border-radius: 12px !important; }
-  #tApp em { display: none; } #tApp span { font-size: 17px; }
-  @media (min-width: 900px) and (pointer: fine) { #tApp { width: auto; padding: 0 14px !important; border-radius: 999px !important; } #tApp em { display: inline; } }
+  #tApp em { display: none; } #tApp span { display: grid; place-items: center; } #tApp span svg { width: 20px; height: 20px; }
+  #tApp, .touch #tApp { width: 42px !important; height: 42px !important; background: linear-gradient(145deg, #22C55E, #0EA5E9) !important; box-shadow: 0 8px 20px -6px rgba(14,165,233,.7), inset 0 1px 0 rgba(255,255,255,.35) !important; animation: none !important; } #tApp:hover span svg { animation: dlB .8s ease-in-out infinite; } @keyframes dlB { 50% { transform: translateY(2px); } }
+  @media (min-width: 900px) and (pointer: fine) { #tApp, .touch #tApp { width: auto !important; padding: 0 16px 0 12px !important; gap: 8px; border-radius: 999px !important; } #tApp em { display: inline; } }
   body.ovl #tApp, body.ovl #tFs, body.ovl #tAppTip { display: none !important; }
   #tAppTip, .touch #tAppTip { left: auto !important; bottom: auto !important; right: calc(12px + env(safe-area-inset-right)) !important; top: calc(156px + env(safe-area-inset-top)) !important; }
   #tAppTip::after { left: auto !important; right: 12px; bottom: auto !important; top: -8px; border: 8px solid transparent !important; border-top: 0 !important; border-bottom-color: #0F172A !important; }
@@ -1368,16 +1370,47 @@
   #ask, #deco { bottom: calc(70px + env(safe-area-inset-bottom)) !important; } #stick { bottom: calc(74px + env(safe-area-inset-bottom)) !important; }
   body:not(.touch) #leave { bottom: calc(74px + env(safe-area-inset-bottom)) !important; }
   /* the leave door: no white pill; the joystick: dark glass with a glowing thumb, phones only */
+  .hThink { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; padding: 6px 6px 6px 12px; border-radius: 16px; background: rgba(139,92,246,.1); border: 1px solid rgba(139,92,246,.22); }
+  .hThink input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font: italic 600 14px 'Plus Jakarta Sans', sans-serif; color: inherit; }
+  .hThink button { border: 0; border-radius: 12px; padding: 7px 12px; font: 800 12px 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #8B5CF6, #EC4899); color: #fff; cursor: pointer; } .hThink #hThinkX { background: rgba(0,0,0,.08); color: inherit; padding: 7px 9px; }
+  #hud { position: fixed; left: 70px; top: calc(16px + env(safe-area-inset-top)); z-index: 29; display: flex; gap: 12px; align-items: center; color: #fff; font: 700 11px 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+    transform: perspective(700px) rotateY(10deg); transform-origin: left center; transition: transform .3s; filter: drop-shadow(0 6px 12px rgba(0,0,0,.35)); }
+  #hud:hover { transform: perspective(700px) rotateY(3deg); }
+  #hud .pic { position: relative; width: 62px; height: 62px; flex: none; }
+  #hud .pic::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #6EE7B7, #059669 55%, #064E3B); box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 0 0 5px rgba(16,185,129,.55), 0 8px 18px rgba(0,0,0,.4); }
+  #hud .fig { position: absolute; left: -4px; right: -4px; bottom: 0; height: 84px; overflow: hidden;
+    -webkit-mask: linear-gradient(#000, #000) 0 0 / 100% 53px no-repeat, radial-gradient(circle 31px at 50% 53px, #000 98%, transparent 100%); mask: linear-gradient(#000, #000) 0 0 / 100% 53px no-repeat, radial-gradient(circle 31px at 50% 53px, #000 98%, transparent 100%); }
+  #hud .fig img { position: absolute; left: 50%; top: -30px; width: 240%; transform: translateX(-50%); }
+  #hud .gem { position: absolute; left: 50%; top: -46px; width: 13px; height: 20px; margin-left: -6.5px; background: linear-gradient(160deg, #BBF7D0, #16A34A); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); filter: drop-shadow(0 0 6px #22C55E); animation: gemB 2.4s ease-in-out infinite; z-index: 2; }
+  @keyframes gemB { 50% { transform: translateY(-3px) rotateY(180deg); } }
+  #hud .who b { display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 8px; font-size: 9.5px; letter-spacing: .3px; vertical-align: 2px; background: linear-gradient(135deg, rgba(16,185,129,.9), rgba(14,165,233,.9)); text-shadow: none; }
+  #hud .bar i::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), rgba(0,0,0,.35) calc(25% - 1px) 25%); pointer-events: none; }
+  #hud .pic::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; background: conic-gradient(#22C55E var(--hp, 90%), rgba(255,255,255,.15) 0); -webkit-mask: radial-gradient(circle, transparent 36px, #000 37px); mask: radial-gradient(circle, transparent 36px, #000 37px); z-index: -1; }
+  #hud .who { font-size: 14px; font-weight: 800; margin-bottom: 3px; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+  #hud .bar { display: grid; grid-template-columns: 20px 104px auto; align-items: center; gap: 7px; margin-top: 4px; }
+  #hud .bar span { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; background: rgba(255,255,255,.92); box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+  #hud .bar i { position: relative; height: 10px; border-radius: 6px; background: rgba(15,23,42,.55); box-shadow: inset 0 1px 3px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.25); overflow: hidden; display: block; }
+  #hud .bar i b { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; transition: width .6s, background .6s; }
+  #hud .bar i b::after { content: ''; position: absolute; left: 3px; right: 3px; top: 1.5px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.55); }
+  #hud .bar i b.ok { background: linear-gradient(90deg, #15803D, #22C55E 60%, #86EFAC); box-shadow: 0 0 8px rgba(34,197,94,.7); }
+  #hud .bar i b.low { background: linear-gradient(90deg, #991B1B, #EF4444 60%, #FCA5A5); box-shadow: 0 0 8px rgba(239,68,68,.7); animation: lowP 1.6s ease-in-out infinite; }
+  @keyframes lowP { 50% { filter: brightness(1.35); } }
+  #hud .bar em { font-style: normal; font-size: 10.5px; font-weight: 800; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,.85); }
+  #hud.mini .bars, #hud.mini .who { display: none; }
+  @media (max-width: 520px) { #hud .bar { grid-template-columns: 18px 64px auto; } #hud .bar span { width: 18px; height: 18px; font-size: 10px; } }
   #clubAct { position: fixed; left: 92px; bottom: calc(126px + env(safe-area-inset-bottom)); width: 56px; height: 56px; z-index: 30; display: none; }
   .touch #clubAct { left: 104px; bottom: calc(226px + env(safe-area-inset-bottom)); }
-  #clubAct .ca { position: absolute; left: 0; top: 0; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; cursor: pointer; user-select: none; background: radial-gradient(circle at 35% 30%, rgba(60,45,30,.92), rgba(15,12,10,.92)); border: 1.5px solid rgba(251,191,36,.7); box-shadow: 0 6px 18px rgba(0,0,0,.45), 0 0 14px rgba(251,191,36,.25); transition: transform .32s cubic-bezier(.2,1.4,.4,1), opacity .2s; }
+  #clubAct .ca { position: absolute; left: 0; top: 0; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; cursor: pointer; user-select: none; color: #fff; background: linear-gradient(145deg, rgba(55,48,70,.82), rgba(18,16,26,.88)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.14); transition: transform .32s cubic-bezier(.2,1.4,.4,1), opacity .2s; }
+  #clubAct .ca svg { width: 26px; height: 26px; } #clubAct .opt svg { width: 22px; height: 22px; }
+  #clubAct .opt[data-a=dance] { color: #F9A8D4; } #clubAct .opt[data-a=drink] { color: #FCD34D; } #clubAct .opt[data-a=list] { color: #7DD3FC; }
   #clubAct .opt { width: 50px; height: 50px; left: 3px; top: 3px; font-size: 20px; opacity: 0; pointer-events: none; transform: scale(.4); }
   #clubAct .opt small { position: absolute; top: 100%; margin-top: 2px; white-space: nowrap; font: 800 10px 'Plus Jakarta Sans', sans-serif; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
   #clubAct.open .opt { opacity: 1; pointer-events: auto; }
   #clubAct.open .opt[data-a=dance] { transform: translate(20px, -74px); } #clubAct.open .opt[data-a=drink] { transform: translate(76px, 0); } #clubAct.open .opt[data-a=list] { transform: translate(20px, 74px); }
   #clubAct.open #caMain { transform: rotate(-12deg) scale(1.06); }
-  #clubAct .opt.on { border-color: #f472b6; box-shadow: 0 0 16px rgba(244,114,182,.7); }
+  #clubAct .opt.on { background: linear-gradient(145deg, #EC4899, #A855F7); color: #fff; box-shadow: 0 0 18px rgba(236,72,153,.6); }
   #clubList { position: fixed; left: 14px; bottom: calc(150px + env(safe-area-inset-bottom)); width: min(260px, calc(100vw - 28px)); max-height: 46dvh; overflow: auto; z-index: 31; display: none; padding: 14px; border-radius: 18px; color: #fff; font: 600 14px 'Plus Jakarta Sans', sans-serif; background: linear-gradient(160deg, rgba(30,22,14,.94), rgba(12,10,8,.94)); border: 1px solid rgba(251,191,36,.45); box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+  #clubList .dr { width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; border-radius: 10px; padding: 8px 6px; } #clubList .dr:hover { background: rgba(251,191,36,.12); } #clubList .dr small { color: #d6c8a8; font-weight: 500; }
   #clubList.on { display: block; } #clubList h4 { margin: 0 0 8px; font-size: 15px; color: #fde68a; } #clubList div.r { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.08); } #clubList i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
   .touch #clubList { bottom: calc(300px + env(safe-area-inset-bottom)); }
   #leave.btn { background: transparent !important; box-shadow: none !important; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 10px rgba(0,0,0,.35); }
@@ -1485,8 +1518,9 @@
 <div id="phoneBtn" class="btn" role="button" aria-label="Open your phone"><b id="pbadge"></b></div>
 <div id="joins" aria-live="polite"></div>
 <button id="act"></button>
-<div id="clubAct" aria-label="Club actions"><div id="caMain" class="ca" role="button" title="Things to do">🏢</div><div class="ca opt" data-a="dance" role="button" title="Dance">💃<small>Dance</small></div><div class="ca opt" data-a="drink" role="button" title="Drink">🍸<small>Drink</small></div><div class="ca opt" data-a="list" role="button" title="Who's here">👥<small>Who's here</small></div></div>
+<div id="clubAct" aria-label="Club actions"><div id="caMain" class="ca" role="button" title="Things to do"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg></div><div class="ca opt" data-a="dance" role="button" title="Dance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M8 9l4-1 3 3 3 1"/><path d="M12 8l-1 6 3 3v4"/><path d="M11 14l-3 3-2 4"/></svg><small>Dance</small></div><div class="ca opt" data-a="drink" role="button" title="Drink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-7 8z"/><path d="M12 12v8"/><path d="M8 20h8"/><path d="M15 4l2-2"/></svg><small>Drink</small></div><div class="ca opt" data-a="list" role="button" title="Who's here"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.8.3 5 2.6 5 5.8"/></svg><small>Who's here</small></div></div>
 <div id="clubList" role="dialog"></div>
+<div id="hud" aria-label="You"><div class="pic"><div class="fig"><img alt=""></div></div><div class="info"><div class="who"></div><div class="bars"></div></div></div>
 <div id="leave" class="btn" role="button" aria-label="Leave the building">🚪<small>Leave</small></div>
 <div id="phone" role="dialog" aria-label="Your phone"><i class="btnL1"></i><i class="btnL2"></i><i class="btnR"></i><div id="screen"><div id="pbar"><span id="pclock">--:--</span><span class="cam"></span><span class="sys"><span id="pnaira"></span><svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.3" y="5" width="3" height="6" rx="1"/><rect x="8.6" y="2.5" width="3" height="8.5" rx="1"/><rect x="12.9" y="0" width="3" height="11" rx="1"/></svg><svg width="24" height="11" viewBox="0 0 24 11"><rect x=".5" y=".5" width="20" height="10" rx="2.5" fill="none" stroke="currentColor"/><rect x="2" y="2" width="15" height="7" rx="1.5"/><rect x="21.5" y="3.5" width="2" height="4" rx="1"/></svg></span></div><div id="shade"></div><div id="boot" class="os-layer"><div class="logo">WYRD OS</div><div class="ver">v2.077 · LAGOS ISLAND</div><div class="bar"><i></i></div><div class="log" id="bootlog"></div></div><div id="lockscr" class="os-layer"><div class="ltop"><div class="ld" id="lockd"></div><div class="lt" id="lockt">--:--</div><div class="lwx" id="lockw"></div></div><div class="lnotes" id="lockn"></div><div class="lbot"><button class="lq" data-lq="ride" aria-label="Ride">🛵</button><button class="lq" data-lq="music" aria-label="Music">🎧</button><div class="lu">Tap to unlock</div><button class="lq" data-lq="wyrd" aria-label="Ask WYRD">✨</button></div></div><div id="pbody"></div><div id="pnav"><button id="pback"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>Back</button><button id="phome"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-4v-3h-3v3h-4z"/></svg>Home</button><button id="pclose"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg>Close</button></div><span class="hbar"></span></div></div>
 <div id="hello">
@@ -1945,7 +1979,7 @@
   function appBtn() {
     let b = document.getElementById('tApp');
     if (APP.installed) { if (b) b.remove(); return; }
-    if (!b) { b = document.createElement('button'); b.id = 'tApp'; b.title = 'Download Lagos Island to your phone'; b.innerHTML = '<span>📲</span><em>Get the app</em>'; b.onclick = (e) => { e.stopPropagation(); appInstall(b.querySelector('em')); }; document.body.append(b); }
+    if (!b) { b = document.createElement('button'); b.id = 'tApp'; b.title = 'Download Lagos Island to your phone'; b.innerHTML = '<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></span><em>Get the app</em>'; b.onclick = (e) => { e.stopPropagation(); appInstall(b.querySelector('em')); }; document.body.append(b); }
   }
   setTimeout(appBtn, 1500);
   // the corner buttons step aside while something is open over the island (the phone, the welcome, the passport, a card)
@@ -4598,7 +4632,7 @@
       }
     }
     for (const [m, list] of Object.entries(G3.pool)) for (let k = used[m] || 0; k < list.length; k++) list[k].visible = false;
-    for (const p of PEOPLE.inst.values()) if (!shown.has(p.root)) p.root.visible = false;
+    if (!V3_LIVE) for (const p of PEOPLE.inst.values()) if (!shown.has(p.root)) p.root.visible = false; // (live 3D: hidden once a frame, in v3draw)
     for (const o of ACC_SHOW.values()) if (!shown.has(o)) o.visible = false;
     if (V3_LIVE) { G3.queue.length = 0; return; } // a live 3D room renders the whole scene itself
     r.setClearColor(0x000000, 0); r.clear(); r.render(G3.scene, G3.cam);
@@ -4776,6 +4810,7 @@
     if (!V3.on) v3enter();
     if (V3.key !== R.key) v3build(R, now);
     // this frame's glows and furniture models, from the room's own drawing (nothing is drawn: it only collects)
+    for (const p of PEOPLE.inst.values()) p.root.visible = false; // everyone drawn this frame shows again as they're drawn
     REC = { mode: 'skip' }; const realX = x; x = V3.dummy; glow = [];
     try { v3pass(R, now); } finally { x = realX; REC = null; }
     const glows = glow.splice(0), afters = afterCars.splice(0);
@@ -4799,7 +4834,7 @@
     x.clearRect(0, 0, W, H);
     // the people (their models are in the 3D scene; their names and bubbles go on the canvas over it)
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
-    person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind + ',' + pose.y : ''));
+    person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow());
     flush3d();
     void glows; void afters; // (the 2D glows and overlays don't belong over a lit 3D room: it has its own lights and lasers)
     v3live(R, now);
@@ -4933,6 +4968,11 @@
     st.moving = [0, 1].map((k) => { const s = new T3.SpotLight(k ? 0xf472b6 : 0x22d3ee, 1400, 90, 0.32, 0.5, 1.2); s.position.set(36 + k * 24, 17.5, 22); s.target.position.set(48, 0, 30); grp.add(s, s.target); return s; });
     st.floorGlow = new T3.PointLight(0x22d3ee, 260, 30, 1.4); { const D = v3dance(R); st.floorGlow.position.set((D[0] + D[2]) / 2, 2.5, (D[1] + D[3]) / 2); st.dance = D; } grp.add(st.floorGlow);
     st.barLight = new T3.PointLight(0xffb35c, 320, 38, 1.4); st.barLight.position.set(bx + 7, 10, bzz + 34); grp.add(st.barLight);
+    { // the drink beacon: a gold ring on the floor in front of the bar and a column of light, when you've asked for a drink
+      const b = new T3.Group(), gold = new T3.MeshBasicMaterial({ color: 0xfbbf24, toneMapped: false, transparent: true, opacity: 0.9 });
+      const ring = new T3.Mesh(new T3.TorusGeometry(2.2, 0.14, 8, 40), gold); ring.rotation.x = Math.PI / 2; ring.position.y = 0.15; b.add(ring);
+      const col = new T3.Mesh(new T3.CylinderGeometry(1.6, 2.2, 16, 24, 1, true), new T3.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.12, blending: T3.AdditiveBlending, depthWrite: false, side: T3.DoubleSide, toneMapped: false })); col.position.y = 8; b.add(col);
+      b.position.set(bx + 11, 0, bzz + 34); b.visible = false; grp.add(b); st.beacon = b; st.beaconRing = ring; }
     return st;
   }
   // the bar, stocked: real bottle shapes (turned on a lathe) on three backlit shelves (champagne in its dark green with gold
@@ -5037,11 +5077,12 @@
     // candles: flickering, a little brighter for whoever sits by them
     (V3.candles || []).forEach((c, i) => { const near = Math.hypot(me.x - c.x, me.z - c.z) < 8 ? 1.35 : 1, f = 2.6 * near * (0.9 + 0.1 * Math.sin(t * 11 + i * 2.1) + 0.05 * Math.sin(t * 27 + i)); c.s.scale.set(f, f, 1); });
     if (V3.vig) V3.vig.style.opacity = String(mood === 'lastcall' ? 0.35 : mood === 'drop' ? 0.55 : 0.75);
+    if (st.beacon) { st.beacon.visible = DRINK.want; const u = 1 + 0.15 * Math.sin(t * 4); st.beaconRing.scale.set(u, u, 1); }
   }
   // the switch in the room
   function v3button() {
     if (!V3.btn) { const b = V3.btn = document.createElement('button'); b.id = 'v3btn'; b.onclick = () => { b.blur(); V3.pref = !V3.pref; try { localStorage.setItem('li.3d', V3.pref ? '1' : '0'); } catch {} if (!V3.pref) v3leave(); v3button(); tickerSay(V3.pref ? 'Live 3D on. Drag to look around, scroll or pinch to zoom.' : 'Back to the 2D view.'); }; document.body.append(b); }
-    const show = !!(inside && V3.eligible(inside) && G3.ok); V3.btn.style.display = show ? 'flex' : 'none'; V3.btn.innerHTML = V3.pref ? '<b>3D</b><small>live</small>' : '<b>2D</b><small>try 3D</small>'; V3.btn.classList.toggle('on', V3.pref);
+    const show = !!(inside && V3.eligible(inside) && G3.ok); V3.btn.style.display = show ? 'flex' : 'none'; V3.btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.8 20 7.4v9.2L12 21.2 4 16.6V7.4z"/><path d="M4 7.4 12 12l8-4.6M12 12v9.2"/></svg><small>' + (V3.pref ? '3D' : '2D') + '</small><i class="sw"><u></u></i>'; V3.btn.classList.toggle('on', V3.pref);
   }
   setInterval(() => { v3button(); if (V3.on && !(inside && V3.want(inside))) v3leave(); }, 500);
   // ---- the dealer's showcase: a car's full 3D model on a deep blue stage, its stats, its price (Need for Speed style)
@@ -6027,10 +6068,11 @@
   function person(px, pz, color, name, bubble, now, mine, look) {
     const base = P(px, 0, pz), by0 = base[1], s = Math.max(0.75, K / 4.6) * (inside ? 1.12 : 1) * 0.92;
     if (base[0] < -60 || base[0] > W + 60 || base[1] < -140 || base[1] > H + 60) return;
-    const [lk, ps] = String(look || '').split('|'), pose = ps ? ps.split(',')[0] : null;
+    const [lk, ps, th] = String(look || '').split('|'), pose = ps ? ps.split(',')[0] || null : null, thought = mine ? THOUGHT : hexThought(th);
+    if (!mine && inside && (inside.kind === 'club' || partyAt(inside.key))) { const was = DANCERS.get(name); DANCERS.set(name, pose === 'dance'); if (pose === 'dance' && was === false) notify(`💃 ${name} is dancing at ${inside.title || 'the club'}`, 'music'); }
     const L = parseLook(lk, name), fem = L.g === 'f', seated = pose === 'sit', asleep = pose === 'sleep';
     const seatY = ps ? Number(ps.split(',')[1]) || 2.2 : 0, seatPx = seated ? by0 - P(px, seatY, pz)[1] : 0;
-    if (person3d(px, pz, color, name, now, L, pose, seatY)) { personTags(px, pz, name, bubble, now, mine, base, s, P(px, seated ? seatY + 5.5 : 7.6, pz)[1]); return; } // the 3D person, then their name and what they said
+    if (person3d(px, pz, color, name, now, L, pose, seatY)) { personTags(px, pz, name, bubble, now, mine, base, s, P(px, seated ? seatY + 5.5 : 7.6, pz)[1], thought, pose); return; } // the 3D person, then their name and what they said
     // the gait: phase advances with distance; which way the figure faces on screen
     const g = gaits.get(name) || { x: px, z: pz, at: 0, ph: 0, face: 1 }, moved = Math.hypot(px - g.x, pz - g.z);
     if (moved > 0.05) { const a = P(g.x, 0, g.z), b = P(px, 0, pz); if (Math.abs(b[0] - a[0]) > 0.3) g.face = b[0] > a[0] ? 1 : -1; g.at = now; g.ph += moved * 0.75; g.x = px; g.z = pz; }
@@ -6205,8 +6247,22 @@
   }
 
   // a 3D person's name tag, your green ring, and their speech bubble over their head
-  function personTags(px, pz, name, bubble, now, mine, base, s, headY) {
-    if (mine) { x.strokeStyle = '#22B573'; x.lineWidth = 2; x.beginPath(); x.ellipse(base[0], base[1], 11 * s, 4.2 * s, 0, 0, Math.PI * 2); x.stroke(); }
+  const DANCERS = new Map();
+  function personTags(px, pz, name, bubble, now, mine, base, s, headY, thought, pose) {
+    if (mine) { // your ring: a soft glowing disc, a bright ring and a sweeping arc; dancing, it turns pink and pulses with the beat
+      const dancing = pose === 'dance', b = dancing && inside ? clubBeat(inside.key) : 0, t = now / 1000, rx = 11 * s * (1 + b * 0.18), ry = 4.2 * s * (1 + b * 0.18);
+      const hue = dancing ? (320 + Math.sin(t * 2) * 40) : 150, col = `hsl(${hue},85%,55%)`;
+      x.save(); const g = x.createRadialGradient(base[0], base[1], 0, base[0], base[1], rx * 1.3); g.addColorStop(0, `hsla(${hue},90%,60%,${0.32 + b * 0.3})`); g.addColorStop(0.7, `hsla(${hue},90%,55%,0.12)`); g.addColorStop(1, `hsla(${hue},90%,55%,0)`);
+      x.fillStyle = g; x.beginPath(); x.ellipse(base[0], base[1], rx * 1.3, ry * 1.3, 0, 0, Math.PI * 2); x.fill();
+      x.shadowColor = col; x.shadowBlur = 10; x.strokeStyle = col; x.lineWidth = 2.4; x.beginPath(); x.ellipse(base[0], base[1], rx, ry, 0, 0, Math.PI * 2); x.stroke();
+      x.strokeStyle = 'rgba(255,255,255,0.9)'; x.lineWidth = 2; x.beginPath(); const a0 = t * (dancing ? 4 : 1.6); x.ellipse(base[0], base[1], rx, ry, 0, a0, a0 + 1.1); x.stroke();
+      x.strokeStyle = `hsla(${hue},85%,70%,0.5)`; x.lineWidth = 1; x.beginPath(); x.ellipse(base[0], base[1], rx * 0.62, ry * 0.62, 0, 0, Math.PI * 2); x.stroke(); x.restore(); }
+    if (thought && !(bubble && bubble.until > now) && (mine || !inside || Math.hypot(px - me.x, pz - me.z) < 30)) { // a thought cloud over them
+      x.save(); x.font = 'italic 600 13px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      const t = '💭 ' + (thought.length > 36 ? thought.slice(0, 35) + '…' : thought), w = x.measureText(t).width + 24, top = headY - 46;
+      x.shadowColor = 'rgba(20,20,60,0.25)'; x.shadowBlur = 10; x.fillStyle = 'rgba(255,255,255,0.95)'; x.beginPath(); x.roundRect(base[0] - w / 2, top, w, 30, 15); x.fill();
+      x.beginPath(); x.arc(base[0] - 4, top + 36, 4, 0, Math.PI * 2); x.arc(base[0] - 8, top + 44, 2.4, 0, Math.PI * 2); x.fill(); x.shadowBlur = 0;
+      x.fillStyle = '#4C1D95'; x.fillText(t, base[0], top + 15.5); x.restore(); }
     x.textAlign = 'center'; x.textBaseline = 'middle';
     if (mine || !inside || Math.hypot(px - me.x, pz - me.z) < 10) {
       const fs2 = inside ? 10 : 12, ph2 = inside ? 15 : 19; x.font = `700 ${fs2}px "Plus Jakarta Sans", sans-serif`;
@@ -6476,6 +6532,7 @@
       case 'roulette': box(a, 0, b, c, 3, e, '#166534'); { const p = P(it.x, 3.1, it.z), r = K * 2.2; x.fillStyle = '#7C2D12'; x.beginPath(); x.ellipse(p[0], p[1], r, r * sp, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = '#FDE047'; x.beginPath(); x.ellipse(p[0], p[1], r * 0.3, r * 0.3 * sp, 0, 0, Math.PI * 2); x.fill(); } break;
     }
   }
+  const CLUB_PL = { ozumba: { st: [0, 0], bar: [0, 0] }, lekki: { st: [24, 0], bar: [0, 6] }, quilox: { st: [0, 18], bar: [0, 0] }, secret: { st: [-16, 0], bar: [0, 8] }, vein: { st: [0, 8], bar: [0, 0] } };
   function drawInterior(now) {
     const R = inside;
     if (V3.want(R)) return v3draw(R, now); // live 3D (the pilot room)
@@ -6514,7 +6571,7 @@
     for (const c of R._crowd || []) items.push({ who: 1, d: P(c.x, 0, c.z)[2] + 0.02, f: c.f }); // a club's crowd
     for (const [pid, o] of others) items.push({ who: 1, d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
     if (R.kind === 'beach') for (const o of [...others.values(), me]) if (o.z < SHORE) items.push({ d: P(o.x, 0, o.z)[2] + 0.015, f: () => wade(o.x, o.z, now) }); // the sea over whoever's in it
-    items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, myLook + (pose ? '|' + pose.kind + ',' + pose.y : '')) });
+    items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()) });
     if (R.kind === 'tower') items.push({ d: P(R.w / 2, 0, R.d / 2 - 2)[2], f: () => drawWyrd(now, R.w / 2, R.d / 2 - 2) });
     if (R.kind === 'arena') drawStands(R, now);
     items.sort((p, q) => p.d - q.d);
@@ -6560,7 +6617,7 @@
     // keeps the classic, stage at the back; Club Lekki's stage is off to the right with a long beach bar out in the room;
     // Quilox puts the DJ on a stage in the middle of the floor, the crowd all round; Secrets Palace holds court from the left
     // with the bar further in; VEIN brings its stage forward onto the floor for the show
-    const PL = { ozumba: { st: [0, 0], bar: [0, 0] }, lekki: { st: [24, 0], bar: [0, 6] }, quilox: { st: [0, 18], bar: [0, 0] }, secret: { st: [-16, 0], bar: [0, 8] }, vein: { st: [0, 8], bar: [0, 0] } }[LK.theme] || { st: [0, 0], bar: [0, 0] };
+    const PL = CLUB_PL[LK.theme] || { st: [0, 0], bar: [0, 0] };
     // draw a part of the room moved by (ox, oz): the camera is shifted the other way while it draws, and anything it leaves
     // to draw later (night glows, labels) is shifted the same when its turn comes
     const shift = (ox, oz, f) => {
@@ -6593,7 +6650,7 @@
       x.fillStyle = 'rgba(120,90,50,0.18)'; for (let k = 0; k < 40; k++) { const R2 = rnd(k * 13 + 5), p = P(R2() * R.w, 0.02, R2() * R.d); x.beginPath(); x.ellipse(p[0], p[1], K * 0.4, K * 0.25, 0, 0, Math.PI * 2); x.fill(); }
       for (const [px, pz] of [[4, 4], [R.w - 4, 4], [R.w - 4, R.d - 4]]) palm(px, pz, 14);
       for (let k = 0; k < 3; k++) { const z0 = 50 + k * 4; const p0 = P(0.2, 2, z0), p1 = P(0.2, 2, z0 + 2.2), p2 = P(0.2, 12, z0 + 2.2), p3 = P(0.2, 12, z0); quad([p0, p1, p2, p3], ['#F97316', '#22D3EE', '#F43F5E'][k], 'rgba(0,0,0,.2)'); }
-      pyramid(-0.5 + PL.bar[0], 10 + PL.bar[1], 10 + PL.bar[0], 58 + PL.bar[1], 13.5, 3.5, '#A16207'); // the bar's thatch, over wherever the bar is
+      if (!REC) pyramid(-0.5 + PL.bar[0], 10 + PL.bar[1], 10 + PL.bar[0], 58 + PL.bar[1], 13.5, 3.5, '#A16207'); // (indoors in live 3D: no thatch hiding the bar) // the bar's thatch, over wherever the bar is
     } else { // black marble with gold veins, chandeliers
       x.strokeStyle = LK.theme === 'vein' ? 'rgba(236,72,153,0.3)' : 'rgba(212,175,55,0.22)'; x.lineWidth = 1; // the marble's veins
       for (let k = 0; k < 18; k++) { const R2 = rnd(k * 31 + 3); let px = R2() * R.w, pz = R2() * R.d; const p = P(px, 0.02, pz); x.beginPath(); x.moveTo(p[0], p[1]); for (let q = 0; q < 4; q++) { px += (R2() - 0.5) * 12; pz += (R2() - 0.5) * 8; const pp = P(px, 0.02, pz); x.lineTo(pp[0], pp[1]); } x.stroke(); }
@@ -6715,7 +6772,11 @@
     // the main bar along the left wall: backlit bottles, a gold-edged counter
     box(0.2, 0, 12, 2.4, 14, 56, '#1A1426');
     for (let r = 0; r < 3; r++) { box(0.4, 3.5 + r * 3, 12, 1.8, 3.8 + r * 3, 56, '#F5C542'); for (let k = 0; k < 28; k++) { const z = 13 + k * 1.5, p = P(1.1, 4 + r * 3, z), q = P(1.1, 5.6 + r * 3, z); x.strokeStyle = STALLS[(k + r * 3) % STALLS.length]; x.lineWidth = Math.max(1.5, K * 0.4); x.beginPath(); x.moveTo(p[0], p[1]); x.lineTo(q[0], q[1]); x.stroke(); } }
+    if (barOpen() && PEOPLE.ok) { // the bartender, on at night: he moves along the counter to whoever's at it
+      const wantZ = Math.max(15, Math.min(53, me.x - PL.bar[0] < 18 ? me.z - PL.bar[1] : 34)); BARTENDER.z += (wantZ - BARTENDER.z) * 0.04;
+      person3d(4.2, BARTENDER.z, '#FFFFFF', 'bartender:' + R.key, now, parseLook('m,3,0,2,0,ralph_suit', 'bartender'), null, 0); }
     box(6, 0, 12, 8.4, 4.2, 56, '#2A1D3A'); box(5.6, 4.2, 11.6, 8.8, 4.6, 56.4, '#F5C542');
+    if (DRINK.want) glow.push(() => { const p = P(11, 0.1, 34), t = performance.now() / 300; x.save(); x.globalCompositeOperation = 'lighter'; for (let k = 0; k < 3; k++) { const u = (t / 3 + k / 3) % 1; x.strokeStyle = `rgba(251,191,36,${0.8 * (1 - u)})`; x.lineWidth = 3; x.beginPath(); x.ellipse(p[0], p[1], K * (1 + u * 4), K * (0.4 + u * 1.6), 0, 0, Math.PI * 2); x.stroke(); } x.restore(); });
     // the bar dressed up: a glowing strip under the counter's lip, pendants over it, a tap tower, drinks lined up on top
     { const fx = 8.45; const q0 = P(fx, 0.3, 12), q1 = P(fx, 0.3, 56), q2 = P(fx, 0.9, 56), q3 = P(fx, 0.9, 12), g = x.createLinearGradient(q0[0], q0[1], q1[0], q1[1]); g.addColorStop(0, `hsl(${hue},100%,60%)`); g.addColorStop(1, `hsl(${(hue + 90) % 360},100%,60%)`); quad([q0, q1, q2, q3], g, null);
       box(6.6, 4.6, 33, 7.8, 7.6, 34.2, '#A1A1AA'); for (let k = 0; k < 3; k++) box(6.9 + k * 0.4, 7.6, 33.4, 7.1 + k * 0.4, 8.6, 33.6, ['#EF4444', '#22C55E', '#FACC15'][k]); // the tap tower
@@ -8656,7 +8717,18 @@
   const ikey = store.get('li.key') || (() => { const a = new Uint8Array(24); crypto.getRandomValues(a); const v = [...a].map((b) => (b % 36).toString(36)).join('') + Date.now().toString(36); store.set('li.key', v); return v; })(); // proves this browser owns its id
   const id = store.get('li.id') || (() => { const v = 'p' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); store.set('li.id', v); return v; })();
   let myLook = store.get('li.look') || [Math.random() < 0.5 ? 'm' : 'f', Math.floor(Math.random() * 6), Math.floor(Math.random() * 4), Math.floor(Math.random() * 4), Math.floor(Math.random() * 5)].join(',');
-  let pose = null; // { kind: 'sit' | 'sleep', x, z } inside a building
+  let pose = null; // { kind: 'sit' | 'sleep' | 'dance' | 'drink', x, z } inside a building
+  // a drink at the club: asked for (a beacon at the bar calls you over), then the bartender serves you there; he works nights
+  const DRINK = { want: false }, BARTENDER = { z: 34 };
+  const VITALS = (() => { try { const v = JSON.parse(store.get('li.vitals') || 'null'); if (v && v.hp > 0) return v; } catch {} return { hp: 90 }; })();
+  const barOpen = () => nightNow() > 0.5;
+  if (location.hostname === 'localhost') window.__li = { get me() { return me; }, get PEOPLE() { return PEOPLE; }, DRINK, BARTENDER, get inside() { return inside; } }; // (testing on a local copy)
+  const barOff = (R) => { const P0 = CLUB_PL[(R.look || clubLook(R.title)).theme]; return P0 ? P0.bar : [0, 0]; }; // where a club's bar is
+  // what you're thinking: set on your phone, shown over you to everyone (sent as hex inside your look, the only text the island carries)
+  let THOUGHT = store.get('li.thought') || '';
+  const thoughtHex = (t) => Array.from(new TextEncoder().encode(t)).slice(0, 90).map((b) => b.toString(16).padStart(2, '0')).join('');
+  const hexThought = (h) => { try { return /^[0-9a-f]+$/.test(h || '') ? new TextDecoder().decode(new Uint8Array(h.match(/../g).map((v) => parseInt(v, 16)))).replace(/\uFFFD+$/, '') : ''; } catch { return ''; } };
+  const lookNow = (withPose = true) => myLook + '|' + (withPose && pose ? pose.kind + ',' + pose.y : '') + (THOUGHT ? '|' + thoughtHex(THOUGHT) : '');
   let myCar = ''; // "model:#colour" of the car you drive ('' on foot)
   // your cars, for parking at your homes: the ones you've starred in the Garage first, then the one you drive, then the dearest
   let myCarsL = [];
@@ -9010,7 +9082,7 @@
     if (still && alone && performance.now() - (tick.at || 0) < 3000) return;
     tick.busy = true; tick.at = performance.now(); tick.x = me.x; tick.z = me.z;
     try {
-      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: myLook + (pose && inside ? '|' + pose.kind + ',' + pose.y : ''), car: myCar, key: ikey });
+      const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: lookNow(!!inside), car: myCar, key: ikey });
       document.getElementById('count').textContent = r.online;
       if (r.decks) cityDecks(r.decks); // what each club DJ is playing
       if (r.newcomers) NEWCOMERS.set = new Set(r.newcomers.map((v) => String(v).toLowerCase()));
@@ -9115,7 +9187,7 @@
     if (inside) { const e = Math.min(1, dt * 3), fl = refHere() ? 0.9 : 0.3; cam.x += (inside.w / 2 + (me.x - inside.w / 2) * fl - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * fl - cam.z) * e; } // big work floors follow you closely
     else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
     // each sector its own angle: the camera glides there
-    if (pose && inside) { me.x = pose.x; me.z = pose.z; }
+    if (pose && inside && (pose.kind === 'sit' || pose.kind === 'sleep')) { me.x = pose.x; me.z = pose.z; }
     const want = inside ? inside.cam : sector.cam, e2 = Math.min(1, dt * 1.4);
     let dy = want.yaw - cam.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
     cam.yaw += dy * e2; cam.pitch += (want.pitch - cam.pitch) * e2; cam.zoom += (want.zoom - cam.zoom) * e2;
@@ -10360,6 +10432,7 @@
             return `<div class="hsky ${ph}"><i class="hsun" style="top:${sunY}%"></i>${ph === 'night' ? '<i class="hstars"></i>' : ''}<div class="hskyT"><div><div class="wt">${wx.temp}°</div><div class="wd">${esc(wx.text)} · ${esc(sector.name)}</div></div><div class="wr"><div class="wxi">${wx.icon}</div></div></div>
               <svg class="hcity" viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V44h10v-6h8v8h6V34h9v12h5V30l6-5 6 5v16h7V40h10v6h6V22h3v-6h3v6h3v24h7V38h12v8h5V32h9v14h7V16l5-8 5 8v30h6V42h9v4h5V28h10v18h6V36h8v10h7V26h3v-6h5v6h3v20h6V38h10v8h5V32h8v14h7V42h12v4h7V34h9v12h6V40h12v20z"/><rect x="262" y="20" width="2" height="26" fill="#EF4444"/><path class="hfl" d="M263 20c-2.4-3-.8-6 0-8 .8 2 2.4 5 0 8z"/></svg></div>`; })()}
           <button class="nb" id="hBell" aria-label="Notifications">${pi('inbox')}${unseen ? '<i></i>' : ''}</button></div>
+          <div class="hThink"><span>💭</span><input id="hThinkIn" maxlength="40" placeholder="What are you thinking?" value="${esc(THOUGHT)}"><button id="hThinkGo">${THOUGHT ? 'Update' : 'Share'}</button>${THOUGHT ? '<button id="hThinkX" aria-label="Clear">✕</button>' : ''}</div>
           ${(() => { const sh = typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks, tk = sh && GJ.shift.tasks.find((v) => !v.done), pl = sh ? PLACE_OF(GJ.shift.track) : null, on = typeof nepaAt === 'function' ? nepaAt(lagosMs()) : true;
             const chips = [sh ? [pl === 'refinery' ? '🛢️' : pl === 'airport' ? '🦺' : '⚡', tk ? tk.title : 'Hand in your shift', pl] : ['💼', 'Find work', 'jobs'], [on ? '💡' : '🔦', on ? 'NEPA: light on' : 'NEPA took light', 'grid'], ['👥', `${online} on the island`, 'people'], ['🏛️', 'Your city', 'gov']];
             return `<div class="hchips">${chips.map(([i, t, a], k) => `<button data-app="${a}" style="--d:${(k * 0.06).toFixed(2)}s"><i>${i}</i>${esc(t)}</button>`).join('')}</div>`; })()}
@@ -11934,20 +12007,52 @@
   const leaveBtn = document.getElementById('leave');
   leaveBtn.onclick = () => { pose = null; leaveRoom(); };
   setInterval(() => { leaveBtn.style.display = inside ? 'grid' : 'none'; }, 300);
+  // your thought, from the phone
+  document.addEventListener('click', (e) => { const t = e.target.closest && e.target.closest('#hThinkGo, #hThinkX'); if (!t) return;
+    const inp = document.getElementById('hThinkIn'); THOUGHT = t.id === 'hThinkX' ? '' : (inp ? inp.value.trim().slice(0, 40) : ''); store.set('li.thought', THOUGHT);
+    if (inp) { inp.value = THOUGHT; inp.blur(); } t.textContent = t.id === 'hThinkX' ? '' : THOUGHT ? 'Update' : 'Share'; bubbles.delete('me'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target && e.target.id === 'hThinkIn') { e.preventDefault(); document.getElementById('hThinkGo').click(); } }, true);
+  // the HUD: your 3D likeness, and bars for your health, your wealth and what you've taken on (green when it's good, red when not)
+  { const hud = document.getElementById('hud'), img = hud.querySelector('img'); let shotKey = '';
+    try { hud.classList.toggle('mini', store.get('li.hudMini') === '1'); } catch {}
+    hud.onclick = () => { hud.classList.toggle('mini'); store.set('li.hudMini', hud.classList.contains('mini') ? '1' : '0'); };
+    const bar = (icon, v, label) => `<div class="bar"><span>${icon}</span><i><b class="${v >= 0.5 ? 'ok' : 'low'}" style="width:${Math.round(Math.max(0.06, Math.min(1, v)) * 100)}%"></b></i><em>${label}</em></div>`;
+    const tick = () => {
+      // health: wears down slowly as you go about; rest (sitting, sleeping) and the hospital bring it back
+      const k = pose && (pose.kind === 'sleep' || pose.kind === 'sit') ? 0.5 : inside && inside.kind === 'hospital' ? 1 : -0.05;
+      VITALS.hp = Math.max(5, Math.min(100, VITALS.hp + k)); store.set('li.vitals', JSON.stringify(VITALS));
+      const n = me$ ? me$.naira || 0 : 0, wealth = n > 0 ? Math.log10(n + 1) / 6 : 0; // ₦1m fills the bar
+      const sh = typeof GJ !== 'undefined' && GJ.shift && GJ.shift.tasks, done = sh ? sh.filter((v) => v.done).length : 0;
+      const cap = (me$ && me$.dailyCap) || 10000, earned = (me$ && me$.earnedToday) || 0, resp = sh ? done / Math.max(1, sh.length) : Math.min(1, earned / cap);
+      const mood = pose && pose.kind === 'dance' ? '💃 Dancing' : pose && pose.kind === 'drink' ? '🍸 Having a drink' : pose && pose.kind === 'sleep' ? '😴 Asleep' : pose && pose.kind === 'sit' ? '🪑 Relaxing' : VITALS.hp < 35 ? '🤒 Tired' : inside && inside.kind === 'club' ? '🎉 Partying' : '🙂 Fine';
+      hud.querySelector('.who').innerHTML = `${esc(myName || 'You')}<b>${mood}</b>`; hud.querySelector('.pic').style.setProperty('--hp', Math.round(VITALS.hp) + '%');
+      hud.querySelector('.bars').innerHTML = bar('❤️', VITALS.hp / 100, Math.round(VITALS.hp) + '%') + bar('💰', wealth, me$ ? naira(n) : 'Sign in') + bar('📋', resp, sh ? `Shift ${done}/${sh.length}` : `Today ${Math.round(resp * 100)}%`);
+      const key = parseLook(myLook, myName || 'me').outfit + '|' + myLook; if (key !== shotKey && typeof fitShot === 'function') { const u = fitShot(parseLook(myLook, myName || 'me').outfit); if (u) { img.src = u; shotKey = key; } } };
+    setTimeout(tick, 0); setInterval(tick, 10000); let lastPose = ''; setInterval(() => { const k = pose ? pose.kind : ''; if (k !== lastPose) { lastPose = k; tick(); } }, 400); setInterval(() => { if (!shotKey) tick(); }, 1500); }
   // in a club: a button by the door that fans out three things to do, dance, drink, or see who's here (you stand still
   // until you choose to dance)
   { const ca = document.getElementById('clubAct'), cl = document.getElementById('clubList'), esc = (t) => String(t).replace(/[&<>"]/g, (c) => '&#' + c.charCodeAt(0) + ';');
     const clubby = () => inside && (inside.kind === 'club' || partyAt(inside.key));
     const sync = () => ca.querySelector('[data-a=dance]').classList.toggle('on', !!(pose && pose.kind === 'dance'));
     const list = () => { const ppl = [{ name: myName ? myName + ' (you)' : 'You', color: myColor }, ...others.values()];
-      cl.innerHTML = `<h4>👥 At ${esc(inside.name || 'the club')} · ${ppl.length}</h4>` + ppl.map((o) => `<div class="r"><i style="background:${esc(o.color || '#fff')}"></i>${esc(o.name || 'Guest')}</div>`).join(''); };
+      cl.innerHTML = `<h4>👥 At ${esc(inside.title || 'the club')} · ${ppl.length}</h4>` + ppl.map((o) => `<div class="r"><i style="background:${esc(o.color || '#fff')}"></i>${esc(o.name || 'Guest')}</div>`).join(''); };
     document.getElementById('caMain').onclick = (e) => { e.currentTarget.blur(); ca.classList.toggle('open'); if (!ca.classList.contains('open')) cl.classList.remove('on'); sync(); };
     ca.querySelectorAll('.opt').forEach((b) => (b.onclick = () => { b.blur(); const a = b.dataset.a;
-      if (a === 'dance') { pose = pose && pose.kind === 'dance' ? null : { kind: 'dance', x: me.x, z: me.z, y: 0 }; bubbles.set('me', { text: pose ? '💃 Dancing' : '🧍 Stopped dancing', until: performance.now() + 2000 }); }
-      if (a === 'drink') { pose = { kind: 'drink', x: me.x, z: me.z, y: 0 }; const d = ['🍸 A cocktail', '🍾 Champagne', '🥃 Cognac on ice', '🍺 A cold beer', '🍷 Red wine'][Math.floor(Math.random() * 5)]; bubbles.set('me', { text: d + ', cheers!', until: performance.now() + 4000 }); setTimeout(() => { if (pose && pose.kind === 'drink') pose = null; }, 6000); }
-      if (a === 'list') { if (cl.classList.toggle('on')) list(); }
+      if (a === 'dance') { pose = pose && pose.kind === 'dance' ? null : { kind: 'dance', x: me.x, z: me.z, y: 0 }; bubbles.set('me', { text: pose ? '💃 Dancing' : '🧍 Stopped dancing', until: performance.now() + 2000 }); if (pose) notify(`💃 You're dancing at ${inside.title || 'the club'}. Everyone here can see you.`, 'music'); }
+      if (a === 'drink') { if (!barOpen()) { bubbles.set('me', { text: '🌙 The bartender comes on at night. Come back after 7.', until: performance.now() + 4000 }); }
+        else { DRINK.want = true; cl.classList.remove('on'); notify('🍸 The bar is calling: head to the gold light, the bartender is ready for you.', 'island'); } }
+      if (a === 'list') { delete cl.dataset.menu; if (cl.classList.toggle('on')) list(); }
       sync(); }));
-    setInterval(() => { const on = clubby(); ca.style.display = on ? 'block' : 'none'; if (!on) { ca.classList.remove('open'); cl.classList.remove('on'); } else if (cl.classList.contains('on')) list(); sync(); }, 300); }
+    // at the bar: the bartender takes your order, anything on the shelves
+    const MENU = [['🍾', 'Champagne', 'Moët, on ice'], ['🥃', 'Cognac', 'Hennessy VSOP, neat or on the rocks'], ['🍸', 'Cocktail', 'Chapman, mojito, Long Island'], ['🍷', 'Red wine', 'A glass of Merlot'], ['🍺', 'Cold beer', 'Star or Gulder, straight from the fridge'], ['🥤', 'Mocktail', 'Zobo spritz, no alcohol']];
+    const atBar = () => { const [ox, oz] = barOff(inside); return me.x - ox < 15 && me.z - oz > 10 && me.z - oz < 58; };
+    const serve = () => { DRINK.want = false; cl.dataset.menu = '1'; cl.classList.add('on');
+      cl.innerHTML = `<h4>🤵 Bartender: "Good evening! What will it be?"</h4>` + MENU.map(([i, n, d], k) => `<button class="r dr" data-k="${k}">${i} <span><b>${n}</b><br><small>${d}</small></span></button>`).join('');
+      cl.querySelectorAll('.dr').forEach((b) => (b.onclick = () => { const [i, n] = MENU[+b.dataset.k]; cl.classList.remove('on'); delete cl.dataset.menu; pose = { kind: 'drink', x: me.x, z: me.z, y: 0 }; VITALS.hp = Math.min(100, VITALS.hp + 3);
+        bubbles.set('me', { text: `${i} ${n}, cheers!`, until: performance.now() + 4500 }); setTimeout(() => { if (pose && pose.kind === 'drink') pose = null; }, 7000); })); };
+    setInterval(() => { const on = clubby(); ca.style.display = on ? 'block' : 'none'; if (!on) { ca.classList.remove('open'); cl.classList.remove('on'); delete cl.dataset.menu; DRINK.want = false; return; }
+      if (DRINK.want && barOpen() && atBar()) serve(); if (cl.dataset.menu && !atBar()) { cl.classList.remove('on'); delete cl.dataset.menu; }
+      if (cl.classList.contains('on') && !cl.dataset.menu) list(); sync(); }, 300); }
 
   // ---- a shift (market, okada, club) or a paid gig is a route the server deals: real stops on the island, in order.
   // The server checks each stop in person (your own position) and that you travelled there; a beacon marks the next
