@@ -5705,7 +5705,7 @@
     for (const [k, c] of V3.cells) { const [ci, cj] = k.split(',').map(Number); if (Math.hypot((ci + 0.5) * CS - me.x, (cj + 0.5) * CS - me.z) > R1) { V3.groups.remove(c.grp); c.grp.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); V3.cells.delete(k); changed = true; } }
     const add = (k, c) => { V3.cells.set(k, c); V3.groups.add(c.grp); changed = true; };
     if (REAL) wchunksOver(me.x - R1, me.z - R1, me.x + R1, me.z + R1); // (the real city's chunks round you, on their way)
-    if (REAL) { const nowT = performance.now(), dtT = Math.min(0.1, (nowT - (TR.at || nowT)) / 1000); TR.at = nowT; trStep(dtT); crashStep(dtT); V3.wcars = (V3.wcars || []).filter((q) => !q.traffic).concat(TR.cars.filter((q) => V3.cells.has(Math.floor(q.cx / W3.CS) + ',' + Math.floor(q.cz / W3.CS)) || (V3.drive && V3.drive.q === q))); } // (only where the street round it is built) // (the traffic, moving)
+    if (REAL) { const nowT = performance.now(), dtT = Math.min(0.1, (nowT - (TR.at || nowT)) / 1000); TR.at = nowT; trStep(dtT); crashStep(dtT); hqGateStep(dtT); rideStep3d(); V3.wcars = (V3.wcars || []).filter((q) => !q.traffic).concat(TR.cars.filter((q) => V3.cells.has(Math.floor(q.cx / W3.CS) + ',' + Math.floor(q.cz / W3.CS)) || (V3.drive && V3.drive.q === q))); } // (only where the street round it is built) // (the traffic, moving)
     if (!V3.cells.has(ci0 + ',' + cj0) && !(V3.job && V3.job.k === ci0 + ',' + cj0)) { V3.job = null; add(ci0 + ',' + cj0, w3cell(ci0, cj0)); } // (where you stand is there at once)
     if (!V3.job) { let best = null; for (let dj = -n; dj <= n; dj++) for (let di = -n; di <= n; di++) { const ci = ci0 + di, cj = cj0 + dj, k = ci + ',' + cj; if (ci < 0 || cj < 0 || ci * CS >= BOARD.w * T || cj * CS >= BOARD.h * T || V3.cells.has(k)) continue; const dd = Math.hypot((ci + 0.5) * CS - me.x, (cj + 0.5) * CS - me.z); if (dd < R0 && (!best || dd < best[0]) && (!REAL || wchunksOver(ci * CS, cj * CS, (ci + 1) * CS, (cj + 1) * CS).ready)) best = [dd, ci, cj]; }
       if (best) V3.job = w3job(best[1], best[2]); }
@@ -6631,6 +6631,22 @@
     put(u + 0.3, Math.max(0.2, y - 2.2), 0.04, u + 0.35, y, 0.09, '#E5E7EB'); // the drain
   }
   const W3_CARS = ['corolla', 'camry', 'highlander', 'lexusrx', 'landcruiser', 'rangerover'], W3_CAR_COLS = ['#F8FAFC', '#111827', '#9CA3AF', '#1E3A8A', '#7F1D1D', '#D1D5DB'];
+  // the HQ's gates: the walk-in gate swings open and the car gate slides back along its track when you come near (on foot
+  // or in a car), and close behind you. Each is its own small model, moved every frame
+  const HQGATE = new Map();
+  function hqGateStep(dt) {
+    if (!G3.ok || !HQGATE.size) return; const T3 = G3.T, ws = V3.ws || 1;
+    for (const gt of HQGATE.values()) {
+      const mx = (gt.x0 + gt.x1) / 2, dd = Math.hypot(me.x - mx, me.z - gt.fz), near = dd < (V3.drive ? 14 : 7);
+      if (dd > 200) { if (gt.o) gt.o.visible = false; continue; }
+      if (!gt.o) { const g = new T3.Group(), iron = new T3.MeshStandardMaterial({ color: 0x1D2127, metalness: 0.6, roughness: 0.45 }), gold = new T3.MeshStandardMaterial({ color: 0xC9A227, metalness: 0.8, roughness: 0.3 }), w = gt.x1 - gt.x0, add = (bx, by, bz, sx, sy, sz, m) => { const b = new T3.Mesh(new T3.BoxGeometry(sx, sy, sz), m); b.position.set(bx, by, bz); b.castShadow = true; g.add(b); };
+        for (let u = 0.12; u < w - 0.05; u += 0.22) { add(u, 0.12 + (gt.h - 0.12) / 2, 0, 0.07, gt.h - 0.12, 0.08, iron); add(u, gt.h + 0.06, 0, 0.1, 0.12, 0.1, gold); } // (the bars, gold tips)
+        for (const gy of [0.2, gt.h * 0.5, gt.h - 0.05]) add(w / 2, gy, 0, w, 0.09, 0.12, iron); add(w / 2, 0.15 + gt.h * 0.17, 0, w, gt.h * 0.34, 0.16, iron); // (the rails, the solid lower panel)
+        g.scale.setScalar(ws); g.position.set(gt.x0 * ws, 0, (gt.fz - 0.16) * ws); G3.scene.add(g); gt.o = g; gt.u = 0; }
+      gt.o.visible = V3.on && !inside; gt.u = Math.max(0, Math.min(1, gt.u + (near ? 1 : -1) * dt * (gt.swing ? 1.4 : 0.6))); const e = gt.u * gt.u * (3 - 2 * gt.u); // (eased, the car gate slower: a motor)
+      if (gt.swing) gt.o.rotation.y = e * 1.45; else gt.o.position.x = (gt.x0 + e * (gt.x1 - gt.x0 + 0.4)) * ws;
+    }
+  }
   function w3hq(a, b, c, d, k, hq, col) {
     const mine = hq && hq.mine, dark = night > 0.35, FL = 2 + (k % 2), H = 3.6, RH = H * FL, g = REAL ? 4.6 : 2.8 /* (on the real map, a wider garden between each apartment and the next) */, wc = mine ? '#FDE68A' : '#E7E5E4', iron = '#23272E';
     flat(a + 0.1, b + 0.1, c - 0.1, d - 0.3, 0.03, '#7FA064'); box(a + 0.3, 0, b + 1, a + 0.75, 0.9, d - 1.4, '#3F6B3F'); palm(a + g * 0.55, b + 3.5, 7); flat(a + 0.9, b + 1, a + g - 0.3, d - 1.4, 0.05, '#7FA064'); // (a garden strip between the compounds: a slim hedge, a palm) // the planted gap, a hedge in it
@@ -6702,7 +6718,8 @@
       const wall = (x0, x1) => { if (x1 - x0 < 0.05) return; box(x0, 0, fz - 0.3, x1, WH, fz, wc); box(x0 - 0.04, WH, fz - 0.34, x1 + 0.04, WH + 0.1, fz + 0.04, '#CFC8BC'); };
       const pillar = (px) => { box(px - 0.35, 0, fz - 0.45, px + 0.35, WH + 0.6, fz + 0.15, '#D6D0C4'); box(px - 0.42, WH + 0.6, fz - 0.52, px + 0.42, WH + 0.75, fz + 0.22, '#B8B0A2'); box(px - 0.14, WH + 0.75, fz - 0.29, px + 0.14, WH + 1.15, fz - 0.01, dark ? '#FFD89A' : '#E5E7EB'); };
       const irons = (x0, x1, h) => { for (let gx = x0 + 0.12; gx < x1 - 0.05; gx += 0.22) { box(gx - 0.035, 0.12, fz - 0.2, gx + 0.035, h, fz - 0.12, iron); box(gx - 0.05, h, fz - 0.21, gx + 0.05, h + 0.12, fz - 0.11, gold); } for (const gy of [0.15, h * 0.5, h - 0.1]) box(x0, gy, fz - 0.22, x1, gy + 0.09, fz - 0.1, iron); box(x0, 0.15, fz - 0.24, x1, h * 0.35, fz - 0.08, iron); }; // (black bars, gold finials, a solid lower panel for privacy)
-      wall(a + g, pg0 - 0.35); pillar(pg0 - 0.35); irons(pg0, pg1, 2.1); pillar(pg1 + 0.35); wall(pg1 + 0.7, px0 - 0.7); pillar(px0 - 0.35); irons(px0, px1, 2.2); pillar(px1 + 0.35); wall(px1 + 0.7, c - g); // (the walk-in gate, the sliding gate for cars)
+      wall(a + g, pg0 - 0.35); pillar(pg0 - 0.35); pillar(pg1 + 0.35); wall(pg1 + 0.7, px0 - 0.7); pillar(px0 - 0.35); pillar(px1 + 0.35); wall(px1 + 0.7, c - g); // (the pillars; the gates between them move, so they're built apart)
+      if (REC && REC.mode === 'build') { HQGATE.set(pg0 + ',' + fz, { x0: pg0, x1: pg1, fz, h: 2.1, swing: true }); HQGATE.set(px0 + ',' + fz, { x0: px0, x1: px1, fz, h: 2.2, swing: false, wall: px1 + 0.7 - px0 }); }
       box(px1 - 0.2, 0, fz - 0.1, px1 + 0.2, 0.12, fz + 0.5, '#4B5563'); // (the sliding gate's track)
       { const kx0 = A + 3.6, kx1 = kx0 + 2.4, kz1 = fz - 0.35, kz0 = kz1 - 2.2; box(kx0, 0, kz0, kx1, 2.6, kz1, '#EDE7DD'); box(kx0 - 0.25, 2.6, kz0 - 0.25, kx1 + 0.25, 2.8, kz1 + 0.25, '#3F4650'); box(kx0 + 0.3, 1.0, kz1 - 0.02, kx1 - 0.3, 2.1, kz1 + 0.04, dark ? '#FDE68A' : '#5B8BA8'); box(kx1 - 0.02, 0, kz0 + 0.4, kx1 + 0.04, 2.1, kz0 + 1.2, '#6B4A30'); } // (the gatehouse: the security man's post, its window on the gate)
       groundText(String(k + 1), (pg0 + pg1) / 2, d - 1.0, 0.6, 'rgba(15,23,42,0.75)');
@@ -13595,6 +13612,21 @@
     if (inside) leaveRoom();
   }
   async function cancelTrip() { if (!trip) return; try { await my('cancelRide', { id: trip.id }); } catch {} trip = null; drive = null; stack = [['home']]; render('ride'); }
+  // the ride you ordered, in the 3D streets: the driver's car (a Corolla or a Camry, the Lagos ride-hailing cars) drives in
+  // from where they accepted, along the roads, and stops by you; a small card on the HUD shows who, the plate, how far
+  function rideStep3d() {
+    const t = typeof trip !== 'undefined' ? trip : null, on = !!(t && t.car && (t.phase === 'coming' || t.phase === 'arrived'));
+    if (!on) { if (V3.rideQ) { V3.rideQ = null; } rideMini(null); return; }
+    const c = t.car; if (!V3.rideQ) { const md = t.kind === 'okada' ? 'corolla' : 'camry'; if (!G3.protos[md]) G3.vehicle(md); V3.rideQ = { cx: c.x, cz: c.z, model: md, ang: 0, sc: 0.95, tint: '#F8FAFC', ride: true }; }
+    const q = V3.rideQ; q.cx = c.x; q.cz = c.z; if (c.dx || c.dz) { let da = Math.atan2(c.dz, c.dx) - q.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); q.ang += da * 0.2; } q.v = t.phase === 'coming' ? 8 : 0; q.traffic = true;
+    if (V3.wcars && !V3.wcars.includes(q)) V3.wcars.push(q); rideMini(t);
+  }
+  function rideMini(t) {
+    let el = document.getElementById('rideMini'); if (!t) { if (el) el.style.display = 'none'; return; }
+    if (!el) { el = document.createElement('div'); el.id = 'rideMini'; el.style.cssText = "position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);z-index:32;min-width:240px;padding:10px 14px;border-radius:16px;background:rgba(15,15,18,.88);color:#F4F4F5;font:600 12px 'Plus Jakarta Sans',system-ui;box-shadow:0 10px 26px rgba(0,0,0,.35);border-top:3px solid #F7C81E;pointer-events:auto;cursor:pointer;backdrop-filter:blur(8px)"; el.onclick = () => openPhone('trip'); document.body.append(el); }
+    const mins = Math.max(1, Math.round((t.eta || 0) / 30)), here = t.phase === 'arrived', tot = t.tot || (t.tot = Math.max(1, t.eta || 1)), prog = here ? 1 : Math.max(0.03, 1 - (t.eta || 0) / tot);
+    el.style.display = 'block'; el.innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span style="font:400 15px Anton,sans-serif;letter-spacing:.5px;color:#F7C81E">${here ? 'YOUR RIDE IS HERE' : 'RIDE ON THE WAY'}</span><b>${here ? 'Get in' : mins + ' min'}</b></div><div style="margin-top:4px;opacity:.85">${esc(t.driver.name)} · ${esc(t.driver.plate)} · ${t.kind === 'okada' ? 'Okada' : 'Car'}</div><div style="margin-top:8px;height:5px;border-radius:3px;background:#2E2E34;overflow:hidden"><i style="display:block;height:100%;width:${Math.round(prog * 100)}%;background:linear-gradient(90deg,#22C55E,#F7C81E)"></i></div>`;
+  }
   function tripStep(dt) {
     const t = trip, now = performance.now();
     if (t.phase === 'searching' && now > t.until) {
