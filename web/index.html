@@ -6631,9 +6631,17 @@
   }
   const W3_CARS = ['corolla', 'camry', 'highlander', 'lexusrx', 'landcruiser', 'rangerover'], W3_CAR_COLS = ['#F8FAFC', '#111827', '#9CA3AF', '#1E3A8A', '#7F1D1D', '#D1D5DB'];
   function w3hq(a, b, c, d, k, hq, col) {
-    const mine = hq && hq.mine, dark = night > 0.35, FL = 2 + (k % 2), H = 3.6, RH = H * FL, g = 2.8, wc = mine ? '#FDE68A' : '#E7E5E4', iron = '#23272E';
+    const mine = hq && hq.mine, dark = night > 0.35, FL = 2 + (k % 2), H = 3.6, RH = H * FL, g = REAL ? 4.6 : 2.8 /* (on the real map, a wider garden between each apartment and the next) */, wc = mine ? '#FDE68A' : '#E7E5E4', iron = '#23272E';
     flat(a + 0.1, b + 0.1, c - 0.1, d - 0.3, 0.03, '#7FA064'); box(a + 0.3, 0, b + 1, a + 0.75, 0.9, d - 1.4, '#3F6B3F'); palm(a + g * 0.55, b + 3.5, 7); flat(a + 0.9, b + 1, a + g - 0.3, d - 1.4, 0.05, '#7FA064'); // (a garden strip between the compounds: a slim hedge, a palm) // the planted gap, a hedge in it
     for (let z = b + 2; z < d - 2; z += 3.2) { box(c - g + 0.45, 0, z - 0.12, c - g + 0.7, 2.2, z + 0.12, '#6B4A30'); box(c - g + 0.1, 2.2, z - 0.6, c - 0.1 - 0.05, 3.2, z + 0.6, '#4D8455'); } // shrubs on the other side
+    if (REAL) { const gx0 = a + 0.9, gx1 = a + g - 0.3, gm = (gx0 + gx1) / 2; // the street front of the garden: a paved footpath, a flower bed, a flame tree, a lamp, a bench, the number
+      flat(a + 0.1, d - 1.6, c - 0.1, d - 0.05, 0.08, '#D8D2C6', '#B9B2A5'); for (let x2 = a + 0.6; x2 < c - 0.3; x2 += 1.2) flat(x2, d - 1.6, x2 + 0.04, d - 0.05, 0.085, '#B9B2A5'); // (the footpath, its paving joints)
+      box(gx0, 0, d - 4.6, gx1, 0.45, d - 1.9, '#9C8A74'); flat(gx0 + 0.1, d - 4.5, gx1 - 0.1, d - 2.0, 0.46, '#4F3A28'); // (a raised flower bed)
+      for (let i = 0; i < 9; i++) { const fx = gx0 + 0.3 + (i % 3) * (gx1 - gx0 - 0.6) / 2, fz = d - 4.2 + Math.floor(i / 3) * 0.9; box(fx - 0.18, 0.46, fz - 0.18, fx + 0.18, 0.85, fz + 0.18, '#3F7D3A'); box(fx - 0.12, 0.85, fz - 0.12, fx + 0.12, 0.98, fz + 0.12, ['#E11D48', '#F59E0B', '#F472B6', '#FDE047'][(i + k) % 4]); } // (ixora and hibiscus)
+      box(gm - 0.18, 0, b + 6.2, gm + 0.18, 3.6, b + 6.6, '#6B4A30'); box(gm - 1.9, 3.4, b + 4.5, gm + 1.9, 4.6, b + 8.3, '#2F6B35'); box(gm - 1.5, 4.6, b + 4.9, gm + 1.5, 5.2, b + 7.9, (k % 3) ? '#2F6B35' : '#D9461E'); // (a flame tree, its crown in bloom on some)
+      box(gm - 0.07, 0, d - 1.0, gm + 0.07, 4.6, d - 0.86, '#2B2F36'); box(gm - 0.07, 4.5, d - 1.0, gm + 0.07, 4.6, d - 2.0, '#2B2F36'); box(gm - 0.22, 4.3, d - 2.2, gm + 0.22, 4.5, d - 1.8, dark ? '#FFE3A3' : '#E5E7EB'); // (a street lamp)
+      box(gx0 + 0.2, 0.42, d - 1.85, gx1 - 0.2, 0.5, d - 1.55, '#8B5A2B'); for (const lx of [gx0 + 0.35, gx1 - 0.45]) box(lx, 0, d - 1.8, lx + 0.1, 0.42, d - 1.6, '#2B2F36'); // (a bench facing the street)
+      groundText(String(k + 1), a + g + 1.2, d - 1.0, 0.6, 'rgba(15,23,42,0.75)'); } // (the apartment's number on the path)
     flat(a + g, b + 0.4, c - g, d - 0.4, 0.05, '#BDB5A8', '#A39B8E'); // the yard, paved
     const A = a + g + 0.3, Cc = c - g - 0.3, hx0 = A + 0.2, hx1 = A + (Cc - A) * 0.58, hz0 = b + 1, hz1 = d - 3.4, px0 = hx1 + 0.6, px1 = Cc - 0.1, zc = (hz0 + hz1) / 2;
     box(a + g, 0, b + 0.4, a + g + 0.3, 1.1, d - 0.4, wc); box(c - g - 0.3, 0, b + 0.4, c - g, 1.1, d - 0.4, wc); box(a + g, 0, b + 0.4, c - g, 1.1, b + 0.7, wc); // the compound wall
@@ -6675,7 +6683,17 @@
     }
     { const cz0 = hz1 - 3.2, cz1 = d - 1.4; flat(px0, b + 1, px1, d - 0.4, 0.07, '#8E9298', '#D1D5DB'); // the parking bay under its carport, a car in it
       for (const [x0, z0] of [[px0, cz0], [px1 - 0.15, cz0], [px0, cz1 - 0.15], [px1 - 0.15, cz1 - 0.15]]) box(x0, 0, z0, x0 + 0.15, 2.8, z0 + 0.15, '#3F4650');
-      box(px0 - 0.15, 2.8, cz0 - 0.3, px1 + 0.15, 3, cz1 + 0.3, '#2F343B'); groundText('P', (px0 + px1) / 2, b + 2, 0.9, 'rgba(255,255,255,0.8)');
+      if (!REAL) box(px0 - 0.15, 2.8, cz0 - 0.3, px1 + 0.15, 3, cz1 + 0.3, '#2F343B');
+      else { // the carport roofed in solar panels: a steel frame, the panels in rows, tilted toward the sun, each with its cells and frame
+        box(px0 - 0.2, 2.8, cz0 - 0.4, px1 + 0.2, 2.95, cz0 - 0.25, '#3F4650'); box(px0 - 0.2, 2.8, cz1 + 0.25, px1 + 0.2, 2.95, cz1 + 0.4, '#3F4650');
+        const rows = Math.max(2, Math.round((cz1 - cz0 + 0.6) / 1.7)), pw = (cz1 - cz0 + 0.8) / rows;
+        for (let r = 0; r < rows; r++) { const z0 = cz0 - 0.4 + r * pw, y0 = 2.95 + r * 0.12; box(px0 - 0.2, y0, z0, px1 + 0.2, y0 + 0.08, z0 + pw - 0.06, '#C0C6CE'); box(px0 - 0.15, y0 + 0.08, z0 + 0.05, px1 + 0.15, y0 + 0.11, z0 + pw - 0.11, '#16264A');
+          for (let cx2 = px0 + 0.4; cx2 < px1; cx2 += 0.55) box(cx2, y0 + 0.11, z0 + 0.05, cx2 + 0.025, y0 + 0.115, z0 + pw - 0.11, '#5A6B8C'); box(px0 - 0.15, y0 + 0.11, z0 + pw / 2 - 0.0125, px1 + 0.15, y0 + 0.115, z0 + pw / 2 + 0.0125, '#5A6B8C'); }
+        // the backup: a battery cabinet and inverter on the house wall by the bay, a light on it: green on NEPA, amber on the sun and the battery
+        let nepa = true; try { nepa = nepaAt(lagosMs() - 3600e3); } catch {}
+        box(hx1 + 0.05, 0, cz0 + 0.4, hx1 + 0.55, 1.6, cz0 + 1.3, '#E5E7EB'); box(hx1 + 0.55, 1.1, cz0 + 0.6, hx1 + 0.58, 1.35, cz0 + 1.1, '#111827'); box(hx1 + 0.58, 1.18, cz0 + 0.65, hx1 + 0.6, 1.26, cz0 + 0.75, nepa ? '#22C55E' : '#F59E0B');
+        box(hx1 + 0.05, 1.8, cz0 + 0.5, hx1 + 0.4, 2.5, cz0 + 1.2, '#CBD5E1'); box(hx1 + 0.4, 1.95, cz0 + 0.6, hx1 + 0.42, 2.35, cz0 + 1.1, '#0F172A'); box(hx1 + 0.1, 2.5, cz0 + 0.8, hx1 + 0.15, 2.95, cz0 + 0.86, '#111827'); } // (the cable up to the panels)
+      groundText('P', (px0 + px1) / 2, b + 2, 0.9, 'rgba(255,255,255,0.8)');
       const mc = mine ? parkOrder(myCarsL)[0] : null; const md = mc ? mc.model : null, qx = (px0 + px1) / 2, qz = (cz0 + cz1) / 2, rc = REC && REC.clip; if (rc && (qx < rc[0] || qx >= rc[2] || qz < rc[1] || qz >= rc[3]) || !md) { /* (not yours, or another part of the street has it) */ } else { if (G3.ok && !G3.protos[md]) G3.vehicle(md); (V3.wcars || (V3.wcars = [])).push({ cx: qx, cz: qz, model: md, ang: Math.PI / 2, sc: 0.95, tint: mc ? mc.color : W3_CAR_COLS[(k * 5) % W3_CAR_COLS.length] }); } } // (the car: a model, parked for good)
     const pg0 = hx0 + 1.3, pg1 = hx0 + 2.7; // the front wall: a walk-in gate at the door, the driveway gate at the bay
     box(a + g, 0, d - 0.8, pg0 - 0.2, 1.1, d - 0.4, wc); box(pg1 + 0.2, 0, d - 0.8, px0 - 0.25, 1.1, d - 0.4, wc);
