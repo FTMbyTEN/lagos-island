@@ -6300,36 +6300,40 @@
   function hqHouse(a, b, c, d, k) {
     if (REAL) { const mineK = hqSlots.findIndex((s2) => s2.mine); if (k !== (mineK >= 0 ? mineK : 0)) return; } // (for now the real map shows one HQ block only: yours, or the first)
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
-    (REC && REC.clip ? () => w3hq(a, b, c, d, k, hq, col) : (h) => compound(a, b, c, d, hq && hq.mine, h))(() => {
+    const walkIn = REAL && !!(hq && hq.mine) && REC && REC.mode === 'build'; // (your own, in the 3D street: walked into)
+    (REC && REC.clip && !REAL ? () => w3hq(a, b, c, d, k, hq, col) : (h) => compound(a, b, c, d, hq && hq.mine, h, REAL))(() => { // (on the real map the 3D is the 2D map's own design)
       // a modern BQ: white render, a timber-clad wing in the owner's colour, floor-to-ceiling glass, a flat slab roof
       // with solar panels, a cantilevered canopy over the door, wall lights after dark
       const fz = d - 3.6, mid = a + (c - a) * 0.42, H = 4.8, dark = night > 0.35, FL = REC && REC.clip ? 2 + (k % 2) : 1, RH = H * FL; // (in the 3D street: two or three storeys)
-      box(a + 1.8, 0, b + 2, c - 1.8, H, fz, '#F8FAFC', '#475569', 1);
-      box(a + 1.8, 0, fz - 0.05, mid, H, fz + 0.15, shadeHex(col, 0.55)); // the clad wing
-      for (let px = a + 2.2; px < mid; px += 0.55) box(px, 0.2, fz + 0.15, px + 0.12, H - 0.2, fz + 0.22, shadeHex(col, 0.42)); // its battens
+      if (walkIn) { MYHQ.g = hqWalkIn(a + 1.8, b + 2, c - 1.8, fz, H, '#F8FAFC', '#2B2F36', dark); W3B.list = null; } else box(a + 1.8, 0, b + 2, c - 1.8, H, fz, '#F8FAFC', '#475569', 1); // (your own: hollow, your apartment inside)
+      const dg0 = a + 2.6, dg1 = a + 4.4; // (the doorway: on your own block the cladding leaves it open)
+      if (walkIn) { box(a + 1.8, 0, fz - 0.05, dg0, H, fz + 0.15, shadeHex(col, 0.55)); box(dg1, 0, fz - 0.05, mid, H, fz + 0.15, shadeHex(col, 0.55)); box(dg0, 3.1, fz - 0.05, dg1, H, fz + 0.15, shadeHex(col, 0.55)); }
+      else box(a + 1.8, 0, fz - 0.05, mid, H, fz + 0.15, shadeHex(col, 0.55)); // the clad wing
+      for (let px = a + 2.2; px < mid; px += 0.55) if (!(walkIn && px > dg0 - 0.12 && px < dg1)) box(px, 0.2, fz + 0.15, px + 0.12, H - 0.2, fz + 0.22, shadeHex(col, 0.42)); // its battens
       box(mid + 0.6, 0.5, fz - 0.02, c - 2.4, H - 0.6, fz + 0.12, dark ? '#FDE68A' : '#1E3A5F'); // the glass, lit warm at night
       for (let px = mid + 0.6 + 1.6; px < c - 2.4; px += 1.6) box(px - 0.05, 0.5, fz + 0.12, px + 0.05, H - 0.6, fz + 0.16, '#0F172A'); // its mullions
+      if (walkIn) ROOFTAG = 'myhq'; // (from here up it lifts away while you're inside)
       box(a + 1.4, RH, b + 1.6, c - 1.4, RH + 0.45, fz + 0.5, '#E2E8F0'); box(a + 1.4, RH + 0.45, b + 1.6, c - 1.4, RH + 0.75, b + 1.9, '#94A3B8'); box(a + 1.4, RH + 0.45, b + 1.6, a + 1.7, RH + 0.75, fz + 0.5, '#94A3B8'); // the slab roof and its parapet
       for (let k2 = 0; k2 < 2; k2++) { const sx = c - 4.6 - k2 * 2.6; box(sx, RH + 0.5, b + 3, sx + 2.2, RH + 0.85, b + 5.2, '#1E3A8A'); box(sx + 0.1, RH + 0.85, b + 3.1, sx + 2.1, RH + 0.9, b + 5.1, '#3B82F6'); } // the solar panels
       for (let f = 1; f < FL; f++) { const y0 = H * f, y1 = H * (f + 1); // each upper floor: rendered walls with windows, the clad wing, a glass front, a balcony
         box(a + 1.8, y0, b + 2, c - 1.8, y1, fz, '#F8FAFC', '#475569', 1); box(a + 1.8, y0, fz - 0.05, mid, y1, fz + 0.15, shadeHex(col, 0.55)); box(mid + 0.6, y0 + 0.6, fz - 0.02, c - 2.4, y1 - 0.4, fz + 0.12, dark ? '#FDE68A' : '#1E3A5F');
         box(a + 1.5, y0, fz, c - 1.5, y0 + 0.28, fz + 1.5, '#D6D0C4'); for (let px = a + 1.7; px < c - 1.5; px += 0.45) box(px - 0.03, y0 + 0.28, fz + 1.4, px + 0.03, y0 + 1.3, fz + 1.46, '#23272E'); box(a + 1.5, y0 + 1.28, fz + 1.38, c - 1.5, y0 + 1.36, fz + 1.5, '#23272E'); }
-      box(a + 2.6, 0, fz, a + 4.4, 3.1, fz + 0.2, hq && !hq.may ? '#475569' : col); // the door
+      ROOFTAG = null; if (!walkIn) box(a + 2.6, 0, fz, a + 4.4, 3.1, fz + 0.2, hq && !hq.may ? '#475569' : col); // the door (yours stands open)
       box(a + 1.8, 3.3, fz, mid + 0.4, 3.55, fz + 1.6, '#0F172A'); // the canopy over it
       for (const lx of [a + 2.3, a + 4.7]) { box(lx - 0.12, 2.3, fz + 0.15, lx + 0.12, 2.7, fz + 0.3, '#111827'); if (dark) { const p = P(lx, 2.5, fz + 0.3); glow.push(() => { const g = x.createRadialGradient(p[0], p[1], 0, p[0], p[1], K * 1.4); g.addColorStop(0, 'rgba(253,230,138,0.7)'); g.addColorStop(1, 'rgba(253,230,138,0)'); x.save(); x.globalCompositeOperation = 'lighter'; x.fillStyle = g; x.beginPath(); x.arc(p[0], p[1], K * 1.4, 0, Math.PI * 2); x.fill(); x.restore(); }); } } // wall lights
       box(mid + 0.6, 0, fz + 0.3, c - 2.4, 0.6, fz + 1, '#57534E'); for (let px = mid + 1.2; px < c - 2.8; px += 1.1) disk(px, fz + 0.65, 0.62, 0.42, '#15803D'); // a planter under the glass
       if (REC && REC.clip) { const fr = '#2B2F36', g0 = mid + 0.6, g1 = c - 2.4;
         box(g0 - 0.15, 0.35, fz - 0.02, g1 + 0.15, 0.5, fz + 0.5, '#CFC8BC'); box(g0 - 0.15, H - 0.6, fz - 0.02, g1 + 0.15, H - 0.45, fz + 0.3, fr); for (const gx of [g0 - 0.15, g1]) box(gx, 0.5, fz - 0.02, gx + 0.15, H - 0.6, fz + 0.3, fr); // the window's frame and sill
         box(a + 2.45, 0, fz - 0.02, a + 2.6, 3.25, fz + 0.32, fr); box(a + 4.4, 0, fz - 0.02, a + 4.55, 3.25, fz + 0.32, fr); box(a + 2.45, 3.1, fz - 0.02, a + 4.55, 3.25, fz + 0.32, fr); // the door's frame
-        box(a + 2.8, 0.4, fz + 0.2, a + 4.2, 1.3, fz + 0.24, shadeHex(col, 0.8)); box(a + 2.8, 1.6, fz + 0.2, a + 4.2, 2.8, fz + 0.24, shadeHex(col, 0.8)); box(a + 3.95, 1.4, fz + 0.24, a + 4.05, 1.75, fz + 0.36, '#D4AF37'); // its panels and handle
+        if (!walkIn) { box(a + 2.8, 0.4, fz + 0.2, a + 4.2, 1.3, fz + 0.24, shadeHex(col, 0.8)); box(a + 2.8, 1.6, fz + 0.2, a + 4.2, 2.8, fz + 0.24, shadeHex(col, 0.8)); box(a + 3.95, 1.4, fz + 0.24, a + 4.05, 1.75, fz + 0.36, '#D4AF37'); } // its panels and handle
         box(a + 2.2, 0, fz + 0.2, a + 4.8, 0.22, fz + 1.3, '#D6D0C4'); box(a + 1.95, 2.35, fz + 0.15, a + 2.35, 2.7, fz + 0.2, '#B8892E'); // the step, the house number plate
-        { const tx = a + 3.4, tz = b + 3.6, ty = RH + 0.75; for (const [lx, lz] of [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]]) box(tx + lx - 0.05, ty, tz + lz - 0.05, tx + lx + 0.05, ty + 1.1, tz + lz + 0.05, '#4B5563'); box(tx - 0.75, ty + 1.1, tz - 0.75, tx + 0.75, ty + 1.2, tz + 0.75, '#4B5563');
-          cylLit(tx, tz, 0.72, ty + 1.2, 1.5, '#15161A'); cylLit(tx, tz, 0.3, ty + 2.7, 0.14, '#2A2C33'); for (let k2 = 0; k2 < 3; k2++) cylLit(tx, tz, 0.74, ty + 1.45 + k2 * 0.45, 0.06, '#26282E'); } // the water tank on its stand, ribbed
+        if (walkIn) ROOFTAG = 'myhq'; { const tx = a + 3.4, tz = b + 3.6, ty = RH + 0.75; for (const [lx, lz] of [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]]) box(tx + lx - 0.05, ty, tz + lz - 0.05, tx + lx + 0.05, ty + 1.1, tz + lz + 0.05, '#4B5563'); box(tx - 0.75, ty + 1.1, tz - 0.75, tx + 0.75, ty + 1.2, tz + 0.75, '#4B5563');
+          cylLit(tx, tz, 0.72, ty + 1.2, 1.5, '#15161A'); cylLit(tx, tz, 0.3, ty + 2.7, 0.14, '#2A2C33'); for (let k2 = 0; k2 < 3; k2++) cylLit(tx, tz, 0.74, ty + 1.45 + k2 * 0.45, 0.06, '#26282E'); } ROOFTAG = null; // the water tank on its stand, ribbed
         { const zc = (b + 2 + fz) / 2; box(c - 1.8, 2.5, zc - 0.65, c - 1.25, 3.35, zc + 0.65, '#F1F5F9'); for (let k2 = 0; k2 < 5; k2++) box(c - 1.24, 2.62 + k2 * 0.15, zc - 0.45, c - 1.21, 2.68 + k2 * 0.15, zc + 0.45, '#94A3B8'); box(c - 1.8, 2.45, zc - 0.7, c - 1.15, 2.5, zc - 0.55, '#6B7280'); box(c - 1.8, 2.45, zc + 0.55, c - 1.15, 2.5, zc + 0.7, '#6B7280'); box(c - 1.62, 0.4, zc + 0.2, c - 1.56, 2.5, zc + 0.26, '#E5E7EB'); } // the AC's outdoor unit on its brackets, the drain pipe
         box(c - 1.95, 0, b + 2, c - 1.8, RH + 0.4, b + 2.15, '#9CA3AF'); } // a downpipe off the roof
       // the parking bay in the front yard: paved, lined, your favourite car on it
       flat(a + 5.4, d - 3.3, c - 0.9, d - 0.7, 0.06, '#9CA3AF', '#D1D5DB'); groundText('P', c - 1.6, d - 1.2, 0.9, 'rgba(255,255,255,0.8)');
-      if (hq && hq.mine) { const c2 = parkOrder(myCarsL)[0]; if (c2) drawCar((a + 5.4 + c - 0.9) / 2, d - 2, c2.model, c2.color, 0, 0.6); }
+      if (hq && hq.mine && !(REC && REAL)) { const c2 = parkOrder(myCarsL)[0]; if (c2) drawCar((a + 5.4 + c - 0.9) / 2, d - 2, c2.model, c2.color, 0, 0.6); } // (not in the real map's 3D: its cars are its own)
     });
     if (hq && hq.mine) ownerGem((a + c) / 2, (b + d) / 2, 22);
     if (hq) partyHouse(a, b, c, d, partyAt('hq:' + hq.slot));
@@ -6665,7 +6669,7 @@
         for (const gy of [0.2, gt.h * 0.5, gt.h - 0.05]) add(w / 2, gy, 0, w, 0.09, 0.12, iron); add(w / 2, 0.15 + gt.h * 0.17, 0, w, gt.h * 0.34, 0.16, iron); // (the rails, the solid lower panel)
         g.scale.setScalar(ws); g.position.set(gt.x0 * ws, 0, (gt.fz - 0.16) * ws); G3.scene.add(g); gt.o = g; gt.u = 0; }
       gt.o.visible = V3.on && !inside; gt.u = Math.max(0, Math.min(1, gt.u + (near ? 1 : -1) * dt * (gt.swing ? 1.4 : 0.6))); const e = gt.u * gt.u * (3 - 2 * gt.u); // (eased, the car gate slower: a motor)
-      if (gt.swing) gt.o.rotation.y = e * 1.45; else gt.o.position.x = (gt.x0 + e * (gt.x1 - gt.x0 + 0.4)) * ws;
+      if (gt.swing) gt.o.rotation.y = e * 1.45; else { gt.o.position.x = (gt.x0 + e * (gt.x1 - gt.x0 + 0.4)) * ws; gt.o.position.z = (gt.fz - 0.16 - e * 0.35) * ws; } // (it slides back behind the wall)
     }
   }
   function w3hq(a, b, c, d, k, hq, col) {
@@ -6756,7 +6760,7 @@
     if (px1 + 0.4 < c - g) box(px1 + 0.4, 0, d - 0.8, c - g, 1.1, d - 0.4, wc);
     }
   }
-  function compound(a, b, c, d, mine, house) {
+  function compound(a, b, c, d, mine, house, gateMoves) {
     const wc = mine ? '#FDE68A' : '#E7E5E4', w = (x0, z0, x1, z1) => box(x0, 0, z0, x1, 1.5, z1, wc);
     flat(a + 0.4, b + 0.4, c - 0.4, d - 0.4, 0.04, C.grassLot);
     w(a + 0.4, b + 0.4, c - 0.4, b + 0.8); w(a + 0.4, b + 0.4, a + 0.8, d - 0.4); w(c - 0.8, b + 0.4, c - 0.4, d - 0.4);
@@ -6771,6 +6775,7 @@
       box(along ? x0 : mx - 0.05, 2.3, along ? mz - 0.05 : z0, along ? x1 : mx + 0.05, 2.38, along ? mz + 0.05 : z1, iron); };
     rail(a + 0.4, b + 0.55, c - 0.4, b + 0.65); rail(a + 0.55, b + 0.4, a + 0.65, d - 0.4); rail(c - 0.65, b + 0.4, c - 0.55, d - 0.4); rail(a + 0.4, d - 0.65, a + 3.3, d - 0.55); rail(a + 6.7, d - 0.65, c - 0.4, d - 0.55);
     for (const px of [a + 3.3, a + 6.7]) { box(px - 0.25, 0, d - 0.85, px + 0.25, 2.5, d - 0.35, '#D6D0C4'); box(px - 0.3, 2.5, d - 0.9, px + 0.3, 2.62, d - 0.3, '#B8B0A2'); box(px - 0.12, 2.62, d - 0.72, px + 0.12, 2.95, d - 0.48, night > 0.4 ? '#FFD89A' : '#E5E7EB'); } // the pillars, their lamps
+    if (gateMoves) { if (REC.mode === 'build') HQGATE.set(a + ',' + d, { x0: a + 3.55, x1: a + 6.45, fz: d - 0.43, h: 2.1, swing: false }); return; } // (the HQ's: built apart, it slides open as you come)
     for (let gx = a + 3.65; gx < a + 6.4; gx += 0.22) box(gx - 0.035, 0.1, d - 0.62, gx + 0.035, 2.1, d - 0.56, iron); // the gate's bars
     for (const gy of [0.12, 1.05, 2.05]) box(a + 3.55, gy, d - 0.64, a + 6.45, gy + 0.08, d - 0.54, iron);
   }
@@ -6836,7 +6841,7 @@
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   { const hq = new Map(); for (const l of lots) if (l.kind === 'hq') hq.set(l.i + ',' + l.j, l);
-    for (const l of lots) { if (l.kind !== 'hq' || l.w) continue; const nx = hq.get((l.i + 1) + ',' + l.j); if (nx && nx.kind === 'hq' && !nx.w) { l.w = 2; nx.kind = 'hqx'; nx.of = l; if (REAL) for (const di of [2, 3]) { const gap = hq.get((l.i + di) + ',' + l.j); if (gap && gap.kind === 'hq') { gap.kind = 'hqx'; gap.of = l; gap.w = 1; } } } else l.kind = 'grass'; } } // (on the real map, two tiles of open ground after each BQ, trees and a lawn: real room between the blocks) // (BQs are two tiles wide: real space round each)
+    for (const l of lots) { if (l.kind !== 'hq' || l.w) continue; const nx = hq.get((l.i + 1) + ',' + l.j); if (nx && nx.kind === 'hq' && !nx.w) { l.w = 2; nx.kind = 'hqx'; nx.of = l; if (REAL) for (const di of [2, 3]) { const gap = hq.get((l.i + di) + ',' + l.j); if (gap && gap.kind === 'hq') { gap.kind = di === 2 ? 'trees' : 'grass'; gap.w = 1; } } } else l.kind = 'grass'; } } // (on the real map, two tiles of open ground after each BQ, trees and a lawn: real room between the blocks) // (BQs are two tiles wide: real space round each)
   // the footprints you walk round
   for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station', 'dealer', 'freeline', 'mosque', 'cathedral'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'city') { const v = rnd(l.i * 53 + l.j * 89)(); if (v < 0.7) blocked.push([l.i * T + 1.5, l.j * T + 1.5, (l.i + 1) * T - 1.5, (l.j + 1) * T - 1.5]); } // the new town's buildings
@@ -7425,7 +7430,7 @@
         : l.kind === 'palm' ? () => palm(a + 5, b + 5, 8 + R() * 3)
         : l.kind === 'ad' ? ((l.i + l.j) % 2 ? () => { flat(a, b, c, d, 0.04, '#334155'); screen(a + 5, b + 5, l.i * 3 + l.j); } : () => flat(a, b, c, d, 0.04, '#334155'))
         : l.kind === 'plaza' ? () => flat(a, b, c, d, 0.04, '#D9DDE2', C.plotEdge)
-        : l.kind === 'hq' ? () => hqHouse(a, b, c + (REAL ? 3 : 1) * T, d, hqIndex.get(l.i + ',' + l.j))
+        : l.kind === 'hq' ? () => hqHouse(a, b, c + T, d, hqIndex.get(l.i + ',' + l.j))
         : l.kind === 'city' ? () => cityLot(a, b, c, d, R)
         : null;
       if (f) items.push({ d: P(a + T / 2, 0, b + T / 2)[2], f });
@@ -13736,7 +13741,7 @@
     if (!signedIn()) return;
     try { hqSlots = await my('hqRow'); } catch {}
     if (!loadHqRow.homed && hqSlots.length) { loadHqRow.homed = true; const q0 = new URLSearchParams(location.search), k = hqSlots.findIndex((s2) => s2.mine), hq = hqSlots[k]; // you always start the game at home, inside your own apartment (unless a link says where)
-      if (hq && hqAt[k] && !q0.get('at') && !q0.get('in') && !inside) { const [pi, pj] = hqAt[k]; cam.follow = true; if (REAL) { me.x = pi * T + 9.5; me.z = pj * T + 4.9; } else { me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); } } } // (on the real map: in your living room, in the street's own 3D)
+      if (hq && hqAt[k] && !q0.get('at') && !q0.get('in') && !inside) { const [pi, pj] = hqAt[k]; cam.follow = true; if (REAL) { me.x = pi * T + 6; me.z = pj * T + 4.6; } else { me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); } } } // (on the real map: in your living room, in the street's own 3D)
     try { hqBoard.posts = await my('board'); } catch {}
     try { const before = census().taken; homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); const now = census(); if (!housingTaken && loadHqRow.seen && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']); loadHqRow.seen = true; } catch {} // who owns which plot (until the server has homes, everything's for sale)
     try { // the parties going on that I can go to; a new invite pings my phone
