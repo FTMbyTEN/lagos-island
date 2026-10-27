@@ -4575,7 +4575,8 @@
     }
     G3.queue.push({ cx: it.x, cz: it.z, model: it.k, ang: (it.r || 0) * Math.PI / 2, sc: it.sc || 1, y: it.y || 0, tint: it.tint, tintAll: !!it.tint }); return true; // (a tinted piece of furniture: all but its dark legs and frame)
   }
-  // ---- people: real 3D bodies (Quaternius Universal Base Characters, CC0) with hair, animated by the Universal Animation
+  // ---- people: real 3D bodies (MakeHuman, CC0: a young Nigerian man and woman, with their own eyes, brows and lashes,
+  // fitted onto the Quaternius Universal Base Characters' skeleton, CC0) with hair, animated by the Universal Animation
   // Library (CC0), wearing outfits painted onto the body by a small shader: a top (with sleeves), trousers or a skirt or
   // shorts, shoes, or a long robe (agbada, kaftan). Every person gets their own clone, skeleton and animation mixer.
   const PEOPLE_BASE = location.pathname.startsWith('/lagos-island') ? '/lagos-island/people/' : 'people/';
@@ -4583,16 +4584,16 @@
   const HAIR_M = ['hair_buzzed', 'hair_simpleparted', 'hair_buzzed+hair_beard', 'hair_simpleparted+hair_beard'], HAIR_F = ['hair_long', 'hair_buns', 'hair_buzzedfemale', 'hair_long'];
   function initPeople() {
     if (PEOPLE.started || !G3.ok) return; PEOPLE.started = true;
-    const THREE = G3.T, L = new window.__three.GLTFLoader(); if (window.__three.MeshoptDecoder) L.setMeshoptDecoder(window.__three.MeshoptDecoder); const want = ['body_m', 'body_f', 'anims', 'hair_buzzed', 'hair_simpleparted', 'hair_beard', 'hair_long', 'hair_buns', 'hair_buzzedfemale', 'eyebrows_regular', 'eyebrows_female'];
+    const THREE = G3.T, L = new window.__three.GLTFLoader(); if (window.__three.MeshoptDecoder) L.setMeshoptDecoder(window.__three.MeshoptDecoder); const want = ['mh_body_m', 'mh_body_f', 'anims', 'hair_buzzed', 'hair_simpleparted', 'hair_beard', 'hair_long', 'hair_buns', 'hair_buzzedfemale'];
     let left = want.length;
     const done = () => { if (--left === 0) { PEOPLE.ok = !!(PEOPLE.base.m && PEOPLE.base.f && Object.keys(PEOPLE.clips).length); if (PEOPLE.ok && typeof previewLook === 'function') previewLook(); } }; // ready: the sign-up picture turns 3D
     for (const n of want) L.load(PEOPLE_BASE + n + (n === 'anims' ? '.glb' : '.gltf'), (g) => {
       if (n === 'anims') { for (const c of g.animations) PEOPLE.clips[c.name] = c; }
-      else if (n.startsWith('body_')) {
+      else if (n.startsWith('mh_body_')) {
         const box = new THREE.Box3().setFromObject(g.scene), size = box.getSize(new THREE.Vector3());
         let geo = null, bodyName = ''; g.scene.traverse((o) => { if (o.isSkinnedMesh && (!geo || o.geometry.attributes.position.count > geo.attributes.position.count)) { geo = o.geometry; bodyName = o.name; } }); // the body: the biggest mesh (not the eyes or eyebrows)
         geo.computeBoundingBox(); const gb = geo.boundingBox, gs = gb.getSize(new THREE.Vector3());
-        PEOPLE.base[n.slice(5)] = { bodyName, scene: g.scene, scale: 10 / Math.max(0.01, gs.y) /* 1.8 m tall to 10 units: a little larger than life, so people read well from above */, gMin: gb.min.clone(), gSize: gs, gMid: (gb.min.x + gb.max.x) / 2 };
+        PEOPLE.base[n.slice(8)] = { bodyName, scene: g.scene, scale: 10 / Math.max(0.01, gs.y) /* 1.8 m tall to 10 units: a little larger than life, so people read well from above */, gMin: gb.min.clone(), gSize: gs, gMid: (gb.min.x + gb.max.x) / 2 };
       } else PEOPLE.hair[n] = g.scene;
       done();
     }, undefined, () => done());
@@ -4669,7 +4670,7 @@
     const body = SU.clone(b.scene), root = new THREE.Group(); root.add(body); body.scale.setScalar(b.scale);
     const bones = {}; let dress = null;
     body.traverse((o) => { if (o.isBone) bones[o.name] = o; if (o.isSkinnedMesh) { o.frustumCulled = false; if (!dress && o.name === b.bodyName) { dress = dressMaterial(o.material, b); dress.textured = !!o.material.map; if (!dress.textured) { dress.mat.color.set('#FFFFFF'); dress.mat.roughness = 0.75; dress.mat.metalness = 0; } o.material = dress.mat; } } });
-    for (const part of [...hairKey.split('+'), g === 'f' ? 'eyebrows_female' : 'eyebrows_regular']) { // hair, bound to this body's own head bone
+    for (const part of hairKey.split('+')) { // hair, bound to this body's own head bone
       const src = PEOPLE.hair[part]; if (!src) continue;
       const h = SU.clone(src); h.traverse((o) => { if (o.isSkinnedMesh) { const bs = o.skeleton.bones.map((bn) => bones[bn.name] || bn); o.bind(new THREE.Skeleton(bs, o.skeleton.boneInverses), o.bindMatrix); o.frustumCulled = false; o.material = o.material.clone(); o.userData.hair = true; } });
       const ms = []; h.traverse((o) => { if (o.isSkinnedMesh) ms.push(o); }); for (const o of ms) body.add(o); // gathered first: moving them mid-walk breaks the walk
