@@ -1479,6 +1479,20 @@
   #phone #pbody[data-app="home"] .app { color: #E4E4E7 !important; font: 700 11px 'Plus Jakarta Sans', sans-serif !important; background: none !important; box-shadow: none !important; }
   #phone #pbody[data-app="home"] .app i { width: 52px !important; height: 52px !important; border-radius: 16px !important; background: var(--ac) !important; box-shadow: 0 6px 14px rgba(0,0,0,.35) !important; color: #fff !important; }
   #phone #pbody[data-app="home"] .dock.top { background: #222228 !important; border-radius: 18px !important; box-shadow: none !important; }
+  /* the lock screen, in the prototype's look: ink, the time in Anton and danfo yellow, dark cards */
+  html body #phone#phone #lockscr#lockscr { background: radial-gradient(120% 60% at 50% 0%, #26262C 0%, #17171C 55%, #0F0F12 100%) !important; color: #F4F4F5 !important; }
+  html body #phone#phone #lockscr#lockscr::before, html body #phone#phone #lockscr#lockscr::after { opacity: 0 !important; }
+  html body #phone#phone #lockscr#lockscr .lt { font-family: Anton, sans-serif !important; font-weight: 400 !important; color: #F7C81E !important; letter-spacing: 1px !important; text-shadow: 0 6px 24px rgba(247,200,30,.25) !important; background: none !important; -webkit-text-fill-color: #F7C81E !important; }
+  html body #phone#phone #lockscr#lockscr .ld, html body #phone#phone #lockscr#lockscr .lid { color: #A1A1AA !important; font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 700 !important; }
+  html body #phone#phone #lockscr#lockscr .lwid, html body #phone#phone #lockscr#lockscr .lnotes .n, html body #phone#phone #lockscr#lockscr .lmus, html body #phone#phone #lockscr#lockscr .lempty { background: #222228 !important; border: 0 !important; border-radius: 16px !important; box-shadow: none !important; color: #F4F4F5 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  html body #phone#phone #lockscr#lockscr .lwid small, html body #phone#phone #lockscr#lockscr .lnotes small, html body #phone#phone #lockscr#lockscr .lnotes .n small, html body #phone#phone #lockscr#lockscr .lwid span { color: #A1A1AA !important; }
+  html body #phone#phone #lockscr#lockscr .lwid b, html body #phone#phone #lockscr#lockscr .lnotes .n b { color: #F4F4F5 !important; }
+   html body #phone#phone #lockscr#lockscr .lwid:first-child small, html body #phone#phone #lockscr#lockscr .lwid:first-child span { color: #D1FAE5 !important; }
+  html body #phone#phone #lockscr#lockscr .lbot .lu, html body #phone#phone #lockscr#lockscr .lu { color: #F4F4F5 !important; } html body #phone#phone #lockscr#lockscr .lbot::before, html body #phone#phone #lockscr#lockscr .lbar { background: #F7C81E !important; }
+  html body #phone#phone #lockscr#lockscr .lwid > div { background: #222228 !important; border: 0 !important; border-radius: 16px !important; box-shadow: none !important; color: #F4F4F5 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  html body #phone#phone #lockscr#lockscr .lwid > div:first-child { background: #0B6E3A !important; }
+  html body #phone#phone #lockscr#lockscr .lwid { background: none !important; }
+  html body #phone#phone #lockscr#lockscr .lpad { background: #26262C !important; border: 0 !important; box-shadow: none !important; color: #F7C81E !important; backdrop-filter: none !important; }
   .wosNext { display: flex; flex-direction: column; gap: 4px; width: 100%; margin: 10px 0 0; padding: 12px 14px; border: 0; border-radius: 16px; background: #0B6E3A; color: #fff; text-align: left; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
   .wosNext small { font-size: 11px; font-weight: 800; letter-spacing: .06em; color: #BBF7D0; } .wosNext b { font-size: 15px; font-weight: 800; } .wosNext span { font-size: 12px; color: #D1FAE5; }
   .wosNext em { align-self: flex-start; margin-top: 6px; padding: 8px 14px; border-radius: 17px; background: #F7C81E; color: #0F0F12; font: 800 13px 'Plus Jakarta Sans', sans-serif; font-style: normal; }
