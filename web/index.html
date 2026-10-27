@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-27T10:35:30.445Z">
+<meta name="li-build" content="2026-10-27T10:45:39.672Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -6771,9 +6771,10 @@
     if (REAL) { for (const [i0, j, i1, sd] of LAND_RUNS) { b.fillStyle = sd ? '#D9C48F' : '#6E9361'; b.fillRect(i0 * S, j * S, (i1 - i0 + 1) * S, S + 0.5); } b.fillStyle = '#CBD5E1'; for (let k = 0; k < tile.length; k++) if (tile[k] === BRIDGE) b.fillRect((k % BOARD.w) * S, Math.floor(k / BOARD.w) * S, S + 0.5, S + 0.5); }
     else for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) { const t = at(i, j); if (t === W0) continue; b.fillStyle = ground(t); b.fillRect(i * S, j * S, S + 0.5, S + 0.5); }
     const roads = (c) => { b.lineCap = b.lineJoin = 'round'; for (let cl = REAL.widths.length - 1; cl >= 0; cl--) { b.beginPath(); for (const r of c.r) { if (r.c !== cl) continue; b.moveTo(r.p[0] * S / T, r.p[1] * S / T); for (let k = 2; k < r.p.length; k += 2) b.lineTo(r.p[k] * S / T, r.p[k + 1] * S / T); } b.strokeStyle = cl <= 1 ? '#F8D57E' : '#EEF2F6'; b.lineWidth = Math.max(0.9, REAL.widths[cl] * S / T * (cl <= 1 ? 1.6 : 1.3)); b.stroke(); } };
-    const D = MOBILE ? 124 : 168, el = document.createElement('canvas'), dpr = Math.min(2, devicePixelRatio || 1); el.id = 'minimap'; el.width = el.height = Math.round(D * dpr);
-    el.style.cssText = `position:fixed;left:12px;top:auto;right:auto;bottom:${MOBILE ? 78 : 84}px;width:${D}px;height:${D}px;z-index:25;border-radius:50%;box-shadow:0 0 0 3px rgba(15,23,42,.85),0 0 0 5px rgba(250,204,21,.85),0 6px 18px rgba(0,0,0,.45);cursor:pointer;touch-action:none`;
-    const lab = document.createElement('div'); lab.style.cssText = `position:fixed;left:12px;bottom:${(MOBILE ? 78 : 84) - 22}px;width:${D}px;z-index:25;text-align:center;font:800 11px 'Plus Jakarta Sans',system-ui;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis`;
+    const TOUCH = MOBILE || isTouch, D = TOUCH ? 112 : 168, el = document.createElement('canvas'), dpr = Math.min(2, devicePixelRatio || 1); el.id = 'minimap'; el.width = el.height = Math.round(D * dpr);
+    const spot = TOUCH ? `left:auto;right:calc(12px + env(safe-area-inset-right));top:calc(210px + env(safe-area-inset-top));bottom:auto;` : 'left:12px;top:auto;right:auto;bottom:84px;'; // (on a phone: the right side, under the corner buttons, clear of the joystick)
+    el.style.cssText = `position:fixed;${spot}width:${D}px;height:${D}px;z-index:25;border-radius:50%;box-shadow:0 0 0 3px rgba(15,23,42,.85),0 0 0 5px rgba(250,204,21,.85),0 6px 18px rgba(0,0,0,.45);cursor:pointer;touch-action:none`;
+    const lab = document.createElement('div'); lab.style.cssText = `position:fixed;${TOUCH ? `right:calc(12px + env(safe-area-inset-right));top:calc(${210 + D + 6}px + env(safe-area-inset-top))` : 'left:12px;bottom:62px'};width:${D}px;z-index:25;text-align:center;font:800 11px 'Plus Jakarta Sans',system-ui;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis`;
     document.body.append(el, lab); const g = el.getContext('2d');
     const st = { wp: null, k: (D / 2) / (REAL ? 170 : 110) }; // (px per world unit: about 170 units out to the rim on the real map)
     const yawNow = () => (V3.on && V3.wpref ? V3.yaw : cam.yaw) || 0;
@@ -10611,7 +10612,8 @@
           else if (ok(nx, q.cz)) { q.cx = nx; d.vz *= -0.2; d.vx *= 0.8; } else if (ok(q.cx, nz)) { q.cz = nz; d.vx *= -0.2; d.vz *= 0.8; } // (a glancing blow: it scrapes along)
           else { d.vx *= -0.3; d.vz *= -0.3; if (Math.abs(fwd) > 9 && navigator.vibrate) navigator.vibrate(60); } } // (head on: it stops dead and rocks back)
         d.v = d.vx * fx + d.vz * fz;
-        if (!d.fp) { const want = 40 + Math.abs(d.v) * 0.9; V3.dist += (want - V3.dist) * Math.min(1, dt * 1.5); } // (the camera hangs back further the faster you go)
+        if (!d.fp) { if (d.set != null && Math.abs(V3.dist - d.set) > 0.05) d.user = Math.max(8, V3.dist - (d.off || 0)); // (you zoomed: that's your distance now)
+          const base = d.user ?? 40; d.off = (d.off || 0) + (Math.abs(d.v) * 0.6 - (d.off || 0)) * Math.min(1, dt * 1.5); V3.dist = d.set = base + d.off; } // (the camera hangs back a little more the faster you go, on top of the distance you chose)
         { let sp2 = document.getElementById('speedo'); if (!sp2) { sp2 = document.createElement('div'); sp2.id = 'speedo'; sp2.style.cssText = 'position:fixed;right:16px;bottom:150px;z-index:30;padding:8px 14px;border-radius:14px;background:rgba(15,23,42,.78);color:#fff;font:800 22px/1 system-ui;text-align:center;backdrop-filter:blur(8px);pointer-events:none'; document.body.append(sp2); }
           sp2.style.display = 'block'; sp2.innerHTML = Math.round(Math.abs(d.v) * 11) + '<small style="display:block;font:600 10px system-ui;opacity:.7">KM/H' + (hb ? ' · DRIFT' : '') + '</small>'; } // the speedometer
         me.x = q.cx; me.z = q.cz; me.vx = fx * d.v; me.vz = fz * d.v;
