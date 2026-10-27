@@ -4,7 +4,10 @@
 // all (nothing to encrypt, nothing for the push service to read); the service worker on the phone shows a plain
 // "something new" notification, and the game fetches the real thing when it opens. The request is signed with the
 // game's VAPID key (ES256), so push services know it's from Lagos Island.
+// /live: the live connection (see live.js): positions, chat and voice handshakes over one WebSocket.
 // Every other request is the game's files, as before.
+
+export { City } from './live.js';
 
 const PUBLIC_KEY = 'BA6OYiZS2uy2fjNIw51NhMS-rsrSdgbxsPgrvlITDkt--AePVBaEeyxJUy7XxzTLS58FOxitbOyBXhPGtSyp5cY';
 const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -25,6 +28,16 @@ const PUSH_HOST = /^(fcm\.googleapis\.com|android\.googleapis\.com|updates\.push
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === '/live/devticket' && env.LIVE_DEV === '1') { // (wrangler dev only: LIVE_DEV is set in .dev.vars, never on Cloudflare)
+      const id = url.searchParams.get('id') || 'dev', nm = url.searchParams.get('name') || 'Dev ' + id.slice(-4), h = (url.searchParams.get('h') || '').toLowerCase();
+      const body = btoa(JSON.stringify({ id, name: nm, v: !!h, h, f: (url.searchParams.get('f') || '').split(',').filter(Boolean), exp: Math.floor(Date.now() / 1000) + 900 })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const k = await crypto.subtle.importKey('raw', enc.encode(env.LIVE_SECRET.trim()), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+      return Response.json({ ticket: body + '.' + b64u(await crypto.subtle.sign('HMAC', k, enc.encode(body))) }, { headers: { 'Access-Control-Allow-Origin': '*' } });
+    }
+    if (url.pathname === '/live' || url.pathname === '/live/count') { // (one island for now; split by area later, as it grows)
+      const r = await env.CITY.get(env.CITY.idFromName('island')).fetch(request);
+      return url.pathname === '/live/count' ? new Response(r.body, { status: r.status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }) : r;
+    }
     if (url.pathname === '/push') {
       if (request.method !== 'POST' || !env.PUSH_SECRET || request.headers.get('x-push-secret') !== env.PUSH_SECRET) return new Response('no', { status: 401 });
       let j; try { j = await request.json(); } catch { return new Response('bad', { status: 400 }); }

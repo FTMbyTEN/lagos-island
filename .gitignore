@@ -1,1 +1,5 @@
 web/index.min.html
+
+.dev.vars
+cloudflare/.dev.vars
+cloudflare/.wrangler/

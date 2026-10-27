@@ -7156,10 +7156,10 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
   }
   function vDrop(h) { const p = VOICE.peers.get(h); if (!p) return; try { p.pc.close(); } catch {} p.audio.srcObject = null; VOICE.peers.delete(h); vUi(); }
   const vIce = (pc) => new Promise((ok) => { if (pc.iceGatheringState === 'complete') return ok(); const t = setTimeout(ok, 2500); pc.addEventListener('icegatheringstatechange', () => { if (pc.iceGatheringState === 'complete') { clearTimeout(t); ok(); } }); }); // (the whole offer in one message)
-  const vSend = (h, obj) => my('voiceSignal', { to: h, channel: VOICE.chan, data: JSON.stringify(obj) }).catch(() => {});
+  const vSend = (h, obj) => { if (LIVE.up) { try { LIVE.ws.send(JSON.stringify({ t: 'sig', to: h, channel: VOICE.chan, data: JSON.stringify(obj) })); return Promise.resolve(); } catch {} } return my('voiceSignal', { to: h, channel: VOICE.chan, data: JSON.stringify(obj) }).catch(() => {}); };
   async function vOffer(h) { const p = vPeer(h); const o = await p.pc.createOffer(); await p.pc.setLocalDescription(o); await vIce(p.pc); await vSend(h, { t: 'offer', sdp: p.pc.localDescription.sdp }); }
   async function vInbox() {
-    if (!VOICE.on) return; let list = []; try { list = await my('voiceInbox'); } catch { return; }
+    if (!VOICE.on) return; let list = []; if (LIVE.up) list = LIVE.sig.splice(0); else try { list = await my('voiceInbox'); } catch { return; }
     for (const m of list || []) { try { const h = String(m.from).toLowerCase(), o = JSON.parse(m.data); if ((m.channel || '') !== VOICE.chan) continue; // (only my channel's)
       if (o.t === 'offer') { if (VOICE.peers.has(h) && VOICE.peers.get(h).pc.signalingState !== 'stable') vDrop(h); const p = vPeer(h); await p.pc.setRemoteDescription({ type: 'offer', sdp: o.sdp }); const a = await p.pc.createAnswer(); await p.pc.setLocalDescription(a); await vIce(p.pc); await vSend(h, { t: 'answer', sdp: p.pc.localDescription.sdp }); }
       else if (o.t === 'answer') { const p = VOICE.peers.get(h); if (p && p.pc.signalingState === 'have-local-offer') await p.pc.setRemoteDescription({ type: 'answer', sdp: o.sdp }); }
@@ -7168,7 +7168,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
   async function vTick() {
     if (!VOICE.on || VOICE.busy) return; VOICE.busy = true;
     try {
-      const chan = vChannel(), meH = vMe(); if (chan !== VOICE.chan) { if (VOICE.chan) my('voiceLeave', { channel: VOICE.chan }).catch(() => {}); for (const h of [...VOICE.peers.keys()]) vDrop(h); VOICE.chan = chan; }
+      const chan = vChannel(), meH = vMe(); if (chan !== VOICE.chan) { if (VOICE.chan) my('voiceLeave', { channel: VOICE.chan }).catch(() => {}); for (const h of [...VOICE.peers.keys()]) vDrop(h); VOICE.chan = chan; LIVE.chan = chan; if (LIVE.up) try { LIVE.ws.send(JSON.stringify({ t: 'chan', c: chan })); } catch {} }
       let want = [];
       if (chan) { const r = await my('voiceJoin', { channel: chan }); if (r && r.error) { tickerSay(r.error); } else want = (r.members || []).filter((h) => h !== meH); }
       else if (VOICE.mode === 'near' && !inside) want = [...others.values()].map((o) => ({ h: String(o.name || '').toLowerCase(), d: Math.hypot(o.x - me.x, o.z - me.z) })).filter((o) => o.h && o.h !== meH && o.d < 65).sort((a2, b2) => a2.d - b2.d).slice(0, 8).map((o) => o.h);
@@ -10998,18 +10998,60 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     while (joinsEl.children.length > 5) joinsEl.firstElementChild.remove();
     setTimeout(() => d.remove(), 6200);
   }
+  // ---- live: one WebSocket to the island's own live server (cloudflare/live.js) instead of polling. Positions, chat and
+  // voice handshakes arrive the moment they happen. The game server only signs a ticket saying who you are
+  // (liveTicket). While the socket is down, or the ticket can't be had, everything goes the old way through [tick].
+  const LIVE = { ws: null, up: false, sent: 0, last: null, wait: 2000, sig: [], chan: '' };
+  const LIVE_URL = new URLSearchParams(location.search).get('live') || (/\.workers\.dev$/.test(location.hostname) ? location.origin.replace(/^http/, 'ws') : 'wss://play.lagos-island.workers.dev') + '/live';
+  async function liveStart() {
+    if (LIVE.ws) return; let tk = null;
+    try { const r = await call('liveTicket', { id, key: ikey }); tk = r && r.ticket; } catch {}
+    if (!tk && new URLSearchParams(location.search).get('live')) try { tk = (await (await fetch(LIVE_URL.replace(/^ws/, 'http').replace(/\/live.*$/, '/live/devticket') + '?id=' + encodeURIComponent(id) + '&name=' + encodeURIComponent(myName || ''))).json()).ticket; } catch {} // (testing against wrangler dev)
+    if (!tk) { setTimeout(liveStart, 60000); return; } // (no live server yet: the old way, and try again in a minute)
+    const ws = LIVE.ws = new WebSocket(LIVE_URL + (LIVE_URL.includes('?') ? '&' : '?') + 'ticket=' + encodeURIComponent(tk));
+    const renew = setTimeout(() => { try { ws.close(1000, 'renew'); } catch {} }, 12 * 60000); // (a fresh ticket before this one runs out)
+    ws.onopen = () => { LIVE.up = true; LIVE.wait = 2000; LIVE.last = null; livePos(true); if (LIVE.chan) ws.send(JSON.stringify({ t: 'chan', c: LIVE.chan })); };
+    ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch { return; } liveGot(m); };
+    ws.onclose = (e) => { clearTimeout(renew); const was = LIVE.up; LIVE.up = false; LIVE.ws = null; if (e.code === 4000) return; // (signed in on another tab: that one has it)
+      setTimeout(liveStart, e.reason === 'renew' ? 0 : LIVE.wait); if (!was) LIVE.wait = Math.min(60000, LIVE.wait * 2); };
+  }
+  function liveSeen(p) {
+    const o = others.get(p.id), now = performance.now();
+    if (o) Object.assign(o, { tx: p.x, tz: p.z, name: p.name, color: p.color, look: p.look, at: now });
+    else { others.set(p.id, { name: p.name, color: p.color, x: p.x, z: p.z, tx: p.x, tz: p.z, look: p.look, at: now });
+      const nm = String(p.name || '').trim(); if (ticked && !everSeen.has(p.id) && nm && !/^(undefined|null|guest|lagosian)$/i.test(nm) && NEWCOMERS.set.has(nm.toLowerCase()) && !joinedAt.has(nm.toLowerCase())) { joinedAt.set(nm.toLowerCase(), Date.now()); try { store.set('li.joined.seen', JSON.stringify([...joinedAt].slice(-500))); } catch {} showJoin(nm, p.color); } }
+    everSeen.add(p.id);
+  }
+  function liveGot(m) {
+    if (m.t === 'snap') { const keep = new Set(m.players.map((p) => p.id)); for (const k of [...others.keys()]) if (!keep.has(k)) others.delete(k); for (const p of m.players) liveSeen(p); document.getElementById('count').textContent = m.n; ticked = true; }
+    else if (m.t === 'm') { if (m.p.id !== id) liveSeen(m.p); }
+    else if (m.t === 'bye') others.delete(m.id);
+    else if (m.t === 'n') document.getElementById('count').textContent = m.n;
+    else if (m.t === 'say') { const mine = m.id === id; bubbles.set(mine ? 'me' : m.id, { text: m.text, until: performance.now() + 7000 }); addLog(mine ? 'You' : m.name, m.color, m.text); if (!mine) notify(m.text, 'chat', null, m.name); }
+    else if (m.t === 'sig') { LIVE.sig.push({ from: m.from, channel: m.channel, data: m.data }); if (LIVE.sig.length > 60) LIVE.sig.splice(0, LIVE.sig.length - 60); if (typeof vInbox === 'function') vInbox(); }
+  }
+  // your position: up to 5 times a second while you move, once every 5 seconds while you stand still
+  function livePos(force) {
+    if (!LIVE.up) return; const now = performance.now(), room = inside ? inside.room : '', l = LIVE.last;
+    const moved = !l || Math.hypot(me.x - l.x, me.z - l.z) > (inside ? 0.15 : 0.6) || l.room !== room;
+    if (!force && !(moved && now - LIVE.sent >= 200) && now - LIVE.sent < 5000) return;
+    LIVE.sent = now; LIVE.last = { x: me.x, z: me.z, room };
+    try { LIVE.ws.send(JSON.stringify({ t: 'pos', x: me.x, z: me.z, room, look: lookNow(!!inside), color: myColor, car: myCar })); } catch {}
+  }
+  setInterval(() => { livePos(false); if (LIVE.up) { const now = performance.now(); for (const [k, o] of others) if (now - (o.at || now) > 30000) others.delete(k); } }, 200);
+  const liveSay = (text) => { if (LIVE.up) { try { LIVE.ws.send(JSON.stringify({ t: 'say', text })); return Promise.resolve(); } catch {} } return call('say', { id, text, key: ikey }); };
   async function tick() {
     if (tick.busy) return; const still = Math.hypot(me.x - (tick.x || 0), me.z - (tick.z || 0)) < 0.5, alone = others.size === 0;
     const near = [...others.values()].some((o) => Math.abs(o.x - me.x) < 120 && Math.abs(o.z - me.z) < 120); // (someone in sight: their moves matter every second)
-    if ((still && alone || !near) && performance.now() - (tick.at || 0) < 3000) return;
+    if ((LIVE.up || still && alone || !near) && performance.now() - (tick.at || 0) < (LIVE.up ? 10000 : 3000)) return; // (live: the people come by the socket; this is only for the clubs' decks and parked cars)
     tick.busy = true; tick.at = performance.now(); tick.x = me.x; tick.z = me.z;
     try {
       const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: lookNow(!!inside), car: myCar, key: ikey });
-      document.getElementById('count').textContent = r.online;
+      if (!LIVE.up) document.getElementById('count').textContent = r.online;
       if (r.decks) cityDecks(r.decks); // what each club DJ is playing
       if (r.newcomers) NEWCOMERS.set = new Set(r.newcomers.map((v) => String(v).toLowerCase()));
       const now = performance.now(), seen = new Set();
-      for (const p of r.players) {
+      if (!LIVE.up) { for (const p of r.players) {
         seen.add(p.id);
         const o = others.get(p.id);
         if (o) Object.assign(o, { tx: p.x, tz: p.z, name: p.name, color: p.color, look: p.look });
@@ -11019,8 +11061,8 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
         }
         everSeen.add(p.id);
       }
-      for (const [k] of others) if (!seen.has(k)) others.delete(k);
-      for (const l of r.chat) {
+      for (const [k] of others) if (!seen.has(k)) others.delete(k); }
+      if (!LIVE.up) for (const l of r.chat) {
         if (l.seq <= since) continue;
         bubbles.set(l.id === id ? 'me' : l.id, { text: l.text, until: now + 7000 });
         if (since > 0 || l.id === id) addLog(l.id === id ? 'You' : l.name, l.color, l.text);
@@ -11040,7 +11082,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     const t = sayText.value.trim(); sayText.value = ''; sayForm.style.display = 'none'; sayText.blur();
     if (!t) return;
     bubbles.set('me', { text: t, until: performance.now() + 7000 });
-    try { await call('say', { id, text: t, key: ikey }); } catch {}
+    try { await liveSay(t); } catch {}
   });
   sayText.addEventListener('keydown', (e) => { if (e.key === 'Escape') { sayForm.style.display = 'none'; sayText.blur(); } });
 
@@ -14114,7 +14156,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
       if (pa.style.display !== 'block' || main.dataset.who !== best.name) { main.dataset.who = best.name; main.textContent = String(best.name || '?').replace(/^@/, '').charAt(0).toUpperCase(); main.title = best.name; pa.style.display = 'block'; } }, 400);
     main.onclick = () => { main.blur(); pa.classList.toggle('open'); };
     pa.querySelectorAll('.opt').forEach((b) => (b.onclick = async () => { b.blur(); const o = NEAR.who; if (!o) return; const nm = String(o.name || '').replace(/^@/, ''); pa.classList.remove('open');
-      if (b.dataset.a === 'wave') { const t = `👋 Hi @${nm}!`; bubbles.set('me', { text: t, until: performance.now() + 5000 }); try { await call('say', { id, text: t, key: ikey }); } catch {} }
+      if (b.dataset.a === 'wave') { const t = `👋 Hi @${nm}!`; bubbles.set('me', { text: t, until: performance.now() + 5000 }); try { await liveSay(t); } catch {} }
       if (b.dataset.a === 'msg') openPhone('newchat', { dm: true, who: nm });
       if (b.dataset.a === 'add') { if (!signedIn()) return bubbles.set('me', { text: 'Sign in to add friends.', until: performance.now() + 3000 }); try { await my('friendRequest', { handle: nm, note: '' }); notify(`🤝 Friend request sent to @${nm}`, 'link'); } catch (e) { bubbles.set('me', { text: e.message || 'Couldn\'t send that.', until: performance.now() + 3000 }); } } })); }
   // your thought, from the phone
@@ -14383,7 +14425,7 @@ html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E
     if (start.done) { hello.style.display = 'none'; if (signedIn()) poll(); return; } start.done = true;
     store.set('li.color', myColor);
     hello.style.display = 'none'; nameIn.blur(); passIn.blur(); playing = true; setTimeout(() => wyrdIntro(), 1500);
-    tick(); setInterval(() => { if (!document.hidden) tick(); }, 1000);
+    tick(); setInterval(() => { if (!document.hidden) tick(); }, 1000); liveStart(); // (the live connection, when the island's live server will have us)
     if (signedIn()) poll();
   }
   // already signed in (here or in the WYRD app on this site): welcome back
