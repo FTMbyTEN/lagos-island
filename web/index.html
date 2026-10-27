@@ -2076,7 +2076,7 @@
   // (no full-screen button: on a phone the first tap in goes full screen by itself)
 
   // ---- the player passport: tap the palm. Everything about you on the island, your HQ, your places and things, and the switches
-  function goHQ() { (async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T; me.z = j * T + T - 0.5; cam.follow = true; tickerSay('Home: you\'re at your HQ'); } else tickerSay('Your HQ isn\'t on the map yet'); })().catch(() => tickerSay('Can\'t reach the island right now')); }
+  function goHQ() { (async () => { await loadHqRow(); const k = hqSlots.findIndex((s) => s.mine); if (REAL && k >= 0 && hqInside(k)) { tickerSay('Home: you\'re in your apartment'); return; } const lot = [...hqIndex].find(([, v]) => v === k); if (lot) { const [i, j] = lot[0].split(',').map(Number); me.x = i * T + T; me.z = j * T + T - 0.5; cam.follow = true; tickerSay('Home: you\'re at your HQ'); } else tickerSay('Your HQ isn\'t on the map yet'); })().catch(() => tickerSay('Can\'t reach the island right now')); }
   async function openPass() {
     let veil = document.getElementById('passportVeil'), el = document.getElementById('passport');
     if (!el) { veil = document.createElement('div'); veil.id = 'passportVeil'; el = document.createElement('div'); el.id = 'passport'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Your passport'); document.body.append(veil, el); veil.onclick = closePass; addEventListener('keydown', (e) => { if (e.key === 'Escape') closePass(); }); }
@@ -6305,12 +6305,12 @@
       // a modern BQ: white render, a timber-clad wing in the owner's colour, floor-to-ceiling glass, a flat slab roof
       // with solar panels, a cantilevered canopy over the door, wall lights after dark
       const fz = d - 3.6, mid = a + (c - a) * 0.42, H = 4.8, dark = night > 0.35, FL = REC && REC.clip ? 2 + (k % 2) : 1, RH = H * FL; // (in the 3D street: two or three storeys)
-      if (walkIn) { MYHQ.g = hqWalkIn(a + 1.8, b + 2, c - 1.8, fz, H, '#F8FAFC', '#2B2F36', dark); W3B.list = null; } else box(a + 1.8, 0, b + 2, c - 1.8, H, fz, '#F8FAFC', '#475569', 1); // (your own: hollow, your apartment inside)
+      if (walkIn) { MYHQ.g = hqWalkIn(a + 1.8, b + 2, c - 1.8, fz, H, '#F8FAFC', '#2B2F36', dark, [mid + 0.6, c - 2.4]); W3B.list = null; } else box(a + 1.8, 0, b + 2, c - 1.8, H, fz, '#F8FAFC', '#475569', 1); // (your own: hollow, your apartment inside)
       const dg0 = a + 2.6, dg1 = a + 4.4; // (the doorway: on your own block the cladding leaves it open)
       if (walkIn) { box(a + 1.8, 0, fz - 0.05, dg0, H, fz + 0.15, shadeHex(col, 0.55)); box(dg1, 0, fz - 0.05, mid, H, fz + 0.15, shadeHex(col, 0.55)); box(dg0, 3.1, fz - 0.05, dg1, H, fz + 0.15, shadeHex(col, 0.55)); }
       else box(a + 1.8, 0, fz - 0.05, mid, H, fz + 0.15, shadeHex(col, 0.55)); // the clad wing
       for (let px = a + 2.2; px < mid; px += 0.55) if (!(walkIn && px > dg0 - 0.12 && px < dg1)) box(px, 0.2, fz + 0.15, px + 0.12, H - 0.2, fz + 0.22, shadeHex(col, 0.42)); // its battens
-      box(mid + 0.6, 0.5, fz - 0.02, c - 2.4, H - 0.6, fz + 0.12, dark ? '#FDE68A' : '#1E3A5F'); // the glass, lit warm at night
+      box(mid + 0.6, 0.5, fz - 0.02, c - 2.4, H - 0.6, fz + 0.12, walkIn ? (dark ? 'rgba(253,230,138,0.28)' : 'rgba(120,170,200,0.26)') : dark ? '#FDE68A' : '#1E3A5F'); // the glass, lit warm at night (yours see-through: the rooms behind it)
       for (let px = mid + 0.6 + 1.6; px < c - 2.4; px += 1.6) box(px - 0.05, 0.5, fz + 0.12, px + 0.05, H - 0.6, fz + 0.16, '#0F172A'); // its mullions
       if (walkIn) ROOFTAG = 'myhq'; // (from here up it lifts away while you're inside)
       box(a + 1.4, RH, b + 1.6, c - 1.4, RH + 0.45, fz + 0.5, '#E2E8F0'); box(a + 1.4, RH + 0.45, b + 1.6, c - 1.4, RH + 0.75, b + 1.9, '#94A3B8'); box(a + 1.4, RH + 0.45, b + 1.6, a + 1.7, RH + 0.75, fz + 0.5, '#94A3B8'); // the slab roof and its parapet
@@ -6644,9 +6644,11 @@
   // ceiling; a living room at the front (a sofa facing the TV, a rug, a coffee table), a kitchen down the left wall, the
   // bedroom at the back right behind a partition (a bed, a wardrobe), lamps. Returns what walking needs: the walls and the
   // furniture as footprints, and where 'inside' is (under the floors above, which lift away while you're in)
-  function hqWalkIn(x0, z0, x1, z1, H, rend, trim, dark) {
+  function hqWalkIn(x0, z0, x1, z1, H, rend, trim, dark, glass) {
     const t = 0.25, d0 = x0 + 1.5, d1 = x0 + 2.5, W = x1 - x0, D = z1 - z0, walls = [], fit = [], wall = (a, b, c, d) => { box(a, 0, b, c, H, d, rend); walls.push([a, b, c, d]); }, thing = (a, b, c, d, h, col) => { box(a, 0, b, c, h, d, col); fit.push([a, b, c, d]); };
-    wall(x0, z0, x1, z0 + t); wall(x0, z0, x0 + t, z1); wall(x1 - t, z0, x1, z1); wall(x0, z1 - t, d0, z1); wall(d1, z1 - t, x1, z1); box(d0, 2.7, z1 - t, d1, H, z1, rend); // (the outer walls, the doorway, the lintel over it)
+    wall(x0, z0, x1, z0 + t); wall(x0, z0, x0 + t, z1); wall(x1 - t, z0, x1, z1); box(d0, 2.7, z1 - t, d1, H, z1, rend); // (the outer walls, the lintel over the doorway)
+    if (glass) { wall(x0, z1 - t, d0, z1); wall(d1, z1 - t, glass[0], z1); box(glass[0], 0, z1 - t, glass[1], 0.5, z1, rend); walls.push([glass[0], z1 - t, glass[1], z1]); wall(glass[1], z1 - t, x1, z1); } // (the front: the glass wall open to the room, a sill under it)
+    else { wall(x0, z1 - t, d0, z1); wall(d1, z1 - t, x1, z1); }
     flat(x0 + t, z0 + t, x1 - t, z1 - t, 0.06, '#D9D2C5', '#BFB6A6'); // (the tiled floor)
     ROOFTAG = 'myhq'; box(x0, H - 0.15, z0, x1, H, z1, '#F1EEE8'); ROOFTAG = null; // (the ceiling, which lifts away with the floors above)
     const px = x0 + W * 0.62; wall(px, z0 + t, px + 0.15, z0 + D * 0.55); // (the bedroom partition, open at the front)
@@ -6656,6 +6658,10 @@
     thing(lx - 0.5, lz - 0.4, lx + 0.5, lz + 0.1, 0.4, '#8B5A2B'); box(lx - 0.9, 1.0, z1 - t - 0.06, lx + 0.9, 2.0, z1 - t, '#0B0F19'); box(lx - 0.85, 1.05, z1 - t - 0.07, lx + 0.85, 1.95, z1 - t - 0.06, dark ? '#2563EB' : '#111827'); // (the coffee table; the TV on the wall)
     thing(px + 0.6, z0 + t + 0.1, x1 - t - 0.2, z0 + t + 2.2, 0.55, '#F8FAFC'); box(px + 0.6, 0.55, z0 + t, x1 - t - 0.2, 1.1, z0 + t + 0.2, '#6B4A30'); box(px + 0.9, 0.55, z0 + t + 0.3, x1 - t - 0.5, 0.65, z0 + t + 0.9, '#E5E7EB'); // (the bed, its headboard, the pillows)
     thing(x1 - t - 0.6, z0 + D * 0.6, x1 - t, z0 + D * 0.6 + 1.6, 2.1, '#8B5A2B'); // (the wardrobe)
+    { const tx = x0 + W * 0.5, tz = z0 + D * 0.42; thing(tx - 0.7, tz - 0.45, tx + 0.7, tz + 0.45, 0.76, '#6B4A30'); for (const [cx2, cz2] of [[-0.45, -0.75], [0.45, -0.75], [-0.45, 0.75], [0.45, 0.75]]) { box(tx + cx2 - 0.2, 0, tz + cz2 - 0.2, tx + cx2 + 0.2, 0.46, tz + cz2 + 0.2, '#2B2F36'); box(tx + cx2 - 0.2, 0.46, tz + cz2 + (cz2 > 0 ? 0.15 : -0.2), tx + cx2 + 0.2, 0.95, tz + cz2 + (cz2 > 0 ? 0.2 : -0.15), '#2B2F36'); } box(tx - 0.1, 0.76, tz - 0.1, tx + 0.1, 1.0, tz + 0.1, '#F8FAFC'); } // (the dining table, four chairs, a vase)
+    for (const [ppx, ppz] of [[x0 + t + 0.4, z1 - t - 0.4], [x1 - t - 0.45, z1 - t - 0.45], [px - 0.4, z0 + t + 0.4]]) { thing(ppx - 0.22, ppz - 0.22, ppx + 0.22, ppz + 0.22, 0.4, '#9C6B43'); box(ppx - 0.35, 0.4, ppz - 0.35, ppx + 0.35, 1.3, ppz + 0.35, '#2F6B35'); } // (potted plants: a fern, a snake plant, a palm)
+    for (const [ax, w2, c2] of [[x0 + W * 0.18, 1.0, '#C2410C'], [x0 + W * 0.42, 0.8, '#0E7490']]) { box(ax - w2 / 2, 1.5, z0 + t, ax + w2 / 2, 2.2, z0 + t + 0.04, '#1F2937'); box(ax - w2 / 2 + 0.06, 1.56, z0 + t + 0.04, ax + w2 / 2 - 0.06, 2.14, z0 + t + 0.05, c2); } // (art on the back wall)
+    box(lx + 1.55, 0, lz - 1.35, lx + 1.7, 1.6, lz - 1.2, '#2B2F36'); box(lx + 1.38, 1.6, lz - 1.52, lx + 1.87, 1.9, lz - 1.03, dark ? '#FFE8B0' : '#F5F0E6'); // (a floor lamp by the sofa)
     ROOFTAG = 'myhq'; for (const [lxx, lzz] of [[lx, lz - 0.5], [px + (x1 - px) / 2, z0 + 1.6]]) box(lxx - 0.25, H - 0.3, lzz - 0.25, lxx + 0.25, H - 0.15, lzz + 0.25, dark ? '#FFE8B0' : '#F8FAFC'); ROOFTAG = null; // (the ceiling lights)
     return { kind: 'myhq', a: x0 - 0.3, b: z0 - 0.3, c: x1 + 0.3, d: z1 + 0.3, walls, fit, inside: [x0 + t, z0 + t, x1 - t, z1 - t] };
   }
@@ -10822,9 +10828,10 @@
     residentCard({ title: (h.mine ? '🏡 ' : '🏠 ') + st[0], sub: pl.name, head: h.mine ? 'Your home' : h.owner ? `${h.owner} lives here` : 'A Lagosian lives here', note: h.mine ? 'Furnish it from the Eko Home Store.' : h.owner ? 'Their home stays private; here is who they are.' : 'They keep their home private.', mine: h.mine, owner: h.mine ? null : h.owner, go });
   }
   // a BQ on HQ Row
+  function hqInside(k) { const at = hqAt[k]; if (!at) return false; const [pi, pj] = at; me.x = pi * T + 6; me.z = pj * T + 4.6; me.vx = me.vz = 0; cam.follow = true; V3.wpref = true; try { localStorage.setItem('li.3dw', '1'); } catch {} return true; } // (in your living room, in the street's own 3D)
   function enterHq(k, i, j) {
     const hq = signedIn() ? hqSlots[k] : null, taken = !!hq || k < (housingBqs ?? 0);
-    const go = () => { const [pi, pj] = hqAt[k] || [i, j]; me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); };
+    const go = () => { if (REAL && hq.mine && hqInside(k)) return; const [pi, pj] = hqAt[k] || [i, j]; me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); };
     if (!taken) return houseCard({ title: '🏚️ BQ #' + (k + 1) + ' · HQ Row', sub: 'Vacant', head: 'Not assigned yet', note: 'Locked: it goes to the next new Lagosian, free for their first week.' });
     if (!hq) return houseCard({ title: '🏠 BQ #' + (k + 1) + ' · HQ Row', sub: 'Assigned', head: 'A Lagosian lives here', note: signedIn() ? 'They keep their home private.' : 'Sign in to see who lives here.' });
     if (hq.ghost) return houseCard({ title: '👻 ' + 'BQ #' + (k + 1) + ' · HQ Row', sub: 'Assigned', head: 'Occupied', note: 'The resident keeps to themselves: no visits, no knocking.' });
@@ -13741,7 +13748,7 @@
     if (!signedIn()) return;
     try { hqSlots = await my('hqRow'); } catch {}
     if (!loadHqRow.homed && hqSlots.length) { loadHqRow.homed = true; const q0 = new URLSearchParams(location.search), k = hqSlots.findIndex((s2) => s2.mine), hq = hqSlots[k]; // you always start the game at home, inside your own apartment (unless a link says where)
-      if (hq && hqAt[k] && !q0.get('at') && !q0.get('in') && !inside) { const [pi, pj] = hqAt[k]; cam.follow = true; if (REAL) { me.x = pi * T + 6; me.z = pj * T + 4.6; } else { me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); } } } // (on the real map: in your living room, in the street's own 3D)
+      if (hq && hqAt[k] && !q0.get('at') && !q0.get('in') && !inside) { const [pi, pj] = hqAt[k]; cam.follow = true; if (REAL) hqInside(k); else { me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); } } } // (on the real map: in your living room, in the street's own 3D)
     try { hqBoard.posts = await my('board'); } catch {}
     try { const before = census().taken; homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); const now = census(); if (!housingTaken && loadHqRow.seen && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']); loadHqRow.seen = true; } catch {} // who owns which plot (until the server has homes, everything's for sale)
     try { // the parties going on that I can go to; a new invite pings my phone
@@ -13975,7 +13982,7 @@
         const hq = hqSlots[k];
         if (!signedIn()) next = { label: '🔒 Sign in to WYRD to visit HQs', run: () => openPhone() };
         else if (!hq || hq.ghost) next = null; // vacant, or a resident in ghost mode: locked
-        else if (hq.mine && REAL && V3.on) next = null; // (on the real map your apartment is walked into, through its door: no separate room)
+        else if (hq.mine && REAL) next = V3.on ? null : { label: `🏠 Go into ${hq.name}`, run: () => hqInside(k) }; // (on the real map your apartment is walked into, through its door: no separate room)
         else if (hq.mine) { warmDoor('hq:' + hq.slot); next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) }; }
         else next = { label: `🏠 ${hq.owner || 'A Lagosian'}'s BQ`, run: () => enterHq(k, Math.floor(me.x / T), Math.floor(me.z / T)) };
       }
