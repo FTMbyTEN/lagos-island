@@ -125,6 +125,50 @@ def main():
             n = (i + di, j + dj)
             if n in added or (0 <= n[0] < W and 0 <= n[1] < H and tile[n[1]][n[0]] in (B.ROAD, B.BRIDGE)):
                 lines.append([CLS['residential'], 1 if tile[j][i] == B.BRIDGE else 0, [(i * 10 + 5, j * 10 + 5), (n[0] * 10 + 5, n[1] * 10 + 5)]])
+    # the streets as drawn (each at its width with its pavement), by tile, to test buildings and lots against
+    hwid = [WIDTH[k] / WU / 2 + 0.9 for k in WIDTH]; segs = collections.defaultdict(list)
+    for cls, br, pts in lines:
+        for (ax, az), (bx, bz) in zip(pts, pts[1:]):
+            hw = hwid[cls]
+            for tj in range(int((min(az, bz) - hw) // 10), int((max(az, bz) + hw) // 10) + 1):
+                for ti in range(int((min(ax, bx) - hw) // 10), int((max(ax, bx) + hw) // 10) + 1): segs[(ti, tj)].append((ax, az, bx, bz, hw))
+    def seg_d(px, pz, ax, az, bx, bz):
+        dx, dz = bx - ax, bz - az; L2 = dx * dx + dz * dz or 1e-9; t = max(0, min(1, ((px - ax) * dx + (pz - az) * dz) / L2))
+        return math.hypot(px - ax - dx * t, pz - az - dz * t)
+    def inside(poly, x, z):
+        c = False
+        for (ax, az), (bx, bz) in zip(poly, poly[1:] + poly[:1]):
+            if (az > z) != (bz > z) and x < ax + (z - az) * (bx - ax) / (bz - az): c = not c
+        return c
+    def on_road(poly):  # a building that a street, drawn at its width, runs into
+        xs = [p[0] for p in poly]; zs = [p[1] for p in poly]; near = set()
+        for tj in range(int(min(zs) // 10) - 1, int(max(zs) // 10) + 2):
+            for ti in range(int(min(xs) // 10) - 1, int(max(xs) // 10) + 2): near.update(segs.get((ti, tj), ()))
+        for ax, az, bx, bz, hw in near:
+            if any(seg_d(px, pz, ax, az, bx, bz) < hw for px, pz in poly): return True  # (a corner in the street)
+            L = math.hypot(bx - ax, bz - az); n = max(1, int(L / 1.5))
+            for k in range(n + 1):  # (the street's own line through the building, or passing within its width of a wall)
+                sx, sz = ax + (bx - ax) * k / n, az + (bz - az) * k / n
+                if inside(poly, sx, sz) or any(seg_d(sx, sz, p[0], p[1], q[0], q[1]) < hw * 0.8 for p, q in zip(poly, poly[1:] + poly[:1])): return True
+        return False
+    before = len(keep); keep = [b for b in keep if not on_road(b['poly'])]; print(before - len(keep), 'buildings left out for standing in a street')
+    # the squares a street (or its pavement) reaches into: no modelled house, tree or lot is put on them
+    rmask = [[0] * W for _ in range(H)]
+    for (ti, tj), L in segs.items():
+        if 0 <= ti < W and 0 <= tj < H and any(seg_d(ti * 10 + 5, tj * 10 + 5, *s[:4]) < s[4] + 4.6 for s in L): rmask[tj][ti] = 1
+    # the low buildings (one or two floors) become the island's own modelled houses, one to a square: a Brazilian house
+    # in old Lagos, a district home elsewhere. The taller ones keep their real footprints and heights
+    hmask = [[0] * W for _ in range(H)]; tall = []
+    for b in keep:
+        i, j = int(b['c'][0] // 10), int(b['c'][1] // 10)
+        if b['h'] <= 2 * LEVEL_M / HU + 0.1 and not rmask[j][i]: hmask[j][i] = 1
+        else: tall.append(b)
+    for b in tall:  # (no house where a tall one stands)
+        for jj in range(int(min(p[1] for p in b['poly']) // 10), int(max(p[1] for p in b['poly']) // 10) + 1):
+            for ii in range(int(min(p[0] for p in b['poly']) // 10), int(max(p[0] for p in b['poly']) // 10) + 1):
+                if 0 <= ii < W and 0 <= jj < H: hmask[jj][ii] = 0
+    print(len(keep) - len(tall), 'low buildings become', sum(map(sum, hmask)), 'modelled houses;', len(tall), 'tall ones stay')
+    keep = tall
     # the chunks
     cw, chh = (W + CH - 1) // CH, (H + CH - 1) // CH
     chunks = collections.defaultdict(lambda: {'r': [], 'b': []})
@@ -170,7 +214,7 @@ def main():
     # the board: each row run-length coded ("<code><count>" pairs, count in hex, comma between)
     rle = rle_of(tile)
     doc = {'attribution': '© OpenStreetMap contributors (ODbL)', 'w': W, 'h': H, 'tile_m': B.TILE, 'unit_m': U, 'chunk': CH, 'chunks': [list(k) for k in sorted(chunks)],
-           'widths': [WIDTH[k] / WU for k in WIDTH], 'ntReg': nt_register(), 'rle': rle, 'brle': rle_of(bt), 'places': sites, 'districts': dist}
+           'widths': [WIDTH[k] / WU for k in WIDTH], 'ntReg': nt_register(), 'rle': rle, 'brle': rle_of(bt), 'rrle': rle_of(rmask), 'hrle': rle_of(hmask), 'places': sites, 'districts': dist}
     open(os.path.join(out_dir, 'lagos-world.js'), 'w', encoding='utf-8').write('// Lagos at true scale, made by tools/osm2world.py. Map data (c) OpenStreetMap contributors, ODbL.\nwindow.LAGOS_BOARD = ' + json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + ';\n')
     c = collections.Counter(ch for row in tile for ch in row)
     print(f'{W}x{H} tiles', dict(c), len(lines), 'street lines', len(chunks), 'chunks', round(total / 1e6, 1), 'MB of chunks', os.path.getsize(os.path.join(out_dir, 'lagos-world.js')) // 1000, 'KB board')

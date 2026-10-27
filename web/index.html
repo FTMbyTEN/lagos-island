@@ -1206,6 +1206,8 @@
   #tApp, .touch #tApp { width: 42px !important; height: 42px !important; background: linear-gradient(145deg, #22C55E, #0EA5E9) !important; box-shadow: 0 8px 20px -6px rgba(14,165,233,.7), inset 0 1px 0 rgba(255,255,255,.35) !important; animation: none !important; } #tApp:hover span svg { animation: dlB .8s ease-in-out infinite; } @keyframes dlB { 50% { transform: translateY(2px); } }
   @media (min-width: 900px) and (pointer: fine) { #tApp, .touch #tApp { width: auto !important; padding: 0 16px 0 12px !important; gap: 8px; border-radius: 999px !important; } #tApp em { display: inline; } }
   body.ovl #tApp, body.ovl #tFs, body.ovl #tAppTip { display: none !important; }
+  body.ovl #hud, body.phoneOn #hud { opacity: 0 !important; scale: .4; pointer-events: none !important; }
+  #minimap, #mmLab { transition: opacity .25s, scale .35s cubic-bezier(.3,1.6,.5,1); } body.ovl #minimap, body.ovl #mmLab, body.phoneOn #minimap, body.phoneOn #mmLab { opacity: 0 !important; scale: .4; pointer-events: none !important; }
   #tAppTip, .touch #tAppTip { left: auto !important; bottom: auto !important; right: calc(12px + env(safe-area-inset-right)) !important; top: calc(156px + env(safe-area-inset-top)) !important; }
   #tAppTip::after { left: auto !important; right: 12px; bottom: auto !important; top: -8px; border: 8px solid transparent !important; border-top: 0 !important; border-bottom-color: #0F172A !important; }
   #dlv { position: fixed; inset: 0; z-index: 72; display: grid; place-items: end center; background: rgba(2,6,23,.4); padding: 0 8px calc(8px + env(safe-area-inset-bottom)); font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -1515,7 +1517,7 @@
 #phoneBtn { zoom: .82; } #v3btn, #tApp, #act, #leave { zoom: .85; }
 @media (max-width: 560px) { #rtick { display: none; } }
 /* the buttons: painted yellow tiles with a hard shadow */
-#phoneBtn { box-shadow: 0 0 0 3px var(--danfo), 4px 5px 0 3px rgba(0,0,0,.4) !important; border-radius: 10px !important; }
+#phoneBtn { box-shadow: 4px 5px 0 0 rgba(0,0,0,.4) !important; border-radius: 10px !important; }
 #act { background: var(--danfo) !important; color: var(--ink) !important; font: 400 17px/1 var(--sign) !important; letter-spacing: .8px; text-transform: uppercase; border-radius: 6px !important; box-shadow: 0 0 0 3px var(--ink), 5px 6px 0 3px rgba(0,0,0,.4) !important; padding: 13px 22px 12px !important; }
 #act:hover { filter: brightness(1.06); }
 #leave { background: var(--danfo) !important; color: var(--ink) !important; border-radius: 6px !important; box-shadow: 0 0 0 3px var(--ink), 4px 5px 0 3px rgba(0,0,0,.4) !important; }
@@ -1684,8 +1686,10 @@
   // ?real=1: Lagos as it is, from OpenStreetMap (tools/osm2board.py): every road, bridge and creek on 100 m tiles, the
   // districts where they really are, every place on its real site (the made-up ones on new land at the city's edge)
   const REAL = window.LAGOS_BOARD || null;
-  if (REAL && REAL.rle) { const un = (rows) => rows.map((r) => r.split(',').map((s2) => s2[0].repeat(parseInt(s2.slice(1), 16))).join('')); REAL.rows = un(REAL.rle); REAL.bmask = un(REAL.brle || []); }
+  if (REAL && REAL.rle) { const un = (rows) => rows.map((r) => r.split(',').map((s2) => s2[0].repeat(parseInt(s2.slice(1), 16))).join('')); REAL.rows = un(REAL.rle); REAL.bmask = un(REAL.brle || []); REAL.rmask = un(REAL.rrle || []); REAL.hmask = un(REAL.hrle || []); }
   const realBld = (i, j) => !!(REAL && REAL.bmask && REAL.bmask[j] && REAL.bmask[j][i] === '1'); // (a real building stands on this tile)
+  const realRoad = (i, j) => !!(REAL && REAL.rmask && REAL.rmask[j] && REAL.rmask[j][i] === '1'); // (a street or its pavement reaches into this tile)
+  const realHouse = (i, j) => !!(REAL && REAL.hmask && REAL.hmask[j] && REAL.hmask[j][i] === '1'); // (a real low house stands here: drawn as one of the island's modelled houses)
   const BOARD = REAL ? { w: REAL.w, h: REAL.h } : { w: 96, h: 48 };
   if (REAL) { const cr = document.createElement('div'); cr.textContent = REAL.attribution; cr.style.cssText = 'position:fixed;right:6px;bottom:2px;z-index:5;font:600 9px system-ui,sans-serif;color:rgba(255,255,255,0.75);text-shadow:0 1px 2px rgba(0,0,0,0.6);pointer-events:none'; document.body.append(cr); } // (the map's credit, as its licence asks)
   const SECTORS = [
@@ -6596,10 +6600,10 @@
     const t = at(i, j);
     if ((t !== LAND && t !== SAND) || placeAt[j * BOARD.w + i] >= 0) continue;
     const v = rnd(i * 97 + j * 131)(), sec = SECTORS[sectorAt[j * BOARD.w + i]];
-    if (REAL && realBld(i, j)) continue; // (a real building stands here)
+    if (REAL && (realBld(i, j) || realRoad(i, j))) continue; // (a real building stands here, or a street runs through)
     if (REAL && sec && sec.fill === 'city' && v > 0.3) continue; // (New Town's made-up towers spread out on the real map's smaller tiles)
     if (sec && sec.fill) { if (sec.fill !== 'none') lots.push({ i, j, kind: sec.fill }); continue; }
-    if (REAL) { if (v < 0.22) lots.push({ i, j, kind: t === SAND ? 'palm' : 'trees' }); continue; } // (open ground on the real map: only the real buildings stand on it; a tree here and there)
+    if (REAL) { if (realHouse(i, j)) lots.push({ i, j, kind: 'house' }); else if (v < 0.22) lots.push({ i, j, kind: t === SAND ? 'palm' : 'trees' }); continue; } // (open ground on the real map: only the real buildings stand on it; a tree here and there)
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   { const hq = new Map(); for (const l of lots) if (l.kind === 'hq') hq.set(l.i + ',' + l.j, l);
@@ -6666,7 +6670,7 @@
     return best;
   }
   if (/^(localhost|127.)/.test(location.hostname)) Object.assign(window, { __nt: NT, __at: at, __places: PLACES, __cam: cam, __open: openPhone, __render: render, __bAt: (x2, y2) => buildingAt(x2, y2), __tap: (x2, y2) => tapAt(x2, y2), __P: (a2, b2, c2) => P(a2, b2, c2) });
-  for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
+  if (!REAL) for (const l of lots) if (l.kind === 'house') blocked.push([l.i * T + 2.5, l.j * T + 2.5, (l.i + 1) * T - 2.5, (l.j + 1) * T - 2.5]);
   const PIN_H = { studio: 120, grid: 36, bank: 114, marina: 10, bigate: 8, villas: 12, homestore: 20, dealer: 16, airport: 30, station: 14, welcome: 6, wyrdtower: 150, soon: 6, arena: 34, refinery: 40, club: 16, casino: 24, screens: 20, hqgate: 10, mosque: 26, towers: 55, hotel: 44, skyline: 90, cathedral: 30, hospital: 16, field: 10, park: 10, beach: 8, forest: 12, golf: 10, fountain: 8 };
 
   // ================= painting a frame =================
@@ -6782,35 +6786,61 @@
     if (REAL) { for (const [i0, j, i1, sd] of LAND_RUNS) { b.fillStyle = sd ? '#D9C48F' : '#6E9361'; b.fillRect(i0 * S, j * S, (i1 - i0 + 1) * S, S + 0.5); } b.fillStyle = '#CBD5E1'; for (let k = 0; k < tile.length; k++) if (tile[k] === BRIDGE) b.fillRect((k % BOARD.w) * S, Math.floor(k / BOARD.w) * S, S + 0.5, S + 0.5); }
     else for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) { const t = at(i, j); if (t === W0) continue; b.fillStyle = ground(t); b.fillRect(i * S, j * S, S + 0.5, S + 0.5); }
     const roads = (c) => { b.lineCap = b.lineJoin = 'round'; for (let cl = REAL.widths.length - 1; cl >= 0; cl--) { b.beginPath(); for (const r of c.r) { if (r.c !== cl) continue; b.moveTo(r.p[0] * S / T, r.p[1] * S / T); for (let k = 2; k < r.p.length; k += 2) b.lineTo(r.p[k] * S / T, r.p[k + 1] * S / T); } b.strokeStyle = cl <= 1 ? '#F8D57E' : '#EEF2F6'; b.lineWidth = Math.max(0.9, REAL.widths[cl] * S / T * (cl <= 1 ? 1.6 : 1.3)); b.stroke(); } };
-    const TOUCH = MOBILE || isTouch, D = TOUCH ? 112 : 168, el = document.createElement('canvas'), dpr = Math.min(2, devicePixelRatio || 1); el.id = 'minimap'; el.width = el.height = Math.round(D * dpr);
-    const spot = TOUCH ? `left:auto;right:calc(12px + env(safe-area-inset-right));top:calc(210px + env(safe-area-inset-top));bottom:auto;` : 'left:12px;top:auto;right:auto;bottom:84px;'; // (on a phone: the right side, under the corner buttons, clear of the joystick)
-    el.style.cssText = `position:fixed;${spot}width:${D}px;height:${D}px;z-index:25;border-radius:50%;box-shadow:0 0 0 3px rgba(15,23,42,.85),0 0 0 5px rgba(250,204,21,.85),0 6px 18px rgba(0,0,0,.45);cursor:pointer;touch-action:none`;
-    const lab = document.createElement('div'); lab.style.cssText = `position:fixed;${TOUCH ? `right:calc(12px + env(safe-area-inset-right));top:calc(${210 + D + 6}px + env(safe-area-inset-top))` : 'left:12px;bottom:62px'};width:${D}px;z-index:25;text-align:center;font:800 11px 'Plus Jakarta Sans',system-ui;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis`;
-    document.body.append(el, lab); const g = el.getContext('2d');
-    const st = { wp: null, k: (D / 2) / (REAL ? 170 : 110) }; // (px per world unit: about 170 units out to the rim on the real map)
-    const yawNow = () => (V3.on && V3.wpref ? V3.yaw : cam.yaw) || 0;
-    const toMap = (wx, wz, ps) => { const dx = wx - me.x, dz = wz - me.z, c2 = Math.cos(ps), s2 = Math.sin(ps); return [(dx * c2 - dz * s2) * st.k, (dx * s2 + dz * c2) * st.k]; };
+    // the small map in the corner, and the big one: double-tap (or double-click) it to open the whole city with every
+    // place named, tap a place there to set your route; the wheel (or a pinch) zooms either
+    const TOUCH = MOBILE || isTouch, D0 = TOUCH ? 92 : 128, el = document.createElement('canvas'), dpr = Math.min(2, devicePixelRatio || 1); el.id = 'minimap';
+    const small = TOUCH ? `left:auto;right:calc(12px + env(safe-area-inset-right));top:calc(210px + env(safe-area-inset-top));bottom:auto;` : 'left:12px;top:auto;right:auto;bottom:84px;'; // (on a phone: the right side, under the corner buttons, clear of the joystick)
+    const lab = document.createElement('div'); lab.id = 'mmLab';
+    const veil = document.createElement('div'); veil.style.cssText = 'position:fixed;inset:0;z-index:58;background:rgba(2,6,23,.55);display:none';
+    document.body.append(veil, el, lab); const g = el.getContext('2d');
+    const st = { wp: null, big: false, zoom: 1, D: D0 };
+    const layout = () => {
+      const D = st.D = st.big ? Math.round(Math.min(innerWidth, innerHeight) * 0.86) : D0; el.width = el.height = Math.round(D * dpr);
+      el.style.cssText = `position:fixed;${st.big ? `left:50%;top:50%;right:auto;bottom:auto;margin:${-D / 2}px 0 0 ${-D / 2}px;z-index:59;` : small + 'z-index:25;'}width:${D}px;height:${D}px;border-radius:50%;box-shadow:0 0 0 2px rgba(15,23,42,.75),0 6px 16px rgba(0,0,0,.4);cursor:pointer;touch-action:none`;
+      lab.style.cssText = `position:fixed;${st.big ? `left:50%;top:calc(50% + ${D / 2 + 8}px);margin-left:${-D / 2}px;z-index:59;font-size:13px;` : TOUCH ? `right:calc(12px + env(safe-area-inset-right));top:calc(${210 + D + 5}px + env(safe-area-inset-top));z-index:25;font-size:10px;` : 'left:12px;bottom:64px;z-index:25;font-size:11px;'}width:${D}px;text-align:center;font-weight:800;font-family:'Plus Jakarta Sans',system-ui;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis`;
+      veil.style.display = st.big ? 'block' : 'none';
+    };
+    layout(); addEventListener('resize', () => { if (st.big) layout(); });
+    const kNow = () => (st.D / 2) / ((REAL ? 170 : 110) * (st.big ? (REAL ? 9 : 4) : 1)) * st.zoom; // (px per world unit: the big map shows far more of the city)
+    const yawNow = () => st.big ? 0 : (V3.on && V3.wpref ? V3.yaw : cam.yaw) || 0; // (the big map faces north, like a paper map)
+    const toMap = (wx, wz, ps, k) => { const dx = wx - me.x, dz = wz - me.z, c2 = Math.cos(ps), s2 = Math.sin(ps); return [(dx * c2 - dz * s2) * k, (dx * s2 + dz * c2) * k]; };
     const goal = () => { if (st.wp) return st.wp; try { if (typeof GJ !== 'undefined' && GJ.shift) { const tk = gridTask(); if (tk && tk.spot) return { x: tk.spot.x, z: tk.spot.z, name: tk.spot.name, task: true }; } } catch {} return null; };
-    el.addEventListener('click', (e) => { const r = el.getBoundingClientRect(), mx = e.clientX - r.left - D / 2, my = e.clientY - r.top - D / 2, ps = yawNow(), c2 = Math.cos(ps), s2 = Math.sin(ps), wx = me.x + (mx * c2 + my * s2) / st.k, wz = me.z + (-mx * s2 + my * c2) / st.k;
-      let best = null, bd = 18 / st.k; for (const p2 of PLACES) { const d2 = Math.hypot((p2[1] + p2[3] / 2) * T - wx, (p2[2] + p2[4] / 2) * T - wz); if (d2 < bd) { bd = d2; best = p2; } }
-      st.wp = best && !(st.wp && st.wp.name === best[5]) ? { x: (best[1] + best[3] / 2) * T, z: (best[2] + best[4] / 2) * T, name: best[5] } : null; if (st.wp) tickerSay('Route set: ' + st.wp.name); });
+    const setBig = (on) => { st.big = on; st.zoom = 1; layout(); };
+    // a tap picks the nearest place under it as your route (tap it again, or empty map, to clear it); two taps quickly open or close the big map
+    let lastTap = 0;
+    el.addEventListener('click', (e) => {
+      const now = performance.now(); if (now - lastTap < 450) { lastTap = 0; setBig(!st.big); return; } lastTap = now;
+      const r = el.getBoundingClientRect(), mx = e.clientX - r.left - st.D / 2, my = e.clientY - r.top - st.D / 2, ps = yawNow(), k = kNow(), c2 = Math.cos(ps), s2 = Math.sin(ps), wx = me.x + (mx * c2 + my * s2) / k, wz = me.z + (-mx * s2 + my * c2) / k;
+      let best = null, bd = 16 / k; for (const p2 of PLACES) { const d2 = Math.hypot((p2[1] + p2[3] / 2) * T - wx, (p2[2] + p2[4] / 2) * T - wz); if (d2 < bd) { bd = d2; best = p2; } }
+      setTimeout(() => { if (!lastTap || lastTap !== now) return; // (wait: was it the first of two taps?)
+        st.wp = best && !(st.wp && st.wp.name === best[5]) ? { x: (best[1] + best[3] / 2) * T, z: (best[2] + best[4] / 2) * T, name: best[5] } : null; if (st.wp) tickerSay('Route set: ' + st.wp.name); if (st.big && st.wp) setBig(false); }, 460); });
+    el.addEventListener('dblclick', (e) => { e.preventDefault(); if (lastTap) { lastTap = 0; setBig(!st.big); } }); // (a mouse's own double-click, however slow the page is)
+    veil.addEventListener('click', () => setBig(false));
+    el.addEventListener('wheel', (e) => { e.preventDefault(); st.zoom = Math.max(0.4, Math.min(3, st.zoom * (e.deltaY < 0 ? 1.2 : 1 / 1.2))); }, { passive: false });
+    { let pin = null; el.addEventListener('touchmove', (e) => { if (e.touches.length !== 2) return; e.preventDefault(); const d2 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); if (pin) st.zoom = Math.max(0.4, Math.min(3, st.zoom * d2 / pin)); pin = d2; }, { passive: false }); el.addEventListener('touchend', () => { pin = null; }); }
     function paint() {
-      el.style.display = lab.style.display = inside || !playing ? 'none' : 'block'; if (inside || !playing) return;
-      const ps = yawNow(), R2 = D / 2; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, D, D); g.save(); g.beginPath(); g.arc(R2, R2, R2, 0, Math.PI * 2); g.clip();
-      g.fillStyle = '#2B5C85'; g.fillRect(0, 0, D, D); g.save(); g.translate(R2, R2); g.rotate(ps); g.scale(st.k * T / S, st.k * T / S); g.imageSmoothingEnabled = true; g.drawImage(base, -me.x * S / T, -me.z * S / T); g.restore();
-      for (const p2 of PLACES) { const [mx, my] = toMap((p2[1] + p2[3] / 2) * T, (p2[2] + p2[4] / 2) * T, ps); if (Math.hypot(mx, my) > R2 - 4) continue; g.fillStyle = PIN_COL[p2[0]] || '#F8FAFC'; g.beginPath(); g.arc(R2 + mx, R2 + my, 3.4, 0, Math.PI * 2); g.fill(); g.strokeStyle = 'rgba(15,23,42,.8)'; g.lineWidth = 1; g.stroke(); }
-      if (V3.myRide && !V3.drive) { const [mx, my] = toMap(V3.myRide.cx, V3.myRide.cz, ps); if (Math.hypot(mx, my) < R2 - 5) { g.fillStyle = '#22C55E'; g.fillRect(R2 + mx - 3, R2 + my - 2, 6, 4); g.strokeStyle = '#052E16'; g.strokeRect(R2 + mx - 3, R2 + my - 2, 6, 4); } }
-      const gl = goal(); let txt = '';
-      if (gl) { let [mx, my] = toMap(gl.x, gl.z, ps); const dd = Math.hypot(mx, my), far = dd > R2 - 9; if (far) { mx *= (R2 - 9) / dd; my *= (R2 - 9) / dd; }
+      { const phoneOn = (document.getElementById('phone') || {}).style?.display === 'block'; document.body.classList.toggle('phoneOn', phoneOn); if (phoneOn && st.big) setBig(false); } // (the HUD and the map step away while the phone is out)
+      const off = inside || !playing; el.style.display = lab.style.display = off ? 'none' : 'block'; if (off) { if (st.big) setBig(false); return; }
+      const D = st.D, ps = yawNow(), k = kNow(), R2 = D / 2; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, D, D); g.save(); g.beginPath(); g.arc(R2, R2, R2, 0, Math.PI * 2); g.clip();
+      g.fillStyle = '#2B5C85'; g.fillRect(0, 0, D, D); g.save(); g.translate(R2, R2); g.rotate(ps); g.scale(k * T / S, k * T / S); g.imageSmoothingEnabled = true; g.drawImage(base, -me.x * S / T, -me.z * S / T); g.restore();
+      const gl = goal();
+      if (gl) { const [gx, gy] = toMap(gl.x, gl.z, ps, k); g.save(); g.setLineDash([4, 4]); g.strokeStyle = 'rgba(250,204,21,.95)'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(R2, R2); g.lineTo(R2 + gx, R2 + gy); g.stroke(); g.restore(); } // (the way to it, as the crow flies)
+      g.font = "800 10px 'Plus Jakarta Sans',system-ui"; g.textAlign = 'center'; g.textBaseline = 'top';
+      for (const p2 of PLACES) { const [mx, my] = toMap((p2[1] + p2[3] / 2) * T, (p2[2] + p2[4] / 2) * T, ps, k); if (Math.hypot(mx, my) > R2 - 4) continue; g.fillStyle = PIN_COL[p2[0]] || '#F8FAFC'; g.beginPath(); g.arc(R2 + mx, R2 + my, st.big ? 4 : 3, 0, Math.PI * 2); g.fill(); g.strokeStyle = 'rgba(15,23,42,.8)'; g.lineWidth = 1; g.stroke();
+        if (st.big) { const nm = p2[5].replace(/ \(.*\)$/, ''); g.lineWidth = 3; g.strokeStyle = 'rgba(15,23,42,.85)'; g.strokeText(nm, R2 + mx, R2 + my + 5); g.fillStyle = '#F8FAFC'; g.fillText(nm, R2 + mx, R2 + my + 5); } }
+      for (const o of others.values()) { const [mx, my] = toMap(o.x, o.z, ps, k); if (Math.hypot(mx, my) > R2 - 4) continue; g.fillStyle = '#38BDF8'; g.beginPath(); g.arc(R2 + mx, R2 + my, 2.6, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#0C4A6E'; g.lineWidth = 1; g.stroke(); } // the other players
+      if (V3.myRide && !V3.drive) { const [mx, my] = toMap(V3.myRide.cx, V3.myRide.cz, ps, k); if (Math.hypot(mx, my) < R2 - 5) { g.fillStyle = '#22C55E'; g.fillRect(R2 + mx - 3, R2 + my - 2, 6, 4); g.strokeStyle = '#052E16'; g.strokeRect(R2 + mx - 3, R2 + my - 2, 6, 4); } }
+      let txt = '';
+      if (gl) { let [mx, my] = toMap(gl.x, gl.z, ps, k); const dd = Math.hypot(mx, my), far = dd > R2 - 9; if (far) { mx *= (R2 - 9) / dd; my *= (R2 - 9) / dd; }
         g.save(); g.translate(R2 + mx, R2 + my); g.fillStyle = '#FACC15'; g.strokeStyle = '#1F2937'; g.lineWidth = 1.5; g.beginPath(); if (far) { g.rotate(Math.atan2(my, mx)); g.moveTo(7, 0); g.lineTo(-5, -5); g.lineTo(-5, 5); } else { g.moveTo(0, -7); g.lineTo(5, 0); g.lineTo(0, 7); g.lineTo(-5, 0); } g.closePath(); g.fill(); g.stroke(); g.restore();
         const m = Math.hypot(gl.x - me.x, gl.z - me.z) * (REAL ? 1.5 : 3); txt = `${gl.task ? '⚡' : '📍'} ${gl.name} · ${m < 1000 ? Math.round(m / 10) * 10 + ' m' : (m / 1000).toFixed(1) + ' km'}`;
         if (st.wp && m < 25) { st.wp = null; tickerSay('You have arrived'); } }
-      { const q = V3.drive && V3.drive.q, ang = q ? q.ang : Math.hypot(me.vx || 0, me.vz || 0) > 0.5 ? Math.atan2(me.vz, me.vx) : Math.atan2(-Math.cos(ps), -Math.sin(ps)), fx = Math.cos(ang), fz = Math.sin(ang), ux = fx * Math.cos(ps) - fz * Math.sin(ps), uy = fx * Math.sin(ps) + fz * Math.cos(ps), a2 = Math.atan2(uy, ux); // you
+      { const q = V3.drive && V3.drive.q, ang = q ? q.ang : Math.hypot(me.vx || 0, me.vz || 0) > 0.5 ? Math.atan2(me.vz, me.vx) : Math.atan2(-Math.cos(yawNow() || 0), -Math.sin(yawNow() || 0)), fx = Math.cos(ang), fz = Math.sin(ang), ux = fx * Math.cos(ps) - fz * Math.sin(ps), uy = fx * Math.sin(ps) + fz * Math.cos(ps), a2 = Math.atan2(uy, ux); // you
         g.save(); g.translate(R2, R2); g.rotate(a2); g.fillStyle = '#FFFFFF'; g.strokeStyle = '#0F172A'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(8, 0); g.lineTo(-5, -5.5); g.lineTo(-2.5, 0); g.lineTo(-5, 5.5); g.closePath(); g.fill(); g.stroke(); g.restore(); }
-      { const nx2 = Math.sin(ps), ny2 = -Math.cos(ps); g.fillStyle = '#0F172A'; g.beginPath(); g.arc(R2 + nx2 * (R2 - 9), R2 + ny2 * (R2 - 9), 7, 0, Math.PI * 2); g.fill(); g.fillStyle = '#F8FAFC'; g.font = "900 9px 'Plus Jakarta Sans',system-ui"; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('N', R2 + nx2 * (R2 - 9), R2 + ny2 * (R2 - 9) + 0.5); } // north on the rim
-      g.restore(); lab.textContent = txt || (sector ? sector.name : '');
+      { const nx2 = Math.sin(ps), ny2 = -Math.cos(ps), rr = R2 - 8; g.fillStyle = '#0F172A'; g.beginPath(); g.arc(R2 + nx2 * rr, R2 + ny2 * rr, 6.5, 0, Math.PI * 2); g.fill(); g.fillStyle = '#F8FAFC'; g.font = "900 9px 'Plus Jakarta Sans',system-ui"; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('N', R2 + nx2 * rr, R2 + ny2 * rr + 0.5); } // north on the rim
+      g.restore(); lab.textContent = txt || (st.big ? 'Tap a place for its route · tap twice to close' : (sector ? sector.name : ''));
     }
-    setInterval(() => { try { paint(); } catch {} }, MOBILE ? 100 : 50);
+    setInterval(() => { try { paint(); } catch (e) { if (!paint.warned) { paint.warned = true; console.warn('minimap', e); } } }, MOBILE ? 100 : 50);
     if (REAL) for (const c of WC.m.values()) if (c.ok) roads(c);
     return { roads, st };
   })();
@@ -6863,7 +6893,7 @@
     const visible = (i, j) => { if (REC && REC.clip) { const c = REC.clip; return (i + 2) * T > c[0] && (i - 1) * T < c[2] && (j + 1) * T > c[1] && (j - 1) * T < c[3]; } const p = P(i * T + T / 2, 0, j * T + T / 2); return p[0] > -K * 40 && p[0] < W + K * 40 && p[1] > -K * 40 && p[1] < H + K * 60; };
     // the land slabs: a thick edge, then the top
     const VT = viewTiles();
-    if (REAL) for (let j = Math.max(0, VT[1]); j <= Math.min(BOARD.h - 1, VT[3]); j++) for (const [i0, , i1, sd] of RUNS_ROW[j]) { if (i1 < VT[0] || i0 > VT[2]) continue; const xa = i0 * T, xb = (i1 + 1) * T, za = j * T, zb = za + T; box(xa, -3, za, xb, 0, zb, sd ? C.sandEdge : C.landEdge); flat(xa, za, xb, zb, 0, sd ? C.sand : C.land); } // (the real coast, row by row)
+    if (REAL) for (let j = Math.max(0, VT[1]); j <= Math.min(BOARD.h - 1, VT[3]); j++) for (const [i0, , i1, sd] of RUNS_ROW[j]) { if (i1 < VT[0] || i0 > VT[2]) continue; const xa = i0 * T, xb = (i1 + 1) * T, za = j * T, zb = za + T; flat(xa, za, xb, zb, 0, sd ? C.sand : C.land); } // (the real ground, row by row: plain fills, no edges, so no seams show on the grass)
     else for (const s of SECTORS) {
       const [i0, j0, i1, j1] = s.rect, xa = i0 * T, za = j0 * T, xb = (i1 + 1) * T, zb = (j1 + 1) * T;
       box(xa, -3, za, xb, 0, zb, s.sand ? C.sandEdge : C.landEdge);
