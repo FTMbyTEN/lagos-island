@@ -815,9 +815,9 @@
      notch and the home bar (safe areas); the power button stays as a slim tab on the right edge (it puts the phone
      away, locked or not). */
   @media (max-width: 600px), (pointer: coarse) and (max-height: 500px) {
-    #phone, .touch #phone { inset: 0 !important; left: 0 !important; right: 0 !important; top: 0 !important; bottom: 0 !important; margin: 0 !important; width: 100vw !important; width: 100dvw !important; height: 100vh !important; height: 100dvh !important; scale: 1 !important; transform: none !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; background: #07070D !important; animation: phoneUp .22s ease-out !important; }
+    #phone, .touch #phone { inset: auto calc(8px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) auto !important; margin: 0 !important; width: 372px !important; height: var(--phh, 640px) !important; scale: var(--ps, .6) !important; transform-origin: 100% 100% !important; border-radius: 40px !important; animation: phoneUp .22s ease-out !important; } /* docked bottom-right, beside the joystick: the game keeps running while you use it */
     @keyframes phoneUp { from { transform: translateY(100%); } to { transform: none; } } /* slides up, solid all the way (the island never shows through) */
-    #screen { border-radius: 0 !important; box-shadow: none !important; height: 100% !important; }
+    #screen { height: 100% !important; }
     #phone .btnL1, #phone .btnL2 { display: none !important; }
     #phone .btnR { display: block !important; position: absolute !important; right: 0 !important; top: 38% !important; width: 6px !important; height: 72px !important; border-radius: 6px 0 0 6px !important; background: rgba(255,255,255,.28) !important; z-index: 30 !important; }
     #phone .btnR::before { content: ''; position: absolute; inset: -10px -4px -10px -18px; } /* a bigger finger target than it looks */
@@ -1206,8 +1206,8 @@
   #tApp, .touch #tApp { width: 42px !important; height: 42px !important; background: linear-gradient(145deg, #22C55E, #0EA5E9) !important; box-shadow: 0 8px 20px -6px rgba(14,165,233,.7), inset 0 1px 0 rgba(255,255,255,.35) !important; animation: none !important; } #tApp:hover span svg { animation: dlB .8s ease-in-out infinite; } @keyframes dlB { 50% { transform: translateY(2px); } }
   @media (min-width: 900px) and (pointer: fine) { #tApp, .touch #tApp { width: auto !important; padding: 0 16px 0 12px !important; gap: 8px; border-radius: 999px !important; } #tApp em { display: inline; } }
   body.ovl #tApp, body.ovl #tFs, body.ovl #tAppTip { display: none !important; }
-  body.ovl #hud, body.phoneOn #hud { opacity: 0 !important; scale: .4; pointer-events: none !important; }
-  #minimap, #mmLab { transition: opacity .25s, scale .35s cubic-bezier(.3,1.6,.5,1); } body.ovl #minimap, body.ovl #mmLab, body.phoneOn #minimap, body.phoneOn #mmLab, body.ovl #vcBtn, body.phoneOn #vcBtn { opacity: 0 !important; scale: .4; pointer-events: none !important; }
+  body.ovl #hud { opacity: 0 !important; scale: .4; pointer-events: none !important; }
+  #minimap, #mmLab { transition: opacity .25s, scale .35s cubic-bezier(.3,1.6,.5,1); } body.ovl #minimap, body.ovl #mmLab, body.ovl #vcBtn { opacity: 0 !important; scale: .4; pointer-events: none !important; }
   #tAppTip, .touch #tAppTip { left: auto !important; bottom: auto !important; right: calc(12px + env(safe-area-inset-right)) !important; top: calc(156px + env(safe-area-inset-top)) !important; }
   #tAppTip::after { left: auto !important; right: 12px; bottom: auto !important; top: -8px; border: 8px solid transparent !important; border-top: 0 !important; border-bottom-color: #0F172A !important; }
   #dlv { position: fixed; inset: 0; z-index: 72; display: grid; place-items: end center; background: rgba(2,6,23,.4); padding: 0 8px calc(8px + env(safe-area-inset-bottom)); font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -5250,6 +5250,7 @@
     G3.scene.children.forEach((o) => { if (o.isHemisphereLight || o.isDirectionalLight) { if (o.userData.base == null) o.userData.base = o.intensity; if (!o.parent || o.parent === G3.scene) o.intensity = o.userData.base * 0.15; } });
     if (!V3.cam) V3.cam = new G3.T.PerspectiveCamera(42, 1, 0.5, 6000);
     V3.yaw = cam.yaw; V3.tx = me.x; V3.tz = me.z; V3.on = true;
+    V3.swoop = new URLSearchParams(location.search).get('swoop') === '0' ? null : { t0: performance.now(), dur: 2800 }; // the dive down from the bird's eye
   }
   function v3leave() { w3portalOff(); if (V3.drive) driveExit(); V3.ws = 1;    V3.live = false; V3_LIVE = false; V3.on = false; if (G3.canvas) G3.canvas.style.display = 'none'; if (V3.vig) V3.vig.style.display = 'none'; cv.style.background = '';
     if (V3.groups) { G3.scene.remove(V3.groups); V3.groups = null; V3.key = null; }
@@ -5278,14 +5279,20 @@
       if (along > 0.3) { let d = Math.atan2(-vx, -vz) - V3.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); V3.yaw += d * (1 - Math.exp(-dt * 1.4)) * along; } }
     V3.distNow = (V3.distNow ?? V3.dist) + (V3.dist + run * 14 - (V3.distNow ?? V3.dist)) * (1 - Math.exp(-dt * 2.5));
     V3.pitchNow = (V3.pitchNow ?? V3.pitch) + (V3.pitch - run * 0.08 - (V3.pitchNow ?? V3.pitch)) * (1 - Math.exp(-dt * 3));
-    const dd = V3.distNow, pp = V3.pitchNow, ch = Math.cos(pp), cam3 = V3.cam; cam3.near = R.kind === 'world' ? 2.5 : 0.5; cam3.aspect = W / H; cam3.updateProjectionMatrix();
+    // the swoop in: from high over the island, looking almost straight down, the camera dives in a slow spiral, like a
+    // bird coming down, gathering speed and then easing in behind you; any drag or key ends it at once
+    let dd = V3.distNow, pp = V3.pitchNow, sy = 0;
+    if (V3.swoop) { const S = V3.swoop, t = Math.min(1, (now - S.t0) / S.dur);
+      if (t >= 1 || V3.drive || now - (V3.dragAt || 0) < 200) V3.swoop = null;
+      else { const k = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; dd += (dd * 22 - dd) * (1 - k); pp += (1.48 - pp) * (1 - k) * (1 - k * 0.3); sy = 1.6 * (1 - k); V3.camBlock = null; V3.dcam = null; } }
+    const ch = Math.cos(pp), cam3 = V3.cam; cam3.near = R.kind === 'world' ? 2.5 : 0.5; cam3.aspect = W / H; cam3.updateProjectionMatrix();
     const ly = R.kind === 'world' ? 3.4 : 3.5; let dcam = dd;
     if (R.kind === 'world' && V3.under) { V3.camBlock = null; V3.dcam = null; const g = bldgHere(me.x, me.z); if (g) { const ws2 = V3.ws || 1, hx = Math.sin(V3.yaw) * ch, hz = Math.cos(V3.yaw) * ch, lim = (lo, hi, p0, d0) => (d0 > 1e-4 ? (hi - p0) / d0 : d0 < -1e-4 ? (lo - p0) / d0 : 1e9); dcam = Math.max(6, Math.min(dd, lim(g.a * ws2, g.c * ws2, V3.tx, hx), lim(g.b * ws2, g.d * ws2, V3.tz, hz))); } } // (under a lifted roof: the camera looks in from anywhere over the building's own lot, never inside a neighbour)
-    else if (R.kind === 'world' && V3.groups) { // in the streets the camera never hides behind a wall: it comes in front of whatever's between you and it
+    else if (R.kind === 'world' && V3.groups && !V3.swoop) { // in the streets the camera never hides behind a wall: it comes in front of whatever's between you and it
       const T3 = G3.T, rc = V3.rc || (V3.rc = new T3.Raycaster()), from = new T3.Vector3(V3.tx, ly, V3.tz), dir = new T3.Vector3(Math.sin(V3.yaw) * ch, Math.sin(pp), Math.cos(V3.yaw) * ch).normalize();
       if (!V3.rcAt || now - V3.rcAt > 90) { V3.rcAt = now; rc.set(from, dir); rc.far = dd; const hit = rc.intersectObjects((R.kind === 'world' ? V3.wray || [] : V3.groups.children).filter((o) => o.isMesh && o.geometry && o.geometry.attributes.position && o.geometry.attributes.position.count > 3 && !o.material.transparent), false)[0]; V3.camBlock = hit ? Math.max(2.2, hit.distance - 0.8) : null; }
       if (V3.camBlock != null) dcam = Math.min(dd, V3.camBlock); V3.dcam = (V3.dcam ?? dcam) + (dcam - (V3.dcam ?? dcam)) * (dcam < (V3.dcam ?? dcam) ? 0.5 : 0.08); dcam = V3.dcam; }
-    cam3.position.set(V3.tx + Math.sin(V3.yaw) * ch * dcam, ly - 0.5 + Math.sin(pp) * dcam, V3.tz + Math.cos(V3.yaw) * ch * dcam); cam3.lookAt(V3.tx, ly, V3.tz);
+    cam3.position.set(V3.tx + Math.sin(V3.yaw + sy) * ch * dcam, ly - 0.5 + Math.sin(pp) * dcam, V3.tz + Math.cos(V3.yaw + sy) * ch * dcam); cam3.lookAt(V3.tx, ly, V3.tz);
     if (V3.drive) { const q = V3.drive.q, fx = Math.cos(q.ang), fz = Math.sin(q.ang); // at the wheel: from the driver's seat (on the left, as in Lagos), or behind the car
       if (V3.drive.fp) { cam3.near = 0.3; cam3.updateProjectionMatrix(); cam3.position.set((q.cx + fx * 0.15 + fz * 0.38) * ws, 1.32 * ws, (q.cz + fz * 0.15 - fx * 0.38) * ws); cam3.lookAt((q.cx + fx * 40) * ws, 1.05 * ws, (q.cz + fz * 40) * ws); } }
     if (V3.dbg) { const w = V3.ws || 1; cam3.position.set(V3.dbg[0] * w, V3.dbg[1] * w, V3.dbg[2] * w); cam3.lookAt(V3.dbg[3] * w, V3.dbg[4] * w, V3.dbg[5] * w); } // (testing on a local copy: a camera put where it's wanted)
@@ -10914,7 +10921,6 @@
     }
     if (trip && !inside) tripStep(dt);
     if (drive && !inside) driveStep(dt);
-    if (MOBILE && phoneEl0.style.display === 'block') { if (stickId == null) stickEl.classList.remove('show'); requestAnimationFrame(frame); return; }
     if (inside) { const e = Math.min(1, dt * 3), fl = refHere() ? 0.9 : 0.3; cam.x += (inside.w / 2 + (me.x - inside.w / 2) * fl - cam.x) * e; cam.z += (inside.d / 2 + (me.z - inside.d / 2) * fl - cam.z) * e; } // big work floors follow you closely
     else if (cam.follow) { const e = Math.min(1, dt * 5); cam.x += (me.x - cam.x) * e; cam.z += (me.z - cam.z) * e; }
     // each sector its own angle: the camera glides there
@@ -10924,7 +10930,7 @@
     cam.yaw += dy * e2; cam.pitch += (want.pitch - cam.pitch) * e2; cam.zoom += (want.zoom - cam.zoom) * e2;
     for (const o of others.values()) { o.x += (o.tx - o.x) * Math.min(1, dt * 4); o.z += (o.tz - o.z) * Math.min(1, dt * 4); }
     if (!inside) wyrdStep(dt);
-    if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); { const sp0 = P(me.x, 0, me.z), seen = sp0[0] > 0 && sp0[0] < W && sp0[1] > 0 && sp0[1] < H; stickEl.classList.toggle('show', stickId != null || (playing && seen && !pose && phoneEl0.style.display !== 'block' && !document.querySelector('#hello:not([style*="none"])'))); } } // the joystick: only while your character is on screen and free to walk
+    if ((whereT += dt) > 0.4) { whereT = 0; updateWhere(); { const sp0 = P(me.x, 0, me.z), seen = sp0[0] > 0 && sp0[0] < W && sp0[1] > 0 && sp0[1] < H; stickEl.classList.toggle('show', stickId != null || (playing && seen && !pose && !document.querySelector('#hello:not([style*="none"])'))); } } // the joystick: only while your character is on screen and free to walk
     if (x === cvMain && (W !== innerWidth || H < innerHeight)) resize(); // a preview put back a stale size (the window changed while it drew): fit the screen again
     if (CRUISE && !inside) cruiseStep(performance.now()); // on a charter: the yacht carries you
     draw();
@@ -11079,7 +11085,8 @@
     // sized for the device: on a phone it takes about two thirds of the screen so the island stays in view, a little more on a
     // tablet, and on a desktop up to 80% of its real size; always within the window's width and height
     const w = innerWidth, vh = (window.visualViewport && visualViewport.height) || innerHeight, m = w <= 560 ? 8 : 16;
-    const [fw, fh, cap] = w < 600 ? [0.97, 0.93, 1] : w < 1024 ? [0.62, 0.88, 0.96] : [1, 0.9, 0.92];
+    if (w < 600 || (MOBILE && vh < 500)) { const s = Math.max(0.5, Math.min(0.8, (w - 168) / 372, vh * 0.62 / 640)); phone.style.setProperty('--ps', s.toFixed(4)); phone.style.setProperty('--phh', Math.round(Math.min(780, vh * 0.62 / s)) + 'px'); return; } // a phone: a docked panel right of the joystick, about 60% of the screen's height
+    const [fw, fh, cap] = w < 600 ? [0.97, 0.93, 1] : w < 1024 ? [0.62, 0.72, 0.8] : [1, 0.78, 0.8]; // (smaller than before: a device in your hand beside the HUD, not a screen over the game)
     // text stays readable: the scale never drops below what the width allows (about 90% on a desktop); a short window gets a shorter phone, not a smaller one
     const s = Math.max(0.45, Math.min(cap, (w - 2 * m) * fw / 372, Math.max((vh - 2 * m) * fh / 780, w < 600 ? 0.9 : 0.88)));
     phone.style.setProperty('--ps', s.toFixed(4)); phone.style.setProperty('--phh', Math.round(Math.min(780, (vh - 2 * m) / s)) + 'px');
