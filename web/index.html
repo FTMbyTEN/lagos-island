@@ -6642,11 +6642,12 @@
       box(gm - 0.18, 0, b + 6.2, gm + 0.18, 3.6, b + 6.6, '#6B4A30'); box(gm - 1.4, 3.4, b + 4.9, gm + 1.4, 4.6, b + 7.9, '#2F6B35'); box(gm - 1.1, 4.6, b + 5.2, gm + 1.1, 5.2, b + 7.6, (k % 3) ? '#2F6B35' : '#D9461E'); // (a flame tree, its crown in bloom on some)
       box(gm - 0.07, 0, d - 1.0, gm + 0.07, 4.6, d - 0.86, '#2B2F36'); box(gm - 0.07, 4.5, d - 1.0, gm + 0.07, 4.6, d - 2.0, '#2B2F36'); box(gm - 0.22, 4.3, d - 2.2, gm + 0.22, 4.5, d - 1.8, dark ? '#FFE3A3' : '#E5E7EB'); // (a street lamp)
       box(gx0 + 0.2, 0.42, d - 1.85, gx1 - 0.2, 0.5, d - 1.55, '#8B5A2B'); for (const lx of [gx0 + 0.35, gx1 - 0.45]) box(lx, 0, d - 1.8, lx + 0.1, 0.42, d - 1.6, '#2B2F36'); // (a bench facing the street)
-      groundText(String(k + 1), a + g + 1.2, d - 1.0, 0.6, 'rgba(15,23,42,0.75)'); } // (the apartment's number on the path)
-    flat(a + g, b + 0.4, c - g, d - 0.4, 0.05, '#BDB5A8', '#A39B8E'); // the yard, paved
-    const A = a + g + 0.3, Cc = c - g - 0.3, hx0 = A + 0.2, hx1 = A + (Cc - A) * 0.58, hz0 = b + 1, hz1 = d - 3.4, px0 = hx1 + 0.6, px1 = Cc - 0.1, zc = (hz0 + hz1) / 2;
-    box(a + g, 0, b + 0.4, a + g + 0.3, 1.1, d - 0.4, wc); box(c - g - 0.3, 0, b + 0.4, c - g, 1.1, d - 0.4, wc); box(a + g, 0, b + 0.4, c - g, 1.1, b + 0.7, wc); // the compound wall
-    for (const [x0, z0, x1, z1] of [[a + g - 0.05, b + 0.35, a + g + 0.35, d - 0.35], [c - g - 0.35, b + 0.35, c - g + 0.05, d - 0.35], [a + g, b + 0.35, c - g, b + 0.75]]) box(x0, 1.1, z0, x1, 1.2, z1, '#CFC8BC'); // its coping
+    } // (the apartment's number is on the path at the gate)
+    if (REAL) { flat(a + g, b + 0.4, c - g, d - 2.0, 0.045, '#6F9A55'); } else flat(a + g, b + 0.4, c - g, d - 0.4, 0.05, '#BDB5A8', '#A39B8E'); // the yard: on the real map a lawn, otherwise paved
+    const A = a + g + 0.3, Cc = c - g - 0.3, hx0 = A + 0.2, hx1 = A + (Cc - A) * (REAL ? 0.5 : 0.58), hz0 = b + (REAL ? 2.5 : 1), hz1 = d - (REAL ? 8 : 3.4) /* (on the real map: a slimmer block set well back, a deep front yard) */, px0 = hx1 + 0.6, px1 = Cc - 0.1, zc = (hz0 + hz1) / 2;
+    const WH = REAL ? 2.4 : 1.1, WD = REAL ? d - 2.0 : d - 0.4; // (on the real map a full-height Lagos compound wall, stepped back behind the footpath)
+    box(a + g, 0, b + 0.4, a + g + 0.3, WH, WD, wc); box(c - g - 0.3, 0, b + 0.4, c - g, WH, WD, wc); box(a + g, 0, b + 0.4, c - g, WH, b + 0.7, wc); // the compound wall
+    for (const [x0, z0, x1, z1] of [[a + g - 0.05, b + 0.35, a + g + 0.35, WD + 0.05], [c - g - 0.35, b + 0.35, c - g + 0.05, WD + 0.05], [a + g, b + 0.35, c - g, b + 0.75]]) box(x0, WH, z0, x1, WH + 0.1, z1, '#CFC8BC'); // its coping
     if (REAL) { // HQ Row on the real map: each HQ an apartment block of its own, four designs along the street
       const v = k % 4, FA = 4 + (k % 3), HA = 3.4, RA = FA * HA, rend = ['#F8FAFC', '#EDE7DD', '#F4F1EA', '#E3E5E8', '#E9D9C0', '#DCE3DD', '#F1E4D3'][k % 7], trim = ['#2B2F36', '#8B6A4E', '#3F4650', '#1F2937'][v], glassRail = '#9FC6D8', timber = '#8B5A2B';
       for (let f = 0; f < FA; f++) { const y0 = f * HA, y1 = y0 + HA, top = f === FA - 1, ix = top ? 1.2 : 0, fz0 = hz0 + (top ? 0.8 : 0), fz1 = hz1 - (top ? 0.7 : 0); // (the top floor a penthouse, set back)
@@ -6682,7 +6683,8 @@
     cylLit(hx0 + 1.1, hz0 + 1.3, 0.65, RH + 0.35, 1.4, '#15161A'); box(hx1 - 2, RH + 0.4, hz0 + 0.8, hx1 - 0.3, RH + 0.7, hz0 + 3, '#1E3A8A'); // the water tank, a solar panel
     for (let f = 0; f < FL; f++) acUnit((u0, y0, w0, u1, y1, w1, cl) => box(hx0 - w1, y0, u0, hx0 - w0, y1, u1, cl), zc + (f % 2 ? 1.2 : -0.6), f * H + 2.3); box(hx1 + 0.02, 0, hz0 + 0.3, hx1 + 0.15, RH + 0.3, hz0 + 0.45, '#9CA3AF'); // the AC unit, a downpipe
     }
-    { const cz0 = hz1 - 3.2, cz1 = d - 1.4; flat(px0, b + 1, px1, d - 0.4, 0.07, '#8E9298', '#D1D5DB'); // the parking bay under its carport, a car in it
+    { const cz0 = hz1 - 3.2, cz1 = REAL ? hz1 + 3.4 : d - 1.4; flat(px0, b + 1, px1, REAL ? d - 2.0 : d - 0.4, 0.07, '#8E9298', '#D1D5DB'); // (the bay, and on the real map the drive on to the gate)
+      if (REAL) { flat(hx0 + 1.3, hz1 + 1.4, hx0 + 2.7, d - 2.0, 0.06, '#D8D2C6', '#B9B2A5'); for (let z3 = hz1 + 2.2; z3 < d - 2.6; z3 += 1.6) { box(hx0 + 0.6, 0, z3, hx0 + 0.9, 0.5, z3 + 0.3, '#3F6B3F'); box(hx0 + 3.1, 0, z3, hx0 + 3.4, 0.5, z3 + 0.3, '#3F6B3F'); } } // (a stone walk from the gate to the door, low box hedges along it) // the parking bay under its carport, a car in it
       for (const [x0, z0] of [[px0, cz0], [px1 - 0.15, cz0], [px0, cz1 - 0.15], [px1 - 0.15, cz1 - 0.15]]) box(x0, 0, z0, x0 + 0.15, 2.8, z0 + 0.15, '#3F4650');
       if (!REAL) box(px0 - 0.15, 2.8, cz0 - 0.3, px1 + 0.15, 3, cz1 + 0.3, '#2F343B');
       else { // the carport roofed in solar panels: a steel frame, the panels in rows, tilted toward the sun, each with its cells and frame
@@ -6696,11 +6698,21 @@
         box(hx1 + 0.05, 1.8, cz0 + 0.5, hx1 + 0.4, 2.5, cz0 + 1.2, '#CBD5E1'); box(hx1 + 0.4, 1.95, cz0 + 0.6, hx1 + 0.42, 2.35, cz0 + 1.1, '#0F172A'); box(hx1 + 0.1, 2.5, cz0 + 0.8, hx1 + 0.15, 2.95, cz0 + 0.86, '#111827'); } // (the cable up to the panels)
       groundText('P', (px0 + px1) / 2, b + 2, 0.9, 'rgba(255,255,255,0.8)');
       const mc = mine ? parkOrder(myCarsL)[0] : null; const md = mc ? mc.model : null, qx = (px0 + px1) / 2, qz = (cz0 + cz1) / 2, rc = REC && REC.clip; if (REAL || rc && (qx < rc[0] || qx >= rc[2] || qz < rc[1] || qz >= rc[3]) || !md) { /* (not yours, or another part of the street has it) */ } else { if (G3.ok && !G3.protos[md]) G3.vehicle(md); (V3.wcars || (V3.wcars = [])).push({ cx: qx, cz: qz, model: md, ang: Math.PI / 2, sc: 0.95, tint: mc ? mc.color : W3_CAR_COLS[(k * 5) % W3_CAR_COLS.length] }); } } // (the car: a model, parked for good)
+    if (REAL) { const fz = d - 2.0, pg0 = hx0 + 1.3, pg1 = hx0 + 2.7, gold = '#C9A227';
+      const wall = (x0, x1) => { if (x1 - x0 < 0.05) return; box(x0, 0, fz - 0.3, x1, WH, fz, wc); box(x0 - 0.04, WH, fz - 0.34, x1 + 0.04, WH + 0.1, fz + 0.04, '#CFC8BC'); };
+      const pillar = (px) => { box(px - 0.35, 0, fz - 0.45, px + 0.35, WH + 0.6, fz + 0.15, '#D6D0C4'); box(px - 0.42, WH + 0.6, fz - 0.52, px + 0.42, WH + 0.75, fz + 0.22, '#B8B0A2'); box(px - 0.14, WH + 0.75, fz - 0.29, px + 0.14, WH + 1.15, fz - 0.01, dark ? '#FFD89A' : '#E5E7EB'); };
+      const irons = (x0, x1, h) => { for (let gx = x0 + 0.12; gx < x1 - 0.05; gx += 0.22) { box(gx - 0.035, 0.12, fz - 0.2, gx + 0.035, h, fz - 0.12, iron); box(gx - 0.05, h, fz - 0.21, gx + 0.05, h + 0.12, fz - 0.11, gold); } for (const gy of [0.15, h * 0.5, h - 0.1]) box(x0, gy, fz - 0.22, x1, gy + 0.09, fz - 0.1, iron); box(x0, 0.15, fz - 0.24, x1, h * 0.35, fz - 0.08, iron); }; // (black bars, gold finials, a solid lower panel for privacy)
+      wall(a + g, pg0 - 0.35); pillar(pg0 - 0.35); irons(pg0, pg1, 2.1); pillar(pg1 + 0.35); wall(pg1 + 0.7, px0 - 0.7); pillar(px0 - 0.35); irons(px0, px1, 2.2); pillar(px1 + 0.35); wall(px1 + 0.7, c - g); // (the walk-in gate, the sliding gate for cars)
+      box(px1 - 0.2, 0, fz - 0.1, px1 + 0.2, 0.12, fz + 0.5, '#4B5563'); // (the sliding gate's track)
+      { const kx0 = A + 3.6, kx1 = kx0 + 2.4, kz1 = fz - 0.35, kz0 = kz1 - 2.2; box(kx0, 0, kz0, kx1, 2.6, kz1, '#EDE7DD'); box(kx0 - 0.25, 2.6, kz0 - 0.25, kx1 + 0.25, 2.8, kz1 + 0.25, '#3F4650'); box(kx0 + 0.3, 1.0, kz1 - 0.02, kx1 - 0.3, 2.1, kz1 + 0.04, dark ? '#FDE68A' : '#5B8BA8'); box(kx1 - 0.02, 0, kz0 + 0.4, kx1 + 0.04, 2.1, kz0 + 1.2, '#6B4A30'); } // (the gatehouse: the security man's post, its window on the gate)
+      groundText(String(k + 1), (pg0 + pg1) / 2, d - 1.0, 0.6, 'rgba(15,23,42,0.75)');
+    } else {
     const pg0 = hx0 + 1.3, pg1 = hx0 + 2.7; // the front wall: a walk-in gate at the door, the driveway gate at the bay
     box(a + g, 0, d - 0.8, pg0 - 0.2, 1.1, d - 0.4, wc); box(pg1 + 0.2, 0, d - 0.8, px0 - 0.25, 1.1, d - 0.4, wc);
     for (const px of [pg0 - 0.2, pg1 + 0.2, px0 - 0.25, px1 + 0.2]) { box(px - 0.22, 0, d - 0.85, px + 0.22, 1.45, d - 0.35, '#D6D0C4'); box(px - 0.1, 1.45, d - 0.72, px + 0.1, 1.65, d - 0.48, dark ? '#FFD89A' : '#E5E7EB'); } // pillars, lamps on them
     for (const [x0, x1] of [[pg0, pg1], [px0, px1]]) { for (let gx = x0 + 0.1; gx < x1; gx += 0.36) box(gx - 0.04, 0.1, d - 0.62, gx + 0.035, 1.25, d - 0.56, iron); for (const gy of [0.12, 0.65, 1.2]) box(x0, gy, d - 0.64, x1, gy + 0.08, d - 0.54, iron); }
     if (px1 + 0.4 < c - g) box(px1 + 0.4, 0, d - 0.8, c - g, 1.1, d - 0.4, wc);
+    }
   }
   function compound(a, b, c, d, mine, house) {
     const wc = mine ? '#FDE68A' : '#E7E5E4', w = (x0, z0, x1, z1) => box(x0, 0, z0, x1, 1.5, z1, wc);
