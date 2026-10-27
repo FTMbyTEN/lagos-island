@@ -70,7 +70,8 @@ play.lagos-island.workers.dev
 
 ## What it costs and needs
 
-- Cloudflare Workers Paid ($5 a month) for Durable Objects; D1 and R2 within their free tiers at this size.
+- It starts on Cloudflare's free plan: SQLite-backed Durable Objects, D1 and R2 are all available there. Workers
+  Paid ($5 a month) comes later, when the daily limits get close (many players on at once for hours).
 - From you: the Workers Paid plan switched on in the dashboard, and a D1 database created (or permission for me to
   create it with `wrangler`).
 - Before step 5: a backup of WYRD's database.
@@ -80,3 +81,10 @@ play.lagos-island.workers.dev
 - Any game call under 100 ms at the 95th percentile; positions updating 5–10 times a second for people in sight.
 - 100 players on the island at once with no slowdown; WYRD's AI jobs no longer touch the game at all.
 - Every existing player's account, G₦, homes, cars and flats on the new server, totals matching.
+
+## Progress
+
+- **Step 1, done (27 Oct 2026).** The live server is up: `cloudflare/live.js`, with tickets from `IslandEndpoint.liveTicket`.
+  The game uses it for positions, chat and voice handshakes, and falls back to polling without it.
+- **Step 2, started.** The game's database `lagos-island` (D1) is created and bound as `DB`, with the accounts and ledger
+  tables (`cloudflare/migrations/`). Nothing uses it yet. Copying accounts over waits for a backup of WYRD's database.

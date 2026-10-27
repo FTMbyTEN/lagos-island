@@ -8,6 +8,8 @@
   // the live island (live.js): a Durable Object stored in SQLite, which the free plan allows
   "durable_objects": { "bindings": [{ "name": "CITY", "class_name": "City" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["City"] }],
+  // the game's own database (migrations/): accounts and the G₦ wallet, see docs/standalone-server-plan.md, step 2
+  "d1_databases": [{ "binding": "DB", "database_name": "lagos-island", "database_id": "6dd26f6b-bd83-4be0-986a-9901d369816d" }],
   "workers_dev": true,
   "observability": { "enabled": true }
 }
