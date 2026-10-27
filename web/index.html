@@ -6296,6 +6296,7 @@
     for (const m of base) { out.push(fresh[(out.length / 2) % fresh.length]); out.push(m); } return out;
   }
   function hqHouse(a, b, c, d, k) {
+    if (REAL) { const mineK = hqSlots.findIndex((s2) => s2.mine); if (k !== (mineK >= 0 ? mineK : 0)) return; } // (for now the real map shows one HQ block only: yours, or the first)
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
     (REC && REC.clip ? () => w3hq(a, b, c, d, k, hq, col) : (h) => compound(a, b, c, d, hq && hq.mine, h))(() => {
       // a modern BQ: white render, a timber-clad wing in the owner's colour, floor-to-ceiling glass, a flat slab roof
@@ -6694,7 +6695,7 @@
         box(hx1 + 0.05, 0, cz0 + 0.4, hx1 + 0.55, 1.6, cz0 + 1.3, '#E5E7EB'); box(hx1 + 0.55, 1.1, cz0 + 0.6, hx1 + 0.58, 1.35, cz0 + 1.1, '#111827'); box(hx1 + 0.58, 1.18, cz0 + 0.65, hx1 + 0.6, 1.26, cz0 + 0.75, nepa ? '#22C55E' : '#F59E0B');
         box(hx1 + 0.05, 1.8, cz0 + 0.5, hx1 + 0.4, 2.5, cz0 + 1.2, '#CBD5E1'); box(hx1 + 0.4, 1.95, cz0 + 0.6, hx1 + 0.42, 2.35, cz0 + 1.1, '#0F172A'); box(hx1 + 0.1, 2.5, cz0 + 0.8, hx1 + 0.15, 2.95, cz0 + 0.86, '#111827'); } // (the cable up to the panels)
       groundText('P', (px0 + px1) / 2, b + 2, 0.9, 'rgba(255,255,255,0.8)');
-      const mc = mine ? parkOrder(myCarsL)[0] : null; const md = mc ? mc.model : null, qx = (px0 + px1) / 2, qz = (cz0 + cz1) / 2, rc = REC && REC.clip; if (rc && (qx < rc[0] || qx >= rc[2] || qz < rc[1] || qz >= rc[3]) || !md) { /* (not yours, or another part of the street has it) */ } else { if (G3.ok && !G3.protos[md]) G3.vehicle(md); (V3.wcars || (V3.wcars = [])).push({ cx: qx, cz: qz, model: md, ang: Math.PI / 2, sc: 0.95, tint: mc ? mc.color : W3_CAR_COLS[(k * 5) % W3_CAR_COLS.length] }); } } // (the car: a model, parked for good)
+      const mc = mine ? parkOrder(myCarsL)[0] : null; const md = mc ? mc.model : null, qx = (px0 + px1) / 2, qz = (cz0 + cz1) / 2, rc = REC && REC.clip; if (REAL || rc && (qx < rc[0] || qx >= rc[2] || qz < rc[1] || qz >= rc[3]) || !md) { /* (not yours, or another part of the street has it) */ } else { if (G3.ok && !G3.protos[md]) G3.vehicle(md); (V3.wcars || (V3.wcars = [])).push({ cx: qx, cz: qz, model: md, ang: Math.PI / 2, sc: 0.95, tint: mc ? mc.color : W3_CAR_COLS[(k * 5) % W3_CAR_COLS.length] }); } } // (the car: a model, parked for good)
     const pg0 = hx0 + 1.3, pg1 = hx0 + 2.7; // the front wall: a walk-in gate at the door, the driveway gate at the bay
     box(a + g, 0, d - 0.8, pg0 - 0.2, 1.1, d - 0.4, wc); box(pg1 + 0.2, 0, d - 0.8, px0 - 0.25, 1.1, d - 0.4, wc);
     for (const px of [pg0 - 0.2, pg1 + 0.2, px0 - 0.25, px1 + 0.2]) { box(px - 0.22, 0, d - 0.85, px + 0.22, 1.45, d - 0.35, '#D6D0C4'); box(px - 0.1, 1.45, d - 0.72, px + 0.1, 1.65, d - 0.48, dark ? '#FFD89A' : '#E5E7EB'); } // pillars, lamps on them
