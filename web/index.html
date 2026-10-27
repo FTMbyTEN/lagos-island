@@ -1558,6 +1558,22 @@
 #v3btn small, #v3btn span { color: var(--ink) !important; font-family: var(--sign) !important; letter-spacing: .5px; }
 #drvKit .spd { background: var(--ink) !important; border: 2px solid var(--danfo); border-radius: 6px !important; color: var(--chalk) !important; font-family: var(--sign) !important; }
 #drvKit .spd b { color: var(--danfo); font-weight: 400 !important; }
+/* WYRD's panels in the HUD's own look: ink, a danfo-yellow frame with a hard shadow, the hazard stripe along the top,
+   Anton for the heads, and yellow for the button that moves you on */
+html body #coach, html body #wyrdGuide { background: #0F0F12 !important; border: 3px solid #F7C81E !important; border-radius: 6px !important; box-shadow: 5px 6px 0 rgba(0,0,0,.45) !important; color: #F4F4F5 !important; padding-top: 18px !important; overflow: hidden; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html body #coach::before, html body #wyrdGuide::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: repeating-linear-gradient(-45deg, #F7C81E 0 8px, #0F0F12 8px 16px); }
+html body #coach .orb, html body #wyrdGuide .orb { background: radial-gradient(circle at 35% 30%, #fff, #FACC15 45%, #0B6E3A) !important; box-shadow: 0 0 0 2px #0F0F12, 0 0 0 4px #F7C81E !important; }
+html body #coach .orb::after, html body #wyrdGuide .orb::after { border-color: rgba(247,200,30,.55) !important; }
+html body #coach .chead b, html body #wyrdGuide .wgt b { font: 400 18px Anton, 'Plus Jakarta Sans', sans-serif !important; letter-spacing: .6px !important; color: #F7C81E !important; text-transform: uppercase; }
+html body #coach .chead b::after { content: ' · YOUR GUIDE' !important; font: 400 12px Anton, sans-serif !important; color: #A1A1AA !important; }
+html body #coach .chead small { background: #0B6E3A !important; border: 2px solid #fff; border-radius: 4px !important; color: #fff !important; font: 400 11px Anton, sans-serif !important; letter-spacing: .5px; padding: 1px 7px !important; }
+html body #coach p, html body #wyrdGuide p { color: #F4F4F5 !important; font-weight: 600; }
+html body #coach .cx, html body #wyrdGuide .wgx { border-radius: 4px !important; background: #26262C !important; color: #F7C81E !important; }
+html body #coach .cbtns button { border-radius: 4px !important; background: #26262C !important; color: #F4F4F5 !important; font: 400 14px Anton, sans-serif !important; letter-spacing: .6px; text-transform: uppercase; box-shadow: 3px 3px 0 rgba(0,0,0,.45) !important; }
+html body #coach .cbtns button.main { background: #F7C81E !important; color: #0F0F12 !important; }
+html body #wyrdGuide .wgn { font-family: Anton, sans-serif !important; font-weight: 400 !important; color: #F7C81E !important; }
+html body #wyrdGuide .wgt small { color: #FACC15 !important; }
+html body #wyrdGuide .wgbar i { border-radius: 2px !important; background: #2E2E34 !important; } html body #wyrdGuide .wgbar i.ok { background: #F7C81E !important; }
 </style>
 </head>
 <body>
@@ -7119,7 +7135,7 @@
     }
     setInterval(() => { try { paint(); } catch (e) { if (!paint.warned) { paint.warned = true; console.warn('minimap', e); } } }, MOBILE ? 100 : 50);
     if (REAL) for (const c of WC.m.values()) if (c.ok) roads(c);
-    return { roads, st };
+    return { roads, st, base, S };
   })();
   // ---- voice, for friends only: talk to your friends, straight from phone to phone (WebRTC, peer to peer). Three ways:
   // Nearby (the closest players on the street, their voices fading with distance), This place (everyone in the same
@@ -7306,6 +7322,15 @@
     if (inside) return drawInterior(performance.now());
     if (!REC) { const R3 = V3.wpref && G3.ok && G3.renderer ? w3here() : null; if (R3) return v3draw(R3, performance.now()); if (V3.on) v3leave(); } // the streets in live 3D, where they're built
     x.fillStyle = C.water; x.fillRect(0, 0, W, H);
+    // zoomed far out (a whole district or the island on screen): the map's own picture of the island, its land and roads,
+    // with the places named, instead of every building one by one (which no phone could draw at this size)
+    if (REAL && !REC && K < 0.55) { const s2 = T / MM.S, a = K * co * s2, b2 = K * sp * si * s2, c2 = -K * si * s2, d2 = K * sp * co * s2, ox = W / 2 - K * (cam.x * co - cam.z * si), oy = H * 0.55 - K * sp * (cam.x * si + cam.z * co);
+      x.fillStyle = '#2B5C85'; x.fillRect(0, 0, W, H); // (the picture's own sea, all round, so its edge never shows)
+      x.save(); x.setTransform(DPR * a, DPR * b2, DPR * c2, DPR * d2, DPR * ox, DPR * oy); x.imageSmoothingEnabled = true; x.drawImage(MM.base, 0, 0); x.restore();
+      x.font = '700 12px "Plus Jakarta Sans", sans-serif'; x.textAlign = 'center'; const seen = [];
+      for (const p of PLACES) { const q = P((p[1] + p[3] / 2) * T, 0, (p[2] + p[4] / 2) * T); if (q[0] < 0 || q[0] > W || q[1] < 0 || q[1] > H || seen.some((o) => Math.abs(o[0] - q[0]) < 70 && Math.abs(o[1] - q[1]) < 18)) continue; seen.push(q);
+        x.fillStyle = '#F7C81E'; x.beginPath(); x.arc(q[0], q[1], 3.5, 0, 7); x.fill(); x.lineWidth = 3; x.strokeStyle = 'rgba(15,15,18,.85)'; x.strokeText(p[5], q[0], q[1] - 8); x.fillStyle = '#fff'; x.fillText(p[5], q[0], q[1] - 8); }
+      const m = P(me.x, 0, me.z); x.fillStyle = '#fff'; x.strokeStyle = '#0F0F12'; x.lineWidth = 2.5; x.beginPath(); x.arc(m[0], m[1], 6, 0, 7); x.fill(); x.stroke(); x.textAlign = 'start'; return; }
     { const now0 = performance.now(); drawSea(now0); if (!REAL) drawShores(now0); }
     const visible = (i, j) => { if (REC && REC.clip) { const c = REC.clip; return (i + 2) * T > c[0] && (i - 1) * T < c[2] && (j + 1) * T > c[1] && (j - 1) * T < c[3]; } const p = P(i * T + T / 2, 0, j * T + T / 2); return p[0] > -K * 40 && p[0] < W + K * 40 && p[1] > -K * 40 && p[1] < H + K * 60; };
     // the land slabs: a thick edge, then the top
@@ -10670,7 +10695,12 @@
   });
   addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
   addEventListener('blur', () => keys.clear());
-  const zoomBy = (f) => { if (V3_LIVE) { V3.dist = Math.max(inside ? 25 : 12, Math.min(inside ? 180 : 220, V3.dist / f)); return; } cam.user = Math.max(0.45, Math.min(2.4, cam.user * f)); };
+  // the flat map zooms from close in all the way out to the whole island on screen (inside a building, only to the room)
+  const zMin = () => inside ? 0.45 : Math.min(0.45, Math.max(W, H) * 0.95 / (BOARD.w * T * 4.6 * cam.zoom * Math.min(1.25, Math.max(0.75, Math.min(W, H) / 700))));
+  const zoomAt = (u, sx, sy) => { // zoom to u, keeping the ground under (sx, sy) where it is
+    const before = sx == null ? null : toWorldDir((sx - W / 2) / K, (sy - H * 0.55) / K); cam.user = Math.max(zMin(), Math.min(2.4, u)); setCam();
+    if (before) { const after = toWorldDir((sx - W / 2) / K, (sy - H * 0.55) / K); cam.follow = false; cam.x += before[0] - after[0]; cam.z += before[1] - after[1]; } };
+  const zoomBy = (f, sx, sy) => { if (V3_LIVE) { V3.dist = Math.max(inside ? 25 : 12, Math.min(inside ? 180 : 220, V3.dist / f)); return; } zoomAt(cam.user * f, sx, sy); };
   document.getElementById('zoomin').onclick = () => zoomBy(1.25);
   addEventListener('wheel', (e) => { if (e.target !== cv) return; e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1); }, { passive: false }); // zoom with the wheel (or a trackpad's two fingers)
   document.getElementById('zoomout').onclick = () => zoomBy(1 / 1.25);
@@ -10688,21 +10718,26 @@
     stick = { x: dx / max, z: dy / max };
   }
   const pts = new Map(); let pinch0 = 0, user0 = 1, dragged = false;
-  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY, furn: !!(inside && deco && pts.size === 0 && bmDown(e.clientX, e.clientY)) }); dragged = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); user0 = cam.user; V3.dist0 = V3.dist; V3.yaw0 = V3.yaw; V3.pitch0 = V3.pitch; V3.ang0 = Math.atan2(b.y - a.y, b.x - a.x); V3.mid0 = (a.y + b.y) / 2; } });
+  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY, furn: !!(inside && deco && pts.size === 0 && bmDown(e.clientX, e.clientY)) }); dragged = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); user0 = cam.user; V3.dist0 = V3.dist; V3.yaw0 = V3.yaw; V3.pitch0 = V3.pitch; V3.ang0 = Math.atan2(b.y - a.y, b.x - a.x); V3.mid0 = (a.y + b.y) / 2; V3.mid2 = null; } FLING.vx = FLING.vy = 0; });
   cv.addEventListener('pointermove', (e) => {
     if (inside && deco && deco.carry && !pts.size) bmMove(e.clientX, e.clientY, e.altKey); // what you carry follows the mouse
     const p = pts.get(e.pointerId); if (!p) return;
     if (p.furn) { bmMove(e.clientX, e.clientY, e.altKey); dragged = true; return; }
-    if (pts.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()]; const f = Math.hypot(a.x - b.x, a.y - b.y) / (pinch0 || 1); if (V3_LIVE) { V3.dist = Math.max(inside ? 25 : 12, Math.min(inside ? 180 : 220, V3.dist0 / f)); const ang = Math.atan2(b.y - a.y, b.x - a.x), my = (a.y + b.y) / 2; let da = ang - V3.ang0; da = Math.atan2(Math.sin(da), Math.cos(da)); V3.yaw = V3.yaw0 - da; V3.pitch = Math.max(0.18, Math.min(1.35, V3.pitch0 + (my - V3.mid0) * 0.004)); V3.dragAt = performance.now(); return; } /* live 3D: pinch zooms, a twist turns, two fingers up or down tilt */ cam.user = Math.max(0.45, Math.min(2.4, user0 * f)); return; }
+    if (pts.size === 2) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()]; const f = Math.hypot(a.x - b.x, a.y - b.y) / (pinch0 || 1); if (V3_LIVE) { V3.dist = Math.max(inside ? 25 : 12, Math.min(inside ? 180 : 220, V3.dist0 / f)); const ang = Math.atan2(b.y - a.y, b.x - a.x), my = (a.y + b.y) / 2; let da = ang - V3.ang0; da = Math.atan2(Math.sin(da), Math.cos(da)); V3.yaw = V3.yaw0 - da; V3.pitch = Math.max(0.18, Math.min(1.35, V3.pitch0 + (my - V3.mid0) * 0.004)); V3.dragAt = performance.now(); return; } /* live 3D: pinch zooms, a twist turns, two fingers up or down tilt */ const mx = (a.x + b.x) / 2, my2 = (a.y + b.y) / 2; zoomAt(user0 * f, mx, my2); if (pinch0 && V3.mid2) { const [wx, wz] = toWorldDir((mx - V3.mid2[0]) / K, (my2 - V3.mid2[1]) / K); cam.x -= wx; cam.z -= wz; } V3.mid2 = [mx, my2]; return; } /* the flat map: the pinch zooms towards your fingers, and they pan as they move */
     const dx = e.clientX - p.x, dy = e.clientY - p.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) dragged = true;
-    if (dragged) { if (V3_LIVE) { V3.dragAt = performance.now(); V3.yaw -= dx * 0.006; V3.pitch = Math.max(0.18, Math.min(1.35, V3.pitch + dy * 0.004)); p.x = e.clientX; p.y = e.clientY; return; } cam.follow = false; const [wx, wz] = toWorldDir(dx / K, dy / K); cam.x -= wx; cam.z -= wz; }
+    if (dragged) { if (V3_LIVE) { V3.dragAt = performance.now(); V3.yaw -= dx * 0.006; V3.pitch = Math.max(0.18, Math.min(1.35, V3.pitch + dy * 0.004)); p.x = e.clientX; p.y = e.clientY; return; } cam.follow = false; const [wx, wz] = toWorldDir(dx / K, dy / K); cam.x -= wx; cam.z -= wz; const nowF = performance.now(), dtF = Math.max(8, nowF - (FLING.at || nowF)); FLING.at = nowF; FLING.vx = FLING.vx * 0.3 + dx / dtF * 0.7; FLING.vy = FLING.vy * 0.3 + dy / dtF * 0.7; }
     p.x = e.clientX; p.y = e.clientY;
   });
+  // let go of a drag and the map glides on, slowing to a stop (a tap or a new touch stops it)
+  const FLING = { vx: 0, vy: 0, at: 0, on: false };
+  function flingStep(now) { const dt = Math.min(50, now - (FLING.t || now)); FLING.t = now; const sp2 = Math.hypot(FLING.vx, FLING.vy);
+    if (!FLING.on || V3_LIVE || sp2 < 0.02) { FLING.on = false; FLING.t = 0; return; } const [wx, wz] = toWorldDir(FLING.vx * dt / K, FLING.vy * dt / K); cam.x -= wx; cam.z -= wz; const k = Math.exp(-dt / 320); FLING.vx *= k; FLING.vy *= k; requestAnimationFrame(flingStep); }
+  cv.addEventListener('pointerup', (e) => { if (dragged && pts.size === 1 && !V3_LIVE && performance.now() - FLING.at < 80 && !FLING.on) { FLING.on = true; requestAnimationFrame(flingStep); } else if (!dragged) { FLING.on = false; } });
   cv.addEventListener('pointerup', (e) => { const was = pts.get(e.pointerId); pts.delete(e.pointerId); if (was && was.furn) { if (deco) { bmUp(e.shiftKey); setDeco(); } return; } if (was && !dragged && pts.size === 0) tapAt(e.clientX, e.clientY); });
   cv.addEventListener('pointercancel', (e) => pts.delete(e.pointerId));
   cv.addEventListener('dblclick', () => { if (!V3_LIVE) return; const vx = me.vx || 0, vz = me.vz || 0; if (Math.hypot(vx, vz) > 1) V3.yaw = Math.atan2(-vx, -vz); V3.dist = 95; V3.pitch = 0.72; V3.dragAt = 0; }); // live 3D: back behind you
-  cv.addEventListener('wheel', (e) => { if (V3_LIVE) { e.preventDefault(); e.stopPropagation(); return v3wheel(e); } e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.12 : 1 / 1.12); }, { passive: false });
+  cv.addEventListener('wheel', (e) => { if (V3_LIVE) { e.preventDefault(); e.stopPropagation(); return v3wheel(e); } e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX, e.clientY); }, { passive: false });
   const card = document.getElementById('card');
   function tapAt(sx, sy) {
     if (inside) return tapInside(sx, sy);
