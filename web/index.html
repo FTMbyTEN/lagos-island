@@ -13665,6 +13665,8 @@
   async function loadHqRow() {
     if (!signedIn()) return;
     try { hqSlots = await my('hqRow'); } catch {}
+    if (!loadHqRow.homed && hqSlots.length) { loadHqRow.homed = true; const q0 = new URLSearchParams(location.search), k = hqSlots.findIndex((s2) => s2.mine), hq = hqSlots[k]; // you always start the game at home, inside your own apartment (unless a link says where)
+      if (hq && hqAt[k] && !q0.get('at') && !q0.get('in') && !inside) { const [pi, pj] = hqAt[k]; me.x = pi * T + T; me.z = pj * T + T - 1; cam.follow = true; enterRoom('hq', 'hq:' + hq.slot, hq.name); } }
     try { hqBoard.posts = await my('board'); } catch {}
     try { const before = census().taken; homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); const now = census(); if (!housingTaken && loadHqRow.seen && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']); loadHqRow.seen = true; } catch {} // who owns which plot (until the server has homes, everything's for sale)
     try { // the parties going on that I can go to; a new invite pings my phone
