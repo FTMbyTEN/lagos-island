@@ -6781,7 +6781,7 @@
     lots.push({ i, j, kind: t === SAND ? (v < 0.3 ? 'palm' : 'sand') : v < 0.42 ? 'plot' : v < 0.62 ? 'house' : v < 0.85 ? 'trees' : 'grass' });
   }
   { const hq = new Map(); for (const l of lots) if (l.kind === 'hq') hq.set(l.i + ',' + l.j, l);
-    for (const l of lots) { if (l.kind !== 'hq' || l.w) continue; const nx = hq.get((l.i + 1) + ',' + l.j); if (nx && nx.kind === 'hq' && !nx.w) { l.w = 2; nx.kind = 'hqx'; nx.of = l; } else l.kind = 'grass'; } } // (BQs are two tiles wide: real space round each)
+    for (const l of lots) { if (l.kind !== 'hq' || l.w) continue; const nx = hq.get((l.i + 1) + ',' + l.j); if (nx && nx.kind === 'hq' && !nx.w) { l.w = 2; nx.kind = 'hqx'; nx.of = l; const gap = REAL && hq.get((l.i + 2) + ',' + l.j); if (gap && gap.kind === 'hq') { gap.kind = 'trees'; gap.w = 1; } } else l.kind = 'grass'; } } // (on the real map, a whole tile of trees after each BQ: breathing room between the blocks) // (BQs are two tiles wide: real space round each)
   // the footprints you walk round
   for (const p of PLACES) if (!['beach', 'field', 'park', 'fountain', 'golf', 'forest', 'tollgate', 'jetty', 'screens', 'hqgate', 'refinery', 'soon', 'welcome', 'airport', 'station', 'dealer', 'freeline', 'mosque', 'cathedral'].includes(p[0])) blocked.push([p[1] * T + 2, p[2] * T + 2, (p[1] + p[3]) * T - 2, (p[2] + p[4]) * T - 2]);
   for (const l of lots) if (l.kind === 'city') { const v = rnd(l.i * 53 + l.j * 89)(); if (v < 0.7) blocked.push([l.i * T + 1.5, l.j * T + 1.5, (l.i + 1) * T - 1.5, (l.j + 1) * T - 1.5]); } // the new town's buildings
