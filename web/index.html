@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-27T11:43:17.359Z">
+<meta name="li-build" content="2026-10-27T13:09:00.389Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -6905,7 +6905,7 @@
     if (REAL) for (const c of WC.m.values()) if (c.ok) roads(c);
     return { roads, st };
   })();
-  // ---- voice: talk to the players you can hear, straight from phone to phone (WebRTC, peer to peer). Three ways:
+  // ---- voice, for friends only: talk to your friends, straight from phone to phone (WebRTC, peer to peer). Three ways:
   // Nearby (the closest players on the street, their voices fading with distance), This place (everyone in the same
   // room: a club, an HQ, a party) and a private Channel (a six-letter code you share). The server only passes the
   // handshake between people who may hear each other, so nobody listens in on another channel; each player holds at
@@ -6940,6 +6940,7 @@
       let want = [];
       if (chan) { const r = await my('voiceJoin', { channel: chan }); if (r && r.error) { tickerSay(r.error); } else want = (r.members || []).filter((h) => h !== meH); }
       else if (VOICE.mode === 'near' && !inside) want = [...others.values()].map((o) => ({ h: String(o.name || '').toLowerCase(), d: Math.hypot(o.x - me.x, o.z - me.z) })).filter((o) => o.h && o.h !== meH && o.d < 65).sort((a2, b2) => a2.d - b2.d).slice(0, 8).map((o) => o.h);
+      const fr = new Set(((FR.list && FR.list.friends) || []).map((f) => String(f.handle || '').toLowerCase())); want = want.filter((h) => fr.has(h)); // (only ever your friends)
       for (const h of [...VOICE.peers.keys()]) if (!want.includes(h)) { vSend(h, { t: 'bye' }); vDrop(h); }
       for (const h of want) if (!VOICE.peers.has(h) && meH < h) vOffer(h).catch(() => vDrop(h)); // (the one whose name comes first calls; the other answers)
       await vInbox();
@@ -6951,7 +6952,7 @@
   async function voiceOn() {
     if (!signedIn()) return tickerSay('Sign in to talk to other players');
     try { VOICE.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); } catch { return tickerSay('Allow the microphone to talk'); }
-    VOICE.on = true; VOICE.chan = '__'; vUi(); vTick(); tickerSay(VOICE.mode === 'near' ? 'Voice on: the players near you can hear you' : VOICE.mode === 'place' ? 'Voice on: everyone in this place can hear you' : 'Voice on: channel ' + VOICE.code);
+    VOICE.on = true; VOICE.chan = '__'; vUi(); vTick(); tickerSay(VOICE.mode === 'near' ? 'Voice on: your friends near you can hear you' : VOICE.mode === 'place' ? 'Voice on: your friends in this place can hear you' : 'Voice on: channel ' + VOICE.code + ' (friends only)');
   }
   function voiceOff() { VOICE.on = false; for (const h of [...VOICE.peers.keys()]) { vSend(h, { t: 'bye' }); vDrop(h); } if (VOICE.chan && VOICE.chan !== '__') my('voiceLeave', { channel: VOICE.chan }).catch(() => {}); VOICE.chan = ''; if (VOICE.stream) for (const t of VOICE.stream.getTracks()) t.stop(); VOICE.stream = null; vUi(); }
   function vMenu() {
@@ -6966,7 +6967,7 @@
   { const T0 = MOBILE || isTouch; vBtn.style.cssText = `position:fixed;${T0 ? 'right:calc(12px + env(safe-area-inset-right));top:calc(330px + env(safe-area-inset-top))' : 'left:148px;bottom:92px'};z-index:26;height:38px;min-width:38px;padding:0 12px;border:0;border-radius:19px;background:rgba(15,23,42,.82);color:#fff;font:800 12px 'Plus Jakarta Sans',system-ui;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.35);cursor:pointer`; }
   document.body.append(vBtn);
   { let hold = 0; vBtn.addEventListener('pointerdown', () => { hold = setTimeout(() => { hold = 0; vMenu(); }, 550); }); vBtn.addEventListener('pointerup', () => { if (hold) { clearTimeout(hold); hold = 0; if (VOICE.on) voiceOff(); else voiceOn(); } }); vBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); clearTimeout(hold); hold = 0; vMenu(); }); }
-  function vUi() { const n = VOICE.peers.size, lab = VOICE.mode === 'near' ? 'Nearby' : VOICE.mode === 'place' ? 'This place' : VOICE.code; vBtn.style.background = VOICE.on ? 'linear-gradient(135deg,#16A34A,#0EA5E9)' : 'rgba(15,23,42,.82)'; vBtn.innerHTML = `<span style="font-size:15px">${VOICE.on ? '🎙️' : '🔇'}</span>${VOICE.on ? `${lab} · ${n}` : ''}`; vBtn.title = 'Tap: voice on or off · hold: Nearby, This place or a private channel'; }
+  function vUi() { const n = VOICE.peers.size, lab = VOICE.mode === 'near' ? 'Nearby' : VOICE.mode === 'place' ? 'This place' : VOICE.code; vBtn.style.background = VOICE.on ? 'linear-gradient(135deg,#16A34A,#0EA5E9)' : 'rgba(15,23,42,.82)'; vBtn.innerHTML = `<span style="font-size:15px">${VOICE.on ? '🎙️' : '🔇'}</span>${VOICE.on ? `${lab} · ${n}` : ''}`; vBtn.title = 'Voice with your friends. Tap: on or off · hold: Nearby, This place or a private channel'; }
   vUi(); setInterval(() => { vBtn.style.display = playing ? 'flex' : 'none'; if (VOICE.on) { vTick(); vVolumes(); } }, 2000);
   // the 3D cell's share of the real city: its streets as one mesh (pavement, asphalt, the round joints that close each
   // bend, dashed centre lines), its buildings as another (walls with a band of windows to every floor, flat roofs), and

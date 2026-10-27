@@ -3322,7 +3322,8 @@ class IslandMeEndpoint extends Endpoint {
   }
 
   // ---------------- voice: players talk to each other directly (WebRTC, peer to peer) ----------------
-  // The server only carries the handshake (offers, answers) between two players who may hear each other: members of
+  // Voice is for friends only. The server only carries the handshake (offers, answers) between two friends who may
+  // hear each other: members of
   // the same channel (a private one by its code, `c:<code>`, or a place's, `p:<room>`), or two players standing near
   // each other on the street. A channel holds at most [_vMax]; members who stop checking in drop out after 40 s.
   static const _vMax = 8;
@@ -3365,6 +3366,9 @@ class IslandMeEndpoint extends Endpoint {
     final me = await IslandProfile.db.findFirstRow(session, where: (t) => t.authUserId.equals(_user(session)));
     final them = await _byHandle(session, to);
     if (me == null || them == null || them.authUserId == me.authUserId) return _err('No one to talk to.');
+    final friends = await IslandFriend.db.findFirstRow(session,
+        where: (t) => t.status.equals('accepted') & ((t.fromUser.equals(me.authUserId) & t.toUser.equals(them.authUserId)) | (t.fromUser.equals(them.authUserId) & t.toUser.equals(me.authUserId))));
+    if (friends == null) return _err('Voice is for friends only.');
     final a = me.handle.toLowerCase(), b = them.handle.toLowerCase();
     var ok = false;
     if (channel.isNotEmpty) {
