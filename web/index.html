@@ -6300,7 +6300,7 @@
   function hqHouse(a, b, c, d, k) {
     if (REAL) { const mineK = hqSlots.findIndex((s2) => s2.mine); if (k !== (mineK >= 0 ? mineK : 0)) return; } // (for now the real map shows one HQ block only: yours, or the first)
     const hq = k < hqSlots.length ? hqSlots[k] : null, col = hq ? hq.color : ['#A855F7', '#EC4899', '#0EA5E9', '#F59E0B'][k % 4];
-    const walkIn = REAL && !!(hq && hq.mine) && REC && REC.mode === 'build'; // (your own, in the 3D street: walked into)
+    const walkIn = false; // (the walk-in apartment is off for now: your home opens in its own room) // (your own, in the 3D street: walked into)
     (REC && REC.clip && !REAL ? () => w3hq(a, b, c, d, k, hq, col) : (h) => compound(a, b, c, d, hq && hq.mine, h, REAL))(() => { // (on the real map the 3D is the 2D map's own design)
       // a modern BQ: white render, a timber-clad wing in the owner's colour, floor-to-ceiling glass, a flat slab roof
       // with solar panels, a cantilevered canopy over the door, wall lights after dark
@@ -10828,7 +10828,7 @@
     residentCard({ title: (h.mine ? '🏡 ' : '🏠 ') + st[0], sub: pl.name, head: h.mine ? 'Your home' : h.owner ? `${h.owner} lives here` : 'A Lagosian lives here', note: h.mine ? 'Furnish it from the Eko Home Store.' : h.owner ? 'Their home stays private; here is who they are.' : 'They keep their home private.', mine: h.mine, owner: h.mine ? null : h.owner, go });
   }
   // a BQ on HQ Row
-  function hqInside(k) { const at = hqAt[k]; if (!at) return false; const [pi, pj] = at; me.x = pi * T + 6; me.z = pj * T + 4.6; me.vx = me.vz = 0; cam.follow = true; V3.wpref = true; try { localStorage.setItem('li.3dw', '1'); } catch {} return true; } // (in your living room, in the street's own 3D)
+  function hqInside(k) { return false; /* (off for now: home is its own room) */ const at = hqAt[k]; if (!at) return false; const [pi, pj] = at; me.x = pi * T + 6; me.z = pj * T + 4.6; me.vx = me.vz = 0; cam.follow = true; V3.wpref = true; try { localStorage.setItem('li.3dw', '1'); } catch {} return true; } // (in your living room, in the street's own 3D)
   function enterHq(k, i, j) {
     const hq = signedIn() ? hqSlots[k] : null, taken = !!hq || k < (housingBqs ?? 0);
     const go = () => { if (REAL && hq.mine && hqInside(k)) return; const [pi, pj] = hqAt[k] || [i, j]; me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); };
@@ -13748,7 +13748,7 @@
     if (!signedIn()) return;
     try { hqSlots = await my('hqRow'); } catch {}
     if (!loadHqRow.homed && hqSlots.length) { loadHqRow.homed = true; const q0 = new URLSearchParams(location.search), k = hqSlots.findIndex((s2) => s2.mine), hq = hqSlots[k]; // you always start the game at home, inside your own apartment (unless a link says where)
-      if (hq && hqAt[k] && !q0.get('at') && !q0.get('in') && !inside) { const [pi, pj] = hqAt[k]; cam.follow = true; if (REAL) hqInside(k); else { me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); } } } // (on the real map: in your living room, in the street's own 3D)
+      if (hq && hqAt[k] && !q0.get('at') && !q0.get('in') && !inside) { const [pi, pj] = hqAt[k]; cam.follow = true; { me.x = pi * T + T; me.z = pj * T + T - 1; enterRoom('hq', 'hq:' + hq.slot, hq.name); } } } // (on the real map: in your living room, in the street's own 3D)
     try { hqBoard.posts = await my('board'); } catch {}
     try { const before = census().taken; homesLive = Object.fromEntries((await my('homes')).map((h) => [h.plot, h])); const now = census(); if (!housingTaken && loadHqRow.seen && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']); loadHqRow.seen = true; } catch {} // who owns which plot (until the server has homes, everything's for sale)
     try { // the parties going on that I can go to; a new invite pings my phone
@@ -13982,7 +13982,7 @@
         const hq = hqSlots[k];
         if (!signedIn()) next = { label: '🔒 Sign in to WYRD to visit HQs', run: () => openPhone() };
         else if (!hq || hq.ghost) next = null; // vacant, or a resident in ghost mode: locked
-        else if (hq.mine && REAL) next = V3.on ? null : { label: `🏠 Go into ${hq.name}`, run: () => hqInside(k) }; // (on the real map your apartment is walked into, through its door: no separate room)
+        else if (false) next = V3.on ? null : { label: `🏠 Go into ${hq.name}`, run: () => hqInside(k) }; // (on the real map your apartment is walked into, through its door: no separate room)
         else if (hq.mine) { warmDoor('hq:' + hq.slot); next = { label: `🏠 Enter ${hq.name}`, run: () => enterRoom('hq', 'hq:' + hq.slot, hq.name) }; }
         else next = { label: `🏠 ${hq.owner || 'A Lagosian'}'s BQ`, run: () => enterHq(k, Math.floor(me.x / T), Math.floor(me.z / T)) };
       }
