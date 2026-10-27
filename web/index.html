@@ -4974,6 +4974,63 @@
         m.material.needsUpdate = true; }
       m.userData.pu.uPaintOn.value = col ? 1 : 0; if (col) m.userData.pu.uPaint.value.set(col); });
   }
+  // ---- damage, collisions and explosions. Every car has health (100). Hits take it away by how hard they are (the
+  // closing speed, squared, as the energy is): the body crumples where it was hit, the lights break, the bonnet smokes
+  // grey and then black; at 0 the engine catches fire and a few seconds later the tank goes up: a flash, a fireball,
+  // smoke rising, debris thrown out, a bang, the camera shaken, and a blast that throws and damages the cars round it
+  // (so a pile-up can chain). The wreck stays, burnt black
+  const CRASH = { fx: [], tex: null, ctx: null, shake: 0 };
+  function crashHit(q, speed, side) {
+    if (speed < 2.5 || q.dead) return; const now = performance.now(); if (now - (q.hitAt || 0) < 250) return; q.hitAt = now;
+    const dmg = Math.min(100, (speed - 2.5) * (speed - 2.5) * 0.9); q.hp = Math.max(0, (q.hp ?? 100) - dmg);
+    const k = Math.min(0.14, (q.dent && q.dent[side] || 0) + dmg / 450); q.dent = Object.assign({ f: 0, b: 0, l: 0, r: 0 }, q.dent, { [side]: k });
+    if (dmg > 4) crashSound(Math.min(1, dmg / 40), false); if (V3.drive && V3.drive.q === q) { CRASH.shake = Math.max(CRASH.shake, Math.min(1, dmg / 30)); if (navigator.vibrate) navigator.vibrate(Math.min(200, 30 + dmg * 4)); }
+    if (q.hp <= 0 && !q.fireAt) { q.fireAt = now; if (V3.drive && V3.drive.q === q) tickerSay('\u{1F525} The engine is on fire. Get out before it blows!'); }
+  }
+  function carBump(q, d) { // your car against the others: the hit shared, both pushed apart along the line between them
+    for (const o of V3.wcars || []) { if (o === q) continue; const dx = o.cx - q.cx, dz = o.cz - q.cz, dist = Math.hypot(dx, dz); if (dist > 2.7 || dist < 1e-3) continue;
+      const nx = dx / dist, nz = dz / dist, ovx = o.kvx || (o.traffic ? Math.cos(o.ang) * (o.v || 0) : 0), ovz = o.kvz || (o.traffic ? Math.sin(o.ang) * (o.v || 0) : 0), rel = (d.vx - ovx) * nx + (d.vz - ovz) * nz;
+      q.cx -= nx * (2.7 - dist) * 0.5; q.cz -= nz * (2.7 - dist) * 0.5; if (rel <= 0) continue; // (pushed apart; only closing speed hurts)
+      const fa = Math.cos(q.ang) * nx + Math.sin(q.ang) * nz, sideQ = fa > 0.6 ? 'f' : fa < -0.6 ? 'b' : (-Math.sin(q.ang) * nx + Math.cos(q.ang) * nz) > 0 ? 'r' : 'l';
+      const fo = Math.cos(o.ang) * -nx + Math.sin(o.ang) * -nz, sideO = fo > 0.6 ? 'f' : fo < -0.6 ? 'b' : (-Math.sin(o.ang) * -nx + Math.cos(o.ang) * -nz) > 0 ? 'r' : 'l';
+      d.vx -= nx * rel * 0.8; d.vz -= nz * rel * 0.8; o.kvx = ovx + nx * rel * 0.8; o.kvz = ovz + nz * rel * 0.8; o.v = 0; o.knock = performance.now(); // (most of your momentum goes into it)
+      crashHit(q, rel, sideQ); crashHit(o, rel, sideO); }
+  }
+  function crashTex() { if (CRASH.tex) return CRASH.tex; const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.5, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return (CRASH.tex = new G3.T.CanvasTexture(c)); }
+  function crashPuff(x, y, z, o) { // one particle: o = {col, size, grow, life, vx, vy, vz, add, grav, a}
+    if (CRASH.fx.length > (MOBILE ? 140 : 320)) return; const T3 = G3.T, m = new T3.Sprite(new T3.SpriteMaterial({ map: crashTex(), color: o.col, transparent: true, depthWrite: false, opacity: o.a ?? 0.8, blending: o.add ? T3.AdditiveBlending : T3.NormalBlending })), ws = V3.ws || 1;
+    m.position.set(x * ws, y * ws, z * ws); m.scale.setScalar(o.size * ws); G3.scene.add(m); CRASH.fx.push({ m, t: 0, ...o, a0: o.a ?? 0.8 }); }
+  function crashSound(power, boom) { try { const c = CRASH.ctx || (CRASH.ctx = new (window.AudioContext || window.webkitAudioContext)()), n = Math.floor(c.sampleRate * (boom ? 2.2 : 0.35)), b = c.createBuffer(1, n, c.sampleRate), ch = b.getChannelData(0);
+      for (let i = 0; i < n; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, boom ? 2.5 : 4);
+      const src = c.createBufferSource(), f = c.createBiquadFilter(), gn = c.createGain(); src.buffer = b; f.type = 'lowpass'; f.frequency.value = boom ? 420 : 1800; gn.gain.value = (boom ? 1 : 0.5) * power * (CITY.on ? 1 : 0); src.connect(f).connect(gn).connect(c.destination); src.start(); } catch {} }
+  function crashBoom(q) {
+    q.dead = true; q.hp = 0; q.tint = '#161616'; q.paint = '#161616'; q.v = 0; q.kvy = 9; const x = q.cx, z = q.cz, near = Math.hypot(x - me.x, z - me.z);
+    for (let i = 0; i < 26; i++) { const a = Math.random() * 6.28, u = Math.random(); crashPuff(x, 1 + u, z, { col: i < 14 ? 0xFFB347 : 0xFF5A1F, size: 2 + u * 3, grow: 9, life: 0.7 + u * 0.5, vx: Math.cos(a) * 6 * u, vy: 3 + u * 5, vz: Math.sin(a) * 6 * u, add: true, a: 1 }); } // (the fireball)
+    for (let i = 0; i < 18; i++) crashPuff(x + (Math.random() - 0.5) * 3, 2, z + (Math.random() - 0.5) * 3, { col: 0x2A2724, size: 3, grow: 5, life: 3 + Math.random() * 2, vx: (Math.random() - 0.5) * 2, vy: 3 + Math.random() * 2, vz: (Math.random() - 0.5) * 2, a: 0.75 }); // (black smoke)
+    for (let i = 0; i < 14; i++) { const a = Math.random() * 6.28, sp = 8 + Math.random() * 10; crashPuff(x, 1.5, z, { col: 0x3A3A3A, size: 0.35, grow: 0, life: 1.6, vx: Math.cos(a) * sp, vy: 6 + Math.random() * 8, vz: Math.sin(a) * sp, grav: true, a: 1 }); } // (debris)
+    { const T3 = G3.T, ws = V3.ws || 1, L = new T3.PointLight(0xFFA040, 60, 60 * ws); L.position.set(x * ws, 3 * ws, z * ws); G3.scene.add(L); CRASH.fx.push({ m: L, t: 0, life: 0.9, light: true }); } // (the flash)
+    crashSound(Math.max(0.15, 1 - near / 160), true); CRASH.shake = Math.max(CRASH.shake, Math.max(0, 1.4 - near / 40));
+    if (V3.drive && V3.drive.q === q) { driveExit(); tickerSay('\u{1F4A5} Your car blew up.'); }
+    for (const o of V3.wcars || []) { if (o === q || o.dead) continue; const dd = Math.hypot(o.cx - x, o.cz - z); if (dd < 12) { const f = (12 - dd) / 12; o.kvx = (o.cx - x) / (dd || 1) * 14 * f; o.kvz = (o.cz - z) / (dd || 1) * 14 * f; o.knock = performance.now(); o.hitAt = 0; crashHit(o, 4 + 18 * f, 'l'); } } // (the blast)
+    if (near < 8 && !V3.drive) { const f = (8 - near) / 8; me.vx = (me.x - x) / (near || 1) * 30 * f; me.vz = (me.z - z) / (near || 1) * 30 * f; } // (it throws you, too)
+  }
+  function crashStep(dt) { // smoke from damaged cars, the fire's countdown, cars knocked about sliding to a stop, and the particles
+    if (!G3.ok) return; const now = performance.now();
+    for (const q of V3.wcars || []) {
+      if (q.kvx || q.kvz) { if (!(V3.drive && V3.drive.q === q)) { const nx = q.cx + q.kvx * dt, nz = q.cz + q.kvz * dt; if (walkable(nx, nz)) { q.cx = nx; q.cz = nz; } else { q.kvx *= -0.3; q.kvz *= -0.3; } } const f = Math.max(0, 1 - dt * 2.2); q.kvx *= f; q.kvz *= f; if (Math.hypot(q.kvx, q.kvz) < 0.2) q.kvx = q.kvz = 0; }
+      if (q.kvy != null) { q.y = (q.y || 0) + q.kvy * dt; q.kvy -= 25 * dt; if (q.y <= 0) { q.y = 0; q.kvy = q.kvy < -4 ? -q.kvy * 0.3 : null; } } // (the blast lifts the wreck and it falls back)
+      const hp = q.hp ?? 100; if (hp >= 55 || Math.hypot(q.cx - me.x, q.cz - me.z) > 160) continue; const fx2 = Math.cos(q.ang) * 1.7, fz2 = Math.sin(q.ang) * 1.7;
+      if (Math.random() < dt * (hp <= 0 ? 14 : hp < 25 ? 8 : 4)) crashPuff(q.cx + fx2, 1.3 + (q.y || 0), q.cz + fz2, { col: hp < 25 ? 0x2B2B2B : 0x9CA3AF, size: 0.9, grow: 2.4, life: 2.2, vx: 0.4, vy: 2.2, vz: 0.2, a: 0.5 });
+      if (hp <= 0 && q.fireAt && Math.random() < dt * 22) crashPuff(q.cx + (q.dead ? 0 : fx2), 1 + (q.y || 0), q.cz + (q.dead ? 0 : fz2), { col: Math.random() < 0.5 ? 0xFF7A1A : 0xFFC14D, size: q.dead ? 1.6 : 0.9, grow: 1.2, life: 0.6, vx: 0, vy: 2.6, vz: 0, add: true, a: 0.9 }); // (flames)
+      if (q.fireAt && !q.dead && now - q.fireAt > 4500) crashBoom(q);
+      if (q.dead && q.fireAt && now - q.fireAt > 40000) q.fireAt = null; } // (a wreck stops burning after a while)
+    for (let i = CRASH.fx.length - 1; i >= 0; i--) { const p = CRASH.fx[i]; p.t += dt; const u = p.t / p.life, ws = V3.ws || 1;
+      if (u >= 1) { G3.scene.remove(p.m); if (p.m.material) p.m.material.dispose(); CRASH.fx.splice(i, 1); continue; }
+      if (p.light) { p.m.intensity = 60 * (1 - u) * (1 - u); continue; }
+      if (p.grav) p.vy -= 20 * dt; p.m.position.x += p.vx * dt * ws; p.m.position.y = Math.max(0.1 * ws, p.m.position.y + p.vy * dt * ws); p.m.position.z += p.vz * dt * ws; p.vx *= 1 - dt; p.vz *= 1 - dt;
+      p.m.scale.setScalar((p.size + p.grow * u) * ws); p.m.material.opacity = p.a0 * (1 - u); }
+    CRASH.shake = Math.max(0, CRASH.shake - dt * 1.6);
+  }
   function carPose(o, q, now) {
     const rig = carRig(o, q.model), d = V3.drive && V3.drive.q === q ? V3.drive : null, dt = Math.min(0.1, (now - (q.wt || now)) / 1000); q.wt = now;
     const v = d ? d.v : q.traffic ? q.v || 0 : 0; q.spin = (q.spin || 0) + v * dt / (rig.r * (q.sc || 1)); // (the wheels roll exactly as far as the car goes)
@@ -4982,7 +5039,8 @@
     const wantRoll = d ? Math.max(-0.07, Math.min(0.07, -(d.steer || 0) * Math.abs(v) * 0.004)) : 0, wantPitch = d ? Math.max(-0.045, Math.min(0.045, -acc * 0.0035)) : 0;
     rig.body.rotation.x += (wantRoll - rig.body.rotation.x) * Math.min(1, dt * 5); rig.body.rotation.z += (wantPitch - rig.body.rotation.z) * Math.min(1, dt * 6);
     carPaint(o, rig, q.paint); if (rig.wheelS) rig.wheelS.rotation.x += ((d ? -(d.steer || 0) * 2.2 : 0) - rig.wheelS.rotation.x) * Math.min(1, dt * 10); // (the steering wheel turns with you)
-    const nt = night > 0.5, braking = !!(d && d.braking); rig.brake.emissiveIntensity = braking ? 2.4 : nt && d ? 0.7 : 0; rig.head.emissiveIntensity = nt && d ? 2.2 : 0;
+    { const D = q.dent || { f: 0, b: 0, l: 0, r: 0 }; rig.body.scale.set(1 - D.f - D.b, 1 - (D.f + D.b + D.l + D.r) * 0.35, 1 - D.l - D.r); rig.body.rotation.y = (D.l - D.r) * 0.6; } // (crumpled where it was hit)
+    const hp = q.hp ?? 100, nt = night > 0.5, braking = !!(d && d.braking); rig.brake.emissiveIntensity = (q.dent && q.dent.b > 0.05) || hp <= 0 ? 0 : braking ? 2.4 : nt && d ? 0.7 : 0; rig.head.emissiveIntensity = (q.dent && q.dent.f > 0.05) || hp <= 0 ? 0 : nt && d ? 2.2 : 0; // (smashed lights stay dark)
   }
   // render the queued models with the game's camera and lay them into the picture (called between people, so they stay in front)
   function flush3d() {
@@ -5294,6 +5352,7 @@
       if (!V3.rcAt || now - V3.rcAt > 90) { V3.rcAt = now; rc.set(from, dir); rc.far = dd; const hit = rc.intersectObjects((R.kind === 'world' ? V3.wray || [] : V3.groups.children).filter((o) => o.isMesh && o.geometry && o.geometry.attributes.position && o.geometry.attributes.position.count > 3 && !o.material.transparent), false)[0]; V3.camBlock = hit ? Math.max(2.2, hit.distance - 0.8) : null; }
       if (V3.camBlock != null) dcam = Math.min(dd, V3.camBlock); V3.dcam = (V3.dcam ?? dcam) + (dcam - (V3.dcam ?? dcam)) * (dcam < (V3.dcam ?? dcam) ? 0.5 : 0.08); dcam = V3.dcam; }
     cam3.position.set(V3.tx + Math.sin(V3.yaw + sy) * ch * dcam, ly - 0.5 + Math.sin(pp) * dcam, V3.tz + Math.cos(V3.yaw + sy) * ch * dcam); cam3.lookAt(V3.tx, ly, V3.tz);
+    if (typeof CRASH !== 'undefined' && CRASH.shake > 0) { const k = CRASH.shake * CRASH.shake * 0.6 * ws; cam3.position.x += (Math.random() - 0.5) * k; cam3.position.y += (Math.random() - 0.5) * k; } // (the camera shakes after a hit or a blast)
     if (V3.drive) { const q = V3.drive.q, fx = Math.cos(q.ang), fz = Math.sin(q.ang); // at the wheel: from the driver's seat (on the left, as in Lagos), or behind the car
       if (V3.drive.fp) { cam3.near = 0.3; cam3.updateProjectionMatrix(); cam3.position.set((q.cx + fx * 0.15 + fz * 0.38) * ws, 1.32 * ws, (q.cz + fz * 0.15 - fx * 0.38) * ws); cam3.lookAt((q.cx + fx * 40) * ws, 1.05 * ws, (q.cz + fz * 40) * ws); } }
     if (V3.dbg) { const w = V3.ws || 1; cam3.position.set(V3.dbg[0] * w, V3.dbg[1] * w, V3.dbg[2] * w); cam3.lookAt(V3.dbg[3] * w, V3.dbg[4] * w, V3.dbg[5] * w); } // (testing on a local copy: a camera put where it's wanted)
@@ -5646,7 +5705,7 @@
     for (const [k, c] of V3.cells) { const [ci, cj] = k.split(',').map(Number); if (Math.hypot((ci + 0.5) * CS - me.x, (cj + 0.5) * CS - me.z) > R1) { V3.groups.remove(c.grp); c.grp.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); V3.cells.delete(k); changed = true; } }
     const add = (k, c) => { V3.cells.set(k, c); V3.groups.add(c.grp); changed = true; };
     if (REAL) wchunksOver(me.x - R1, me.z - R1, me.x + R1, me.z + R1); // (the real city's chunks round you, on their way)
-    if (REAL) { const nowT = performance.now(), dtT = Math.min(0.1, (nowT - (TR.at || nowT)) / 1000); TR.at = nowT; trStep(dtT); V3.wcars = (V3.wcars || []).filter((q) => !q.traffic).concat(TR.cars.filter((q) => V3.cells.has(Math.floor(q.cx / W3.CS) + ',' + Math.floor(q.cz / W3.CS)) || (V3.drive && V3.drive.q === q))); } // (only where the street round it is built) // (the traffic, moving)
+    if (REAL) { const nowT = performance.now(), dtT = Math.min(0.1, (nowT - (TR.at || nowT)) / 1000); TR.at = nowT; trStep(dtT); crashStep(dtT); V3.wcars = (V3.wcars || []).filter((q) => !q.traffic).concat(TR.cars.filter((q) => V3.cells.has(Math.floor(q.cx / W3.CS) + ',' + Math.floor(q.cz / W3.CS)) || (V3.drive && V3.drive.q === q))); } // (only where the street round it is built) // (the traffic, moving)
     if (!V3.cells.has(ci0 + ',' + cj0) && !(V3.job && V3.job.k === ci0 + ',' + cj0)) { V3.job = null; add(ci0 + ',' + cj0, w3cell(ci0, cj0)); } // (where you stand is there at once)
     if (!V3.job) { let best = null; for (let dj = -n; dj <= n; dj++) for (let di = -n; di <= n; di++) { const ci = ci0 + di, cj = cj0 + dj, k = ci + ',' + cj; if (ci < 0 || cj < 0 || ci * CS >= BOARD.w * T || cj * CS >= BOARD.h * T || V3.cells.has(k)) continue; const dd = Math.hypot((ci + 0.5) * CS - me.x, (cj + 0.5) * CS - me.z); if (dd < R0 && (!best || dd < best[0]) && (!REAL || wchunksOver(ci * CS, cj * CS, (ci + 1) * CS, (cj + 1) * CS).ready)) best = [dd, ci, cj]; }
       if (best) V3.job = w3job(best[1], best[2]); }
@@ -7031,6 +7090,7 @@
     const want = MOBILE ? 14 : 24; TR.cars = TR.cars.filter((q) => Math.hypot(q.cx - me.x, q.cz - me.z) < 260 || (V3.drive && V3.drive.q === q)); if (TR.cars.length < want) trSpawn(G);
     for (const q of TR.cars) {
       if (V3.drive && V3.drive.q === q) continue; // (a car you've taken is yours to drive)
+      if (q.dead || (q.hp ?? 100) <= 0 || performance.now() - (q.knock || 0) < 2500) { q.v = 0; continue; } // (wrecked, or just knocked about: it stays put)
       let [ax, az, bx, bz] = trSeg(q); let L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L;
       const top = q.rd.c <= 1 ? 7.8 : q.rd.c <= 3 ? 5.5 : 3.6; let block = false; // (what's ahead: you, your car, another car in the same direction)
       const ahead = (x2, z2, r) => { const dx = x2 - q.cx, dz = z2 - q.cz, f = dx * ux + dz * uz, s2 = Math.abs(-dx * uz + dz * ux); return f > 0 && f < r && s2 < 2.4; };
@@ -10885,7 +10945,8 @@
         d.steer = (d.steer || 0) + (str - (d.steer || 0)) * Math.min(1, dt * 7);
         let fx = Math.cos(q.ang), fz = Math.sin(q.ang); if (d.vx === undefined) { d.vx = fx * d.v; d.vz = fz * d.v; }
         let fwd = d.vx * fx + d.vz * fz, lat = -d.vx * fz + d.vz * fx; // (speed along the car, and sideways across it)
-        if (thr > 0.05 && g > 0) fwd += (fwd < -0.5 ? brake : acc * Math.max(0.12, 1 - Math.max(0, fwd) / top)) * thr * dt; // (the gas: forward in a forward gear)
+        if (q.hp != null && q.hp <= 25) fwd *= 1 - dt * 0.3; // (a wrecked engine barely pulls)
+        if ((q.hp ?? 100) > 0 && thr > 0.05 && g > 0) fwd += (fwd < -0.5 ? brake : acc * Math.max(0.12, 1 - Math.max(0, fwd) / top)) * thr * dt; // (the gas: forward in a forward gear)
         else if (thr > 0.05 && g < 0) fwd -= (fwd > 0.5 ? brake : acc * 0.6) * thr * dt; // (in reverse, backward)
         else if (thr < -0.05) fwd -= Math.sign(fwd) * Math.min(Math.abs(fwd), brake * -thr * dt); // (the brake only ever stops you)
         if (g > 0 && fwd > hiV) fwd -= (fwd - hiV) * Math.min(1, dt * 1.6); // (engine braking: a gear too low for this speed)
@@ -10895,10 +10956,12 @@
         q.ang += d.steer * 2.4 * Math.min(1, Math.abs(fwd) / 4) / (1 + Math.abs(fwd) / 20) * (hb ? 1.4 : 1) * dt * Math.sign(fwd || 1);
         fx = Math.cos(q.ang); fz = Math.sin(q.ang); d.vx = fx * fwd - fz * lat; d.vz = fz * fwd + fx * lat;
         { const nose = Math.sign(fwd || 1) * 2.4, ok = (x2, z2) => walkable(x2 + fx * nose, z2 + fz * nose) && walkable(x2, z2), nx = q.cx + d.vx * dt, nz = q.cz + d.vz * dt;
+          if (!ok(nx, nz)) crashHit(q, Math.abs(fwd) * (ok(nx, q.cz) || ok(q.cx, nz) ? 0.45 : 1), fwd >= 0 ? 'f' : 'b'); // (the wall: damage by how hard you hit it)
           if (ok(nx, nz)) { q.cx = nx; q.cz = nz; }
           else if (ok(nx, q.cz)) { q.cx = nx; d.vz *= -0.2; d.vx *= 0.8; } else if (ok(q.cx, nz)) { q.cz = nz; d.vx *= -0.2; d.vz *= 0.8; } // (a glancing blow: it scrapes along)
           else { d.vx *= -0.3; d.vz *= -0.3; if (Math.abs(fwd) > 9 && navigator.vibrate) navigator.vibrate(60); } } // (head on: it stops dead and rocks back)
-        d.v = d.vx * fx + d.vz * fz; d.lat = lat;
+        carBump(q, d); d.v = d.vx * fx + d.vz * fz; d.lat = lat;
+        if ((q.hp ?? 100) <= 0) { d.vx *= 1 - Math.min(1, dt * 3); d.vz *= 1 - Math.min(1, dt * 3); } // (a dead engine: it rolls to a stop)
         carSound(d, top, GEARS, thr);
         if (!d.fp) { if (d.set != null && Math.abs(V3.dist - d.set) > 0.05) d.user = Math.max(8, V3.dist - (d.off || 0)); // (you zoomed: that's your distance now)
           const base = d.user ?? 40; d.off = (d.off || 0) + (Math.abs(d.v) * 0.6 - (d.off || 0)) * Math.min(1, dt * 1.5); V3.dist = d.set = base + d.off; } // (the camera hangs back a little more the faster you go, on top of the distance you chose)
