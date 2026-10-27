@@ -2031,7 +2031,11 @@
   const lotHome = (l, R) => { const sc = SECTORS[sectorAt[l.j * BOARD.w + l.i]], list = LOT_HOMES[sc && sc.id] || LOT_HOMES.lekki; return list[Math.floor(R() * list.length)]; };
   const LAND_RUNS = []; // the real board's ground, drawn as runs along each row: [i0, j, i1, sand]
   const RUNS_ROW = Array.from({ length: BOARD.h }, () => []);
-  if (REAL) for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) { const t = at(i, j); if (t === W0 || t === BRIDGE) continue; const sd = t === SAND; let e = i; while (e + 1 < BOARD.w && (e + 1) % 6 && at(e + 1, j) !== W0 && at(e + 1, j) !== BRIDGE && (at(e + 1, j) === SAND) === sd) e++; /* (runs break on the 3D builder's 6-tile quarter cells) */ LAND_RUNS.push([i, j, e, sd]); RUNS_ROW[j].push([i, j, e, sd]); i = e; }
+  // the Atlantic's beaches: land within three tiles (45 m) of the open sea, south of the lagoons, is sand
+  const BEACH = new Uint8Array(BOARD.w * BOARD.h); if (REAL) { const j0 = Math.floor(BOARD.h * 0.62), D = 3, tmp = new Uint8Array(BOARD.w * BOARD.h);
+    for (let j = j0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) if (at(i, j) === W0) for (let d = -D; d <= D; d++) { const ii = i + d; if (ii >= 0 && ii < BOARD.w) tmp[j * BOARD.w + ii] = 1; }
+    for (let j = j0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) if (tmp[j * BOARD.w + i]) for (let d = -D; d <= D; d++) { const jj = j + d; if (jj >= j0 && jj < BOARD.h) BEACH[jj * BOARD.w + i] = 1; } }
+  if (REAL) for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) { const t = at(i, j); if (t === W0 || t === BRIDGE) continue; const sd = t === SAND || (BEACH[j * BOARD.w + i] && t !== ROAD); let e = i; while (e + 1 < BOARD.w && (e + 1) % 6 && at(e + 1, j) !== W0 && at(e + 1, j) !== BRIDGE && (at(e + 1, j) === SAND || (BEACH[j * BOARD.w + e + 1] && at(e + 1, j) !== ROAD)) === sd) e++; /* (runs break on the 3D builder's 6-tile quarter cells) */ LAND_RUNS.push([i, j, e, sd]); RUNS_ROW[j].push([i, j, e, sd]); i = e; }
   const blocked = []; // footprints you walk round: [x0, z0, x1, z1]
 
   // ================= the camera: a real 3D view, turned and tilted for each sector =================
@@ -5641,16 +5645,31 @@
   function w3env(R, grp) {
     const T3 = G3.T, nt = night > 0.5, cx = R.ox + R.w / 2, cz = R.oz + R.d / 2;
     { const c = document.createElement('canvas'); c.width = 16; c.height = 256; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 256);
-      if (nt) { gr.addColorStop(0, '#020617'); gr.addColorStop(0.5, '#0B1033'); gr.addColorStop(0.72, '#2A1E4A'); gr.addColorStop(1, '#14102A'); } else { gr.addColorStop(0, '#3B82C4'); gr.addColorStop(0.5, '#8EC5E8'); gr.addColorStop(0.72, '#F6E4C8'); gr.addColorStop(1, '#E8D2B0'); }
+      if (nt) { gr.addColorStop(0, '#020617'); gr.addColorStop(0.5, '#0B1033'); gr.addColorStop(0.72, '#2A1E4A'); gr.addColorStop(1, '#14102A'); } else { gr.addColorStop(0, '#2F6FB3'); gr.addColorStop(0.45, '#7FB5DE'); gr.addColorStop(0.7, '#CFE1EC'); gr.addColorStop(1, '#BFD3DF'); } // (a coastal sky: deep overhead, a pale blue-grey haze at the horizon)
       g.fillStyle = gr; g.fillRect(0, 0, 16, 256); const tex = new T3.CanvasTexture(c); tex.colorSpace = T3.SRGBColorSpace;
       const sky = new T3.Mesh(new T3.SphereGeometry(900, 32, 16), new T3.MeshBasicMaterial({ map: tex, side: T3.BackSide, fog: false, depthWrite: false, toneMapped: false })); sky.position.set(cx, 0, cz); sky.renderOrder = -10; grp.add(sky); }
     if (nt) { const n = 700, pos = new Float32Array(n * 3); for (let k = 0; k < n; k++) { const R2 = rnd(k * 13 + 5), th = R2() * Math.PI * 2, ph = 0.1 + R2() * 1.3, r = 850; pos[k * 3] = cx + Math.cos(th) * Math.cos(ph) * r; pos[k * 3 + 1] = Math.sin(ph) * r; pos[k * 3 + 2] = cz + Math.sin(th) * Math.cos(ph) * r; }
       const geo = new T3.BufferGeometry(); geo.setAttribute('position', new T3.BufferAttribute(pos, 3)); grp.add(new T3.Points(geo, new T3.PointsMaterial({ color: 0xffffff, size: 2, sizeAttenuation: false, fog: false }))); }
-    { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = nt ? '#0B2E4A' : '#2F6F8F'; g.fillRect(0, 0, 128, 128); g.strokeStyle = nt ? 'rgba(165,243,252,0.18)' : 'rgba(255,255,255,0.22)'; g.lineWidth = 1.2;
-      for (let k = 0; k < 18; k++) { const y = k * 7 + 3; g.beginPath(); for (let px = 0; px <= 128; px += 6) g.lineTo(px, y + Math.sin(px * 0.12 + k) * 1.6); g.stroke(); }
-      const tex = new T3.CanvasTexture(c); tex.wrapS = tex.wrapT = T3.RepeatWrapping; tex.repeat.set(90, 90); tex.colorSpace = T3.SRGBColorSpace;
-      const sea = new T3.Mesh(new T3.PlaneGeometry(3000, 3000), new T3.MeshStandardMaterial({ map: tex, roughness: 0.15, metalness: 0.3, emissive: nt ? 0x061a2b : 0x0b3a5c, emissiveIntensity: 0.4 })); sea.rotation.x = -Math.PI / 2; sea.position.set(cx, -0.9, cz); grp.add(sea); V3.inside.sea = tex; }
-    G3.scene.fog = new T3.Fog(nt ? 0x0b1026 : 0xe9d9c0, 300, 1300);
+    { // the sea: a surface of crossing swells (a relief made once from summed waves), deep Atlantic blue, glossy, so it
+      // catches the sky; it drifts every frame. Over it, the sun with its glow (the moon by night) and a deck of clouds
+      const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'), img = g.createImageData(N, N), hgt = new Float32Array(N * N);
+      const waves = [[3, 1, 0.9, 0.2], [1, 4, 0.6, 1.1], [5, -2, 0.35, 2.3], [-3, 5, 0.3, 0.7], [7, 3, 0.18, 1.9], [2, -7, 0.15, 2.8], [11, 5, 0.08, 0.4], [-6, 11, 0.07, 1.4]];
+      for (let y2 = 0; y2 < N; y2++) for (let x2 = 0; x2 < N; x2++) { let h = 0; for (const [kx, ky, a, ph] of waves) h += a * Math.sin((kx * x2 + ky * y2) / N * Math.PI * 2 + ph); hgt[y2 * N + x2] = h; }
+      for (let y2 = 0; y2 < N; y2++) for (let x2 = 0; x2 < N; x2++) { const dx = hgt[y2 * N + (x2 + 1) % N] - hgt[y2 * N + (x2 + N - 1) % N], dy = hgt[((y2 + 1) % N) * N + x2] - hgt[((y2 + N - 1) % N) * N + x2], L2 = Math.hypot(dx * 1.5, dy * 1.5, 1), o = (y2 * N + x2) * 4;
+        img.data[o] = (-dx * 1.5 / L2 * 0.5 + 0.5) * 255; img.data[o + 1] = (-dy * 1.5 / L2 * 0.5 + 0.5) * 255; img.data[o + 2] = (1 / L2 * 0.5 + 0.5) * 255; img.data[o + 3] = 255; }
+      g.putImageData(img, 0, 0); const nrm = new T3.CanvasTexture(c); nrm.wrapS = nrm.wrapT = T3.RepeatWrapping; nrm.repeat.set(70, 70); nrm.colorSpace = T3.NoColorSpace;
+      const sea = new T3.Mesh(new T3.PlaneGeometry(3000, 3000), new T3.MeshStandardMaterial({ color: nt ? 0x061C2E : 0x0E4A68, normalMap: nrm, normalScale: new T3.Vector2(0.55, 0.55), roughness: 0.1, metalness: 0.3, envMapIntensity: 1.2 }));
+      sea.rotation.x = -Math.PI / 2; sea.position.set(cx, -0.9, cz); grp.add(sea); V3.inside.sea = nrm;
+      { const sc = document.createElement('canvas'); sc.width = sc.height = 128; const sg = sc.getContext('2d'), gr2 = sg.createRadialGradient(64, 64, 0, 64, 64, 64); // the sun (the moon by night) and its glow
+        if (nt) { gr2.addColorStop(0, 'rgba(240,244,255,1)'); gr2.addColorStop(0.14, 'rgba(226,232,240,1)'); gr2.addColorStop(0.2, 'rgba(180,200,255,0.25)'); gr2.addColorStop(1, 'rgba(120,140,220,0)'); }
+        else { gr2.addColorStop(0, 'rgba(255,255,245,1)'); gr2.addColorStop(0.1, 'rgba(255,248,220,1)'); gr2.addColorStop(0.24, 'rgba(255,226,160,0.45)'); gr2.addColorStop(1, 'rgba(255,210,140,0)'); }
+        sg.fillStyle = gr2; sg.fillRect(0, 0, 128, 128); const sun = new T3.Sprite(new T3.SpriteMaterial({ map: new T3.CanvasTexture(sc), fog: false, depthWrite: false, transparent: true, blending: T3.AdditiveBlending, toneMapped: false }));
+        sun.position.set(cx - 0.5 * 780, 520, cz - 0.35 * 780); sun.scale.setScalar(nt ? 140 : 260); sun.renderOrder = -9; grp.add(sun); }
+      { const cc = document.createElement('canvas'); cc.width = cc.height = 512; const cg = cc.getContext('2d'); // a deck of fair-weather cumulus, soft-edged, drifting
+        for (let k = 0; k < 46; k++) { const R2 = rnd(k * 31 + 7), x0 = R2() * 512, y0 = R2() * 512, r0 = 18 + R2() * 46; for (let b = 0; b < 7; b++) { const bx = x0 + (R2() - 0.5) * r0 * 1.6, by = y0 + (R2() - 0.5) * r0 * 0.6, br = r0 * (0.5 + R2() * 0.6); for (const [ox, oy] of [[0, 0], [512, 0], [-512, 0], [0, 512], [0, -512]]) { const gg = cg.createRadialGradient(bx + ox, by + oy, 0, bx + ox, by + oy, br); gg.addColorStop(0, nt ? 'rgba(140,150,190,0.22)' : 'rgba(255,255,255,0.9)'); gg.addColorStop(1, 'rgba(255,255,255,0)'); cg.fillStyle = gg; cg.beginPath(); cg.arc(bx + ox, by + oy, br, 0, Math.PI * 2); cg.fill(); } } }
+        const ct = new T3.CanvasTexture(cc); ct.wrapS = ct.wrapT = T3.RepeatWrapping; ct.repeat.set(3, 3); const clouds = new T3.Mesh(new T3.PlaneGeometry(3200, 3200), new T3.MeshBasicMaterial({ map: ct, transparent: true, depthWrite: false, fog: false, opacity: nt ? 0.5 : 0.85 }));
+        clouds.rotation.x = Math.PI / 2; clouds.position.set(cx, 260, cz); clouds.renderOrder = -8; grp.add(clouds); V3.inside.clouds = ct; } }
+    G3.scene.fog = new T3.Fog(nt ? 0x0b1026 : 0xcadcE7, 300, 1300); // (sea haze, matching the horizon)
     { // the sky as light: every surface picks up the sky above and the warm ground below, and the glass, the cars' paint and
       // the sea reflect them (a small gradient made into an environment light, once each time the streets are built)
       const c = document.createElement('canvas'); c.width = 64; c.height = 32; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 32);
@@ -5700,7 +5719,7 @@
   }
   function v3homeLive(R, now) {
     viewSky(); if (R.placeRef && V3.viewMat) w3portal(R);
-    const inn = V3.inside; if (!inn) return; if (inn.sea) inn.sea.offset.set(now / 1000 * 0.004, -now / 1000 * 0.01);
+    const inn = V3.inside; if (!inn) return; if (inn.sea) inn.sea.offset.set(now / 1000 * 0.004, -now / 1000 * 0.01); if (inn.clouds) inn.clouds.offset.set(now / 1000 * 0.0012, now / 1000 * 0.0005); // (the swell rolls, the clouds drift)
     if (R.kind === 'world' && V3.leaf && V3.cam) { const cp = V3.cam.position.clone().multiplyScalar(1 / (V3.ws || 1)), near = V3.trees.some(([tx, tz]) => { const vx = me.x - cp.x, vz = me.z - cp.z, L = Math.hypot(vx, vz) || 1, u = Math.max(0, Math.min(1, ((tx - cp.x) * vx + (tz - cp.z) * vz) / (L * L))); return Math.hypot(cp.x + vx * u - tx, cp.z + vz * u - tz) < 2.6; }) || V3.trees.some(([tx, tz]) => Math.hypot(me.x - tx, me.z - tz) < 2.2); for (const m of V3.leaf) { m.opacity += ((near ? 0.25 : 1) - m.opacity) * 0.2; m.depthWrite = m.opacity > 0.95; } } // a tree in the way goes see-through
     if (R.kind === 'world') { w3stream(); if (V3.wfollow) for (const o of V3.wfollow) { o.position.x = Math.round(me.x / 100) * 100; o.position.z = Math.round(me.z / 100) * 100; } }
     if (R.kind === 'world' && V3.keyL) { const k = V3.keyL, sc = k.shadow.camera; const wsS = V3.ws || 1; const tx = 220 / k.shadow.mapSize.x, sx = Math.round(me.x * wsS / tx) * tx, sz = Math.round(me.z * wsS / tx) * tx; k.position.set(sx + 60, 140, sz + 80); k.target.position.set(sx, 0, sz); k.target.updateMatrixWorld(); if (sc.right !== 110) { sc.left = -110; sc.right = 110; sc.top = 110; sc.bottom = -110; sc.near = 20; sc.far = 360; sc.updateProjectionMatrix(); k.shadow.bias = -0.00025; k.shadow.normalBias = 1.2; k.shadow.radius = 2; } } const t = now / 1000, party = partyAt(R.key);
@@ -6976,13 +6995,34 @@
     const T3 = G3.T, [cx0, cz0, cx1, cz1] = job.R.clip, ch = wchunksOver(cx0, cz0, cx1, cz1), inC = (x2, z2) => x2 >= cx0 && x2 < cx1 && z2 >= cz0 && z2 < cz1, rgb = (hex) => { const n2 = parseInt(hex.slice(1), 16); return [(n2 >> 16) / 255, ((n2 >> 8) & 255) / 255, (n2 & 255) / 255]; };
     if (!ch.ready) job.partial = true;
     const mesh = (pos, col, mat, flag) => { if (!pos.length) return; const g = new T3.BufferGeometry(); g.setAttribute('position', new T3.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new T3.Float32BufferAttribute(col, 3)); g.computeVertexNormals(); const m = new T3.Mesh(g, mat); m.receiveShadow = true; m.castShadow = !!flag; grp.add(m); return m; };
-    { const pave = [], ash = [], line = [], pc = [], ac = [], lc = [], seen = new Set(), PV = rgb('#C9CED6'), AS = rgb('#4B535E'), WL = rgb('#F1F5F9');
+    { const pave = [], ash = [], line = [], pc = [], ac = [], lc = [], kerb = [], kc = [], seen = new Set(), PV = rgb('#C9CED6'), AS = rgb('#4B535E'), WL = rgb('#F1F5F9'), YL = rgb('#F2C230'), KB = rgb('#DADDE2'), BR = rgb('#BDB8AE'), gantries = [];
       const quad = (arr, cs, c3, ax, az, bx, bz, w, y) => { const L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L * w, nz = (bx - ax) / L * w; arr.push(ax + nx, y, az + nz, bx + nx, y, bz + nz, bx - nx, y, bz - nz, ax + nx, y, az + nz, bx - nx, y, bz - nz, ax - nx, y, az - nz); for (let k = 0; k < 6; k++) cs.push(...c3); };
       const disc = (arr, cs, c3, cx, cz, w, y) => { for (let k = 0; k < 10; k++) { const a0 = k / 10 * Math.PI * 2, a1 = (k + 1) / 10 * Math.PI * 2; arr.push(cx, y, cz, cx + Math.cos(a1) * w, y, cz + Math.sin(a1) * w, cx + Math.cos(a0) * w, y, cz + Math.sin(a0) * w); for (let m = 0; m < 3; m++) cs.push(...c3); } };
+      const deg = new Map(), wAt = new Map(), vk = (x2, z2) => Math.round(x2 * 2) + ',' + Math.round(z2 * 2), roadsSeen = new Set();
+      for (const c of ch) for (const r of c.r) { const id = r.p.slice(0, 4).join(','); if (roadsSeen.has(id)) continue; roadsSeen.add(id); const w = REAL.widths[r.c] / 2;
+        for (let k = 0; k + 1 < r.p.length; k += 2) { const kk = vk(r.p[k], r.p[k + 1]), end = k === 0 || k + 2 >= r.p.length; deg.set(kk, (deg.get(kk) || 0) + (end ? 1 : 2)); wAt.set(kk, Math.max(wAt.get(kk) || 0, w)); } }
+      const jw = (x2, z2) => (deg.get(vk(x2, z2)) || 0) >= 3 ? (wAt.get(vk(x2, z2)) || 0) + 1.4 : 0; // (a junction: how far back from it the kerbs and markings stop)
+      const wall = (arr, cs, c3, x0, z0, x1, z1, y0, y1) => { arr.push(x0, y0, z0, x1, y0, z1, x1, y1, z1, x0, y0, z0, x1, y1, z1, x0, y1, z0); for (let m = 0; m < 6; m++) cs.push(...c3); };
+      let gAcc = 0;
       for (const c of ch) for (const r of c.r) { const w = REAL.widths[r.c] / 2, y = r.br ? 0.5 : 0.07, p2 = r.p;
         for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], key = Math.round(ax * 10) + ',' + Math.round(az * 10) + ',' + Math.round(bx * 10) + ',' + Math.round(bz * 10); if (seen.has(key) || !inC((ax + bx) / 2, (az + bz) / 2)) continue; seen.add(key);
           quad(pave, pc, PV, ax, az, bx, bz, w + 0.8, y - 0.02); quad(ash, ac, AS, ax, az, bx, bz, w, y); disc(pave, pc, PV, bx, bz, w + 0.8, y - 0.021); disc(ash, ac, AS, bx, bz, w, y + 0.001); if (k === 0) { disc(pave, pc, PV, ax, az, w + 0.8, y - 0.021); disc(ash, ac, AS, ax, az, w, y + 0.001); }
-          if (r.c <= 3) { const L = Math.hypot(bx - ax, bz - az); for (let u = 1; u + 1.6 < L; u += 4) { const f0 = u / L, f1 = (u + 1.6) / L; quad(line, lc, WL, ax + (bx - ax) * f0, az + (bz - az) * f0, ax + (bx - ax) * f1, az + (bz - az) * f1, 0.08, y + 0.01); } } } }
+          const L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L, nx = -uz, nz = ux, jA = Math.min(L / 2, jw(ax, az)), jB = Math.min(L / 2, jw(bx, bz));
+          const at2 = (u, off) => [ax + ux * u + nx * off, az + uz * u + nz * off];
+          const strip = (off, half, u0, u1, yy, col, arr = line, cs = lc) => { if (u1 - u0 < 0.15) return; const [sx, sz] = at2(u0, off), [ex, ez] = at2(u1, off); quad(arr, cs, col, sx, sz, ex, ez, half, yy); };
+          const dashes = (off) => { for (let u = Math.max(1, jA); u + 3 < L - jB; u += 9) strip(off, 0.075, u, u + 3, y + 0.012, WL); }; // (3 on, 6 off)
+          if (!r.br && L - jA - jB > 0.3) for (const sd of [-1, 1]) { // the kerb and the pavement, a step up from the road, stopping at junctions so the crossing road runs through
+            strip(sd * (w + 0.9), 0.9, jA, L - jB, y + 0.18, PV, kerb, kc); const [k0x, k0z] = at2(jA, sd * w), [k1x, k1z] = at2(L - jB, sd * w); wall(kerb, kc, KB, k0x, k0z, k1x, k1z, y, y + 0.18); }
+          if (r.c <= 1) { // an expressway: a concrete barrier down the middle, a broken line between lanes, solid white by the barrier, solid yellow at the edge
+            const lanes = Math.max(2, Math.round((w - 0.6) / 2.8)), lw = (w - 0.6) / lanes;
+            strip(0, 0.3, 0, L, y + 0.85, BR, kerb, kc); for (const sd of [-1, 1]) { const [b0x, b0z] = at2(0, sd * 0.3), [b1x, b1z] = at2(L, sd * 0.3); wall(kerb, kc, BR, b0x, b0z, b1x, b1z, y, y + 0.85); }
+            for (let k2 = 1; k2 < lanes; k2++) for (const sd of [-1, 1]) dashes(sd * (0.6 + k2 * lw));
+            for (const sd of [-1, 1]) { strip(sd * (w - 0.35), 0.1, 0, L, y + 0.012, YL); strip(sd * 0.55, 0.075, 0, L, y + 0.012, WL); }
+            gAcc += L; if (gAcc > 420 && !r.br) { gAcc = 0; const [gx, gz] = at2(L / 2, 0); if (inC(gx, gz)) gantries.push([gx, gz, Math.atan2(uz, ux), w]); } }
+          else if (r.c <= 3) { dashes(0); for (const sd of [-1, 1]) strip(sd * (w - 0.3), 0.075, jA, L - jB, y + 0.012, WL); } // (a main road: a broken centre line, solid edges)
+          else if (r.c === 4) dashes(0); // (a tertiary: just the centre line; the side streets have none, as in Lagos)
+          if (!r.br && r.c >= 2) for (const [jj, fromA] of [[jA, true], [jB, false]]) if (jj > 0) { // a zebra crossing before the junction
+            const u0 = fromA ? jj - 2.6 : L - jj + 0.4, u1 = u0 + 2.2; if (u0 < 0 || u1 > L) continue; for (let o2 = -w + 0.55; o2 < w - 0.4; o2 += 1) strip(o2, 0.25, u0, u1, y + 0.014, WL); } } }
       { const lamps = []; for (const c of ch) for (const r of c.r) { if (r.br) continue; const w = REAL.widths[r.c] / 2 + 1.1, p2 = r.p; let acc = (Math.abs(p2[0] * 7 + p2[1] * 3) % 26), side = 1; // (a lamp every 26 units along each street, alternating sides)
           for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L;
             for (let u = 26 - acc; u < L; u += 26) { const lx = ax + (bx - ax) * u / L + nx * w * side, lz = az + (bz - az) * u / L + nz * w * side; if (inC(lx, lz)) lamps.push([lx, lz, Math.atan2(-nz * side, -nx * side)]); side = -side; }
@@ -6994,7 +7034,12 @@
           mk(new T3.BoxGeometry(0.55, 0.16, 0.3), head, ([lx, lz, a]) => { o3.position.set(lx + Math.cos(a) * 1.35, 6.0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, -a, 0); }); } }
       const am = new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, side: T3.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1 }); am.userData.road = true;
       mesh(pave, pc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, side: T3.DoubleSide }));
-      mesh(ash, ac, am); mesh(line, lc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: T3.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 })); }
+      mesh(ash, ac, am); mesh(line, lc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: T3.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 }));
+      mesh(kerb, kc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: T3.DoubleSide }), true); // the kerbs, pavements and the expressways' barriers
+      if (gantries.length) { const steel = new T3.MeshStandardMaterial({ color: 0x9AA1A9, metalness: 0.7, roughness: 0.4 }), sign = new T3.MeshStandardMaterial({ color: 0x0F6B3A, roughness: 0.5 }), rim = new T3.MeshStandardMaterial({ color: 0xF1F5F9, roughness: 0.5 });
+        for (const [gx, gz, a, w] of gantries) { const g = new T3.Group(); g.position.set(gx, 0, gz); g.rotation.y = -a; grp.add(g); const add = (geo, mat, x2, y2, z2) => { const m = new T3.Mesh(geo, mat); m.position.set(x2, y2, z2); m.castShadow = true; g.add(m); };
+          for (const sd of [-1, 1]) add(new T3.CylinderGeometry(0.25, 0.3, 7.6, 10), steel, 0, 3.8, sd * (w + 1.2)); add(new T3.BoxGeometry(0.5, 0.6, 2 * w + 2.4), steel, 0, 7.4, 0); // (two posts, the beam)
+          for (const sd of [-1, 1]) { add(new T3.BoxGeometry(0.2, 2.4, w * 0.75), rim, 0.12, 6.0, sd * w * 0.5); add(new T3.BoxGeometry(0.24, 2.2, w * 0.71), sign, 0.14, 6.0, sd * w * 0.5); } } } } // (the green direction signs, white-edged, one over each carriageway)
     { const wp = [], wc = [], gp2 = [], gc = [], rp = [], rc = [], FL = 3.2 / 3, GL = rgb(night > 0.5 ? '#FCD34D' : '#2B3A4A');
       for (const c of ch) for (const b of c.b) { if (!inC(b.cx, b.cz)) continue; const p2 = b.p, n2 = p2.length / 2, lk = realLook(b), WCc = rgb(lk.wall), RC = rgb(lk.roof); let sa = 0; for (let k = 0; k < n2; k++) { const k2 = (k + 1) % n2; sa += p2[2 * k] * p2[2 * k2 + 1] - p2[2 * k2] * p2[2 * k + 1]; }
         for (let k = 0; k < n2; k++) { const k2 = (k + 1) % n2, ax = p2[2 * k], az = p2[2 * k + 1], bx = p2[2 * k2], bz = p2[2 * k2 + 1], L = Math.hypot(bx - ax, bz - az); if (L < 0.05) continue; const [nx, nz] = outN(p2, ax, az, bx, bz, L);
