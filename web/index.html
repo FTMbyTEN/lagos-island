@@ -6283,7 +6283,7 @@
       if (before != null && now.taken !== before) notify(`Housing register: ${now.taken} of ${now.total} homes lived in, ${now.free} free`, 'gov', ['gov']);
     } catch {} // a server without the public register yet: the count falls back to the owners' list (signed in only)
   }
-  setTimeout(() => { housingPoll(); setInterval(() => { if (!document.hidden) housingPoll(); }, 30000); }, 1500); // not while the game is in the background
+  setTimeout(() => { housingPoll(); setInterval(() => { if (!document.hidden) housingPoll(); }, 120000); }, 1500); // not while the game is in the background
   // the Government button in the top bar: a panel dropping out of it with your rent, tax and pay, the power, the island's homes
   const govPanel = document.createElement('div'); govPanel.id = 'govPanel'; document.body.append(govPanel);
   const GPC = { cv: null, gb: null }; // the panel's real figures: my own tax (everyone), the Treasury (administrators only)
@@ -10681,7 +10681,8 @@
   }
   async function tick() {
     if (tick.busy) return; const still = Math.hypot(me.x - (tick.x || 0), me.z - (tick.z || 0)) < 0.5, alone = others.size === 0;
-    if (still && alone && performance.now() - (tick.at || 0) < 3000) return;
+    const near = [...others.values()].some((o) => Math.abs(o.x - me.x) < 120 && Math.abs(o.z - me.z) < 120); // (someone in sight: their moves matter every second)
+    if ((still && alone || !near) && performance.now() - (tick.at || 0) < 3000) return;
     tick.busy = true; tick.at = performance.now(); tick.x = me.x; tick.z = me.z;
     try {
       const r = await call('tick', { id, name: myName, color: myColor, x: me.x, z: me.z, since, room: inside ? inside.room : '', look: lookNow(!!inside), car: myCar, key: ikey });
@@ -11841,7 +11842,7 @@
       }
     } catch {}
   }
-  setInterval(() => { if (!document.hidden || Date.now() - (LINK.at || 0) > 30000) { LINK.at = Date.now(); linkPoll(); } }, 6000);
+  setInterval(() => { if (!document.hidden || Date.now() - (LINK.at || 0) > 30000) { LINK.at = Date.now(); linkPoll(); } }, 60000); // (a safety net only: the wake line brings messages the moment they're sent)
   addEventListener('visibilitychange', () => { if (!document.hidden) { linkPoll(); friendsPoll(); } });
   // your profile and keys, loaded in the background as soon as you're signed in, so the phone opens without waiting
   // one request waits at the server for anything that happens to me (a message, a friend request, an answer) and returns
@@ -13352,7 +13353,7 @@
     if (me$) for (const el of phone.querySelectorAll('[data-naira]')) el.textContent = naira(me$.naira);
   }, 1000);
   setInterval(() => { if (phone.style.display === 'block' && stack.length && stack[stack.length - 1][0] === 'trip') render('trip'); }, 500);
-  setInterval(() => { if (phone.style.display === 'block' && signedIn() && !document.hidden) my('me').then((v) => { if (me$) Object.assign(me$, v); pnaira.textContent = naira(v.naira); }).catch(() => {}); }, 5000);
+  setInterval(() => { if (phone.style.display === 'block' && signedIn() && !document.hidden) my('me').then((v) => { if (me$) Object.assign(me$, v); pnaira.textContent = naira(v.naira); }).catch(() => {}); }, 15000);
   // a picture of a district or a landmark: the same renderer, drawn into a small canvas, kept once made
   const peeks = new Map();
   function peek(id) {
