@@ -1,0 +1,302 @@
+[
+ {
+  "key": "lagoscentralmosque",
+  "name": "Lagos Central Mosque",
+  "kind": "mosque",
+  "place": "Lagos Central Mosque"
+ },
+ {
+  "key": "balogunmarket",
+  "name": "Balogun Market",
+  "kind": "market",
+  "place": "Balogun Market"
+ },
+ {
+  "key": "idumota",
+  "name": "Idumota",
+  "kind": "shops",
+  "place": "Idumota"
+ },
+ {
+  "key": "obaspalace",
+  "name": "Oba's Palace",
+  "kind": "palace",
+  "place": "Iga Idunganran (Oba's Palace)"
+ },
+ {
+  "key": "tinubusquare",
+  "name": "Tinubu Square",
+  "kind": "fountain",
+  "place": "Tinubu Square"
+ },
+ {
+  "key": "cathedralchurchofchrist",
+  "name": "Cathedral Church of Christ",
+  "kind": "cathedral",
+  "place": "Cathedral Church of Christ"
+ },
+ {
+  "key": "tafawabalewasquare",
+  "name": "Tafawa Balewa Square",
+  "kind": "field",
+  "place": "Tafawa Balewa Square"
+ },
+ {
+  "key": "necomhouse",
+  "name": "NECOM House",
+  "kind": "towers",
+  "place": "The Marina & NECOM House"
+ },
+ {
+  "key": "freedompark",
+  "name": "Freedom Park",
+  "kind": "park",
+  "place": "Freedom Park"
+ },
+ {
+  "key": "generalhospital",
+  "name": "General Hospital",
+  "kind": "hospital",
+  "place": "General Hospital"
+ },
+ {
+  "key": "marinajetty",
+  "name": "Marina Jetty",
+  "kind": "jetty",
+  "place": "Marina Jetty"
+ },
+ {
+  "key": "ikoyiclub1938",
+  "name": "Ikoyi Club 1938",
+  "kind": "golf",
+  "place": "Ikoyi Club 1938"
+ },
+ {
+  "key": "ikoyiwaterfront",
+  "name": "Ikoyi waterfront",
+  "kind": "park",
+  "place": "Ikoyi waterfront"
+ },
+ {
+  "key": "falomoshoppingcentre",
+  "name": "Falomo Shopping Centre",
+  "kind": "arcade",
+  "place": "Falomo Shopping Centre"
+ },
+ {
+  "key": "obalendemotorpark",
+  "name": "Obalende Motor Park",
+  "kind": "motorpark",
+  "place": "Obalende Motor Park"
+ },
+ {
+  "key": "ikoyihomes",
+  "name": "Ikoyi homes",
+  "kind": "houses",
+  "place": "Ikoyi homes"
+ },
+ {
+  "key": "oldikoyi",
+  "name": "Old Ikoyi",
+  "kind": "houses",
+  "place": "Old Ikoyi"
+ },
+ {
+  "key": "ekohotel",
+  "name": "Eko Hotel",
+  "kind": "hotel",
+  "place": "Eko Hotel"
+ },
+ {
+  "key": "lagosciviccentre",
+  "name": "Lagos Civic Centre",
+  "kind": "glass",
+  "place": "Lagos Civic Centre"
+ },
+ {
+  "key": "muriokunolapark",
+  "name": "Muri Okunola Park",
+  "kind": "park",
+  "place": "Muri Okunola Park"
+ },
+ {
+  "key": "federalpalacehotel",
+  "name": "Federal Palace Hotel",
+  "kind": "hotel",
+  "place": "Federal Palace Hotel"
+ },
+ {
+  "key": "barbeach",
+  "name": "Bar Beach",
+  "kind": "beach",
+  "place": "Bar Beach"
+ },
+ {
+  "key": "kuramobeach",
+  "name": "Kuramo Beach",
+  "kind": "beach",
+  "place": "Kuramo Beach"
+ },
+ {
+  "key": "ekoatlanticcity",
+  "name": "Eko Atlantic City",
+  "kind": "skyline",
+  "place": "Eko Atlantic City"
+ },
+ {
+  "key": "ekopearltowers",
+  "name": "Eko Pearl Towers",
+  "kind": "skyline",
+  "place": "Eko Pearl Towers"
+ },
+ {
+  "key": "lekkitollgate",
+  "name": "Lekki Toll Gate",
+  "kind": "tollgate",
+  "place": "Lekki Toll Gate"
+ },
+ {
+  "key": "nikeartgallery",
+  "name": "Nike Art Gallery",
+  "kind": "gallery",
+  "place": "Nike Art Gallery"
+ },
+ {
+  "key": "lekkiconservationcentre",
+  "name": "Lekki Conservation Centre",
+  "kind": "forest",
+  "place": "Lekki Conservation Centre"
+ },
+ {
+  "key": "circlemall",
+  "name": "Circle Mall",
+  "kind": "mall",
+  "place": "Circle Mall"
+ },
+ {
+  "key": "elegushibeach",
+  "name": "Elegushi Beach",
+  "kind": "beach",
+  "place": "Elegushi Beach"
+ },
+ {
+  "key": "landmarkbeach",
+  "name": "Landmark Beach",
+  "kind": "beach",
+  "place": "Landmark Beach"
+ },
+ {
+  "key": "lekkiphase1",
+  "name": "Lekki Phase 1",
+  "kind": "houses",
+  "place": "Lekki Phase 1"
+ },
+ {
+  "key": "lekkiestates",
+  "name": "Lekki estates",
+  "kind": "houses",
+  "place": "Lekki estates"
+ },
+ {
+  "key": "ajahmarket",
+  "name": "Ajah Market",
+  "kind": "market",
+  "place": "Ajah Market"
+ },
+ {
+  "key": "victoriagardencity",
+  "name": "Victoria Garden City",
+  "kind": "houses",
+  "place": "Victoria Garden City"
+ },
+ {
+  "key": "clubozumba",
+  "name": "Club Ozumba",
+  "kind": "club",
+  "place": "Club Ozumba (open every night)"
+ },
+ {
+  "key": "clublekki",
+  "name": "Club Lekki",
+  "kind": "club",
+  "place": "Club Lekki (open every night)"
+ },
+ {
+  "key": "quilox",
+  "name": "Quilox",
+  "kind": "club",
+  "place": "Quilox (open every night)"
+ },
+ {
+  "key": "secretspalace",
+  "name": "Secrets Palace",
+  "kind": "club",
+  "place": "Secrets Palace (open every night)"
+ },
+ {
+  "key": "veinlagos",
+  "name": "VEIN Lagos",
+  "kind": "club",
+  "place": "VEIN Lagos (open every night)"
+ },
+ {
+  "key": "islandcasino",
+  "name": "Island Casino",
+  "kind": "casino",
+  "place": "Island Casino"
+ },
+ {
+  "key": "atlanticgardens",
+  "name": "Atlantic Gardens",
+  "kind": "houses",
+  "place": "Atlantic Gardens"
+ },
+ {
+  "key": "oceancrest",
+  "name": "Ocean Crest",
+  "kind": "houses",
+  "place": "Ocean Crest"
+ },
+ {
+  "key": "islandreservebank",
+  "name": "Island Reserve Bank",
+  "kind": "bank",
+  "place": "Island Reserve Bank"
+ },
+ {
+  "key": "polanco",
+  "name": "Polanco",
+  "kind": "dealer",
+  "place": "Polanco"
+ },
+ {
+  "key": "lekkiluxurycars",
+  "name": "Lekki Luxury Cars",
+  "kind": "dealer",
+  "place": "Lekki Luxury Cars"
+ },
+ {
+  "key": "ekohomestore",
+  "name": "Eko Home Store",
+  "kind": "homestore",
+  "place": "Eko Home Store"
+ },
+ {
+  "key": "nationalgrid",
+  "name": "National Grid",
+  "kind": "grid",
+  "place": "National Grid · run by WYRD"
+ },
+ {
+  "key": "thearena",
+  "name": "The Arena",
+  "kind": "arena",
+  "place": "The Arena (live shows)"
+ },
+ {
+  "key": "hqrow",
+  "name": "HQ Row",
+  "kind": "hqgate",
+  "place": "HQ Row: everyone's own HQ"
+ }
+]

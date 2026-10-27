@@ -41,6 +41,31 @@ def levels_of(t):
     try: return max(1, float(t['height'].replace('m', '').strip()) / LEVEL_M)
     except Exception: return None
 
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+
+def nt_register():
+    # the New Town register the game server holds (server/lib/island/island_newtown.dart): [id, tower (1) or block (0),
+    # rooms], in its order. The game gives these ids to the real map's towers and blocks, so every flat already bought
+    # or allocated keeps its building
+    import re
+    s = open(os.path.join(ROOT, 'server', 'lib', 'island', 'island_newtown.dart'), encoding='utf-8').read()
+    return [[m.group(1), 1 if m.group(2) == 'true' else 0, int(m.group(3))] for m in re.finditer(r"'(nt\d+)': \(tower: (true|false), rooms: (\d+)\)", s)]
+
+def write_stops(gp, sites):
+    # the server's stops (shifts and paid gigs check you reached them): each at its place's front door on this map, so
+    # the server and the map always agree. Which place each stop is: tools/stop_places.json
+    table = json.load(open(os.path.join(ROOT, 'tools', 'stop_places.json'), encoding='utf-8'))
+    size = {p['name']: (p['w'], p['h']) for p in gp}
+    f = os.path.join(ROOT, 'server', 'lib', 'island', 'island_stops.dart'); s = open(f, encoding='utf-8').read()  # (its CRLF line endings come in as plain newlines, and go back out as CRLF)
+    a = s.index('const islandStops = '); b = s.index('};', a) + 2
+    q = lambda t: '"' + t + '"' if "'" in t else "'" + t + "'"
+    lines = []
+    for t in table:
+        i, j = sites[t['place']]; w, h = size[t['place']]
+        lines.append(f"  '{t['key']}': (name: {q(t['name'])}, kind: '{t['kind']}', x: {(i + w / 2) * 10:.1f}, z: {(j + h) * 10 + 3:.1f}),")
+    s = s[:a] + 'const islandStops = <String, ({String name, String kind, double x, double z})>{\n' + '\n'.join(lines) + '\n};' + s[b:]
+    open(f, 'w', encoding='utf-8', newline='\r\n').write(s)
+
 def main():
     roads_f, marks_f, waters_f, out_dir, *bld_fs = sys.argv[1:]
     load = lambda f: json.load(open(f, encoding='utf-8'))
@@ -56,7 +81,7 @@ def main():
     print(len(blds), 'buildings')
     tile, rank, name, lm = B.build(roads, marks, waters, blds=[(b['c'][0] / 10, b['c'][1] / 10) for b in blds])
     html = open(os.path.join(out_dir, '..', 'index.html'), encoding='utf-8').read()
-    gp = B.game_places(html); sites = B.place_all(tile, rank, gp)
+    gp = B.game_places(html); sites = B.place_all(tile, rank, gp); write_stops(gp, sites)
     W, H = B.W, B.H
     for j in range(H):
         for i in range(W):
@@ -145,7 +170,7 @@ def main():
     # the board: each row run-length coded ("<code><count>" pairs, count in hex, comma between)
     rle = rle_of(tile)
     doc = {'attribution': '© OpenStreetMap contributors (ODbL)', 'w': W, 'h': H, 'tile_m': B.TILE, 'unit_m': U, 'chunk': CH, 'chunks': [list(k) for k in sorted(chunks)],
-           'widths': [WIDTH[k] / WU for k in WIDTH], 'rle': rle, 'brle': rle_of(bt), 'places': sites, 'districts': dist}
+           'widths': [WIDTH[k] / WU for k in WIDTH], 'ntReg': nt_register(), 'rle': rle, 'brle': rle_of(bt), 'places': sites, 'districts': dist}
     open(os.path.join(out_dir, 'lagos-world.js'), 'w', encoding='utf-8').write('// Lagos at true scale, made by tools/osm2world.py. Map data (c) OpenStreetMap contributors, ODbL.\nwindow.LAGOS_BOARD = ' + json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + ';\n')
     c = collections.Counter(ch for row in tile for ch in row)
     print(f'{W}x{H} tiles', dict(c), len(lines), 'street lines', len(chunks), 'chunks', round(total / 1e6, 1), 'MB of chunks', os.path.getsize(os.path.join(out_dir, 'lagos-world.js')) // 1000, 'KB board')

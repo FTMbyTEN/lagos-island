@@ -6,7 +6,7 @@
 <title>Lagos Island</title>
 <meta name="description" content="Lagos Island: Lagos Island, Ikoyi, VI, Lekki, Ajah and Ilashe as a little game town. Walk it, ride it, meet the people on it. Free, in your browser.">
 <meta name="theme-color" content="#3A86C8">
-<meta name="li-build" content="2026-10-27T10:45:39.672Z">
+<meta name="li-build" content="2026-10-27T11:18:38.515Z">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://wryd00.api.serverpod.space" crossorigin>
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -1673,7 +1673,7 @@
   Promise.all(['EffectComposer', 'RenderPass', 'GTAOPass', 'UnrealBloomPass', 'SMAAPass', 'OutputPass'].map((n) => import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/' + n + '.js'))).then((ms) => { window.__three.post = Object.assign({}, ...ms); }).catch(() => {});
   window.dispatchEvent(new Event('three-ready'));
 </script>
-<script>if (/[?&]real=1(&|$)/.test(location.search)) document.write('<script src="map/lagos-world.js"><\/script>');</script>
+<script>if (!(/^(localhost|127\.)/.test(location.hostname) && /[?&]classic=1(&|$)/.test(location.search))) document.write('<script src="' + (location.pathname.startsWith('/lagos-island') ? '/lagos-island/' : '') + 'map/lagos-world.js"><\/script>');</script>
 <script>
 (() => {
   // ================= the board =================
@@ -2334,7 +2334,7 @@
   // row of shops, a park, a car park), on paving, the windows lighting up after dark
   const CITY_COL = ['#E2E8F0', '#CBD5E1', '#F1F5F9', '#BFDBFE', '#E7E5E4', '#D6D3D1', '#C7D2FE', '#FDE68A'];
   function cityLot(a, b, c, d, R) {
-    const v = R(), dark = night > 0.4, win = dark ? '#FDE68A' : '#1E293B', bid = 'nt' + (Math.round(b / T) * 100 + Math.round(a / T));
+    const v = R(), dark = night > 0.4, win = dark ? '#FDE68A' : '#1E293B', bid = NT_ID.get(Math.round(a / T) + ',' + Math.round(b / T)) || '';
     if (ntMine.some((h) => h.plot.split(':')[0] === bid)) parkOrder(myCarsL).slice(0, 2).forEach((c2, k) => drawCar(a + (c - a) * (k ? 0.72 : 0.28), d - 0.9, c2.model, c2.color, 0, 0.6)); // your cars at your door
     flat(a, b, c, d, 0.03, '#D1D5DB'); flat(a + 0.6, b + 0.6, c - 0.6, d - 0.6, 0.04, '#E5E7EB');
     if (v < 0.36) { // an office tower: glass bands, a crown
@@ -6611,16 +6611,27 @@
   // The same dice as cityLot, so the register and the drawing never disagree. Towers are sold a sky apartment at a time,
   // housing blocks give a free room to a citizen with no home, both filled room by room until full; the server keeps
   // the same register (NT_BUILDINGS in island_newtown.dart)
-  const NT_M = 3, NT = [], NT_BY = {};
+  const NT_M = 3, NT = [], NT_BY = {}, NT_N = {};
   for (const l of lots) if (l.kind === 'city') {
     const R = rnd(l.i * 53 + l.j * 89), v = R(), sec = SECTORS[sectorAt[l.j * BOARD.w + l.i]], id = 'nt' + (l.j * (REAL ? 1000 : 100) + l.i);
     const b = { id, i: l.i, j: l.j, district: sec ? sec.name : 'New Town' };
     if (v < 0.36) { const h = 12 + R() * 30; Object.assign(b, { kind: 'tower', h: Math.round(h * NT_M), w: Math.round(6.8 * NT_M), d: Math.round(6.8 * NT_M) }); b.floors = Math.max(4, Math.round(b.h / 3.5)); b.rooms = b.floors * 2; }
     else if (v < 0.56) { const h = 8 + R() * 6; Object.assign(b, { kind: 'block', h: Math.round(h * NT_M), w: Math.round(7.2 * NT_M), d: Math.round(6.2 * NT_M) }); b.floors = Math.max(3, Math.round(b.h / 3.2)); b.rooms = b.floors * 4; }
     else Object.assign(b, { kind: v < 0.7 ? 'shops' : v < 0.84 ? 'park' : 'carpark', h: v < 0.7 ? Math.round(4.2 * NT_M) : 0, w: Math.round(8 * NT_M), d: Math.round(8 * NT_M), floors: v < 0.7 ? 1 : 0, rooms: 0 });
-    b.name = b.kind === 'tower' ? `${b.district} Tower ${NT.filter((o) => o.district === b.district && o.kind === 'tower').length + 1}` : b.kind === 'block' ? `${b.district} Block ${String.fromCharCode(65 + NT.filter((o) => o.district === b.district && o.kind === 'block').length % 26)}` : b.kind === 'shops' ? `${b.district} shops` : b.kind === 'park' ? `${b.district} park` : `${b.district} car park`;
+    const nk = b.district + ':' + b.kind, nn = NT_N[nk] = (NT_N[nk] || 0) + 1;
+    b.name = b.kind === 'tower' ? `${b.district} Tower ${nn}` : b.kind === 'block' ? `${b.district} Block ${String.fromCharCode(65 + (nn - 1) % 26)}` : b.kind === 'shops' ? `${b.district} shops` : b.kind === 'park' ? `${b.district} park` : `${b.district} car park`;
     NT.push(b); NT_BY[id] = b;
   }
+  // on the real map New Town keeps the buildings the game server knows (its register: every tower and block by id, and
+  // its rooms): each registered id goes to a real tower or block of its kind, in order, so every flat bought or
+  // allocated keeps its building; towers and blocks past the register's count are offices, with no homes in them
+  if (REAL && REAL.ntReg) { const reg = { tower: REAL.ntReg.filter((r2) => r2[1]), block: REAL.ntReg.filter((r2) => !r2[1]) }, used = { tower: 0, block: 0 };
+    for (const b of NT) { if (b.kind !== 'tower' && b.kind !== 'block') { delete NT_BY[b.id]; b.id = 'nl' + b.id.slice(2); NT_BY[b.id] = b; continue; } // (shops, parks, car parks: ids of their own, never a register id)
+      const r2 = reg[b.kind][used[b.kind]++]; delete NT_BY[b.id];
+      if (r2) { b.id = r2[0]; b.rooms = r2[2]; b.floors = b.kind === 'tower' ? r2[2] / 2 : r2[2] / 4; }
+      else { b.id = 'office' + b.id.slice(2); b.office = true; b.rooms = 0; b.name = b.kind === 'tower' ? b.name.replace(' Tower', ' Office Tower') : b.name.replace(' Block', ' Offices'); }
+      NT_BY[b.id] = b; } }
+  const NT_ID = new Map(); for (const b of NT) NT_ID.set(b.i + ',' + b.j, b.id); // (the drawing finds each building's id by its tile)
   const LOTS_ROW = REAL ? Array.from({ length: BOARD.h }, () => []) : null; if (REAL) for (const l of lots) LOTS_ROW[l.j].push(l);
   const lotsIn = (vt) => { const out = []; for (let j = Math.max(0, vt[1]); j <= Math.min(BOARD.h - 1, vt[3]); j++) for (const l of LOTS_ROW[j]) if (l.i >= vt[0] - 1 && l.i <= vt[2]) out.push(l); return out; };
   const HOUSES = []; // the old districts' family homes: measured and named by district, privately held
