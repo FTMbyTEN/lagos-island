@@ -4527,6 +4527,14 @@
     const loader = new GLTFLoader(); if (T.MeshoptDecoder) loader.setMeshoptDecoder(T.MeshoptDecoder); G3.loader = loader; G3.loading = {}; // the models are meshopt-compressed
     // the cars and the jet: each model loads the first time one is on screen (the drawn shape stands in until then)
     G3.vehicle = (model) => {
+      if (model === 'danfo' && !G3.protos.danfo) { const T3 = THREE, g = new T3.Group(), M = (c, r = 0.6, m = 0) => new T3.MeshStandardMaterial({ color: c, roughness: r, metalness: m }), add = (w, h, d, mat, x, y, z) => { const b = new T3.Mesh(new T3.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.castShadow = true; g.add(b); };
+        const yel = M(0xF2B705, 0.45), blk = M(0x15161A, 0.5), gls = M(0x1C2A36, 0.15, 0.4), chr = M(0xB8BCC2, 0.3, 0.8);
+        add(4.6, 1.55, 1.86, yel, 0, 1.12, 0); add(0.5, 1.1, 1.8, yel, 2.45, 0.9, 0); // the body, the short nose
+        for (const yy of [0.62, 0.78]) add(4.62, 0.07, 1.88, blk, 0, yy, 0); // the two black stripes
+        add(3.4, 0.5, 1.88, gls, -0.35, 1.6, 0); add(0.06, 0.6, 1.7, gls, 2.32, 1.55, 0); add(0.06, 0.5, 1.7, gls, -2.32, 1.55, 0); // side windows, windscreen, back window
+        add(0.9, 1.0, 0.04, M(0xD9A400, 0.5), 0.6, 1.0, 0.94); add(4.4, 0.12, 1.5, blk, -0.2, 1.97, 0); for (const xx of [-1.6, -0.4, 0.8]) add(0.08, 0.18, 1.5, blk, xx, 2.06, 0); // the sliding door, the roof rack
+        add(0.12, 0.25, 1.9, chr, 2.72, 0.5, 0); add(0.12, 0.25, 1.9, chr, -2.33, 0.5, 0); // bumpers
+        const norm = new T3.Group(); norm.add(g); g.position.y = 0; G3.protos.danfo = norm; G3.pool.danfo = []; return; }
       if (G3.protos[model] || G3.loading[model]) return; const jet = model === 'jet', file = jet ? 'jet' : GLB_FOR[model]; if (!file) return; G3.loading[model] = 1;
       loader.load((jet ? JET_BASE : CAR_BASE) + file + '.glb', (gltf) => {
         // on the ground, centred, its length along x; a car scaled to the real car's length in metres, the jet to one unit
@@ -4924,7 +4932,7 @@
   // under braking, squatting as it pulls away); brake lights, and head and tail lights after dark. The models are one
   // solid mesh each, so the wheels are built to sit over the model's own
   function carRig(o, model) {
-    if (o.userData.rig) return o.userData.rig; const T3 = G3.T, body = o.children[0], pb = new T3.Box3().setFromObject(G3.protos[model]);
+    if (o.userData.rig) return o.userData.rig; const T3 = G3.T, body = o.children[0]; G3.protos[model].updateMatrixWorld(true); const pb = new T3.Box3().setFromObject(G3.protos[model]); // (measured as placed: turned and scaled)
     const Lx = pb.max.x - pb.min.x, Hy = pb.max.y - pb.min.y, Wz = pb.max.z - pb.min.z, cz = (pb.max.z + pb.min.z) / 2, r = Hy * 0.21, tw = Wz * 0.12;
     const M = V3.carMats || (V3.carMats = { tyre: new T3.MeshStandardMaterial({ color: 0x1a1a1c, roughness: 0.92 }), rim: new T3.MeshStandardMaterial({ color: 0xC9CDD3, metalness: 0.9, roughness: 0.28 }), disc: new T3.MeshStandardMaterial({ color: 0x6B6F75, metalness: 0.7, roughness: 0.45 }), cal: new T3.MeshStandardMaterial({ color: 0xB91C1C, roughness: 0.5 }),
       brake: new T3.MeshStandardMaterial({ color: 0x7F1D1D, emissive: 0xFF1A1A, emissiveIntensity: 0 }), head: new T3.MeshStandardMaterial({ color: 0xE5E7EB, emissive: 0xFFF4D6, emissiveIntensity: 0 }) });
@@ -4967,7 +4975,7 @@
   }
   function carPose(o, q, now) {
     const rig = carRig(o, q.model), d = V3.drive && V3.drive.q === q ? V3.drive : null, dt = Math.min(0.1, (now - (q.wt || now)) / 1000); q.wt = now;
-    const v = d ? d.v : 0; q.spin = (q.spin || 0) + v * dt / (rig.r * (q.sc || 1)); // (the wheels roll exactly as far as the car goes)
+    const v = d ? d.v : q.traffic ? q.v || 0 : 0; q.spin = (q.spin || 0) + v * dt / (rig.r * (q.sc || 1)); // (the wheels roll exactly as far as the car goes)
     const steer = d ? -(d.steer || 0) * 0.5 : 0; rig.wheels.forEach((w, k) => { w.spin.rotation.z = -q.spin; if (k < 2) w.steer.rotation.y += (steer - w.steer.rotation.y) * Math.min(1, dt * 12); });
     const acc = d ? (v - (q.lastV ?? v)) / Math.max(dt, 1e-3) : 0; q.lastV = v; // the body on its springs
     const wantRoll = d ? Math.max(-0.07, Math.min(0.07, -(d.steer || 0) * Math.abs(v) * 0.004)) : 0, wantPitch = d ? Math.max(-0.045, Math.min(0.045, -acc * 0.0035)) : 0;
@@ -5289,7 +5297,7 @@
     // the people (their models are in the 3D scene; their names and bubbles go on the canvas over it)
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
     if (!V3.drive) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); // (at the wheel you're in the car)
-    if (R.kind === 'world' && V3.wcars) { const near = V3.wcars.filter((q) => G3.protos[q.model] && (!V3.drive || q !== V3.drive.q) && Math.abs(q.cx - me.x) < 75 && Math.abs(q.cz - me.z) < 75).sort((p, q) => Math.hypot(p.cx - me.x, p.cz - me.z) - Math.hypot(q.cx - me.x, q.cz - me.z)); for (const q of near.slice(0, 40)) G3.queue.push(q); if (V3.drive && G3.protos[V3.drive.q.model]) G3.queue.push(V3.drive.q); } /* the cars parked in the street: the nearest ones (far off, the haze has them) */
+    if (R.kind === 'world' && V3.wcars) { const near = V3.wcars.filter((q) => G3.protos[q.model] && (!V3.drive || q !== V3.drive.q) && Math.abs(q.cx - me.x) < (q.traffic ? 200 : 75) && Math.abs(q.cz - me.z) < (q.traffic ? 200 : 75)).sort((p, q) => Math.hypot(p.cx - me.x, p.cz - me.z) - Math.hypot(q.cx - me.x, q.cz - me.z)); for (const q of near.slice(0, 40)) G3.queue.push(q); if (V3.drive && G3.protos[V3.drive.q.model]) G3.queue.push(V3.drive.q); } /* the cars parked in the street: the nearest ones (far off, the haze has them) */
     flush3d(); w3cabin(true);
     void glows; void afters; // (the 2D glows and overlays don't belong over a lit 3D room: it has its own lights and lasers)
     v3live(R, now);
@@ -5630,6 +5638,7 @@
     for (const [k, c] of V3.cells) { const [ci, cj] = k.split(',').map(Number); if (Math.hypot((ci + 0.5) * CS - me.x, (cj + 0.5) * CS - me.z) > R1) { V3.groups.remove(c.grp); c.grp.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); V3.cells.delete(k); changed = true; } }
     const add = (k, c) => { V3.cells.set(k, c); V3.groups.add(c.grp); changed = true; };
     if (REAL) wchunksOver(me.x - R1, me.z - R1, me.x + R1, me.z + R1); // (the real city's chunks round you, on their way)
+    if (REAL) { const nowT = performance.now(), dtT = Math.min(0.1, (nowT - (TR.at || nowT)) / 1000); TR.at = nowT; trStep(dtT); V3.wcars = (V3.wcars || []).filter((q) => !q.traffic).concat(TR.cars.filter((q) => V3.cells.has(Math.floor(q.cx / W3.CS) + ',' + Math.floor(q.cz / W3.CS)) || (V3.drive && V3.drive.q === q))); } // (only where the street round it is built) // (the traffic, moving)
     if (!V3.cells.has(ci0 + ',' + cj0) && !(V3.job && V3.job.k === ci0 + ',' + cj0)) { V3.job = null; add(ci0 + ',' + cj0, w3cell(ci0, cj0)); } // (where you stand is there at once)
     if (!V3.job) { let best = null; for (let dj = -n; dj <= n; dj++) for (let di = -n; di <= n; di++) { const ci = ci0 + di, cj = cj0 + dj, k = ci + ',' + cj; if (ci < 0 || cj < 0 || ci * CS >= BOARD.w * T || cj * CS >= BOARD.h * T || V3.cells.has(k)) continue; const dd = Math.hypot((ci + 0.5) * CS - me.x, (cj + 0.5) * CS - me.z); if (dd < R0 && (!best || dd < best[0]) && (!REAL || wchunksOver(ci * CS, cj * CS, (ci + 1) * CS, (cj + 1) * CS).ready)) best = [dd, ci, cj]; }
       if (best) V3.job = w3job(best[1], best[2]); }
@@ -6988,6 +6997,45 @@
   { let hold = 0; vBtn.addEventListener('pointerdown', () => { hold = setTimeout(() => { hold = 0; vMenu(); }, 550); }); vBtn.addEventListener('pointerup', () => { if (hold) { clearTimeout(hold); hold = 0; if (VOICE.on) voiceOff(); else voiceOn(); } }); vBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); clearTimeout(hold); hold = 0; vMenu(); }); }
   function vUi() { const n = VOICE.peers.size, lab = VOICE.mode === 'near' ? 'Nearby' : VOICE.mode === 'place' ? 'This place' : VOICE.code; vBtn.style.background = VOICE.on ? 'linear-gradient(135deg,#16A34A,#0EA5E9)' : 'rgba(15,23,42,.82)'; vBtn.innerHTML = `<span style="font-size:15px">${VOICE.on ? '🎙️' : '🔇'}</span>${VOICE.on ? `${lab} · ${n}` : ''}`; vBtn.title = 'Voice with your friends. Tap: on or off · hold: Nearby, This place or a private channel'; }
   vUi(); setInterval(() => { vBtn.style.display = playing ? 'flex' : 'none'; if (VOICE.on) { vTick(); vVolumes(); } }, 2000);
+  // traffic on the real map: cars and danfos driving the real streets, in the right-hand lane (Lagos drives on the
+  // right), at each road's pace (expressways about 85 km/h, main roads 60, the rest 40); at the end of a street they take
+  // another one from that junction; they keep their distance and stop for you. A few dozen round you, spawned out of
+  // sight and let go when far behind
+  const TR = { cars: [], graph: null, n: 0, at: 0 };
+  function trGraph() { // the street network from the chunks that have come: each street, and which streets meet at each point
+    let n = 0; for (const c of WC.m.values()) if (c.ok) n++; if (TR.graph && TR.n === n) return TR.graph; TR.n = n;
+    const roads = [], nodes = new Map(), seen = new Set(), key = (x2, z2) => Math.round(x2 * 2) + ',' + Math.round(z2 * 2);
+    for (const c of WC.m.values()) if (c.ok) for (const r of c.r) { if (r.br && r.c > 3) continue; const id = r.p.slice(0, 4).join(','); if (seen.has(id) || r.p.length < 4) continue; seen.add(id);
+      const rd = { p: r.p, c: r.c, w: REAL.widths[r.c] / 2, n: r.p.length / 2 }; roads.push(rd);
+      for (const [end, k] of [[0, 0], [1, r.p.length - 2]]) { const kk = key(r.p[k], r.p[k + 1]); (nodes.get(kk) || nodes.set(kk, []).get(kk)).push({ rd, end }); } }
+    return (TR.graph = { roads, nodes, key });
+  }
+  const TR_MODELS = ['danfo', 'danfo', 'danfo', 'corolla', 'corolla', 'camry', 'highlander', 'landcruiser', 'rangerover'];
+  function trSpawn(G) {
+    for (let tries = 0; tries < 40; tries++) { const rd = G.roads[Math.floor(Math.random() * G.roads.length)]; if (rd.c > 5) continue; const k = Math.floor(Math.random() * (rd.n - 1)), x0 = rd.p[2 * k], z0 = rd.p[2 * k + 1], d = Math.hypot(x0 - me.x, z0 - me.z); if (d < 60 || d > 200 || !V3.cells.has(Math.floor(x0 / W3.CS) + ',' + Math.floor(z0 / W3.CS))) continue; // (out of the way, but soon in sight, on a street that's built)
+      const model = TR_MODELS[Math.floor(Math.random() * TR_MODELS.length)]; if (!G3.protos[model]) G3.vehicle(model);
+      const q = { rd, k, u: 0, dir: Math.random() < 0.5 ? 1 : -1, v: 0, lane: rd.c <= 1 ? (Math.random() < 0.5 ? 0.3 : 0.7) : 0.5, model, sc: 0.95, tint: model === 'danfo' ? null : W3_CAR_COLS[Math.floor(Math.random() * W3_CAR_COLS.length)], traffic: true, cx: x0, cz: z0, ang: 0 };
+      if (q.dir < 0) { q.k = Math.min(rd.n - 2, k); q.u = 0; } TR.cars.push(q); return; }
+  }
+  function trSeg(q) { const p2 = q.rd.p, a = q.dir > 0 ? q.k : q.k + 1, b = q.dir > 0 ? q.k + 1 : q.k; return [p2[2 * a], p2[2 * a + 1], p2[2 * b], p2[2 * b + 1]]; }
+  function trStep(dt) {
+    if (!REAL || !V3.on || inside || !G3.ok) return; const G = trGraph(); if (!G.roads.length) return;
+    const want = MOBILE ? 14 : 24; TR.cars = TR.cars.filter((q) => Math.hypot(q.cx - me.x, q.cz - me.z) < 260 || (V3.drive && V3.drive.q === q)); if (TR.cars.length < want) trSpawn(G);
+    for (const q of TR.cars) {
+      if (V3.drive && V3.drive.q === q) continue; // (a car you've taken is yours to drive)
+      let [ax, az, bx, bz] = trSeg(q); let L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L;
+      const top = q.rd.c <= 1 ? 7.8 : q.rd.c <= 3 ? 5.5 : 3.6; let block = false; // (what's ahead: you, your car, another car in the same direction)
+      const ahead = (x2, z2, r) => { const dx = x2 - q.cx, dz = z2 - q.cz, f = dx * ux + dz * uz, s2 = Math.abs(-dx * uz + dz * ux); return f > 0 && f < r && s2 < 2.4; };
+      if (ahead(me.x, me.z, 11)) block = true; for (const o of TR.cars) if (o !== q && ahead(o.cx, o.cz, 10)) { block = true; break; }
+      q.v += ((block ? 0 : top) - q.v) * Math.min(1, dt * (block ? 3 : 0.8)); q.u += q.v * dt;
+      while (q.u > L) { q.u -= L; const nk = q.k + q.dir; if (q.dir > 0 ? nk + 1 < q.rd.n : nk >= 0) q.k = nk;
+        else { const endX = q.dir > 0 ? q.rd.p[q.rd.p.length - 2] : q.rd.p[0], endZ = q.dir > 0 ? q.rd.p[q.rd.p.length - 1] : q.rd.p[1], opts = (G.nodes.get(G.key(endX, endZ)) || []).filter((o) => o.rd !== q.rd && o.rd.c <= 5);
+          if (opts.length) { const o = opts[Math.floor(Math.random() * opts.length)]; q.rd = o.rd; q.dir = o.end === 0 ? 1 : -1; q.k = q.dir > 0 ? 0 : o.rd.n - 2; } else q.dir = -q.dir; } // (a dead end: it turns round)
+        [ax, az, bx, bz] = trSeg(q); L = Math.hypot(bx - ax, bz - az) || 1; ux = (bx - ax) / L; uz = (bz - az) / L; }
+      const off = q.rd.w * q.lane, px = ax + ux * q.u - uz * off, pz = az + uz * q.u + ux * off; // (on the right of its way)
+      q.cx += (px - q.cx) * Math.min(1, dt * 8); q.cz += (pz - q.cz) * Math.min(1, dt * 8); const want2 = Math.atan2(uz, ux); let da = want2 - q.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); q.ang += da * Math.min(1, dt * 5);
+    }
+  }
   // the 3D cell's share of the real city: its streets as one mesh (pavement, asphalt, the round joints that close each
   // bend, dashed centre lines), its buildings as another (walls with a band of windows to every floor, flat roofs), and
   // every building's outline a solid you walk round
@@ -6995,7 +7043,7 @@
     const T3 = G3.T, [cx0, cz0, cx1, cz1] = job.R.clip, ch = wchunksOver(cx0, cz0, cx1, cz1), inC = (x2, z2) => x2 >= cx0 && x2 < cx1 && z2 >= cz0 && z2 < cz1, rgb = (hex) => { const n2 = parseInt(hex.slice(1), 16); return [(n2 >> 16) / 255, ((n2 >> 8) & 255) / 255, (n2 & 255) / 255]; };
     if (!ch.ready) job.partial = true;
     const mesh = (pos, col, mat, flag) => { if (!pos.length) return; const g = new T3.BufferGeometry(); g.setAttribute('position', new T3.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new T3.Float32BufferAttribute(col, 3)); g.computeVertexNormals(); const m = new T3.Mesh(g, mat); m.receiveShadow = true; m.castShadow = !!flag; grp.add(m); return m; };
-    { const pave = [], ash = [], line = [], pc = [], ac = [], lc = [], kerb = [], kc = [], seen = new Set(), PV = rgb('#C9CED6'), AS = rgb('#4B535E'), WL = rgb('#F1F5F9'), YL = rgb('#F2C230'), KB = rgb('#DADDE2'), BR = rgb('#BDB8AE'), gantries = [];
+    { const pave = [], ash = [], line = [], pc = [], ac = [], lc = [], kerb = [], kc = [], seen = new Set(), PV = rgb('#C9CED6'), AS = rgb('#4B535E'), WL = rgb('#F1F5F9'), YL = rgb('#F2C230'), KB = rgb('#DADDE2'), BR = rgb('#BDB8AE'), gantries = [], zebras = [];
       const quad = (arr, cs, c3, ax, az, bx, bz, w, y) => { const L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L * w, nz = (bx - ax) / L * w; arr.push(ax + nx, y, az + nz, bx + nx, y, bz + nz, bx - nx, y, bz - nz, ax + nx, y, az + nz, bx - nx, y, bz - nz, ax - nx, y, az - nz); for (let k = 0; k < 6; k++) cs.push(...c3); };
       const disc = (arr, cs, c3, cx, cz, w, y) => { for (let k = 0; k < 10; k++) { const a0 = k / 10 * Math.PI * 2, a1 = (k + 1) / 10 * Math.PI * 2; arr.push(cx, y, cz, cx + Math.cos(a1) * w, y, cz + Math.sin(a1) * w, cx + Math.cos(a0) * w, y, cz + Math.sin(a0) * w); for (let m = 0; m < 3; m++) cs.push(...c3); } };
       const deg = new Map(), wAt = new Map(), vk = (x2, z2) => Math.round(x2 * 2) + ',' + Math.round(z2 * 2), roadsSeen = new Set();
@@ -7022,7 +7070,8 @@
           else if (r.c <= 3) { dashes(0); for (const sd of [-1, 1]) strip(sd * (w - 0.3), 0.075, jA, L - jB, y + 0.012, WL); } // (a main road: a broken centre line, solid edges)
           else if (r.c === 4) dashes(0); // (a tertiary: just the centre line; the side streets have none, as in Lagos)
           if (!r.br && r.c >= 2) for (const [jj, fromA] of [[jA, true], [jB, false]]) if (jj > 0) { // a zebra crossing before the junction
-            const u0 = fromA ? jj - 2.6 : L - jj + 0.4, u1 = u0 + 2.2; if (u0 < 0 || u1 > L) continue; for (let o2 = -w + 0.55; o2 < w - 0.4; o2 += 1) strip(o2, 0.25, u0, u1, y + 0.014, WL); } } }
+            const u0 = fromA ? jj - 2.6 : L - jj + 0.4, u1 = u0 + 2.2; if (u0 < 0 || u1 > L) continue; const [zx, zz] = at2((u0 + u1) / 2, 0); if (zebras.some(([x2, z2, r2]) => Math.hypot(x2 - zx, z2 - zz) < r2 + w)) continue; zebras.push([zx, zz, w]); // (one clean crossing to an arm: none where another arm's already lies)
+            for (let o2 = -w + 0.55; o2 < w - 0.4; o2 += 1) strip(o2, 0.25, u0, u1, y + 0.014, WL); } } }
       { const lamps = []; for (const c of ch) for (const r of c.r) { if (r.br) continue; const w = REAL.widths[r.c] / 2 + 1.1, p2 = r.p; let acc = (Math.abs(p2[0] * 7 + p2[1] * 3) % 26), side = 1; // (a lamp every 26 units along each street, alternating sides)
           for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L;
             for (let u = 26 - acc; u < L; u += 26) { const lx = ax + (bx - ax) * u / L + nx * w * side, lz = az + (bz - az) * u / L + nz * w * side; if (inC(lx, lz)) lamps.push([lx, lz, Math.atan2(-nz * side, -nx * side)]); side = -side; }
