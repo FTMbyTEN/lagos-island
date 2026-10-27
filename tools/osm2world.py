@@ -167,8 +167,14 @@ def main():
         for jj in range(int(min(p[1] for p in b['poly']) // 10), int(max(p[1] for p in b['poly']) // 10) + 1):
             for ii in range(int(min(p[0] for p in b['poly']) // 10), int(max(p[0] for p in b['poly']) // 10) + 1):
                 if 0 <= ii < W and 0 <= jj < H: hmask[jj][ii] = 0
-    print(len(keep) - len(tall), 'low buildings become', sum(map(sum, hmask)), 'modelled houses;', len(tall), 'tall ones stay')
-    keep = tall
+    # ...and the tall ones become the island's modelled towers and office blocks on their squares (no plain blocks):
+    # tmask 1 a block (up to six floors), 2 a tower
+    tmask = [[0] * W for _ in range(H)]
+    for b in tall:
+        i, j = int(b['c'][0] // 10), int(b['c'][1] // 10)
+        if 0 <= i < W and 0 <= j < H and not rmask[j][i]: tmask[j][i] = max(tmask[j][i], 2 if b['h'] > 6 * LEVEL_M / HU else 1); hmask[j][i] = 0
+    print(len(keep) - len(tall), 'low buildings become', sum(map(sum, hmask)), 'modelled houses;', len(tall), 'tall ones become', sum(1 for r in tmask for v in r if v), 'modelled towers and blocks')
+    keep = []
     # the chunks
     cw, chh = (W + CH - 1) // CH, (H + CH - 1) // CH
     chunks = collections.defaultdict(lambda: {'r': [], 'b': []})
@@ -214,7 +220,7 @@ def main():
     # the board: each row run-length coded ("<code><count>" pairs, count in hex, comma between)
     rle = rle_of(tile)
     doc = {'attribution': '© OpenStreetMap contributors (ODbL)', 'w': W, 'h': H, 'tile_m': B.TILE, 'unit_m': U, 'chunk': CH, 'chunks': [list(k) for k in sorted(chunks)],
-           'widths': [WIDTH[k] / WU for k in WIDTH], 'ntReg': nt_register(), 'rle': rle, 'brle': rle_of(bt), 'rrle': rle_of(rmask), 'hrle': rle_of(hmask), 'places': sites, 'districts': dist}
+           'widths': [WIDTH[k] / WU for k in WIDTH], 'ntReg': nt_register(), 'rle': rle, 'brle': rle_of(bt), 'rrle': rle_of(rmask), 'hrle': rle_of(hmask), 'trle': rle_of(tmask), 'places': sites, 'districts': dist}
     open(os.path.join(out_dir, 'lagos-world.js'), 'w', encoding='utf-8').write('// Lagos at true scale, made by tools/osm2world.py. Map data (c) OpenStreetMap contributors, ODbL.\nwindow.LAGOS_BOARD = ' + json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + ';\n')
     c = collections.Counter(ch for row in tile for ch in row)
     print(f'{W}x{H} tiles', dict(c), len(lines), 'street lines', len(chunks), 'chunks', round(total / 1e6, 1), 'MB of chunks', os.path.getsize(os.path.join(out_dir, 'lagos-world.js')) // 1000, 'KB board')
