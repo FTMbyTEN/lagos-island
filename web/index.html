@@ -2138,7 +2138,7 @@
       el.querySelector('#pHq').onclick = () => { closePass(); if (phone.style.display === 'block') closePhone(); goHQ(); };
       el.querySelectorAll('[data-pa]').forEach((b) => (b.onclick = () => { closePass(); openPhone(b.dataset.pa); }));
       el.querySelectorAll('[data-pt2]').forEach((b) => (b.onclick = async () => { const k = b.dataset.pt2;
-        if (k === 'mode') { osMode = osMode === 'light' ? 'dark' : 'light'; store.set('li.osMode', osMode); applyMode(); el.className = 'on' + (osMode === 'light' ? '' : ' dark'); }
+        if (k === 'mode') { osMode = 'dark'; store.set('li.osMode', osMode); applyMode(); el.className = 'on' + (osMode === 'light' ? '' : ' dark'); }
         else if (k === 'alerts') { HUP.on = !HUP.on; store.set('li.alerts', HUP.on ? 'on' : 'off'); }
         else if (k === 'sound') { const tc = document.querySelector('#topR [data-city], #tCity'); if (tc) tc.click(); else { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); } }
         else if (k === '3d') G3.on = !G3.on;
@@ -11928,7 +11928,7 @@
 
   // ================= WYRD OS 4 =================
   // ---- appearance: light (white, smooth) unless you pick dark; remembered on this device
-  let osMode = store.get('li.osMode') || 'light';
+  let osMode = 'dark'; // (WYRD OS is dark, as in the phone prototype: the status bar, the notch and every app on ink)
   function applyMode() { phone.classList.toggle('os-light', osMode === 'light'); phone.classList.toggle('os-dark', osMode !== 'light'); }
   applyMode();
   // ---- WYRD, wired in. Suggestions: what's worth your attention right now, worked out on the phone (no server trip)
