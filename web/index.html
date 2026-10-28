@@ -1609,6 +1609,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
 #drvPads .dBrake .dPl { width: 74px; height: 84px; border-color: #7f1d1d; } #drvPads .dGas .dPl { width: 54px; height: 116px; border-color: #14532d; }
 #drvPads .dBrake small { color: #FCA5A5; } #drvPads .dGas small { color: #86EFAC; }
 @media (orientation: landscape) and (max-height: 500px) { #drvPads { bottom: calc(52px + env(safe-area-inset-bottom)); zoom: .82; } }
+#speedo { display: none !important; } /* (speed and gear are in the panel on the left now) */
 </style>
 </head>
 <body>
@@ -5453,6 +5454,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
     if (R.kind === 'world' && REAL && PEOPLE.ok) for (const w of walkStep(now)) person3d(w.x, w.z, '#FFFFFF', w.slot, now, w.L, null, 0); // (Lagosians on the pavements)
     if (R.kind === 'world') tlPosts(); else if (TLP.g) TLP.g.visible = false;
+    if (R.kind === 'world') estateStep(now); else for (const e of GATED.list) e.g.visible = false;
     gps3d();
     { const inCar = doorStep(now) || (typeof trip !== 'undefined' && trip && trip.phase === 'ontrip'); if (!V3.drive && !inCar) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); } // (at the wheel you're in the car; getting in or out, the door swings)
     if (R.kind === 'world' && V3.wcars) { const near = V3.wcars.filter((q) => G3.protos[q.model] && (!V3.drive || q !== V3.drive.q) && Math.abs(q.cx - me.x) < (q.traffic ? 200 : 75) && Math.abs(q.cz - me.z) < (q.traffic ? 200 : 75)).sort((p, q) => Math.hypot(p.cx - me.x, p.cz - me.z) - Math.hypot(q.cx - me.x, q.cz - me.z)); for (const q of near.slice(0, 40)) G3.queue.push(q); if (V3.drive && G3.protos[V3.drive.q.model]) G3.queue.push(V3.drive.q); } /* the cars parked in the street: the nearest ones (far off, the haze has them) */
@@ -7190,6 +7192,51 @@ body.phoneOn #gpsPanel { opacity: .35; }
       <div class="gD"><small>TO</small><b>${esc(gl ? gl.name : '')}</b><span>${gpsM(left)} · ${Math.max(1, Math.round(eta / 60))} min</span></div>` : '') +
       (drv ? `<div class="gS"><b>${Math.round(sp * 3.6)}</b><small>KM/H</small><span>${drv.mg === -1 ? 'R' : drv.mg === 0 ? 'N' : drv.mg || 1}</span></div>` : '');
     if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html; }
+  }
+  // gated estates, as Lagos has them: a wall round the estate, and where each street enters, a gatehouse with a
+  // security guard and a red-and-white barrier. The barrier lifts as you or a car comes up to it, and drops once you're
+  // through. Built from the district's real rectangle and the real streets that cross its edge (HQ Row for now)
+  const GATED = { built: null, list: [] };
+  function estateBuild() {
+    if (!G3.ok || !REAL || !TR.graph) return; const THREE = G3.T, G = TR.graph, n = G.roads.length; if (GATED.built === n) return; GATED.built = n;
+    for (const e of GATED.list) G3.scene.remove(e.g); GATED.list = [];
+    for (const d of (REAL.districts || []).filter((d2) => d2.fill === 'hq')) {
+      const [i0, j0, i1, j1] = d.rect, x0 = i0 * T, z0 = j0 * T, x1 = (i1 + 1) * T, z1 = (j1 + 1) * T, g = new THREE.Group(), gates = [];
+      // where the streets cross the edge: each crossing a gate
+      for (const rd of G.roads) for (let k = 0; k + 1 < rd.n; k++) { const ax = rd.p[2 * k], az = rd.p[2 * k + 1], bx = rd.p[2 * k + 2], bz = rd.p[2 * k + 3];
+        const inA = ax > x0 && ax < x1 && az > z0 && az < z1, inB = bx > x0 && bx < x1 && bz > z0 && bz < z1; if (inA === inB) continue;
+        for (const [ex, ez, side] of [[x0, null, 'w'], [x1, null, 'e'], [null, z0, 'n'], [null, z1, 's']]) { let u; if (ex != null) { if ((ax - ex) * (bx - ex) > 0) continue; u = (ex - ax) / (bx - ax); } else { if ((az - ez) * (bz - ez) > 0) continue; u = (ez - az) / (bz - az); }
+          const cx = ax + (bx - ax) * u, cz = az + (bz - az) * u; if (cx < x0 - 1 || cx > x1 + 1 || cz < z0 - 1 || cz > z1 + 1) continue; if (gates.some((q) => Math.hypot(q.x - cx, q.z - cz) < 12)) continue;
+          gates.push({ x: cx, z: cz, side, w: rd.w + 1.2, open: 0 }); } }
+      const wallM = new THREE.MeshStandardMaterial({ color: 0xE7E1D3, roughness: 0.9 }), capM = new THREE.MeshStandardMaterial({ color: 0x9A9488, roughness: 0.8 }), wireM = new THREE.MeshStandardMaterial({ color: 0x3a3d44, metalness: 0.6, roughness: 0.4 });
+      const wall = (ax, az, bx, bz) => { const L = Math.hypot(bx - ax, bz - az); if (L < 0.5) return; const m = new THREE.Mesh(new THREE.BoxGeometry(L, 2.4, 0.3), wallM); m.position.set((ax + bx) / 2, 1.2, (az + bz) / 2); m.rotation.y = -Math.atan2(bz - az, bx - ax); m.castShadow = m.receiveShadow = !MOBILE; g.add(m);
+        const c = new THREE.Mesh(new THREE.BoxGeometry(L, 0.14, 0.42), capM); c.position.set((ax + bx) / 2, 2.45, (az + bz) / 2); c.rotation.y = m.rotation.y; g.add(c);
+        const w = new THREE.Mesh(new THREE.BoxGeometry(L, 0.04, 0.04), wireM); w.position.set((ax + bx) / 2, 2.85, (az + bz) / 2); w.rotation.y = m.rotation.y; g.add(w); }; // (the wall, its coping, a strand of razor wire over it)
+      // the four sides, broken where the gates are
+      for (const [sd, a0, b0, fixed, alongX] of [['n', x0, x1, z0, true], ['s', x0, x1, z1, true], ['w', z0, z1, x0, false], ['e', z0, z1, x1, false]]) {
+        const cuts = gates.filter((q) => q.side === sd).map((q) => [(alongX ? q.x : q.z) - q.w - 3, (alongX ? q.x : q.z) + q.w + 3]).sort((p2, q2) => p2[0] - q2[0]); let at = a0;
+        for (const [c0, c1] of [...cuts, [b0, b0]]) { if (c0 > at) alongX ? wall(at, fixed, c0, fixed) : wall(fixed, at, fixed, c0); at = Math.max(at, c1); } }
+      // each gate: two pillars, a gatehouse, the barrier on its hinge
+      const pillarM = new THREE.MeshStandardMaterial({ color: 0x2F3A2F, roughness: 0.7 }), houseM = new THREE.MeshStandardMaterial({ color: 0xF2EBDD, roughness: 0.85 }), roofM = new THREE.MeshStandardMaterial({ color: 0x0B6E3A, roughness: 0.6 }), glassM = new THREE.MeshStandardMaterial({ color: 0x9FC3D8, roughness: 0.1, transparent: true, opacity: 0.55 });
+      const stripe = (() => { const cv = document.createElement('canvas'); cv.width = 64; cv.height = 8; const c = cv.getContext('2d'); for (let k = 0; k < 8; k++) { c.fillStyle = k % 2 ? '#DC2626' : '#F8FAFC'; c.fillRect(k * 8, 0, 8, 8); } const t2 = new THREE.CanvasTexture(cv); t2.colorSpace = THREE.SRGBColorSpace; return new THREE.MeshStandardMaterial({ map: t2, roughness: 0.5 }); })();
+      for (const q of gates) { const gg = new THREE.Group(), across = q.side === 'n' || q.side === 's'; gg.position.set(q.x, 0, q.z); gg.rotation.y = across ? 0 : Math.PI / 2; g.add(gg); // (local x runs along the wall, across the road)
+        for (const sx of [-1, 1]) { const p2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 3.2, 0.8), pillarM); p2.position.set(sx * (q.w + 0.6), 1.6, 0); p2.castShadow = !MOBILE; gg.add(p2); const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.25, 10, 8), new THREE.MeshStandardMaterial({ color: 0xFFF3C4, emissive: 0xFFD89A, emissiveIntensity: night > 0.5 ? 1.8 : 0.2 })); lamp.position.set(sx * (q.w + 0.6), 3.45, 0); gg.add(lamp); }
+        const hx = q.w + 3.2, house = new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.6, 2.4), houseM); house.position.set(hx, 1.3, 1.6); house.castShadow = !MOBILE; gg.add(house);
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 3.0), roofM); roof.position.set(hx, 2.7, 1.6); gg.add(roof); const win = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 0.05), glassM); win.position.set(hx, 1.6, 0.38); gg.add(win);
+        const sign = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.5, 0.06), roofM); sign.position.set(0, 3.6, 0); gg.add(sign); // (the estate's name board over the way in)
+        const hinge = new THREE.Group(); hinge.position.set(-q.w + 0.2, 1.05, -0.6); gg.add(hinge); const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 0.5), pillarM); post.position.set(-q.w + 0.2, 0.55, -0.6); gg.add(post);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(2 * q.w - 0.4, 0.14, 0.14), stripe); arm.position.set(q.w - 0.2, 0, 0); hinge.add(arm); q.hinge = hinge;
+        q.guard = { x: q.x + (across ? hx - 0.6 : 0), z: q.z + (across ? -0.4 : hx - 0.6), L: parseLook('m,2,0,1,0', 'guard' + Math.round(q.x)) }; }
+      G3.scene.add(g); GATED.list.push({ g, gates, name: d.name }); }
+  }
+  // each frame: the barriers rise for whoever comes up to them, and the guards stand at their posts
+  function estateStep(now) {
+    const dt = Math.min(0.1, (now - (GATED.at || now)) / 1000); GATED.at = now; estateBuild(); const ws = V3.ws || 1, on = V3_LIVE && !inside;
+    for (const e of GATED.list) { e.g.visible = on; if (!on) continue; e.g.position.set(0, 0, 0); e.g.scale.setScalar(ws);
+      for (const q of e.gates) { const near = (x2, z2) => Math.hypot(x2 - q.x, z2 - q.z) < q.w + 9;
+        const want = near(me.x, me.z) || (V3.drive && near(V3.drive.q.cx, V3.drive.q.cz)) || TR.cars.some((c) => near(c.cx, c.cz)) || (typeof trip !== 'undefined' && trip && trip.car && near(trip.car.x, trip.car.z)) ? 1 : 0;
+        q.open += (want - q.open) * Math.min(1, dt * (want ? 2.2 : 1.1)); q.hinge.rotation.z = q.open * 1.35;
+        if (PEOPLE.ok && Math.hypot(q.x - me.x, q.z - me.z) < 120) person3d(q.guard.x, q.guard.z, '#1F2937', 'guard:' + Math.round(q.x) + ',' + Math.round(q.z), now, q.guard.L, null, 0); } }
   }
   function myRidePark() {
     const s2 = realRoadNear(me.x, me.z); if (!s2) return false; const side = s2.w / 4, nx = -Math.sin(s2.ang), nz = Math.cos(s2.ang);
