@@ -2241,7 +2241,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     const w = document.createElement('div'); w.id = 'whatsNew'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-label', "What's new");
     w.style.cssText = 'position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:60;width:min(92vw,380px);padding:16px 16px 14px;border-radius:18px;background:rgba(15,23,42,.92);color:#F8FAFC;font:500 13px/1.45 "Plus Jakarta Sans",system-ui;box-shadow:0 0 0 2px rgba(250,204,21,.8),0 12px 32px rgba(0,0,0,.45);backdrop-filter:blur(10px)';
     w.innerHTML = '<b style="display:block;font:900 16px Anton,system-ui;letter-spacing:.02em;color:#FACC15;margin-bottom:6px">✨ LAGOS ISLAND JUST GOT AN UPDATE</b>'
-      + '<div>🗺️ A minimap in the corner: tap a place on it to set your route.<br>🏎️ Smoother driving: each car handles its own way, Space to drift.<br>🌇 Richer 3D light on the streets.</div>'
+      + '<div>🧭 GPS along the real streets: tap a place on the map for your route.<br>🚕 Rides that pick you up and drive you there.<br>🚦 WYRD's smart traffic lights, and gated estates with guards.<br>🧍 New people, walking the pavements.</div>'
       + '<div style="margin-top:8px;opacity:.85">Download the island’s models and textures now so everything runs smoothly.</div>'
       + '<div style="display:flex;gap:8px;margin-top:12px"><button data-w="dl" style="flex:1;padding:10px;border:0;border-radius:12px;background:#FACC15;color:#0F172A;font:800 13px system-ui;cursor:pointer">⬇ Download now</button><button data-w="x" style="padding:10px 14px;border:0;border-radius:12px;background:rgba(255,255,255,.12);color:#fff;font:700 13px system-ui;cursor:pointer">Later</button></div>';
     document.body.append(w); const close = () => w.remove(), dl = w.querySelector('[data-w="dl"]');
@@ -7209,7 +7209,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
           const cx = ax + (bx - ax) * u, cz = az + (bz - az) * u; if (cx < x0 - 1 || cx > x1 + 1 || cz < z0 - 1 || cz > z1 + 1) continue; if (gates.some((q) => Math.hypot(q.x - cx, q.z - cz) < 12)) continue;
           gates.push({ x: cx, z: cz, side, w: rd.w + 1.2, open: 0 }); } }
       const wallM = new THREE.MeshStandardMaterial({ color: 0xE7E1D3, roughness: 0.9 }), capM = new THREE.MeshStandardMaterial({ color: 0x9A9488, roughness: 0.8 }), wireM = new THREE.MeshStandardMaterial({ color: 0x3a3d44, metalness: 0.6, roughness: 0.4 });
-      const wall = (ax, az, bx, bz) => { const L = Math.hypot(bx - ax, bz - az); if (L < 0.5) return; const m = new THREE.Mesh(new THREE.BoxGeometry(L, 2.4, 0.3), wallM); m.position.set((ax + bx) / 2, 1.2, (az + bz) / 2); m.rotation.y = -Math.atan2(bz - az, bx - ax); m.castShadow = m.receiveShadow = !MOBILE; g.add(m);
+      const walls = [], wall = (ax, az, bx, bz) => { const L = Math.hypot(bx - ax, bz - az); if (L < 0.5) return; walls.push([ax, az, bx, bz]); const m = new THREE.Mesh(new THREE.BoxGeometry(L, 2.4, 0.3), wallM); m.position.set((ax + bx) / 2, 1.2, (az + bz) / 2); m.rotation.y = -Math.atan2(bz - az, bx - ax); m.castShadow = m.receiveShadow = !MOBILE; g.add(m);
         const c = new THREE.Mesh(new THREE.BoxGeometry(L, 0.14, 0.42), capM); c.position.set((ax + bx) / 2, 2.45, (az + bz) / 2); c.rotation.y = m.rotation.y; g.add(c);
         const w = new THREE.Mesh(new THREE.BoxGeometry(L, 0.04, 0.04), wireM); w.position.set((ax + bx) / 2, 2.85, (az + bz) / 2); w.rotation.y = m.rotation.y; g.add(w); }; // (the wall, its coping, a strand of razor wire over it)
       // the four sides, broken where the gates are
@@ -7227,7 +7227,12 @@ body.phoneOn #gpsPanel { opacity: .35; }
         const hinge = new THREE.Group(); hinge.position.set(-q.w + 0.2, 1.05, -0.6); gg.add(hinge); const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 0.5), pillarM); post.position.set(-q.w + 0.2, 0.55, -0.6); gg.add(post);
         const arm = new THREE.Mesh(new THREE.BoxGeometry(2 * q.w - 0.4, 0.14, 0.14), stripe); arm.position.set(q.w - 0.2, 0, 0); hinge.add(arm); q.hinge = hinge;
         q.guard = { x: q.x + (across ? hx - 0.6 : 0), z: q.z + (across ? -0.4 : hx - 0.6), L: parseLook('m,2,0,1,0', 'guard' + Math.round(q.x)) }; }
-      G3.scene.add(g); GATED.list.push({ g, gates, name: d.name }); }
+      G3.scene.add(g); GATED.list.push({ g, gates, walls, name: d.name }); }
+  }
+  // the walls are solid: on foot you go round, or in at a gate
+  function gatedWall(px, pz) {
+    for (const e of GATED.list) for (const [ax, az, bx, bz] of e.walls) { const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz, u = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / L2)); if (Math.hypot(ax + dx * u - px, az + dz * u - pz) < 0.75) return true; }
+    return false;
   }
   // each frame: the barriers rise for whoever comes up to them, and the guards stand at their posts
   function estateStep(now) {
@@ -10857,6 +10862,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     if (inside && inside.kind === 'yacht') return onDeck(px, pz);
     if (inside && roomSolids(inside).some((b) => px > b[0] - 0.9 && px < b[2] + 0.9 && pz > b[1] - 0.9 && pz < b[3] + 0.9)) return false; // you walk round things, not through them
     if (inside && (inside.kind === 'hq' || inside.kind === 'home') && BAYS[inside.kind === 'hq' ? 'bq' : inside.style] && pz > inside.d - 1.5) return px > 1.5 && px < inside.w - 1.5 && pz < inside.d + 18.5 && (pz > inside.d + 1.4 || Math.abs(px - inside.w / 2) < 5); // out through the front door into the yard, the wall either side of it
+    if (!inside && REAL && typeof GATED !== 'undefined' && GATED.list.length && gatedWall(px, pz)) return false; // (an estate's wall)
     if (inside) return px > 1.5 && pz > 1.5 && px < inside.w - 1.5 && pz < inside.d - 1.5 && !(inside.kind === 'arena' && (pz < 23 || px < ARENA_SIDE + 1 || px > inside.w - ARENA_SIDE - 1 || (pz > inside.d - ARENA_SIDE - 1 && Math.abs(px - inside.w / 2) > ARENA_GATE - 1.5)));
     const t = at(Math.floor(px / T), Math.floor(pz / T));
     if (t === W0) return false;
