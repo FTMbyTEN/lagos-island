@@ -7238,7 +7238,10 @@ body.phoneOn #gpsPanel { opacity: .35; }
         q.open += (want - q.open) * Math.min(1, dt * (want ? 2.2 : 1.1)); q.hinge.rotation.z = q.open * 1.35;
         if (PEOPLE.ok && Math.hypot(q.x - me.x, q.z - me.z) < 120) person3d(q.guard.x, q.guard.z, '#1F2937', 'guard:' + Math.round(q.x) + ',' + Math.round(q.z), now, q.guard.L, null, 0); } }
   }
+  // the Porsche is Ten's: only Ten, signed in, has it waiting on the street (everyone else's car stays theirs to steal, under WYRD's law)
+  function isTen() { return typeof signedIn === 'function' && signedIn() && /^ten$/i.test(String(myName || '').trim()); }
   function myRidePark() {
+    if (!isTen()) { if (V3.myRide) { if (V3.wcars) V3.wcars = V3.wcars.filter((q) => q !== V3.myRide); V3.myRide = null; } return false; }
     const s2 = realRoadNear(me.x, me.z); if (!s2) return false; const side = s2.w / 4, nx = -Math.sin(s2.ang), nz = Math.cos(s2.ang);
     if (!G3.protos.porsche911) G3.vehicle('porsche911');
     const q = V3.myRide || (V3.myRide = { model: 'porsche911', sc: 0.95, paint: '#1F6B3A', mine: true, name: "Ten's Porsche 911" }); q.cx = s2.x + nx * side; q.cz = s2.z + nz * side; q.ang = s2.ang;
@@ -13929,7 +13932,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
         // a search that narrows the places as you type, popular spots, then every district with a picture of each place
         const POP = ['WYRD Tower', 'Eko Hotel', 'Elegushi Beach', 'The Arena (live shows)', 'Eko Home Store', 'Lekki Luxury Cars', 'Banana Island Marina'].map((n) => PLACES.find((p) => p[5] === n)).filter(Boolean);
         show(`${ahead('ride', 'Ride', 'Okada or car · paid when you arrive')}
-          ${REAL ? `<button id="rMine" class="pcard" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;cursor:pointer;color:inherit"><span style="font-size:26px">🏎️</span><span style="flex:1"><b style="display:block">My Porsche 911</b><small style="opacity:.75">Brought to the street beside you</small></span><b style="color:#FF8A00">Call</b></button>` : ''}
+          ${REAL && isTen() ? `<button id="rMine" class="pcard" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;cursor:pointer;color:inherit"><span style="font-size:26px">🏎️</span><span style="flex:1"><b style="display:block">My Porsche 911</b><small style="opacity:.75">Brought to the street beside you</small></span><b style="color:#FF8A00">Call</b></button>` : ''}
           <div class="search" style="--ac:#FF8A00"><span>🔎</span><input id="rFind" placeholder="Where to?" value="${esc(rideFind)}" autocomplete="off"></div>
           <div class="chips" style="--ac:#FF8A00">${POP.map((p) => `<button data-p="${PLACES.indexOf(p)}">${ico(ICONS[p[0]] ? p[0] : 'pin')} ${esc(p[5].replace(' (live shows)', ''))}</button>`).join('')}</div>
           <div id="rNone" class="pcard dim" style="display:none">No place by that name. Try a district: Ikoyi, Lekki, Ajah…</div>
