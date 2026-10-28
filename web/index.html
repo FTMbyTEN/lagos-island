@@ -5454,7 +5454,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     if (R.kind === 'world' && REAL && PEOPLE.ok) for (const w of walkStep(now)) person3d(w.x, w.z, '#FFFFFF', w.slot, now, w.L, null, 0); // (Lagosians on the pavements)
     if (R.kind === 'world') tlPosts(); else if (TLP.g) TLP.g.visible = false;
     gps3d();
-    { const inCar = doorStep(now); if (!V3.drive && !inCar) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); } // (at the wheel you're in the car; getting in or out, the door swings)
+    { const inCar = doorStep(now) || (typeof trip !== 'undefined' && trip && trip.phase === 'ontrip'); if (!V3.drive && !inCar) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); } // (at the wheel you're in the car; getting in or out, the door swings)
     if (R.kind === 'world' && V3.wcars) { const near = V3.wcars.filter((q) => G3.protos[q.model] && (!V3.drive || q !== V3.drive.q) && Math.abs(q.cx - me.x) < (q.traffic ? 200 : 75) && Math.abs(q.cz - me.z) < (q.traffic ? 200 : 75)).sort((p, q) => Math.hypot(p.cx - me.x, p.cz - me.z) - Math.hypot(q.cx - me.x, q.cz - me.z)); for (const q of near.slice(0, 40)) G3.queue.push(q); if (V3.drive && G3.protos[V3.drive.q.model]) G3.queue.push(V3.drive.q); } /* the cars parked in the street: the nearest ones (far off, the haze has them) */
     flush3d(); w3cabin(true);
     void glows; void afters; // (the 2D glows and overlays don't belong over a lit 3D room: it has its own lights and lasers)
@@ -7705,9 +7705,8 @@ body.phoneOn #gpsPanel { opacity: .35; }
     for (const [i, j, t1, t2] of BILLBOARDS) if (visible(i, j)) items.push({ d: P(i * T, 0, j * T)[2], f: () => billboard(i * T, j * T, t1, t2) });
     const now = performance.now();
     items.push({ d: P(wyrd.x, 0, wyrd.z)[2] + 0.02, f: () => drawWyrd(now) });
-    if (trip && (trip.phase === 'coming' || trip.phase === 'arrived')) { const c = trip.car; items.push({ d: P(c.x, 0, c.z)[2] + 0.01, f: () => vehicle(c.x, c.z, c.dx, c.dz, trip.kind, trip.driver.color, trip.driver.plate) }); }
+    if (trip && trip.car && (trip.phase === 'coming' || trip.phase === 'arrived' || trip.phase === 'ontrip')) { const c = trip.car; items.push({ d: P(c.x, 0, c.z)[2] + 0.01, f: () => vehicle(c.x, c.z, c.dx, c.dz, trip.kind, trip.driver.color, trip.driver.plate) }); }
     if (CRUISE) items.push({ d: P(CRUISE.x, 0, CRUISE.z)[2] - 0.02, f: () => modernYacht(CRUISE.x, CRUISE.z, CRUISE.ang, now / 1000, CRUISE.kind === 'sunset') });
-    if (trip && trip.phase === 'ontrip' && drive) items.push({ d: P(me.x, 0, me.z)[2] + 0.01, f: () => vehicle(me.x, me.z, drive.dx, drive.dz, trip.kind, trip.driver.color, trip.driver.plate) });
     glow.push(() => drawWyrd(now));
     items.sort((p, q) => p.d - q.d);
     for (const it of items) it.f();
@@ -8321,7 +8320,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     for (const c of R._crowd || []) items.push({ who: 1, d: P(c.x, 0, c.z)[2] + 0.02, f: c.f }); // a club's crowd
     for (const [pid, o] of others) items.push({ who: 1, d: P(o.x, 0, o.z)[2] + 0.01, f: () => person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look) });
     if (R.kind === 'beach') for (const o of [...others.values(), me]) if (o.z < SHORE) items.push({ d: P(o.x, 0, o.z)[2] + 0.015, f: () => wade(o.x, o.z, now) }); // the sea over whoever's in it
-    items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()) });
+    if (!(trip && trip.phase === 'ontrip')) items.push({ who: 1, d: P(me.x, 0, me.z)[2] + 0.01, f: () => person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()) }); // (riding: you're inside)
     if (R.kind === 'tower') items.push({ d: P(R.w / 2, 0, R.d / 2 - 2)[2], f: () => drawWyrd(now, R.w / 2, R.d / 2 - 2) });
     if (R.kind === 'arena') drawStands(R, now);
     items.sort((p, q) => p.d - q.d);
@@ -13853,11 +13852,12 @@ body.phoneOn #gpsPanel { opacity: .35; }
         if (!trip) { stack = [['home']]; return render('home'); }
         const t = trip, dv = t.driver;
         const head = { searching: 'Finding you a rider', coming: `${dv.name} is on the way`, arrived: `${dv.name} is here`, ontrip: 'On the way', done: 'You\'ve arrived' }[t.phase];
-        const sub = t.phase === 'searching' ? 'Matching you with riders nearby…' : t.phase === 'coming' ? `Arriving in ${Math.max(1, Math.ceil(t.eta))} s` : t.phase === 'arrived' ? 'Hop on. Your trip is starting.' : t.phase === 'ontrip' ? `To ${t.dest.name}` : `${t.dest.name}`;
-        const pct = t.phase === 'ontrip' && drive ? Math.round(100 * (1 - drive.path.length / t.legs)) : t.phase === 'done' ? 100 : 0;
+        const mmss = (sec) => { sec = Math.max(1, Math.ceil(sec)); return sec >= 60 ? `${Math.floor(sec / 60)} min ${String(sec % 60).padStart(2, '0')} s` : `${sec} s`; };
+        const sub = t.phase === 'searching' ? `Matching you with riders nearby · usually under ${t.kind === 'okada' ? '1' : '2'} min` : t.phase === 'coming' ? `Arriving in ${mmss(t.eta)}` : t.phase === 'arrived' ? 'Walk to the car: your trip is starting' : t.phase === 'ontrip' ? `To ${t.dest.name} · ${mmss(t.eta)} left` : `${t.dest.name}`;
+        const pct = t.phase === 'coming' || t.phase === 'ontrip' ? Math.round(100 * Math.max(0, Math.min(1, t.prog || 0))) : t.phase === 'done' || t.phase === 'arrived' ? 100 : 0;
         show(`<div class="ptitle">${head}</div><div class="lock">${sub}</div>
           ${t.phase === 'searching' ? '<div class="radar"><i></i><i></i><i></i><span>🛰️</span></div>' : `<div class="driver"><div class="av">${t.kind === 'okada' ? '🛵' : '🚗'}</div><div><b>${esc(dv.name)}</b><div class="dim">★ ${dv.rating} · ${esc(dv.vehicle)}</div><div class="plate">${esc(dv.plate)}</div></div></div>`}
-          ${t.phase === 'ontrip' || t.phase === 'done' ? `<div class="prog"><i style="width:${pct}%"></i></div>` : ''}
+          ${t.phase !== 'searching' ? `<div class="prog"><i style="width:${pct}%"></i></div>` : ''}
           <div class="pcard"><div class="row"><span>Fare</span><b>${naira(t.fare)}</b></div><div class="row"><span>Ride</span><b>${t.kind === 'okada' ? 'Okada' : 'Car'}</b></div><div class="row"><span>To</span><b>${esc(t.dest.name)}</b></div></div>
           ${t.phase === 'done' ? `<div class="pcard"><h3>Paid ${naira(t.fare)}</h3><div class="dim">Rate ${esc(dv.name)}</div><div class="stars">${[1, 2, 3, 4, 5].map((n) => `<button data-star="${n}">★</button>`).join('')}</div><button class="pbtn" id="tDone">Done</button></div>` : ''}
           ${t.phase === 'searching' || t.phase === 'coming' ? '<button class="pbtn alt" id="tCancel">Cancel ride</button>' : ''}`);
@@ -13969,49 +13969,69 @@ body.phoneOn #gpsPanel { opacity: .35; }
       driver: { name, plate, rating: (4.6 + R() * 0.39).toFixed(2), vehicle: r.kind === 'okada' ? 'Bajaj Boxer · red' : RIDE_CARS[Math.floor(R() * RIDE_CARS.length)], color: r.kind === 'okada' ? '#DC2626' : ['#F8FAFC', '#111827', '#1D4ED8', '#9CA3AF', '#B91C1C'][Math.floor(R() * 5)] }, car: null };
     if (inside) leaveRoom();
   }
-  async function cancelTrip() { if (!trip) return; try { await my('cancelRide', { id: trip.id }); } catch {} trip = null; drive = null; stack = [['home']]; render('ride'); }
+  async function cancelTrip() { if (!trip) return; try { await my('cancelRide', { id: trip.id }); } catch {} trip = null; drive = null; cam.follow = true; stack = [['home']]; render('ride'); }
   // the ride you ordered, in the 3D streets: the driver's car (a Corolla or a Camry, the Lagos ride-hailing cars) drives in
   // from where they accepted, along the roads, and stops by you; a small card on the HUD shows who, the plate, how far
   function rideStep3d() {
-    const t = typeof trip !== 'undefined' ? trip : null, on = !!(t && t.car && (t.phase === 'coming' || t.phase === 'arrived'));
+    const t = typeof trip !== 'undefined' ? trip : null, on = !!(t && t.car && (t.phase === 'coming' || t.phase === 'arrived' || t.phase === 'ontrip'));
     if (!on) { if (V3.rideQ) { V3.rideQ = null; } rideMini(null); return; }
-    const c = t.car; if (!V3.rideQ) { const md = t.kind === 'okada' ? 'corolla' : 'camry'; if (!G3.protos[md]) G3.vehicle(md); V3.rideQ = { cx: c.x, cz: c.z, model: md, ang: 0, sc: 0.95, tint: '#F8FAFC', ride: true }; }
-    const q = V3.rideQ; q.cx = c.x; q.cz = c.z; if (c.dx || c.dz) { let da = Math.atan2(c.dz, c.dx) - q.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); q.ang += da * 0.2; } q.v = t.phase === 'coming' ? 8 : 0; q.traffic = true;
+    const c = t.car; if (!V3.rideQ) { const md = t.kind === 'okada' ? 'corolla' : 'camry'; if (!G3.protos[md]) G3.vehicle(md); V3.rideQ = { cx: c.x, cz: c.z, model: md, ang: Math.atan2(c.dz, c.dx), sc: 0.95, tint: t.driver.color || '#F8FAFC', ride: true }; }
+    const q = V3.rideQ; q.cx = c.x; q.cz = c.z; if (c.dx || c.dz) { let da = Math.atan2(c.dz, c.dx) - q.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); q.ang += da * 0.2; } q.v = t.phase === 'arrived' ? 0 : c.v || 0; q.traffic = true; if (t.phase === 'ontrip') { me.x = c.x; me.z = c.z; }
     if (V3.wcars && !V3.wcars.includes(q)) V3.wcars.push(q); rideMini(t);
   }
   function rideMini(t) {
     let el = document.getElementById('rideMini'); if (!t) { if (el) el.style.display = 'none'; return; }
     if (!el) { el = document.createElement('div'); el.id = 'rideMini'; el.style.cssText = "position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);z-index:32;min-width:240px;padding:10px 14px;border-radius:16px;background:rgba(15,15,18,.88);color:#F4F4F5;font:600 12px 'Plus Jakarta Sans',system-ui;box-shadow:0 10px 26px rgba(0,0,0,.35);border-top:3px solid #F7C81E;pointer-events:auto;cursor:pointer;backdrop-filter:blur(8px)"; el.onclick = () => openPhone('trip'); document.body.append(el); }
-    const mins = Math.max(1, Math.round((t.eta || 0) / 30)), here = t.phase === 'arrived', tot = t.tot || (t.tot = Math.max(1, t.eta || 1)), prog = here ? 1 : Math.max(0.03, 1 - (t.eta || 0) / tot);
-    el.style.display = 'block'; el.innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span style="font:400 15px Anton,sans-serif;letter-spacing:.5px;color:#F7C81E">${here ? 'YOUR RIDE IS HERE' : 'RIDE ON THE WAY'}</span><b>${here ? 'Get in' : mins + ' min'}</b></div><div style="margin-top:4px;opacity:.85">${esc(t.driver.name)} · ${esc(t.driver.plate)} · ${t.kind === 'okada' ? 'Okada' : 'Car'}</div><div style="margin-top:8px;height:5px;border-radius:3px;background:#2E2E34;overflow:hidden"><i style="display:block;height:100%;width:${Math.round(prog * 100)}%;background:linear-gradient(90deg,#22C55E,#F7C81E)"></i></div>`;
+    const sec = Math.max(1, Math.ceil(t.eta || 0)), mins = sec >= 60 ? Math.round(sec / 60) + ' min' : sec + ' s', here = t.phase === 'arrived', riding = t.phase === 'ontrip', prog = here ? 1 : Math.max(0.03, Math.min(1, t.prog || 0));
+    el.style.display = 'block'; el.innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span style="font:400 15px Anton,sans-serif;letter-spacing:.5px;color:#F7C81E">${here ? 'YOUR RIDE IS HERE' : riding ? 'ON YOUR WAY' : 'RIDE ON THE WAY'}</span><b>${here ? 'Getting in' : mins}</b></div><div style="margin-top:4px;opacity:.85">${esc(t.driver.name)} · ${esc(t.driver.plate)} · ${t.kind === 'okada' ? 'Okada' : 'Car'}</div><div style="margin-top:8px;height:5px;border-radius:3px;background:#2E2E34;overflow:hidden"><i style="display:block;height:100%;width:${Math.round(prog * 100)}%;background:linear-gradient(90deg,#22C55E,#F7C81E)"></i></div>`;
+  }
+  // the ride, step by step, along the real streets:
+  // 1. Searching: a few seconds.
+  // 2. A driver accepts from a few streets away and drives to the road nearest you. They speed up, slow down for the
+  //    corners, and stop beside you.
+  // 3. You walk to the car and get in.
+  // 4. The trip runs to the street by your stop, with you inside (out of sight), the camera following.
+  // 5. You step out and pay. The app counts down the wait and then the trip.
+  const RIDE_SP = { okada: 11, car: 9 }; // (map units a second, in town)
+  function rideRoute(x0, z0, x1, z1) { return (REAL && typeof gpsRoute === 'function' && gpsRoute(x0, z0, x1, z1)) || [x0, z0, x1, z1]; }
+  function rideAlong(c, dt, top) { // move the car along its path; how much of the path is left
+    let left = 0; { let px = c.x, pz = c.z; for (let i = c.i + 2; i + 1 < c.path.length; i += 2) { left += Math.hypot(c.path[i] - px, c.path[i + 1] - pz); px = c.path[i]; pz = c.path[i + 1]; } }
+    let turn = 0; if (c.i + 5 < c.path.length) { const a1 = Math.atan2(c.path[c.i + 3] - c.path[c.i + 1], c.path[c.i + 2] - c.path[c.i]), a2 = Math.atan2(c.path[c.i + 5] - c.path[c.i + 3], c.path[c.i + 4] - c.path[c.i + 2]); turn = Math.abs(Math.atan2(Math.sin(a2 - a1), Math.cos(a2 - a1))); }
+    const toCorner = c.i + 3 < c.path.length ? Math.hypot(c.path[c.i + 2] - c.x, c.path[c.i + 3] - c.z) : 0;
+    const want = Math.min(top, Math.max(2, left * 0.9), turn > 0.5 && toCorner < 12 ? Math.max(3.5, top * (1 - turn / 2.5)) : top); // (slower into a corner, and to a stop at the end)
+    c.v = (c.v || 0) + (want - (c.v || 0)) * Math.min(1, dt * (want < (c.v || 0) ? 3 : 1.2));
+    let step = c.v * dt;
+    while (step > 0 && c.i + 3 < c.path.length) { const tx = c.path[c.i + 2], tz = c.path[c.i + 3], ex = tx - c.x, ez = tz - c.z, d = Math.hypot(ex, ez);
+      if (d > 0.01) { c.dx = ex / d; c.dz = ez / d; } if (d <= step) { c.x = tx; c.z = tz; c.i += 2; step -= d; } else { c.x += ex / d * step; c.z += ez / d * step; step = 0; } }
+    return Math.max(0, left - c.v * dt);
   }
   function tripStep(dt) {
-    const t = trip, now = performance.now();
+    const t = trip, now = performance.now(), top = RIDE_SP[t.kind] || 9;
     if (t.phase === 'searching' && now > t.until) {
-      // a rider a few streets away accepts
-      const [pi, pj] = t.from, cands = roadTiles.filter(([i, j]) => { const d = Math.abs(i - pi) + Math.abs(j - pj); return d >= 5 && d <= 11; });
-      const st = cands.length ? cands[Math.floor(Math.random() * cands.length)] : t.from, path = pathTo(st[0], st[1], pi, pj);
-      t.car = { x: st[0] * T + T / 2, z: st[1] * T + T / 2, path, dx: 1, dz: 0 }; t.phase = 'coming';
+      // a driver a few streets away accepts
+      let sx = me.x + 160, sz = me.z;
+      if (REAL && typeof gpsGraph === 'function') { const G = gpsGraph(), cand = []; for (let i = 0; i < G.X.length; i += 3) { const d = Math.hypot(G.X[i] - me.x, G.Z[i] - me.z); if (d > 110 && d < 260) cand.push(i); } if (cand.length) { const k = cand[Math.floor(Math.random() * cand.length)]; sx = G.X[k]; sz = G.Z[k]; } }
+      else { const [pi, pj] = t.from, cands = roadTiles.filter(([i, j]) => { const d = Math.abs(i - pi) + Math.abs(j - pj); return d >= 5 && d <= 11; }); if (cands.length) { const st = cands[Math.floor(Math.random() * cands.length)]; sx = st[0] * T + T / 2; sz = st[1] * T + T / 2; } }
+      const path = rideRoute(sx, sz, me.x, me.z); path.splice(-2, 2); // (to the road by you, not onto the pavement)
+      t.car = { x: sx, z: sz, path, i: 0, dx: 1, dz: 0, v: 0 }; t.phase = 'coming'; t.tot = 0;
       notify(`${t.driver.name} accepted your ride · ${t.driver.plate}`, 'ride');
-      cam.follow = false; cam.x = (t.car.x + me.x) / 2; cam.z = (t.car.z + me.z) / 2;
+      cam.follow = false; cam.x = (sx + me.x) / 2; cam.z = (sz + me.z) / 2;
     }
     if (t.phase === 'coming') {
-      const c = t.car, sp = t.kind === 'okada' ? 30 : 24;
-      let left = 0; for (let k = 0; k < c.path.length; k++) left += k ? Math.hypot(c.path[k][0] - c.path[k - 1][0], c.path[k][1] - c.path[k - 1][1]) : Math.hypot(c.path[0][0] - c.x, c.path[0][1] - c.z);
-      t.eta = left / sp;
-      if (!c.path.length) { t.phase = 'arrived'; t.until = now + 2200; notify(`${t.driver.name} is here`, 'ride'); }
-      else { const [tx, tz] = c.path[0], ex = tx - c.x, ez = tz - c.z, dist = Math.hypot(ex, ez), st = sp * dt; if (dist <= st) { c.x = tx; c.z = tz; c.path.shift(); } else { c.x += (ex / dist) * st; c.z += (ez / dist) * st; c.dx = ex / dist; c.dz = ez / dist; } }
+      const c = t.car, left = rideAlong(c, dt, top); t.eta = left / Math.max(3, Math.min(top, (c.v || 0) + 2)); if (!t.tot) t.tot = Math.max(1, t.eta); t.prog = 1 - t.eta / t.tot;
+      if (left < 0.4) { t.phase = 'arrived'; t.until = now + 2600; t.w0 = [me.x, me.z]; notify(`${t.driver.name} is here`, 'ride'); }
       const e = Math.min(1, dt * 2); cam.x += (c.x - cam.x) * e; cam.z += (c.z - cam.z) * e;
     }
-    if (t.phase === 'arrived' && now > t.until) {
-      me.x = t.car.x; me.z = t.car.z;
-      if (!driveTo(t.dest.i, t.dest.j)) { me.x = t.dest.i * T + T / 2; me.z = t.dest.j * T + T / 2; }
-      t.phase = 'ontrip'; t.legs = drive ? drive.path.length : 1;
+    if (t.phase === 'arrived') { // you walk to the car and get in (its passenger side)
+      const c = t.car, u = Math.min(1, 1 - (t.until - now) / 2600), sx = c.x - c.dz * 1.6, sz = c.z + c.dx * 1.6;
+      me.x = t.w0[0] + (sx - t.w0[0]) * Math.min(1, u * 1.4); me.z = t.w0[1] + (sz - t.w0[1]) * Math.min(1, u * 1.4); me.vx = me.vz = 0;
+      if (now > t.until) { const dx2 = (t.dest.i + 0.5) * T, dz2 = (t.dest.j + 0.5) * T; c.path = rideRoute(c.x, c.z, dx2, dz2); c.i = 0; c.v = 0; t.phase = 'ontrip'; t.tot = 0; cam.follow = true; }
     }
-    if (t.phase === 'ontrip' && !drive) {
-      t.phase = 'done';
-      my('payRide', { id: t.id }).then((v) => { if (me$) me$.naira = v.naira; pnaira.textContent = naira(v.naira); notify(`Paid ${naira(t.fare)} for your ride`, 'wallet'); }).catch((e) => notify(e.message, 'ride'));
-      if (phone.style.display !== 'block') openPhone('trip');
+    if (t.phase === 'ontrip') {
+      const c = t.car, left = rideAlong(c, dt, top); me.x = c.x; me.z = c.z; me.vx = me.vz = 0; t.eta = left / Math.max(3, Math.min(top, (c.v || 0) + 2)); if (!t.tot) t.tot = Math.max(1, t.eta); t.prog = 1 - t.eta / t.tot;
+      if (left < 0.4) { t.phase = 'done'; me.x = c.x - c.dz * 1.8; me.z = c.z + c.dx * 1.8; // (out on the pavement side)
+        my('payRide', { id: t.id }).then((v) => { if (me$) me$.naira = v.naira; pnaira.textContent = naira(v.naira); notify(`Paid ${naira(t.fare)} for your ride`, 'wallet'); }).catch((e) => notify(e.message, 'ride'));
+        if (phone.style.display !== 'block') openPhone('trip'); }
     }
   }
   // the ride on the map: an okada or a car, with the driver's plate over it
@@ -14356,7 +14376,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
     else if (door('arena')) next = { label: '🎤 The Arena: shows and tickets', run: () => openPhone('arena') };
     else for (const [type, place, label] of WORK) if (near(type, 15)) { next = { label, run: () => doWork(place) }; break; }
     if (!next && !inside) { const tk = gridNear() || (gridTask() && gridTask().type !== "fault" && near("grid", 6) ? gridTask() : null); if (tk) next = { label: `⚡ ${tk.title}`, run: () => gridDo(tk) }; else if (near('grid', 6)) next = { label: '⚡ Careers at the National Grid', run: () => openPhone('grid') }; }
-    if (!next && V3.on && !inside && V3.wcars) { let best = null, bd = 4.2; for (const q of V3.wcars) { const dd = Math.hypot(q.cx - me.x, q.cz - me.z); if (dd < bd) { bd = dd; best = q; } } if (best) next = best.mine ? { label: best.model === 'porsche911' ? '🏎️ Drive your Porsche' : '🚗 Drive your car', run: () => carEnter(best) } : { label: '🚨 Steal this car', run: () => carTheft(best) }; } // only your own car is yours to drive // a car within reach
+    if (!next && V3.on && !inside && V3.wcars && !trip) { let best = null, bd = 4.2; for (const q of V3.wcars) { if (q.ride) continue; const dd = Math.hypot(q.cx - me.x, q.cz - me.z); if (dd < bd) { bd = dd; best = q; } } if (best) next = best.mine ? { label: best.model === 'porsche911' ? '🏎️ Drive your Porsche' : '🚗 Drive your car', run: () => carEnter(best) } : { label: '🚨 Steal this car', run: () => carTheft(best) }; } // only your own car is yours to drive // a car within reach
     // (calling your Porsche is in the Ride app now)
     if (!next && near('hqgate', 15)) next = { label: '🏠 My HQ', run: () => openPhone('hq') };
     // at an HQ's door: yours is always open; anyone else's needs the owner to let you in
