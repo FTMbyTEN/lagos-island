@@ -7373,8 +7373,18 @@ body.phoneOn #gpsPanel { opacity: .35; }
       const st = tlState(L, m.grp); P2.lamps.forEach((o, n) => { const c = ['r', 'a', 'g'][n], lit = c === st; o.material.emissive.copy(lit ? on[c] : dark); o.material.emissiveIntensity = lit ? 2.2 : 0; o.material.color.copy(lit ? on[c] : dark); }); k++; }
     for (; k < TLP.pool.length; k++) TLP.pool[k].g.visible = false;
   }
-  // a junction's light for one group of its arms, now: 'g', 'a' (amber) or 'r'
-  function tlState(L, grp) { const t = ((performance.now() / 1000 + L.off) % 34), mine = grp === 0 ? t : (t + 17) % 34; return mine < 14 ? 'g' : mine < 17 ? 'a' : 'r'; }
+  // the lights are WYRD's: smart signals that count the cars queuing on each side of a junction. A side with no one
+  // waiting keeps its red while the other flows. Green goes where the queue is, after at least 8 s of the last green
+  // and at most 24 s while others wait (40 s if no one does). Amber lasts 3 s. Junctions far from you just tick over
+  function tlState(L, grp) { if (L.g == null) return ((performance.now() / 1000 + L.off) % 34 < 17) === (grp === 0) ? 'g' : 'r'; return L.amber > 0 ? (grp === L.g ? 'a' : 'r') : grp === L.g ? 'g' : 'r'; }
+  function tlRun(G, dt) {
+    for (const L of G.lights.values()) { if (Math.abs(L.x - me.x) > 400 || Math.abs(L.z - me.z) > 400) continue;
+      if (L.g == null) { L.g = L.off % 2; L.t = L.off % 9; L.amber = 0; L.wait = [0, 0]; }
+      L.t += dt; const w = L.wait || [0, 0], other = 1 - L.g;
+      if (L.amber > 0) { L.amber -= dt; if (L.amber <= 0) { L.amber = 0; L.g = other; L.t = 0; } }
+      else if (L.t > 8 && ((w[other] > 0 && (w[L.g] === 0 || L.t > 24)) || L.t > 40)) L.amber = 3;
+      L.wait = [0, 0]; } // (counted again this frame, by the cars stopped at it)
+  }
   const TR_MODELS = ['danfo', 'danfo', 'danfo', 'corolla', 'corolla', 'camry', 'highlander', 'landcruiser', 'rangerover'];
   function trSpawn(G) {
     for (let tries = 0; tries < 40; tries++) { const rd = G.roads[Math.floor(Math.random() * G.roads.length)]; if (rd.c > 5) continue; const k = Math.floor(Math.random() * (rd.n - 1)), x0 = rd.p[2 * k], z0 = rd.p[2 * k + 1], d = Math.hypot(x0 - me.x, z0 - me.z); if (d < 60 || d > 200 || !V3.cells.has(Math.floor(x0 / W3.CS) + ',' + Math.floor(z0 / W3.CS))) continue; // (out of the way, but soon in sight, on a street that's built)
@@ -7385,6 +7395,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
   function trSeg(q) { const p2 = q.rd.p, a = q.dir > 0 ? q.k : q.k + 1, b = q.dir > 0 ? q.k + 1 : q.k; return [p2[2 * a], p2[2 * a + 1], p2[2 * b], p2[2 * b + 1]]; }
   function trStep(dt) {
     if (!REAL || !V3.on || inside || !G3.ok) return; const G = trGraph(); if (!G.roads.length) return;
+    if (G.lights) tlRun(G, dt);
     const want = MOBILE ? 14 : 24; TR.cars = TR.cars.filter((q) => Math.hypot(q.cx - me.x, q.cz - me.z) < 260 || (V3.drive && V3.drive.q === q)); if (TR.cars.length < want) trSpawn(G);
     for (const q of TR.cars) {
       if (V3.drive && V3.drive.q === q) continue; // (a car you've taken is yours to drive)
@@ -7396,7 +7407,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
       if (!block && G.lights) { const nk = q.dir > 0 ? q.k + 1 : q.k, ex = q.rd.p[2 * nk], ez = q.rd.p[2 * nk + 1], Lj = G.lights.get(G.key(ex, ez)); // (the point this stretch leads to: a junction with lights?)
         if (Lj) { const back = Math.atan2(q.cz - ez, q.cx - ex); let arm = null, bd = 9; for (const m of Lj.arms) { const d = Math.abs(Math.atan2(Math.sin(m.a - back), Math.cos(m.a - back))); if (m.rd === q.rd && d < bd) { bd = d; arm = m; } } // (the arm it's coming in on)
           const st = arm ? tlState(Lj, arm.grp) : 'g', toLine = Math.hypot(ex - q.cx, ez - q.cz) - Lj.r;
-          if (st !== 'g' && toLine > (st === 'a' ? 6 : -1) && toLine < 26) block = toLine < 3.5 || q.v * q.v / 9 > toLine - 1; } } // (red: stop at the line; amber: stop if there's room to)
+          if (st !== 'g' && toLine > (st === 'a' ? 6 : -1) && toLine < 26) { block = toLine < 3.5 || q.v * q.v / 9 > toLine - 1; if (arm && Lj.wait && toLine < 30) Lj.wait[arm.grp]++; } } } // (red: stop at the line, and WYRD counts you in the queue; amber: stop if there's room to)
       q.v += ((block ? 0 : top) - q.v) * Math.min(1, dt * (block ? 3 : 0.8)); q.u += q.v * dt;
       while (q.u > L) { q.u -= L; const nk = q.k + q.dir; if (q.dir > 0 ? nk + 1 < q.rd.n : nk >= 0) q.k = nk;
         else { const endX = q.dir > 0 ? q.rd.p[q.rd.p.length - 2] : q.rd.p[0], endZ = q.dir > 0 ? q.rd.p[q.rd.p.length - 1] : q.rd.p[1], opts = (G.nodes.get(G.key(endX, endZ)) || []).filter((o) => o.rd !== q.rd && o.rd.c <= 5);
