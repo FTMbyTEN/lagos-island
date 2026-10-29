@@ -3,3 +3,5 @@ web/index.min.html
 .dev.vars
 cloudflare/.dev.vars
 cloudflare/.wrangler/
+*.pyc
+tools/__pycache__/

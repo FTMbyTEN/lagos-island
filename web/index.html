@@ -6952,11 +6952,13 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   const placeAt = new Int16Array(BOARD.w * BOARD.h).fill(-1);
   PLACES.forEach((p, k) => { for (let j = p[2]; j < p[2] + p[4]; j++) for (let i = p[1]; i < p[1] + p[3]; i++) if (i < BOARD.w && j < BOARD.h) placeAt[j * BOARD.w + i] = k; });
   const lots = []; // the filler: { i, j, kind }
+  const REAL_FP = new Set((REAL && REAL.fp) || []);
   for (let j = 0; j < BOARD.h; j++) for (let i = 0; i < BOARD.w; i++) {
     const t = at(i, j);
     if ((t !== LAND && t !== SAND) || placeAt[j * BOARD.w + i] >= 0) continue;
     const v = rnd(i * 97 + j * 131)(), sec = SECTORS[sectorAt[j * BOARD.w + i]];
     if (REAL && (realBld(i, j) || realRoad(i, j))) continue; // (a real building stands here, or a street runs through)
+    if (REAL && REAL_FP.has(j * BOARD.w + i)) continue; // (a modelled street's own building stands here: tools/street_model.py)
     if (REAL && sec && sec.fill === 'city' && v > 0.3) continue; // (New Town's made-up towers spread out on the real map's smaller tiles)
     if (sec && sec.fill) { if (sec.fill !== 'none') lots.push({ i, j, kind: sec.fill }); continue; }
     if (REAL) { const tm = realTall(i, j); if (tm) lots.push({ i, j, kind: 'rtall', t: tm }); else if (realHouse(i, j)) lots.push({ i, j, kind: 'house' });; continue; } // (open ground on the real map: only the real buildings stand on it; a tree here and there)
@@ -7089,6 +7091,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     fetch(WC.base + k + '.json').then((res) => res.json()).then((d) => {
       c.r = d.r.map((a) => ({ c: a[0], br: a[1], p: a.slice(2).map((v) => v / 10) }));
       c.b = d.b.map((a) => { const p2 = a.slice(1).map((v) => v / 10); let x0 = 1e9, z0 = 1e9, x1 = -1e9, z1 = -1e9, sx2 = 0, sz2 = 0; for (let k2 = 0; k2 < p2.length; k2 += 2) { x0 = Math.min(x0, p2[k2]); x1 = Math.max(x1, p2[k2]); z0 = Math.min(z0, p2[k2 + 1]); z1 = Math.max(z1, p2[k2 + 1]); sx2 += p2[k2]; sz2 += p2[k2 + 1]; } const n2 = p2.length / 2; return { h: a[0] / 10, p: p2, bb: [x0, z0, x1, z1], cx: sx2 / n2, cz: sz2 / n2, seed: Math.round(sx2 * 7 + sz2 * 13) }; });
+      if (d.bl) c.b.forEach((b, k) => { b.look = d.bl[k] || ''; b.name = (d.bn && d.bn[k]) || ''; });
       c.ok = true; wchunkLanded(ci, cj); if (typeof MM !== 'undefined') MM.roads(c);
     }).catch(() => { c.ok = true; });
     return null;
@@ -7102,7 +7105,15 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   // the walls and roofs of Lagos: cream, white, sand, peach and pale stone, the odd terracotta or grey; flat concrete roofs
   // on the tall ones, rusty and grey iron on the low houses
   const RB_WALL = ['#EFE6D2', '#F4F1EA', '#E6D5B5', '#EBC9A8', '#D9D4C7', '#E9D58F', '#C9A27E', '#BFC3C7', '#F2E2C4', '#E7B9A2', '#B8D3C5', '#A9C4DA', '#F3D48B', '#D6C2E0', '#FFFFFF', '#CFC6B6'], RB_ROOF_LOW = ['#8A5A3C', '#7D8288', '#9C4A2F', '#6B6F75'], RB_ROOF_HI = ['#B9B4AA', '#A8A39A', '#C7C2B8'];
-  const realLook = (b) => { const R = rnd(b.seed * 7919 + 17); R(); R(); return { wall: RB_WALL[Math.floor(R() * RB_WALL.length)], roof: b.h < 2.4 ? RB_ROOF_LOW[Math.floor(R() * RB_ROOF_LOW.length)] : RB_ROOF_HI[Math.floor(R() * RB_ROOF_HI.length)] }; };
+  // a modelled street's buildings, by kind: the glass-and-concrete offices and banks of Marina, cream-walled churches with
+  // red roofs, white mosques, painted shop houses; the rest as before. win: how much of each storey is window
+  const LOOKS = { office: { walls: ['#8FA3B5', '#B9C3CC', '#6F8597', '#C9CDD2', '#A7B4BF'], roofs: ['#4B5563', '#6B7280'], win: 0.8 },
+    bank: { walls: ['#D8D4C8', '#C8C2B4', '#E2DED4', '#9AA8B5'], roofs: ['#52525B', '#3F3F46'], win: 0.7 },
+    church: { walls: ['#EFE6D2', '#E7DCC4'], roofs: ['#8B3A2E', '#7A2E25'], win: 0.25 },
+    mosque: { walls: ['#F3EBDD', '#EDE4D3'], roofs: ['#2E7D32', '#E5E7EB'], win: 0.25 },
+    shop: { walls: ['#E9C46A', '#F4A261', '#A8DADC', '#F1FAEE', '#E76F51', '#90BE6D'], roofs: ['#9CA3AF', '#78716C'], win: 0.45 },
+    block: { walls: ['#E5DED3', '#D6CFC2', '#F0E9DC', '#CBD5E1', '#E8D9C5'], roofs: ['#A8A29E', '#78716C', '#9CA3AF'], win: 0.45 } };
+  const realLook = (b) => { if (b.look && LOOKS[b.look]) { const L2 = LOOKS[b.look], R = rnd(b.seed * 7919 + 17); return { wall: L2.walls[Math.floor(R() * L2.walls.length)], roof: L2.roofs[Math.floor(R() * L2.roofs.length)], win: L2.win }; } const R = rnd(b.seed * 7919 + 17); R(); R(); return { wall: RB_WALL[Math.floor(R() * RB_WALL.length)], roof: b.h < 2.4 ? RB_ROOF_LOW[Math.floor(R() * RB_ROOF_LOW.length)] : RB_ROOF_HI[Math.floor(R() * RB_ROOF_HI.length)] }; };
   const outN = (p2, ax, az, bx, bz, L) => { const nx = -(bz - az) / L, nz = (bx - ax) / L, mx = (ax + bx) / 2, mz = (az + bz) / 2; return inPoly(p2, mx + nx * 0.05, mz + nz * 0.05) ? [-nx, -nz] : [nx, nz]; }; // (a wall's outward face)
   function drawRealBuilding(b) { // (the flat view: the walls that face you, the roof on top)
     const p2 = b.p, n2 = p2.length / 2, lk = realLook(b); let sa = 0; for (let k = 0; k < n2; k++) { const k2 = (k + 1) % n2; sa += p2[2 * k] * p2[2 * k2 + 1] - p2[2 * k2] * p2[2 * k + 1]; }
@@ -7518,6 +7529,18 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   // the 3D cell's share of the real city: its streets as one mesh (pavement, asphalt, the round joints that close each
   // bend, dashed centre lines), its buildings as another (walls with a band of windows to every floor, flat roofs), and
   // every building's outline a solid you walk round
+  // the window picture: one pane in its frame (by day, sky in the glass); at night, the lit-room version, where the
+  // second row of the texture is dark so the bands of different floors light differently (v offset picks the row)
+  function winTex(night2) {
+    const k = night2 ? 'n' : 'd'; winTex.c = winTex.c || {}; if (winTex.c[k]) return winTex.c[k];
+    const T3 = G3.T, cv = document.createElement('canvas'); cv.width = 64; cv.height = 128; const c = cv.getContext('2d');
+    for (let row = 0; row < 2; row++) { const y = row * 64;
+      c.fillStyle = night2 ? '#000' : '#3A4652'; c.fillRect(0, y, 64, 64);
+      if (night2) { if (row === 0) { const g2 = c.createLinearGradient(0, y, 0, y + 64); g2.addColorStop(0, '#FFE9B8'); g2.addColorStop(1, '#F5B95E'); c.fillStyle = g2; c.fillRect(6, y + 8, 52, 48); } else { c.fillStyle = '#1E293B'; c.fillRect(6, y + 8, 52, 48); } }
+      else { const g2 = c.createLinearGradient(0, y + 8, 64, y + 56); g2.addColorStop(0, '#9FC3D8'); g2.addColorStop(0.55, '#5B7A90'); g2.addColorStop(1, '#2C3E50'); c.fillStyle = g2; c.fillRect(6, y + 8, 52, 48); c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.moveTo(10, y + 52); c.lineTo(30, y + 10); c.lineTo(38, y + 10); c.lineTo(18, y + 52); c.fill(); }
+      c.fillStyle = night2 ? '#000' : '#202830'; c.fillRect(31, y + 8, 2, 48); } // (a mullion down the middle)
+    const t2 = new T3.CanvasTexture(cv); t2.wrapS = t2.wrapT = T3.RepeatWrapping; t2.colorSpace = T3.SRGBColorSpace; t2.repeat.set(1, 0.5); t2.anisotropy = 4; return (winTex.c[k] = t2);
+  }
   function w3real(job, grp) {
     const T3 = G3.T, [cx0, cz0, cx1, cz1] = job.R.clip, ch = wchunksOver(cx0, cz0, cx1, cz1), inC = (x2, z2) => x2 >= cx0 && x2 < cx1 && z2 >= cz0 && z2 < cz1, rgb = (hex) => { const n2 = parseInt(hex.slice(1), 16); return [(n2 >> 16) / 255, ((n2 >> 8) & 255) / 255, (n2 & 255) / 255]; };
     if (!ch.ready) job.partial = true;
@@ -7577,18 +7600,20 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
         for (const [gx, gz, a, w] of gantries) { const g = new T3.Group(); g.position.set(gx, 0, gz); g.rotation.y = -a; grp.add(g); const add = (geo, mat, x2, y2, z2) => { const m = new T3.Mesh(geo, mat); m.position.set(x2, y2, z2); m.castShadow = true; g.add(m); };
           for (const sd of [-1, 1]) add(new T3.CylinderGeometry(0.25, 0.3, 7.6, 10), steel, 0, 3.8, sd * (w + 1.2)); add(new T3.BoxGeometry(0.5, 0.6, 2 * w + 2.4), steel, 0, 7.4, 0); // (two posts, the beam)
           for (const sd of [-1, 1]) { add(new T3.BoxGeometry(0.2, 2.4, w * 0.75), rim, 0.12, 6.0, sd * w * 0.5); add(new T3.BoxGeometry(0.24, 2.2, w * 0.71), sign, 0.14, 6.0, sd * w * 0.5); } } } } // (the green direction signs, white-edged, one over each carriageway)
-    { const wp = [], wc = [], gp2 = [], gc = [], rp = [], rc = [], FL = 3.2 / 3, GL = rgb(night > 0.5 ? '#FCD34D' : '#2B3A4A');
+    { const wp = [], wc = [], gp2 = [], gc = [], gu = [], rp = [], rc = [], FL = 3.2, GL = rgb(night > 0.5 ? '#FFFFFF' : '#FFFFFF'); // (a storey is 3.2 m; the glass takes its colour from the window picture)
       for (const c of ch) for (const b of c.b) { if (!inC(b.cx, b.cz)) continue; const p2 = b.p, n2 = p2.length / 2, lk = realLook(b), WCc = rgb(lk.wall), RC = rgb(lk.roof); let sa = 0; for (let k = 0; k < n2; k++) { const k2 = (k + 1) % n2; sa += p2[2 * k] * p2[2 * k2 + 1] - p2[2 * k2] * p2[2 * k + 1]; }
         for (let k = 0; k < n2; k++) { const k2 = (k + 1) % n2, ax = p2[2 * k], az = p2[2 * k + 1], bx = p2[2 * k2], bz = p2[2 * k2 + 1], L = Math.hypot(bx - ax, bz - az); if (L < 0.05) continue; const [nx, nz] = outN(p2, ax, az, bx, bz, L);
           const sh = 0.86 + 0.14 * Math.max(0, -0.5 * nx - 0.35 * nz), c3 = WCc.map((v) => v * sh);
           { const lo = c3.map((v2) => v2 * 0.72); wp.push(ax, 0, az, bx, 0, bz, bx, b.h, bz, ax, 0, az, bx, b.h, bz, ax, b.h, az); wc.push(...lo, ...lo, ...c3, ...lo, ...c3, ...c3); } // (darker where the wall meets the ground)
-          if (L > 1.2) for (let f = 0; f + 0.7 < b.h; f += FL) { const y0 = f + 0.38, y1 = Math.min(b.h - 0.12, f + 0.78), e = 0.03, i0x = ax + (bx - ax) * (0.35 / L), i0z = az + (bz - az) * (0.35 / L), i1x = bx - (bx - ax) * (0.35 / L), i1z = bz - (bz - az) * (0.35 / L);
-            gp2.push(i0x + nx * e, y0, i0z + nz * e, i1x + nx * e, y0, i1z + nz * e, i1x + nx * e, y1, i1z + nz * e, i0x + nx * e, y0, i0z + nz * e, i1x + nx * e, y1, i1z + nz * e, i0x + nx * e, y1, i0z + nz * e); for (let m = 0; m < 6; m++) gc.push(...GL); } }
+          if (L > 1.2) for (let f = 0; f + 0.7 < b.h; f += FL) { const wf = lk.win || 0.4, y0 = f + FL * (0.5 - wf / 2), y1 = Math.min(b.h - 0.12, f + FL * (0.5 + wf / 2)), e = 0.03, i0x = ax + (bx - ax) * (0.35 / L), i0z = az + (bz - az) * (0.35 / L), i1x = bx - (bx - ax) * (0.35 / L), i1z = bz - (bz - az) * (0.35 / L);
+            gp2.push(i0x + nx * e, y0, i0z + nz * e, i1x + nx * e, y0, i1z + nz * e, i1x + nx * e, y1, i1z + nz * e, i0x + nx * e, y0, i0z + nz * e, i1x + nx * e, y1, i1z + nz * e, i0x + nx * e, y1, i0z + nz * e); for (let m = 0; m < 6; m++) gc.push(...GL);
+            const U2 = Math.max(1, Math.round((L - 0.7) / (lk.win > 0.6 ? 1.3 : 1.8))), lit = night > 0.5 && ((Math.abs(b.seed) + Math.round(f) * 7) % 5) >= 3 ? 1 : 0; /* (at night about three floors in five lit) */ gu.push(0, lit, U2, lit, U2, 1 + lit, 0, lit, U2, 1 + lit, 0, 1 + lit); } }
         const pts2 = []; for (let k = 0; k < n2; k++) pts2.push(new T3.Vector2(p2[2 * k], p2[2 * k + 1])); let tris = []; try { tris = T3.ShapeUtils.triangulateShape(pts2, []); } catch {}
         for (const t3 of tris) { for (const v of t3) rp.push(p2[2 * v], b.h, p2[2 * v + 1]); for (let m = 0; m < 3; m++) rc.push(...RC); }
         const sol = [b.bb[0], b.bb[1], b.bb[2], b.bb[3]]; sol.poly = p2; job.solids.push(sol); }
       mesh(wp, wc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, side: T3.DoubleSide }), true);
-      mesh(gp2, gc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.25, metalness: 0.3, side: T3.DoubleSide, emissive: night > 0.5 ? 0xFCD34D : 0x000000, emissiveIntensity: night > 0.5 ? 0.6 : 0 }));
+      { const wm = mesh(gp2, gc, new T3.MeshStandardMaterial({ vertexColors: true, map: winTex(false), roughness: 0.22, metalness: 0.35, side: T3.DoubleSide, emissiveMap: night > 0.5 ? winTex(true) : null, emissive: night > 0.5 ? 0xFFE2A8 : 0x000000, emissiveIntensity: night > 0.5 ? 1.1 : 0 }));
+        if (wm) wm.geometry.setAttribute('uv', new T3.Float32BufferAttribute(gu, 2)); } // (the windows: panes in frames by day; at night, a scatter of lit rooms)
       mesh(rp, rc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: T3.DoubleSide }), true); }
   }
   // the tiles in view, [i0, j0, i1, j1]: a 3D cell's own patch, or the ground under the screen (and a way past its
