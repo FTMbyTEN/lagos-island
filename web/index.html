@@ -5472,6 +5472,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
     if (R.kind === 'world' && REAL && PEOPLE.ok) for (const w of walkStep(now)) person3d(w.x, w.z, '#FFFFFF', w.slot, now, w.L, null, 0); // (Lagosians on the pavements)
     if (R.kind === 'world') tlPosts(); else if (TLP.g) TLP.g.visible = false;
+    if (R.kind === 'world') sfStep(now); else if (SF.g) SF.g.visible = false;
     if (R.kind === 'world') estateStep(now); else for (const e of GATED.list) e.g.visible = false;
     gps3d();
     { const inCar = doorStep(now) || (typeof trip !== 'undefined' && trip && trip.phase === 'ontrip'); if (!V3.drive && !inCar) person(me.x, me.z, myColor, myName || 'You', bubbles.get('me'), now, true, lookNow()); } // (at the wheel you're in the car; getting in or out, the door swings)
@@ -7274,6 +7275,54 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   }
   // the Porsche is Ten's: only Ten, signed in, has it waiting on the street (everyone else's car stays theirs to steal, under WYRD's law)
   function isTen() { return typeof signedIn === 'function' && signedIn() && /^ten$/i.test(String(myName || '').trim()); }
+  // a modelled street's furniture and life, along its real centreline (tools/street_model.py writes it):
+  // - Bus stops on the kerb, about every 180 units: yellow-roofed shelters with a bench, a lit ad panel and the stop's
+  //   name board. Danfos pull in at them for a few seconds; a passenger or two waits under the roof.
+  // - Kiosks between them, about every 55 units: a counter under a bright umbrella, a bulb under it at night, a trader
+  //   behind it.
+  // Built once as a handful of instanced meshes (a few draw calls for the whole street), shown when you're near. The
+  // people are drawn only near you (8 at most), and far ones step at a third of the rate, so it all keeps to 60 fps.
+  const SF = { built: false, stops: [], kiosks: [], g: null };
+  function sfBuild() {
+    if (SF.built || !G3.ok || !REAL || !REAL.streetGeo) return; SF.built = true;
+    for (const ways of Object.values(REAL.streetGeo)) for (const w of ways) {
+      const hw = w[0], p2 = w.slice(1); let acc = 60, acc2 = 25;
+      for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az); if (L < 0.5) continue; const ux = (bx - ax) / L, uz = (bz - az) / L, rx = -uz, rz = ux, ang = Math.atan2(uz, ux);
+        for (let u = 0; u < L; u += 1) { acc += 1; acc2 += 1; const x0 = ax + ux * u, z0 = az + uz * u;
+          if (acc >= 180) { acc = 0; acc2 = Math.min(acc2, 40); SF.stops.push({ x: x0 + rx * (hw + 1.6), z: z0 + rz * (hw + 1.6), ang, rx, rz, rd: { x: x0 + rx * (hw - 1.4), z: z0 + rz * (hw - 1.4) }, n: SF.stops.length }); }
+          else if (acc2 >= 55 && acc > 20 && acc < 160) { acc2 = 0; SF.kiosks.push({ x: x0 + rx * (hw + 2.2), z: z0 + rz * (hw + 2.2), ang, rx, rz, col: ['#E63946', '#2A9D8F', '#F4A261', '#457B9D', '#E9C46A', '#8E44AD'][SF.kiosks.length % 6], n: SF.kiosks.length }); } } } }
+    const T3 = G3.T, g = SF.g = new T3.Group(), o = new T3.Object3D(), nt = night > 0.5;
+    const inst = (geo, mat, list, place) => { if (!list.length) return; const m = new T3.InstancedMesh(geo, mat, list.length); list.forEach((v, k) => { o.position.set(0, 0, 0); o.rotation.set(0, 0, 0); o.scale.set(1, 1, 1); place(v, k); o.updateMatrix(); m.setMatrixAt(k, o.matrix); }); m.castShadow = !MOBILE; m.receiveShadow = true; g.add(m); return m; };
+    const at = (s0, along, out, y) => { const fx = Math.cos(s0.ang), fz = Math.sin(s0.ang); o.position.set(s0.x + fx * along + s0.rx * out, y, s0.z + fz * along + s0.rz * out); o.rotation.set(0, -s0.ang, 0); };
+    const M = (c, ex) => new T3.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.6 }, ex || {}));
+    const steel = M(0x3A3F47, { metalness: 0.6, roughness: 0.4 }), yel = M(0xF2C230), glass = M(0x9FC3D8, { transparent: true, opacity: 0.4, roughness: 0.1 }), wood = M(0x7A5230, { roughness: 0.9 }), white = M(0xF8FAFC);
+    const ad = M(0xffffff, { emissive: nt ? 0xFFF1D0 : 0x000000, emissiveIntensity: nt ? 1.2 : 0, map: (() => { const cv = document.createElement('canvas'); cv.width = 64; cv.height = 128; const c = cv.getContext('2d'); const gr = c.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#0B6E3A'); gr.addColorStop(1, '#22C55E'); c.fillStyle = gr; c.fillRect(0, 0, 64, 128); c.fillStyle = '#F7C81E'; c.font = 'bold 20px sans-serif'; c.fillText('WYRD', 4, 40); c.fillStyle = '#fff'; c.font = '12px sans-serif'; c.fillText('Lagos', 6, 70); c.fillText('Island', 6, 86); const t2 = new T3.CanvasTexture(cv); t2.colorSpace = T3.SRGBColorSpace; return t2; })() });
+    // the bus stops: roof, back glass, two posts, bench, ad panel, name board
+    inst(new T3.BoxGeometry(4.2, 0.14, 1.8), yel, SF.stops, (s0) => at(s0, 0, 0, 2.7));
+    inst(new T3.BoxGeometry(4.0, 2.3, 0.06), glass, SF.stops, (s0) => at(s0, 0, 0.85, 1.45));
+    for (const al of [-1.9, 1.9]) inst(new T3.CylinderGeometry(0.06, 0.06, 2.7, 6), steel, SF.stops, (s0) => at(s0, al, 0.8, 1.35));
+    inst(new T3.BoxGeometry(3.0, 0.1, 0.5), wood, SF.stops, (s0) => at(s0, 0, 0.45, 0.55));
+    inst(new T3.BoxGeometry(1.0, 1.9, 0.12), ad, SF.stops, (s0) => at(s0, 2.4, 0.4, 1.35));
+    inst(new T3.BoxGeometry(1.6, 0.4, 0.06), M(0x0B6E3A), SF.stops, (s0) => at(s0, 0, -0.9, 2.95));
+    // the kiosks: a counter, a box behind it, the umbrella on its pole, a bulb
+    inst(new T3.BoxGeometry(1.6, 1.0, 0.7), wood, SF.kiosks, (s0) => at(s0, 0, -0.2, 0.5));
+    inst(new T3.BoxGeometry(1.2, 0.5, 0.5), white, SF.kiosks, (s0) => at(s0, 0, 0.4, 1.25));
+    inst(new T3.CylinderGeometry(0.04, 0.04, 2.4, 5), steel, SF.kiosks, (s0) => at(s0, 0, 0.2, 1.2));
+    const um = inst(new T3.ConeGeometry(1.5, 0.6, 8, 1, true), M(0xffffff, { side: T3.DoubleSide, roughness: 0.8 }), SF.kiosks, (s0) => at(s0, 0, 0.2, 2.5));
+    if (um) { SF.kiosks.forEach((s0, k) => um.setColorAt(k, new T3.Color(s0.col))); um.instanceColor.needsUpdate = true; }
+    inst(new T3.SphereGeometry(0.12, 8, 6), M(0xFFF3C4, { emissive: 0xFFD89A, emissiveIntensity: nt ? 2.2 : 0.1 }), SF.kiosks, (s0) => at(s0, 0, 0.2, 2.1));
+    G3.scene.add(g);
+  }
+  function sfStep(now) {
+    sfBuild(); if (!SF.g) return; const on = V3_LIVE && !inside, ws = V3.ws || 1; SF.g.visible = on; if (!on) return; SF.g.scale.setScalar(ws);
+    if (!PEOPLE.ok) return; // the people: the nearest traders and waiting passengers, 8 at most
+    const near = []; for (const k of SF.kiosks) { const d = Math.hypot(k.x - me.x, k.z - me.z); if (d < 110) near.push([d, k, 'k']); } for (const s0 of SF.stops) { const d = Math.hypot(s0.x - me.x, s0.z - me.z); if (d < 110) near.push([d, s0, 's']); }
+    near.sort((a, b) => a[0] - b[0]);
+    for (const [, s0, kind] of near.slice(0, 8)) { const fx = Math.cos(s0.ang), fz = Math.sin(s0.ang), off = kind === 'k' ? 0.75 : 0.5, al = kind === 'k' ? 0 : -1.2 + (s0.n % 3) * 0.9;
+      const px = s0.x + fx * al + s0.rx * off, pz = s0.z + fz * al + s0.rz * off, nm = (kind === 'k' ? 'trader:' : 'waiting:') + s0.n, L = parseLook(kind === 'k' ? (s0.n % 2 ? 'f' : 'm') : '', nm);
+      if (!SF.face) SF.face = new Map(); if (!SF.face.has(nm)) SF.face.set(nm, true); const p = PEOPLE.inst.get(nm); if (p) p.ang = Math.atan2(-s0.rx, -s0.rz); // (facing the street)
+      person3d(px, pz, '#FFFFFF', nm, now, L, null, 0); }
+  }
   function myRidePark() {
     if (!isTen()) { if (V3.myRide) { if (V3.wcars) V3.wcars = V3.wcars.filter((q) => q !== V3.myRide); V3.myRide = null; } return false; }
     const s2 = realRoadNear(me.x, me.z); if (!s2) return false; const side = s2.w / 4, nx = -Math.sin(s2.ang), nz = Math.cos(s2.ang);
@@ -7487,6 +7536,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       let [ax, az, bx, bz] = trSeg(q); let L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L;
       const top = q.rd.c <= 1 ? 7.8 : q.rd.c <= 3 ? 5.5 : 3.6; let block = false; // (what's ahead: you, your car, another car in the same direction)
       const ahead = (x2, z2, r) => { const dx = x2 - q.cx, dz = z2 - q.cz, f = dx * ux + dz * uz, s2 = Math.abs(-dx * uz + dz * ux); return f > 0 && f < r && s2 < 2.4; };
+      if (q.model === 'danfo' && SF.stops.length) { const nowS = performance.now(); if (q.hold > nowS) block = true; else for (const st of SF.stops) { if (st.n !== q.lastStop && Math.abs(st.rd.x - q.cx) < 5 && Math.abs(st.rd.z - q.cz) < 5) { q.lastStop = st.n; q.hold = nowS + 3500 + (st.n % 3) * 1200; block = true; break; } } } // (a danfo stops at the bus stop: passengers on and off)
       if (ahead(me.x, me.z, 11)) block = true; for (const o of TR.cars) if (o !== q && ahead(o.cx, o.cz, 10)) { block = true; break; }
       if (!block && G.lights) { const nk = q.dir > 0 ? q.k + 1 : q.k, ex = q.rd.p[2 * nk], ez = q.rd.p[2 * nk + 1], Lj = G.lights.get(G.key(ex, ez)); // (the point this stretch leads to: a junction with lights?)
         if (Lj) { const back = Math.atan2(q.cz - ez, q.cx - ex); let arm = null, bd = 9; for (const m of Lj.arms) { const d = Math.abs(Math.atan2(Math.sin(m.a - back), Math.cos(m.a - back))); if (m.rd === q.rd && d < bd) { bd = d; arm = m; } } // (the arm it's coming in on)

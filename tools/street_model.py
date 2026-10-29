@@ -82,6 +82,8 @@ def main():
         xs = [p[0] for p in b['poly']]; zs = [p[1] for p in b['poly']]
         for j in range(int(min(zs) // 10), int(max(zs) // 10) + 1):
             for i in range(int(min(xs) // 10), int(max(xs) // 10) + 1): fp.add(j * doc['w'] + i)
+    # the street itself for the game's street furniture: each way's centreline and half width (world units)
+    doc.setdefault('streetGeo', {})[key] = [[round(W.WIDTH.get(w['tags'].get('highway'), 10) / W.WU / 2, 2)] + [round(v, 1) for p in w['geometry'] for v in W.wu(p['lat'], p['lon'])] for w in ways]
     doc['fp'] = sorted(fp); doc.setdefault('streets', []); doc['streets'] = sorted(set(doc['streets']) | {key})
     open(doc_f, 'w', encoding='utf-8').write(head + 'window.LAGOS_BOARD = ' + json.dumps(doc, ensure_ascii=False, separators=(',', ':')) + ';\n')
     json.dump(reg, open(reg_f, 'w', encoding='utf-8'))
