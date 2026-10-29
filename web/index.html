@@ -1610,6 +1610,22 @@ body.phoneOn #gpsPanel { opacity: .35; }
 #drvPads .dBrake small { color: #FCA5A5; } #drvPads .dGas small { color: #86EFAC; }
 @media (orientation: landscape) and (max-height: 500px) { #drvPads { bottom: calc(52px + env(safe-area-inset-bottom)); zoom: .82; } }
 #speedo { display: none !important; } /* (speed and gear are in the panel on the left now) */
+/* the jobs in WYRD's panel: the shifts as three tiles, then the openings as rows; tap one to read it and apply */
+html body #coach.cjobs { width: min(460px, calc(100vw - 20px)); max-height: min(70vh, 560px); overflow: auto; }
+#coach .cjSec { margin: 10px 0 6px; font: 400 12px Anton, sans-serif; letter-spacing: 1px; color: #F7C81E; }
+#coach .cjShifts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+#coach .cjShifts button { border: 0; border-radius: 4px; background: #26262C; color: #F4F4F5; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; box-shadow: 3px 3px 0 rgba(0,0,0,.45); }
+#coach .cjShifts span { font-size: 20px; } #coach .cjShifts b { font: 400 13px Anton, sans-serif; letter-spacing: .4px; } #coach .cjShifts small { font-size: 10.5px; color: #A1A1AA; text-align: center; }
+#coach .cjList { display: flex; flex-direction: column; gap: 6px; }
+#coach .cjRow { display: flex; align-items: center; gap: 10px; border: 0; border-left: 3px solid #F7C81E; border-radius: 4px; background: #1A1A1F; color: #F4F4F5; padding: 8px 10px; text-align: left; cursor: pointer; }
+#coach .cjRow .cjT { flex: 1; min-width: 0; } #coach .cjRow b { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } #coach .cjRow small { display: block; font-size: 11.5px; color: #A1A1AA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#coach .cjRow em { font-style: normal; font: 400 14px Anton, sans-serif; color: #22C55E; } #coach .cjRow em.ok { color: #F7C81E; font-size: 12px; }
+#coach .cjEmpty, #coach .cjLoad { font-size: 13px; color: #D4D4D8; padding: 6px 0; }
+#coach .cjOne b { display: block; font: 400 18px Anton, sans-serif; letter-spacing: .4px; color: #F4F4F5; margin-top: 6px; } #coach .cjOne small { color: #A1A1AA; font-size: 12px; } #coach .cjOne p { font-size: 13.5px; margin: 8px 0; min-height: 0; }
+#coach .cjTags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; } #coach .cjTags span { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 3px; background: #26262C; } #coach .cjTags .pay { background: #0B6E3A; }
+#coach .cjNote { width: 100%; box-sizing: border-box; border: 2px solid #3F3F46; border-radius: 4px; background: #111114; color: #F4F4F5; font: 600 13px 'Plus Jakarta Sans', sans-serif; padding: 8px; resize: none; }
+#coach .cjDone { font-size: 13px; color: #22C55E; font-weight: 700; }
+@media (orientation: landscape) and (max-height: 500px) { html body #coach.cjobs { max-height: calc(100vh - 110px); bottom: calc(64px + env(safe-area-inset-bottom)); } #coach .cjShifts button { padding: 5px; } #coach .cjShifts span { font-size: 16px; } }
 </style>
 </head>
 <body>
@@ -14874,7 +14890,38 @@ body.phoneOn #gpsPanel { opacity: .35; }
       coach.classList.add('on');
     });
   }
-  function coachHide() { coach.classList.remove('on'); }
+  function coachHide() { coach.classList.remove('on', 'cjobs'); }
+  // "See jobs" from the guide: the jobs right there in WYRD's panel, without opening the phone. It shows the game's
+  // shifts (they pay G₦), then the real employers' openings with their pay and how well they match your skills.
+  // Tap one to read it and apply with a short note, all in the panel; the phone has the full Jobs app if you want it
+  async function coachJobs(open) {
+    coach.innerHTML = `<i class="orb"></i><div class="cbody"><div class="chead"><b>WYRD</b><small>JOBS</small><button class="cx" aria-label="Close">✕</button></div><p class="cjLoad">Finding work for you…</p></div>`;
+    coach.classList.add('on', 'cjobs'); coach.querySelector('.cx').onclick = () => { coach.classList.remove('cjobs'); coachHide(); };
+    const shifts = [['grid', '⚡', 'National Grid', 'Keep the lights on'], ['refinery', '🛢️', 'Refinery', 'Shifts at the plant'], ['airport', '✈️', 'Airport', 'Ground crew']].filter(([k]) => APPS.some((a) => a[0] === k));
+    let list = []; if (signedIn()) { try { list = (await my('jobs')) || []; EARN_JOBS.list = list; } catch {} }
+    const body = coach.querySelector('.cbody'); if (!body || !coach.classList.contains('cjobs')) return;
+    const job = open != null ? list.find((j) => j.id === open) : null;
+    if (job) {
+      body.innerHTML = `<div class="chead"><b>WYRD</b><small>JOB</small><button class="cx" aria-label="Close">✕</button></div>
+        <div class="cjOne"><b>${esc(job.title)}</b><small>${esc(job.company)} · ${esc(job.location)}</small><p>${esc(job.about)}</p><div class="cjTags"><span class="pay">${esc(job.pay)}</span>${String(job.skills).split(',').map((s) => s.trim()).filter(Boolean).slice(0, 4).map((s) => `<span>${esc(s)}</span>`).join('')}</div>
+        ${job.applied ? `<div class="cjDone">Applied · contact: ${esc(job.contact)}</div>` : `<textarea class="cjNote" rows="2" placeholder="A short note to the employer"></textarea>`}</div>
+        <div class="cbtns"><button class="cjBack">Back</button>${job.applied ? '' : '<button class="main cjApply">Apply</button>'}</div>`;
+      body.querySelector('.cjBack').onclick = () => coachJobs();
+      const ap = body.querySelector('.cjApply'); if (ap) ap.onclick = async () => { ap.disabled = true; ap.textContent = 'Sending…'; try { await my('apply', { jobId: job.id, note: body.querySelector('.cjNote').value }); tickerSay(`Applied to ${job.title} at ${job.company}`); coachJobs(job.id); } catch (e) { ap.disabled = false; ap.textContent = 'Apply'; tickerSay(e.message || 'Could not apply just now'); } };
+    } else {
+      const rows = list.slice().sort((a, b) => (b.match ?? -1) - (a.match ?? -1)).slice(0, 6);
+      body.innerHTML = `<div class="chead"><b>WYRD</b><small>JOBS</small><button class="cx" aria-label="Close">✕</button></div>
+        <div class="cjSec">SHIFTS · PAY G₦</div><div class="cjShifts">${shifts.map(([k, e, n, s]) => `<button data-shift="${k}"><span>${e}</span><b>${n}</b><small>${s}</small></button>`).join('')}</div>
+        <div class="cjSec">REAL EMPLOYERS · ${list.length} OPEN</div>
+        <div class="cjList">${!signedIn() ? '<div class="cjEmpty">Sign in to see the jobs from real employers.</div>' : rows.length ? rows.map((j) => `<button class="cjRow" data-job="${j.id}"><span class="cjT"><b>${esc(j.title)}</b><small>${esc(j.company)} · ${esc(j.pay)}</small></span>${j.applied ? '<em class="ok">Applied</em>' : j.match != null ? `<em>${j.match}%</em>` : '<em>›</em>'}</button>`).join('') : '<div class="cjEmpty">No openings right now. New ones come in every day.</div>'}</div>
+        <div class="cbtns">${signedIn() ? '' : '<button class="main cjSign">Sign in</button>'}${list.length > rows.length ? `<button class="cjAll">All ${list.length} in the phone</button>` : ''}</div>`;
+      body.querySelectorAll('[data-job]').forEach((b) => (b.onclick = () => coachJobs(Number(b.dataset.job))));
+      body.querySelectorAll('[data-shift]').forEach((b) => (b.onclick = () => { coach.classList.remove('cjobs'); coachHide(); openPhone(b.dataset.shift); }));
+      const all = body.querySelector('.cjAll'); if (all) all.onclick = () => { coach.classList.remove('cjobs'); coachHide(); openPhone('jobs'); };
+      const sg = body.querySelector('.cjSign'); if (sg) sg.onclick = () => { coach.classList.remove('cjobs'); coachHide(); openPhone('jobs'); };
+    }
+    body.querySelector('.cx').onclick = () => { coach.classList.remove('cjobs'); coachHide(); };
+  }
   // the tour: a step at a time, each with a way to try it; Skip ends it (and it doesn't come back unless you ask WYRD)
   let touring = false;
   async function wyrdIntro(force) {
@@ -14902,8 +14949,8 @@ body.phoneOn #gpsPanel { opacity: .35; }
       entrepreneur: [['The Government button in the top bar keeps your money, rent and taxes in one place. Watch it.', 'Government', () => openPhone('gov')], ['Homes are for sale from Ajah to Banana Island. Buy, furnish, and they\'re assets: start small, scale up.', 'See homes', () => openPhone('homes')], ['The Island Reserve Bank by Eko Atlantic: the Treasury opens there with the financial system.', null, null]],
       creative: [['Island Music has the charts and full tracks from independent artists. In a club, you can take the decks.', 'Island Music', () => openPhone('music')], ['The Arena puts on live shows. Get on its stage.', 'The Arena', () => openPhone('arena')], ['Fashion: Idumota, Falomo and Circle Mall. Dress the part.', 'Fashion', () => openPhone('fashion')]],
       socialite: [['Six clubs, every night: Ozumba, Club Lekki, Quilox, Secrets Palace, VEIN. Walk in and dance.', null, null], ['Throw a party at your BQ and invite people. The Parties app runs it.', 'Parties', () => openPhone('parties')], ['Link: encrypted chats with anyone on the island.', 'Link', () => openPhone('chats')]],
-      hustler: [['Naira starts with shifts: the refinery, a market stall, a club at night. Walk up and the button appears.', null, null], ['Real employers post real jobs in the Jobs app. Apply.', 'See jobs', () => openPhone('jobs')], ['Okada rides pay too, from the motor parks.', 'Ride', () => openPhone('ride')]],
-      innovator: [['WYRD Tower in VI is my home. Come in and ask me anything: I\'m your closest ally.', null, null], ['The Jobs app has real tech roles from real employers.', 'See jobs', () => openPhone('jobs')], ['The WYRD app: plans, ideas, questions, any time.', 'WYRD', () => openPhone('wyrd')]],
+      hustler: [['Naira starts with shifts: the refinery, a market stall, a club at night. Walk up and the button appears.', null, null], ['Real employers post real jobs in the Jobs app. Apply.', 'See jobs', () => { setTimeout(() => coachJobs(), 30); return 'stop'; }], ['Okada rides pay too, from the motor parks.', 'Ride', () => openPhone('ride')]],
+      innovator: [['WYRD Tower in VI is my home. Come in and ask me anything: I\'m your closest ally.', null, null], ['The Jobs app has real tech roles from real employers.', 'See jobs', () => { setTimeout(() => coachJobs(), 30); return 'stop'; }], ['The WYRD app: plans, ideas, questions, any time.', 'WYRD', () => openPhone('wyrd')]],
       explorer: [['Rides go anywhere on the island. Try one.', 'Order a ride', () => openPhone('ride')], ['The Blue Line runs behind the Arena from the bank to the Home Store; the beaches line the coast from Bar Beach to Club Lekki.', null, null], ['Ilashe is across the water: take the causeway or a boat from the jetty.', null, null]],
       leader: [['The Government app: how the island is run, every home, every notice.', 'Government', () => openPhone('gov')], ['Bring people together: host a party at your place.', 'Parties', () => openPhone('parties')], ['Link: start a group chat for your people.', 'Link', () => openPhone('chats')]],
     };
