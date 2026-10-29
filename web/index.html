@@ -1611,7 +1611,7 @@ body.phoneOn #gpsPanel { opacity: .35; }
 @media (orientation: landscape) and (max-height: 500px) { #drvPads { bottom: calc(52px + env(safe-area-inset-bottom)); zoom: .82; } }
 #speedo { display: none !important; } /* (speed and gear are in the panel on the left now) */
 /* the jobs in WYRD's panel, compact: a small pop-up; the shifts as one row of chips, the openings as slim rows */
-html body #coach.cjobs { width: min(340px, calc(100vw - 24px)); max-height: min(52vh, 380px); overflow: auto; padding: 14px 10px 8px !important; gap: 8px; }
+html body #coach.cjobs { width: min(340px, calc(100vw - 24px)); max-height: min(56vh, 420px); overflow: auto; overscroll-behavior: contain; padding: 14px 10px 8px !important; gap: 8px; }
 html body #coach.cjobs .orb { width: 26px; height: 26px; } html body #coach.cjobs .chead b { font-size: 15px !important; } html body #coach.cjobs .chead b::after { display: none; }
 #coach .cjSec { margin: 6px 0 4px; font: 400 10.5px Anton, sans-serif; letter-spacing: 1px; color: #F7C81E; }
 #coach .cjShifts { display: flex; gap: 5px; flex-wrap: wrap; }
@@ -14899,11 +14899,20 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   async function coachJobs(open) {
     coach.innerHTML = `<i class="orb"></i><div class="cbody"><div class="chead"><b>WYRD</b><small>JOBS</small><button class="cx" aria-label="Close">✕</button></div><p class="cjLoad">Finding work for you…</p></div>`;
     coach.classList.add('on', 'cjobs'); coach.querySelector('.cx').onclick = () => { coach.classList.remove('cjobs'); coachHide(); };
-    const shifts = [['grid', '⚡', 'National Grid', 'Keep the lights on'], ['refinery', '🛢️', 'Refinery', 'Shifts at the plant'], ['airport', '✈️', 'Airport', 'Ground crew']].filter(([k]) => APPS.some((a) => a[0] === k));
+    const shifts = [['grid', '⚡', 'National Grid', 'Keep the island\u2019s lights on: patrol the lines, fix faults, bring streets back from load shedding. Paid in G₦ for every task you finish.'],
+      ['refinery', '🛢️', 'Refinery', 'Shifts at the Lekki Free Zone Refinery: the tank farm, the loading bays, the control room. Paid in G₦ per shift.'],
+      ['airport', '✈️', 'Airport', 'Ground crew at Lagos Island Airport: bags, fuel and seeing the jets off. Paid in G₦ per shift.']];
     let list = []; if (signedIn()) { try { list = (await my('jobs')) || []; EARN_JOBS.list = list; } catch {} }
     const body = coach.querySelector('.cbody'); if (!body || !coach.classList.contains('cjobs')) return;
-    const job = open != null ? list.find((j) => j.id === open) : null;
-    if (job) {
+    const job = open != null && typeof open === 'number' ? list.find((j) => j.id === open) : null, shift = typeof open === 'string' ? shifts.find((x) => x[0] === open) : null;
+    if (shift) { // a shift: what it is, how it pays, where; a route there on the GPS
+      const pl = PLACES.find((q) => q[0] === shift[0]), far = pl ? Math.hypot((pl[1] + pl[3] / 2) * T - me.x, (pl[2] + pl[4] / 2) * T - me.z) : 0;
+      body.innerHTML = `<div class="chead"><b>WYRD</b><small>SHIFT</small><button class="cx" aria-label="Close">✕</button></div>
+        <div class="cjOne"><b>${shift[1]} ${esc(shift[2])}</b><small>${pl ? esc(pl[5]) + ' · ' + gpsM(far) + ' away' : ''}</small><p>${esc(shift[3])}</p><div class="cjTags"><span class="pay">Pays G₦</span><span>Walk in to start</span></div></div>
+        <div class="cbtns"><button class="cjBack">Back</button>${pl ? '<button class="main cjGo">Set route</button>' : ''}</div>`;
+      body.querySelector('.cjBack').onclick = () => coachJobs();
+      const go2 = body.querySelector('.cjGo'); if (go2) go2.onclick = () => { MM.st.wp = { x: (pl[1] + pl[3] / 2) * T, z: (pl[2] + pl[4] / 2) * T, name: pl[5] }; tickerSay('Route set: ' + pl[5] + ' · follow the cyan line'); coach.classList.remove('cjobs'); coachHide(); };
+    } else if (job) {
       body.innerHTML = `<div class="chead"><b>WYRD</b><small>JOB</small><button class="cx" aria-label="Close">✕</button></div>
         <div class="cjOne"><b>${esc(job.title)}</b><small>${esc(job.company)} · ${esc(job.location)}</small><p>${esc(job.about)}</p><div class="cjTags"><span class="pay">${esc(job.pay)}</span>${String(job.skills).split(',').map((s) => s.trim()).filter(Boolean).slice(0, 4).map((s) => `<span>${esc(s)}</span>`).join('')}</div>
         ${job.applied ? `<div class="cjDone">Applied · contact: ${esc(job.contact)}</div>` : `<textarea class="cjNote" rows="2" placeholder="A short note to the employer"></textarea>`}</div>
@@ -14911,15 +14920,14 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       body.querySelector('.cjBack').onclick = () => coachJobs();
       const ap = body.querySelector('.cjApply'); if (ap) ap.onclick = async () => { ap.disabled = true; ap.textContent = 'Sending…'; try { await my('apply', { jobId: job.id, note: body.querySelector('.cjNote').value }); tickerSay(`Applied to ${job.title} at ${job.company}`); coachJobs(job.id); } catch (e) { ap.disabled = false; ap.textContent = 'Apply'; tickerSay(e.message || 'Could not apply just now'); } };
     } else {
-      const rows = list.slice().sort((a, b) => (b.match ?? -1) - (a.match ?? -1)).slice(0, 6);
+      const rows = list.slice().sort((a, b) => (b.match ?? -1) - (a.match ?? -1)); // (every opening, best matches first: the pop-up scrolls)
       body.innerHTML = `<div class="chead"><b>WYRD</b><small>JOBS</small><button class="cx" aria-label="Close">✕</button></div>
-        <div class="cjSec">SHIFTS · PAY G₦</div><div class="cjShifts">${shifts.map(([k, e, n, s]) => `<button data-shift="${k}"><span>${e}</span><b>${n}</b><small>${s}</small></button>`).join('')}</div>
+        <div class="cjSec">SHIFTS · PAY G₦</div><div class="cjShifts">${shifts.map(([k, e, n]) => `<button data-shift="${k}"><span>${e}</span><b>${n}</b></button>`).join('')}</div>
         <div class="cjSec">REAL EMPLOYERS · ${list.length} OPEN</div>
         <div class="cjList">${!signedIn() ? '<div class="cjEmpty">Sign in to see the jobs from real employers.</div>' : rows.length ? rows.map((j) => `<button class="cjRow" data-job="${j.id}"><span class="cjT"><b>${esc(j.title)}</b><small>${esc(j.company)} · ${esc(j.pay)}</small></span>${j.applied ? '<em class="ok">Applied</em>' : j.match != null ? `<em>${j.match}%</em>` : '<em>›</em>'}</button>`).join('') : '<div class="cjEmpty">No openings right now. New ones come in every day.</div>'}</div>
-        <div class="cbtns">${signedIn() ? '' : '<button class="main cjSign">Sign in</button>'}${list.length > rows.length ? `<button class="cjAll">All ${list.length} in the phone</button>` : ''}</div>`;
+        ${signedIn() ? '' : '<div class="cbtns"><button class="main cjSign">Sign in</button></div>'}`;
       body.querySelectorAll('[data-job]').forEach((b) => (b.onclick = () => coachJobs(Number(b.dataset.job))));
-      body.querySelectorAll('[data-shift]').forEach((b) => (b.onclick = () => { coach.classList.remove('cjobs'); coachHide(); openPhone(b.dataset.shift); }));
-      const all = body.querySelector('.cjAll'); if (all) all.onclick = () => { coach.classList.remove('cjobs'); coachHide(); openPhone('jobs'); };
+      body.querySelectorAll('[data-shift]').forEach((b) => (b.onclick = () => coachJobs(b.dataset.shift)));
       const sg = body.querySelector('.cjSign'); if (sg) sg.onclick = () => { coach.classList.remove('cjobs'); coachHide(); openPhone('jobs'); };
     }
     body.querySelector('.cx').onclick = () => { coach.classList.remove('cjobs'); coachHide(); };
