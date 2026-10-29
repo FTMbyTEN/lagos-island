@@ -1610,22 +1610,24 @@ body.phoneOn #gpsPanel { opacity: .35; }
 #drvPads .dBrake small { color: #FCA5A5; } #drvPads .dGas small { color: #86EFAC; }
 @media (orientation: landscape) and (max-height: 500px) { #drvPads { bottom: calc(52px + env(safe-area-inset-bottom)); zoom: .82; } }
 #speedo { display: none !important; } /* (speed and gear are in the panel on the left now) */
-/* the jobs in WYRD's panel: the shifts as three tiles, then the openings as rows; tap one to read it and apply */
-html body #coach.cjobs { width: min(460px, calc(100vw - 20px)); max-height: min(70vh, 560px); overflow: auto; }
-#coach .cjSec { margin: 10px 0 6px; font: 400 12px Anton, sans-serif; letter-spacing: 1px; color: #F7C81E; }
-#coach .cjShifts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-#coach .cjShifts button { border: 0; border-radius: 4px; background: #26262C; color: #F4F4F5; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; box-shadow: 3px 3px 0 rgba(0,0,0,.45); }
-#coach .cjShifts span { font-size: 20px; } #coach .cjShifts b { font: 400 13px Anton, sans-serif; letter-spacing: .4px; } #coach .cjShifts small { font-size: 10.5px; color: #A1A1AA; text-align: center; }
-#coach .cjList { display: flex; flex-direction: column; gap: 6px; }
-#coach .cjRow { display: flex; align-items: center; gap: 10px; border: 0; border-left: 3px solid #F7C81E; border-radius: 4px; background: #1A1A1F; color: #F4F4F5; padding: 8px 10px; text-align: left; cursor: pointer; }
-#coach .cjRow .cjT { flex: 1; min-width: 0; } #coach .cjRow b { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } #coach .cjRow small { display: block; font-size: 11.5px; color: #A1A1AA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#coach .cjRow em { font-style: normal; font: 400 14px Anton, sans-serif; color: #22C55E; } #coach .cjRow em.ok { color: #F7C81E; font-size: 12px; }
-#coach .cjEmpty, #coach .cjLoad { font-size: 13px; color: #D4D4D8; padding: 6px 0; }
-#coach .cjOne b { display: block; font: 400 18px Anton, sans-serif; letter-spacing: .4px; color: #F4F4F5; margin-top: 6px; } #coach .cjOne small { color: #A1A1AA; font-size: 12px; } #coach .cjOne p { font-size: 13.5px; margin: 8px 0; min-height: 0; }
-#coach .cjTags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; } #coach .cjTags span { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 3px; background: #26262C; } #coach .cjTags .pay { background: #0B6E3A; }
-#coach .cjNote { width: 100%; box-sizing: border-box; border: 2px solid #3F3F46; border-radius: 4px; background: #111114; color: #F4F4F5; font: 600 13px 'Plus Jakarta Sans', sans-serif; padding: 8px; resize: none; }
-#coach .cjDone { font-size: 13px; color: #22C55E; font-weight: 700; }
-@media (orientation: landscape) and (max-height: 500px) { html body #coach.cjobs { max-height: calc(100vh - 110px); bottom: calc(64px + env(safe-area-inset-bottom)); } #coach .cjShifts button { padding: 5px; } #coach .cjShifts span { font-size: 16px; } }
+/* the jobs in WYRD's panel, compact: a small pop-up; the shifts as one row of chips, the openings as slim rows */
+html body #coach.cjobs { width: min(340px, calc(100vw - 24px)); max-height: min(52vh, 380px); overflow: auto; padding: 14px 10px 8px !important; gap: 8px; }
+html body #coach.cjobs .orb { width: 26px; height: 26px; } html body #coach.cjobs .chead b { font-size: 15px !important; } html body #coach.cjobs .chead b::after { display: none; }
+#coach .cjSec { margin: 6px 0 4px; font: 400 10.5px Anton, sans-serif; letter-spacing: 1px; color: #F7C81E; }
+#coach .cjShifts { display: flex; gap: 5px; flex-wrap: wrap; }
+#coach .cjShifts button { border: 0; border-radius: 4px; background: #26262C; color: #F4F4F5; padding: 4px 8px; display: flex; align-items: center; gap: 4px; cursor: pointer; font: 400 11.5px Anton, sans-serif; letter-spacing: .3px; }
+#coach .cjShifts span { font-size: 13px; } #coach .cjShifts b { font: inherit; } #coach .cjShifts small { display: none; }
+#coach .cjList { display: flex; flex-direction: column; gap: 4px; }
+#coach .cjRow { display: flex; align-items: center; gap: 8px; border: 0; border-left: 3px solid #F7C81E; border-radius: 3px; background: #1A1A1F; color: #F4F4F5; padding: 5px 8px; text-align: left; cursor: pointer; }
+#coach .cjRow .cjT { flex: 1; min-width: 0; } #coach .cjRow b { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } #coach .cjRow small { display: block; font-size: 10.5px; color: #A1A1AA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#coach .cjRow em { font-style: normal; font: 400 12px Anton, sans-serif; color: #22C55E; } #coach .cjRow em.ok { color: #F7C81E; font-size: 11px; }
+#coach .cjEmpty, #coach .cjLoad { font-size: 12px; color: #D4D4D8; padding: 2px 0; margin: 4px 0 !important; min-height: 0 !important; }
+#coach .cjOne b { display: block; font: 400 15px Anton, sans-serif; letter-spacing: .3px; color: #F4F4F5; margin-top: 4px; } #coach .cjOne small { color: #A1A1AA; font-size: 11px; } #coach .cjOne p { font-size: 12px; margin: 5px 0; min-height: 0; max-height: 7.5em; overflow: auto; }
+#coach .cjTags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; } #coach .cjTags span { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; background: #26262C; } #coach .cjTags .pay { background: #0B6E3A; }
+#coach .cjNote { width: 100%; box-sizing: border-box; border: 2px solid #3F3F46; border-radius: 4px; background: #111114; color: #F4F4F5; font: 600 12px 'Plus Jakarta Sans', sans-serif; padding: 6px; resize: none; }
+#coach .cjDone { font-size: 12px; color: #22C55E; font-weight: 700; }
+html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns button { padding: 6px 12px !important; font-size: 12px !important; }
+@media (orientation: landscape) and (max-height: 500px) { html body #coach.cjobs { max-height: calc(100vh - 120px); bottom: calc(64px + env(safe-area-inset-bottom)); } }
 </style>
 </head>
 <body>
