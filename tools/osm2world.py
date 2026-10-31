@@ -107,7 +107,8 @@ def main():
         if b['kind'] in ('commercial', 'office', 'retail', 'hotel') and not b['lv']: lv = max(lv, 4)
         b['h'] = round(min(lv, 60) * LEVEL_M / HU, 1); keep.append(b)
     print(len(keep), 'buildings kept')
-    # the streets: every real one, at its width, plus the joining roads the board added (tile to tile)
+    # the streets: every real one, at its width. (The board's own road squares that no real street runs through are not
+    # drawn: as one-square stubs with kerbs they made a grey grid where Lagos has none)
     lines = []
     for e in roads['elements']:
         t = e.get('tags', {}); hw = t.get('highway', '').replace('_link', '')
@@ -120,7 +121,7 @@ def main():
     for cls, br, pts in lines:
         for i, j in B.cells([(x / 10, z / 10) for x, z in pts]): drawn.add((i, j))
     added = {(i, j) for j in range(H) for i in range(W) if tile[j][i] in (B.ROAD, B.BRIDGE) and (i, j) not in drawn and not any((i + di, j + dj) in drawn for di in (-1, 0, 1) for dj in (-1, 0, 1) if di or dj)}
-    for i, j in added:
+    for i, j in (added if os.environ.get('BOARD_STUBS') else ()):
         for di, dj in ((1, 0), (0, 1)):
             n = (i + di, j + dj)
             if n in added or (0 <= n[0] < W and 0 <= n[1] < H and tile[n[1]][n[0]] in (B.ROAD, B.BRIDGE)):
