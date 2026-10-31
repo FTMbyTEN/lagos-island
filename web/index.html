@@ -5476,7 +5476,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     // the people (their models are in the 3D scene; their names and bubbles go on the canvas over it)
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
     if (R.kind === 'world' && REAL && PEOPLE.ok) for (const w of walkStep(now)) person3d(w.x, w.z, '#FFFFFF', w.slot, now, w.L, null, 0); // (Lagosians on the pavements)
-    if (R.kind === 'world') { tlPosts(); dirSigns(); } else { if (TLP.g) TLP.g.visible = false; if (DSG.g) DSG.g.visible = false; }
+    if (R.kind === 'world') tlPosts(); else if (TLP.g) TLP.g.visible = false; // (the direction signs are off until they can stand where the real ones do, from OpenStreetMap)
     if (R.kind === 'world') sfStep(now); else if (SF.g) SF.g.visible = false;
     if (R.kind === 'world') estateStep(now); else for (const e of GATED.list) e.g.visible = false;
     gps3d();
@@ -7432,9 +7432,8 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       const off = inside || !playing; el.style.display = lab.style.display = off ? 'none' : 'block'; if (off) { if (st.big) setBig(false); return; }
       const D = st.D, ps = yawNow(), k = kNow(), R2 = D / 2; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, D, D); g.save(); g.beginPath(); g.arc(R2, R2, R2, 0, Math.PI * 2); g.clip();
       // the map in army green: the city drawn dark and grey, then tinted olive (the roads stand out bright), a faint grid
-      g.fillStyle = '#0B0F07'; g.fillRect(0, 0, D, D); g.save(); g.translate(R2, R2); g.rotate(ps); g.scale(k * T / S, k * T / S); g.imageSmoothingEnabled = true; g.filter = 'grayscale(1) brightness(0.62) contrast(1.7)'; g.drawImage(base, -me.x * S / T, -me.z * S / T); g.filter = 'none'; g.restore();
+      g.fillStyle = '#0B0F07'; g.fillRect(0, 0, D, D); g.save(); g.translate(R2, R2); g.rotate(ps); g.scale(k * T / S, k * T / S); g.imageSmoothingEnabled = true; g.filter = 'grayscale(1) brightness(0.5) contrast(2.6)'; /* (deep contrast: the roads bright, everything else near black) */ g.drawImage(base, -me.x * S / T, -me.z * S / T); g.filter = 'none'; g.restore();
       g.save(); g.globalCompositeOperation = 'color'; g.fillStyle = '#7F9A3A'; g.fillRect(0, 0, D, D); g.restore();
-      g.save(); g.strokeStyle = 'rgba(176,200,110,.10)'; g.lineWidth = 1; const gs2 = Math.max(10, D / 9); for (let gx = (R2 % gs2); gx < D; gx += gs2) { g.beginPath(); g.moveTo(gx, 0); g.lineTo(gx, D); g.stroke(); g.beginPath(); g.moveTo(0, gx); g.lineTo(D, gx); g.stroke(); } g.restore(); // (a faint grid, army green)
       const gl = goal();
       if (gl) { const path = typeof GPS !== 'undefined' && GPS.path && GPS.path.length >= 4 ? GPS.path : [me.x, me.z, gl.x, gl.z]; g.save(); g.lineCap = g.lineJoin = 'round'; g.beginPath(); for (let i = 0; i + 1 < path.length; i += 2) { const [mx, my] = toMap(path[i], path[i + 1], ps, k); if (i) g.lineTo(R2 + mx, R2 + my); else g.moveTo(R2 + mx, R2 + my); }
         g.strokeStyle = 'rgba(34,211,238,.35)'; g.lineWidth = 6; g.stroke(); g.shadowColor = '#22D3EE'; g.shadowBlur = 8; g.strokeStyle = '#A5F3FC'; g.lineWidth = 2.4; g.setLineDash([5, 4]); g.lineDashOffset = -performance.now() / 60; g.stroke(); g.restore(); } // (the way to it along the streets, glowing and streaming)
@@ -7780,11 +7779,11 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
           mk(new T3.BoxGeometry(0.7, 0.1, 0.32), head, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 6.0 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, -a, 0); }); // (the slim LED head)
           if (night > 0.5) { // at night the lamps are on: a soft pool on the road that fades out at its edge, and glare round each head (no beam: the air is clear)
             const glowTex = (inner, outer) => { const cv = document.createElement('canvas'); cv.width = cv.height = 128; const c = cv.getContext('2d'), gr = c.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, inner); gr.addColorStop(0.45, outer); gr.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gr; c.fillRect(0, 0, 128, 128); const t2 = new T3.CanvasTexture(cv); t2.colorSpace = T3.SRGBColorSpace; return t2; };
-            const pool = new T3.MeshBasicMaterial({ map: glowTex('rgba(255,214,150,0.85)', 'rgba(255,190,110,0.32)'), transparent: true, depthWrite: false, blending: T3.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -3 });
+            const pool = new T3.MeshBasicMaterial({ map: glowTex('rgba(255,214,150,0.42)', 'rgba(255,190,110,0.14)'), transparent: true, depthWrite: false, blending: T3.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -3 });
             const pg = new T3.PlaneGeometry(13, 13); pg.rotateX(-Math.PI / 2); mk(pg, pool, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 0.15 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, 0, 0); });
             const hp = new Float32Array(lamps.length * 3); lamps.forEach(([lx, lz, a, b0 = 0], k2) => { hp[k2 * 3] = lx + Math.cos(a) * 1.35; hp[k2 * 3 + 1] = 5.85 + b0; hp[k2 * 3 + 2] = lz + Math.sin(a) * 1.35; });
             const hg = new T3.BufferGeometry(); hg.setAttribute('position', new T3.BufferAttribute(hp, 3));
-            grp.add(new T3.Points(hg, new T3.PointsMaterial({ map: glowTex('rgba(255,250,235,1)', 'rgba(255,215,150,0.35)'), size: 6.5 * (V3.ws || 1), sizeAttenuation: true, transparent: true, depthWrite: false, blending: T3.AdditiveBlending }))); } } }
+            grp.add(new T3.Points(hg, new T3.PointsMaterial({ map: glowTex('rgba(255,248,230,0.9)', 'rgba(255,215,150,0.18)'), size: 2.6 * (V3.ws || 1), sizeAttenuation: true, transparent: true, depthWrite: false, blending: T3.AdditiveBlending }))); } } }
       { const trees = []; for (const c of ch) for (const r of c.r) { if (r.br || r.c < 3) continue; const w = REAL.widths[r.c] / 2 + 1.45, p2 = r.p; let acc = (Math.abs(p2[0] * 5 + p2[1] * 11) % 19) + 6, side = -1; // (trees along the side streets' pavements, about every 19 units, between the lamps, clear of the junctions)
           for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L, jA = jw(ax, az) + 3, jB = jw(bx, bz) + 3;
             for (let u = 19 - acc; u < L; u += 19) { if (u > jA && u < L - jB) { const tx = ax + (bx - ax) * u / L + nx * w * side, tz = az + (bz - az) * u / L + nz * w * side; if (inC(tx, tz)) trees.push([tx, tz, 0.8 + ((Math.abs(Math.round(tx * 3 + tz))) % 5) * 0.1]); } side = -side; }
