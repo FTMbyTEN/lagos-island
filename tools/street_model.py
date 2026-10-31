@@ -60,6 +60,7 @@ def main():
     reg_f = os.path.join(WEB, 'streets.json'); reg = json.load(open(reg_f, encoding='utf-8')) if os.path.exists(reg_f) else {}
     key = names[0]; ids = {i for k, v in reg.items() if k != key for i in v}
     out = [b for b in out if b['id'] not in ids]  # (a building another street already has stays with that street)
+    seen = set(); out = [b for b in out if not (b['id'] in seen or seen.add(b['id']))]  # (the downloads overlap: each building once)
     reg[key] = sorted(b['id'] for b in out)
     doc_f = os.path.join(WEB, 'lagos-world.js'); src = open(doc_f, encoding='utf-8').read(); head, body = src.split('window.LAGOS_BOARD = ', 1)
     doc = json.loads(body.rstrip().rstrip(';')); CH = doc['chunk']; q = lambda v: round(v * 10)
