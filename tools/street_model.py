@@ -58,7 +58,9 @@ def main():
     print(len(out), 'buildings,', sum(1 for b in out if b['name']), 'named')
     # into the chunks (a building goes to the chunk of its centre), the street's own buildings replacing any earlier run of it
     reg_f = os.path.join(WEB, 'streets.json'); reg = json.load(open(reg_f, encoding='utf-8')) if os.path.exists(reg_f) else {}
-    key = names[0]; reg[key] = sorted(b['id'] for b in out); ids = {i for k, v in reg.items() if k != key for i in v}
+    key = names[0]; ids = {i for k, v in reg.items() if k != key for i in v}
+    out = [b for b in out if b['id'] not in ids]  # (a building another street already has stays with that street)
+    reg[key] = sorted(b['id'] for b in out)
     doc_f = os.path.join(WEB, 'lagos-world.js'); src = open(doc_f, encoding='utf-8').read(); head, body = src.split('window.LAGOS_BOARD = ', 1)
     doc = json.loads(body.rstrip().rstrip(';')); CH = doc['chunk']; q = lambda v: round(v * 10)
     cdir = os.path.join(WEB, 'world'); touched = 0
