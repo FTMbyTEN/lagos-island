@@ -92,4 +92,51 @@ def main():
     json.dump(reg, open(reg_f, 'w', encoding='utf-8'))
     print(touched, 'written;', len(fp), 'tiles kept clear')
 
-if __name__ == '__main__': main()
+def clean():
+    """Take out every modelled building that stands in a road: a corner within the road's width (and its pavement),
+    or the road's own line through it. Uses every street on the map, not only the modelled ones."""
+    doc_f = os.path.join(WEB, 'lagos-world.js'); head, body = open(doc_f, encoding='utf-8').read().split('window.LAGOS_BOARD = ', 1)
+    doc = json.loads(body.rstrip().rstrip(';')); widths = doc['widths']; cdir = os.path.join(WEB, 'world'); files = [f for f in os.listdir(cdir) if f.endswith('.json')]
+    segs = {}
+    for fn in files:
+        for r in json.load(open(os.path.join(cdir, fn), encoding='utf-8'))['r']:
+            cls, br, pts = r[0], r[1], [v / 10 for v in r[2:]]
+            if br: continue  # (a bridge passes over)
+            hw = widths[cls] / 2 + 1.0
+            for k in range(0, len(pts) - 3, 2):
+                ax, az, bx, bz = pts[k], pts[k + 1], pts[k + 2], pts[k + 3]
+                for ti in range(int(min(ax, bx) // 10) - 1, int(max(ax, bx) // 10) + 2):
+                    for tj in range(int(min(az, bz) // 10) - 1, int(max(az, bz) // 10) + 2): segs.setdefault((ti, tj), set()).add((ax, az, bx, bz, hw))
+    def segd(px, pz, ax, az, bx, bz):
+        dx, dz = bx - ax, bz - az; L = dx * dx + dz * dz or 1e-9; u = max(0, min(1, ((px - ax) * dx + (pz - az) * dz) / L)); return math.hypot(ax + dx * u - px, az + dz * u - pz)
+    def inside(px, pz, poly):
+        c = False
+        for (x1, z1), (x2, z2) in zip(poly, poly[1:] + poly[:1]):
+            if (z1 > pz) != (z2 > pz) and px < (x2 - x1) * (pz - z1) / (z2 - z1) + x1: c = not c
+        return c
+    def on_road(poly):
+        xs = [p[0] for p in poly]; zs = [p[1] for p in poly]; near = set()
+        for ti in range(int(min(xs) // 10) - 1, int(max(xs) // 10) + 2):
+            for tj in range(int(min(zs) // 10) - 1, int(max(zs) // 10) + 2): near |= segs.get((ti, tj), set())
+        for ax, az, bx, bz, hw in near:
+            if any(segd(px, pz, ax, az, bx, bz) < hw for px, pz in poly): return True
+            L = math.hypot(bx - ax, bz - az); n = max(1, int(L / 1.0))
+            if any(inside(ax + (bx - ax) * k / n, az + (bz - az) * k / n, poly) for k in range(n + 1)): return True
+        return False
+    gone = set()
+    for fn in files:
+        p = os.path.join(cdir, fn); d = json.load(open(p, encoding='utf-8'))
+        if not d.get('bid'): continue
+        keep = [k for k, b in enumerate(d['b']) if not on_road([(b[i] / 10, b[i + 1] / 10) for i in range(1, len(b) - 1, 2)])]
+        if len(keep) == len(d['b']): continue
+        gone |= {d['bid'][k] for k in range(len(d['b'])) if k not in keep}
+        for key in ('b', 'bid', 'bl', 'bn'): d[key] = [d[key][k] for k in keep]
+        open(p, 'w', encoding='utf-8').write(json.dumps(d, separators=(',', ':'), ensure_ascii=False))
+    reg_f = os.path.join(WEB, 'streets.json'); reg = json.load(open(reg_f, encoding='utf-8'))
+    for k in reg: reg[k] = [i for i in reg[k] if i not in gone]
+    json.dump(reg, open(reg_f, 'w', encoding='utf-8'))
+    print(len(gone), 'buildings taken out of the roads')
+
+if __name__ == '__main__':
+    if sys.argv[1:2] == ['--clean']: clean()
+    else: main(); clean()
