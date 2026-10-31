@@ -5690,6 +5690,16 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     const px = (i + 0.5) * T, pz = (j + 0.5) * T, list = BRG.cells.get(Math.floor(px / 30) + ',' + Math.floor(pz / 30)) || []; v = false;
     for (const g of list) { const dx = g.bx - g.ax, dz = g.bz - g.az, L2 = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((px - g.ax) * dx + (pz - g.az) * dz) / L2)); if (Math.hypot(g.ax + dx * u - px, g.az + dz * u - pz) < g.w + T * 0.75) { v = true; break; } }
     LUB.m.set(k, v); return v; }
+  // a lot that any street reaches into (its centre within the street's width and most of a lot): left open. The map's
+  // coarse road mask misses the edges of wide streets, so this checks the streets themselves as they load
+  const RDX = { n: -1, cells: new Map(), m: new Map() };
+  function lotOnRoad(i, j) { let n = 0; for (const c of WC.m.values()) if (c.ok) n++; if (n !== RDX.n) { RDX.n = n; RDX.cells = new Map(); RDX.m.clear(); const seen = new Set();
+      for (const c of WC.m.values()) if (c.ok) for (const r of c.r) { if (r.br) continue; const id = r.p.slice(0, 4).join(','); if (seen.has(id)) continue; seen.add(id); const w = REAL.widths[r.c] / 2;
+        for (let k = 0; k + 3 < r.p.length; k += 2) { const ax = r.p[k], az = r.p[k + 1], bx = r.p[k + 2], bz = r.p[k + 3], sg = { ax, az, bx, bz, w };
+          for (let a = Math.floor((Math.min(ax, bx) - 10) / 30); a <= Math.floor((Math.max(ax, bx) + 10) / 30); a++) for (let b = Math.floor((Math.min(az, bz) - 10) / 30); b <= Math.floor((Math.max(az, bz) + 10) / 30); b++) { const kk = a + ',' + b; (RDX.cells.get(kk) || RDX.cells.set(kk, []).get(kk)).push(sg); } } } }
+    const k = j * 4096 + i; let v = RDX.m.get(k); if (v != null) return v; const px = (i + 0.5) * T, pz = (j + 0.5) * T; v = false;
+    for (const g of RDX.cells.get(Math.floor(px / 30) + ',' + Math.floor(pz / 30)) || []) { const dx = g.bx - g.ax, dz = g.bz - g.az, L2 = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((px - g.ax) * dx + (pz - g.az) * dz) / L2)); if (Math.hypot(g.ax + dx * u - px, g.az + dz * u - pz) < g.w + T * 0.42) { v = true; break; } }
+    RDX.m.set(k, v); return v; }
   function deckUnder(px, pz, prev) {
     if (!REAL) return null; const list = bridgeIndex().get(Math.floor(px / 30) + ',' + Math.floor(pz / 30)); if (!list) return null; let best = null;
     for (const g of list) { const dx = g.bx - g.ax, dz = g.bz - g.az, L2 = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((px - g.ax) * dx + (pz - g.az) * dz) / L2)); if (Math.hypot(g.ax + dx * u - px, g.az + dz * u - pz) > g.w + 0.4) continue;
@@ -7768,10 +7778,13 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
           mk(new T3.BoxGeometry(1.5, 0.12, 0.12), pole, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 0.7, 6.1 + b0, lz + Math.sin(a) * 0.7); o3.rotation.set(0, -a, 0); });
           mk(new T3.BoxGeometry(1.4, 0.06, 0.8), new T3.MeshStandardMaterial({ color: 0x1E3A5F, metalness: 0.5, roughness: 0.25 }), ([lx, lz, a, b0 = 0]) => { o3.position.set(lx, 6.45 + b0, lz); o3.rotation.set(0.35, -a, 0); }); // (the solar panel on top, tilted to the sun, as on every new Lagos lamp)
           mk(new T3.BoxGeometry(0.7, 0.1, 0.32), head, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 6.0 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, -a, 0); }); // (the slim LED head)
-          if (night > 0.5) { // at night the lamps are on: a soft beam under each head, and a warm pool of light on the road
-            const beam = new T3.MeshBasicMaterial({ color: 0xFFE2A0, transparent: true, opacity: 0.07, depthWrite: false, blending: T3.AdditiveBlending, side: T3.DoubleSide }), pool = new T3.MeshBasicMaterial({ color: 0xFFD27A, transparent: true, opacity: 0.32, depthWrite: false, blending: T3.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -3 });
-            mk(new T3.ConeGeometry(2.6, 5.8, 16, 1, true), beam, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 3.05 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, 0, 0); });
-            const pg = new T3.CircleGeometry(3.2, 20); pg.rotateX(-Math.PI / 2); mk(pg, pool, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 0.14 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, 0, 0); }); } } }
+          if (night > 0.5) { // at night the lamps are on: a soft pool on the road that fades out at its edge, and glare round each head (no beam: the air is clear)
+            const glowTex = (inner, outer) => { const cv = document.createElement('canvas'); cv.width = cv.height = 128; const c = cv.getContext('2d'), gr = c.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, inner); gr.addColorStop(0.45, outer); gr.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gr; c.fillRect(0, 0, 128, 128); const t2 = new T3.CanvasTexture(cv); t2.colorSpace = T3.SRGBColorSpace; return t2; };
+            const pool = new T3.MeshBasicMaterial({ map: glowTex('rgba(255,214,150,0.85)', 'rgba(255,190,110,0.32)'), transparent: true, depthWrite: false, blending: T3.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -3 });
+            const pg = new T3.PlaneGeometry(13, 13); pg.rotateX(-Math.PI / 2); mk(pg, pool, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 0.15 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, 0, 0); });
+            const hp = new Float32Array(lamps.length * 3); lamps.forEach(([lx, lz, a, b0 = 0], k2) => { hp[k2 * 3] = lx + Math.cos(a) * 1.35; hp[k2 * 3 + 1] = 5.85 + b0; hp[k2 * 3 + 2] = lz + Math.sin(a) * 1.35; });
+            const hg = new T3.BufferGeometry(); hg.setAttribute('position', new T3.BufferAttribute(hp, 3));
+            grp.add(new T3.Points(hg, new T3.PointsMaterial({ map: glowTex('rgba(255,250,235,1)', 'rgba(255,215,150,0.35)'), size: 6.5 * (V3.ws || 1), sizeAttenuation: true, transparent: true, depthWrite: false, blending: T3.AdditiveBlending }))); } } }
       { const trees = []; for (const c of ch) for (const r of c.r) { if (r.br || r.c < 3) continue; const w = REAL.widths[r.c] / 2 + 1.45, p2 = r.p; let acc = (Math.abs(p2[0] * 5 + p2[1] * 11) % 19) + 6, side = -1; // (trees along the side streets' pavements, about every 19 units, between the lamps, clear of the junctions)
           for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L, jA = jw(ax, az) + 3, jB = jw(bx, bz) + 3;
             for (let u = 19 - acc; u < L; u += 19) { if (u > jA && u < L - jB) { const tx = ax + (bx - ax) * u / L + nx * w * side, tz = az + (bz - az) * u / L + nz * w * side; if (inC(tx, tz)) trees.push([tx, tz, 0.8 + ((Math.abs(Math.round(tx * 3 + tz))) % 5) * 0.1]); } side = -side; }
@@ -8009,7 +8022,7 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     if (REAL && !(REC && REC.clip)) for (const b of realBuildingsIn(VT)) items.push({ d: P(b.cx, 0, b.cz)[2], f: () => drawRealBuilding(b) }); // (in 3D the cell carries them as one mesh)
     for (const l of (REAL ? lotsIn(VT) : lots)) {
       if (!visible(l.i, l.j) && !(l.w && visible(l.i + 1, l.j))) continue;
-      if (REAL && lotUnderBridge(l.i, l.j)) continue; // (nothing stands where a bridge or flyover passes)
+      if (REAL && (lotUnderBridge(l.i, l.j) || lotOnRoad(l.i, l.j))) continue; // (nothing stands where a bridge or flyover passes, or where a street's width reaches into the lot)
       const a = l.i * T, b = l.j * T, c = a + T, d = b + T, R = rnd(l.i * 53 + l.j * 89);
       const f = l.kind === 'rtall' ? (() => { let first = true; const R2 = () => { if (first) { first = false; return l.t === 2 ? 0.12 : 0.45; } return R(); }; return () => cityLot(a, b, c, d, R2); })() // (a real tower or block: the city's modelled tower or office block)
         : l.kind === 'plot' ? (REC && REC.clip ? () => w3plot(a, b, c, d, R, l) : REAL ? () => flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.grassLot) : () => flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.plot, C.plotEdge))
