@@ -5473,7 +5473,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     // the people (their models are in the 3D scene; their names and bubbles go on the canvas over it)
     for (const [pid, o] of others) person(o.x, o.z, o.color, o.name, bubbles.get(pid), now, false, o.look);
     if (R.kind === 'world' && REAL && PEOPLE.ok) for (const w of walkStep(now)) person3d(w.x, w.z, '#FFFFFF', w.slot, now, w.L, null, 0); // (Lagosians on the pavements)
-    if (R.kind === 'world') tlPosts(); else if (TLP.g) TLP.g.visible = false;
+    if (R.kind === 'world') { tlPosts(); dirSigns(); } else { if (TLP.g) TLP.g.visible = false; if (DSG.g) DSG.g.visible = false; }
     if (R.kind === 'world') sfStep(now); else if (SF.g) SF.g.visible = false;
     if (R.kind === 'world') estateStep(now); else for (const e of GATED.list) e.g.visible = false;
     gps3d();
@@ -7543,6 +7543,45 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   // the lights are WYRD's: smart signals that count the cars queuing on each side of a junction. A side with no one
   // waiting keeps its red while the other flows. Green goes where the queue is, after at least 8 s of the last green
   // and at most 24 s while others wait (40 s if no one does). Amber lasts 3 s. Junctions far from you just tick over
+  // direction signs before the main junctions, as on Lagos roads: a teal board on two white posts on the right of each
+  // road coming in, about 22 units before the junction. It shows the real places that lie to the left, straight on
+  // and to the right (the nearest named place in each direction), with lane arrows between. Only the junctions near
+  // you have them (a small pool, moved as you go); each board is drawn once and kept
+  const DSG = { pool: [], g: null, tex: new Map() };
+  function dirFace(left, ahead, right) {
+    const k = left + '|' + ahead + '|' + right; if (DSG.tex.has(k)) return DSG.tex.get(k);
+    const T3 = G3.T, cv = document.createElement('canvas'); cv.width = 256; cv.height = 160; const c = cv.getContext('2d');
+    c.fillStyle = '#137A72'; c.fillRect(0, 0, 256, 160); c.strokeStyle = '#F8FAFC'; c.lineWidth = 5; c.strokeRect(5, 5, 246, 150);
+    c.fillStyle = '#F8FAFC'; const fit = (t, x, y, w2, align) => { let fs = 20; c.font = `bold ${fs}px Arial, sans-serif`; while (c.measureText(t).width > w2 && fs > 11) { fs--; c.font = `bold ${fs}px Arial, sans-serif`; } c.textAlign = align; c.fillText(t, x, y); };
+    const wrap = (t, x, y, w2, align) => { const words = t.split(' '); let a = '', b = ''; for (const wd of words) { if (!b && c.measureText((a ? a + ' ' : '') + wd).width < w2) a = (a ? a + ' ' : '') + wd; else b = (b ? b + ' ' : '') + wd; } fit(a, x, y, w2, align); if (b) fit(b, x, y + 22, w2, align); };
+    c.font = 'bold 20px Arial, sans-serif';
+    if (ahead) { fit(ahead, 128, 30, 220, 'center'); }
+    if (left) wrap(left, 14, 92, 80, 'left'); if (right) wrap(right, 242, 92, 80, 'right');
+    const arrow = (x, bend) => { c.save(); c.translate(x, 140); c.lineWidth = 7; c.lineCap = 'round'; c.beginPath(); c.moveTo(0, 0); if (bend) { c.lineTo(0, -40); c.quadraticCurveTo(0, -58, bend * 18, -64); c.stroke(); c.beginPath(); c.moveTo(bend * 26, -64); c.lineTo(bend * 12, -74); c.lineTo(bend * 12, -54); c.closePath(); c.fill(); } else { c.lineTo(0, -62); c.stroke(); c.beginPath(); c.moveTo(0, -80); c.lineTo(-10, -62); c.lineTo(10, -62); c.closePath(); c.fill(); } c.restore(); };
+    c.strokeStyle = '#F8FAFC'; c.fillStyle = '#F8FAFC';
+    if (left) arrow(104, -1); if (ahead) { arrow(122, 0); arrow(138, 0); } if (right) arrow(156, 1);
+    const t2 = new T3.CanvasTexture(cv); t2.colorSpace = T3.SRGBColorSpace; t2.anisotropy = 4;
+    const mats = [new T3.MeshStandardMaterial({ color: 0x137A72 }), new T3.MeshStandardMaterial({ color: 0x137A72 }), new T3.MeshStandardMaterial({ color: 0x137A72 }), new T3.MeshStandardMaterial({ color: 0x137A72 }), new T3.MeshStandardMaterial({ map: t2, roughness: 0.5 }), new T3.MeshStandardMaterial({ color: 0x9CA3AF })];
+    if (DSG.tex.size > 80) DSG.tex.clear(); DSG.tex.set(k, mats); return mats;
+  }
+  // the nearest named place in a direction from a point (within 55 degrees of it, inside 1,600 units)
+  function placeToward(x0, z0, ang) { let best = null, bd = 1e9; for (const p of PLACES) { if (p[0] === 'soon') continue; const px = (p[1] + p[3] / 2) * T, pz = (p[2] + p[4] / 2) * T, d = Math.hypot(px - x0, pz - z0); if (d < 60 || d > 1600) continue; let da = Math.atan2(pz - z0, px - x0) - ang; da = Math.atan2(Math.sin(da), Math.cos(da)); if (Math.abs(da) < 0.96 && d < bd) { bd = d; best = p; } } return best ? best[5].replace(/ \(.*\)$/, '').replace(/ · .*$/, '') : ''; }
+  function dirSigns() {
+    if (!G3.ok || !REAL || !TR.graph || !TR.graph.lights) return; const THREE = G3.T, ws = V3.ws || 1;
+    if (!DSG.g) { DSG.g = new THREE.Group(); G3.scene.add(DSG.g); }
+    DSG.g.visible = V3_LIVE && !inside; if (!DSG.g.visible) return;
+    const near = []; for (const L of TR.graph.lights.values()) { const d = Math.hypot(L.x - me.x, L.z - me.z); if (d < 170 && L.arms.some((m) => m.rd.c <= 3)) near.push([d, L]); } near.sort((a, b) => a[0] - b[0]);
+    let k = 0;
+    for (const [, L] of near) for (const m of L.arms) { if (k >= 16 || m.rd.c > 4) continue;
+      if (!m.sign) { const inA = m.a + Math.PI; m.sign = { left: placeToward(L.x, L.z, inA - Math.PI / 2), ahead: placeToward(L.x, L.z, inA), right: placeToward(L.x, L.z, inA + Math.PI / 2) }; } // (driving in, heading the other way to the arm: left, ahead, right of that)
+      const sg = m.sign; if (!sg.left && !sg.ahead && !sg.right) continue;
+      let P2 = DSG.pool[k]; if (!P2) { const g = new THREE.Group(), post = new THREE.MeshStandardMaterial({ color: 0xE5E7EB, roughness: 0.6 }); for (const sx of [-1.6, 1.6]) { const o = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 4.4, 8), post); o.position.set(sx, 2.2, 0); o.castShadow = !MOBILE; g.add(o); }
+        const board = new THREE.Mesh(new THREE.BoxGeometry(4.6, 2.9, 0.08), dirFace('', '', '')); board.position.set(0, 3.2, 0.12); board.castShadow = !MOBILE; g.add(board); P2 = DSG.pool[k] = { g, board }; DSG.g.add(g); }
+      P2.board.material = dirFace(sg.left, sg.ahead, sg.right);
+      const ca = Math.cos(m.a), sa = Math.sin(m.a), back = L.r + 22, px = L.x + ca * back + sa * (m.w + 3), pz = L.z + sa * back - ca * (m.w + 3);
+      P2.g.visible = true; P2.g.position.set(px * ws, w3ground(px, pz) * ws, pz * ws); P2.g.rotation.set(0, Math.PI / 2 - m.a, 0); P2.g.scale.setScalar(ws); k++; }
+    for (; k < DSG.pool.length; k++) DSG.pool[k].g.visible = false;
+  }
   function tlState(L, grp) { if (L.g == null) return ((performance.now() / 1000 + L.off) % 34 < 17) === (grp === 0) ? 'g' : 'r'; return L.amber > 0 ? (grp === L.g ? 'a' : 'r') : grp === L.g ? 'g' : 'r'; }
   function tlRun(G, dt) {
     for (const L of G.lights.values()) { if (Math.abs(L.x - me.x) > 400 || Math.abs(L.z - me.z) > 400) continue;
