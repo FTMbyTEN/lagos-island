@@ -5023,7 +5023,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       p.root.position.set(p.lx + Math.sin(yaw) * off, Math.min(by, by * e * 2) + (p.lie > 0.98 ? Math.sin(now / 900) * 0.04 : 0), p.lz + Math.cos(yaw) * off);
       if (p.acts[p.cur]) p.acts[p.cur].timeScale = p.lie > 0.6 ? 0.45 : 1;
       if (p.lie < 0.01) { p.root.rotation.x = 0; p.lx = null; } }
-    else { p.lx = null; p.root.rotation.x = 0; p.root.position.set(px, pose === 'sit' ? Math.max(0, (seatY || 2) - 1.9) : inWater ? -3 : standY + (V3_LIVE && !inside && V3.ws > 1 ? w3ground(px, pz) : 0), pz); /* (in the 3D streets: on the road, the pavement, the bridge deck) */ p.root.rotation.order = 'YXZ'; p.root.rotation.y = p.ang; p.root.rotation.x = pose === 'sit' ? 0 : p.tilt || 0; p.root.rotation.z = pose === 'sit' ? 0 : p.bank || 0; }
+    else { p.lx = null; p.root.rotation.x = 0; p.root.position.set(px, pose === 'sit' ? Math.max(0, (seatY || 2) - 1.9) : inWater ? -3 : standY + (V3_LIVE && !inside && V3.ws > 1 ? (p.gy = w3ground(px, pz, p.gy)) : 0), pz); /* (in the 3D streets: on the road, the pavement, the bridge deck) */ p.root.rotation.order = 'YXZ'; p.root.rotation.y = p.ang; p.root.rotation.x = pose === 'sit' ? 0 : p.tilt || 0; p.root.rotation.z = pose === 'sit' ? 0 : p.bank || 0; }
     { const ws = V3_LIVE && !inside ? V3.ws || 1 : 1; if (ws !== 1) p.root.position.multiplyScalar(ws); p.root.scale.setScalar(ws !== 1 ? 0.52 : (inside && inside.ps) || 1); } /* (in the streets: a person 1.8 m against 3 m storeys) */
     // dressed for the day
     if (p.dress) {
@@ -5167,7 +5167,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       const list = G3.pool[q.model], k = used[q.model] = (used[q.model] || 0);
       if (!list[k]) { const root = new THREE.Group(); root.add(G3.protos[q.model].clone(true)); list[k] = root; G3.scene.add(root); }
       const o = list[k]; used[q.model]++; q.o = o; // (which model stands for it this frame)
-      const ws = V3_LIVE ? V3.ws || 1 : 1; o.visible = true; o.position.set(q.cx * ws, ((q.y || 0) + (ws > 1 && !inside ? w3ground(q.cx, q.cz) : 0)) * ws, q.cz * ws); o.rotation.set(0, -q.ang, q.pitch || 0); o.scale.setScalar(q.sc * ws);
+      const ws = V3_LIVE ? V3.ws || 1 : 1; o.visible = true; o.position.set(q.cx * ws, ((q.y || 0) + (ws > 1 && !inside ? (q.gy = q.bh != null ? q.bh : w3ground(q.cx, q.cz, q.gy)) : 0)) * ws, q.cz * ws); o.rotation.set(0, -q.ang, q.pitch || 0); o.scale.setScalar(q.sc * ws);
       if (V3_LIVE && ws > 1 && !inside) try { carPose(o, q, performance.now()); } catch {} // (out in the 3D streets: its wheels, springs and lights)
       if ((q.tint || null) !== (o.userData.tint || null)) {
         o.traverse((m) => { if (!m.isMesh || !m.material || !m.material.color || m.userData.part) return; if (!m.userData.own) { m.material = m.material.clone(); m.userData.own = true; m.userData.base = m.material.color.clone(); } const bc = m.userData.base, lum = 0.3 * bc.r + 0.59 * bc.g + 0.11 * bc.b; if (q.tintAll) { if (m.userData.map === undefined) m.userData.map = m.material.map || null; m.material.map = q.tint ? null : m.userData.map; m.material.needsUpdate = true; } m.material.color.copy(q.tint && (q.tintAll || lum > 0.6) ? new THREE.Color(q.tint) : bc); });
@@ -5453,7 +5453,8 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       if (t >= 1 || V3.drive || now - (V3.dragAt || 0) < 200) V3.swoop = null;
       else { const k = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; dd += (dd * 22 - dd) * (1 - k); pp += (1.48 - pp) * (1 - k) * (1 - k * 0.3); sy = 1.6 * (1 - k); V3.camBlock = null; V3.dcam = null; } }
     const ch = Math.cos(pp), cam3 = V3.cam; cam3.near = R.kind === 'world' ? 2.5 : 0.5; cam3.aspect = W / H; cam3.updateProjectionMatrix();
-    const ly = R.kind === 'world' ? 3.4 : 3.5; let dcam = dd;
+    let ly = R.kind === 'world' ? 3.4 : 3.5; let dcam = dd;
+    if (R.kind === 'world' && REAL) { const gy = V3.drive ? (V3.drive.q.gy || 0) : (V3.meGy = w3ground(me.x, me.z, V3.meGy)); V3.camGy = (V3.camGy ?? gy) + (gy - (V3.camGy ?? gy)) * Math.min(1, dt * 4); ly += Math.max(0, V3.camGy - 0.1) * (V3.ws || 1); } // (up on a flyover, the camera rises with you)
     if (R.kind === 'world' && V3.under) { V3.camBlock = null; V3.dcam = null; const g = bldgHere(me.x, me.z); if (g) { const ws2 = V3.ws || 1, hx = Math.sin(V3.yaw) * ch, hz = Math.cos(V3.yaw) * ch, lim = (lo, hi, p0, d0) => (d0 > 1e-4 ? (hi - p0) / d0 : d0 < -1e-4 ? (lo - p0) / d0 : 1e9); dcam = Math.max(6, Math.min(dd, lim(g.a * ws2, g.c * ws2, V3.tx, hx), lim(g.b * ws2, g.d * ws2, V3.tz, hz))); } } // (under a lifted roof: the camera looks in from anywhere over the building's own lot, never inside a neighbour)
     else if (R.kind === 'world' && V3.groups && !V3.swoop) { // in the streets the camera never hides behind a wall: it comes in front of whatever's between you and it
       const T3 = G3.T, rc = V3.rc || (V3.rc = new T3.Raycaster()), from = new T3.Vector3(V3.tx, ly, V3.tz), dir = new T3.Vector3(Math.sin(V3.yaw) * ch, Math.sin(pp), Math.cos(V3.yaw) * ch).normalize();
@@ -5668,7 +5669,26 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   // one cell of the streets (CS square), built over a few frames so walking never stops: each frame records a quarter of
   // it from the map's own drawing, and the last turns what's recorded into meshes and dresses it (kerbs, lamps, trees)
   // the height of the ground underfoot in the streets: a bridge's deck, the pavement along a road, the road, a plot
-  function w3ground(px, pz) {
+  const DECK = new WeakMap();
+  function deckCum(p2) { let c = DECK.get(p2); if (!c) { c = [0]; for (let k = 2; k + 1 < p2.length; k += 2) c.push(c[c.length - 1] + Math.hypot(p2[k] - p2[k - 2], p2[k + 1] - p2[k - 1])); DECK.set(p2, c); } return c; }
+  function deckY(p2, cls, sAlong) { const cum = deckCum(p2), L = cum[cum.length - 1], H = cls <= 3 ? 6.5 : 1.2, R = cls <= 3 ? 32 : 10; return 0.5 + H * Math.max(0, Math.min(1, sAlong / R, (L - sAlong) / R)); }
+  // the bridges near a point, for standing on them: a grid of their segments, built from the loaded chunks
+  const BRG = { n: -1, cells: new Map() };
+  function bridgeIndex() { let n = 0; for (const c of WC.m.values()) if (c.ok) n++; if (n === BRG.n) return BRG.cells; BRG.n = n; BRG.cells = new Map(); const seen = new Set();
+    for (const c of WC.m.values()) if (c.ok) for (const r of c.r) { if (!r.br) continue; const id = r.p.slice(0, 4).join(','); if (seen.has(id)) continue; seen.add(id); const cum = deckCum(r.p), w = REAL.widths[r.c] / 2;
+      for (let k = 0; k + 3 < r.p.length; k += 2) { const ax = r.p[k], az = r.p[k + 1], bx = r.p[k + 2], bz = r.p[k + 3], sg = { ax, az, bx, bz, s0: cum[k / 2], r, w };
+        for (let i = Math.floor((Math.min(ax, bx) - w) / 30); i <= Math.floor((Math.max(ax, bx) + w) / 30); i++) for (let j = Math.floor((Math.min(az, bz) - w) / 30); j <= Math.floor((Math.max(az, bz) + w) / 30); j++) { const kk = i + ',' + j; (BRG.cells.get(kk) || BRG.cells.set(kk, []).get(kk)).push(sg); } } }
+    return BRG.cells; }
+  // standing on a bridge deck: only from somewhere near its height (walking up its ramp), never jumped onto from the
+  // street under a flyover. prev: where this person or car stood last frame
+  function deckUnder(px, pz, prev) {
+    if (!REAL) return null; const list = bridgeIndex().get(Math.floor(px / 30) + ',' + Math.floor(pz / 30)); if (!list) return null; let best = null;
+    for (const g of list) { const dx = g.bx - g.ax, dz = g.bz - g.az, L2 = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((px - g.ax) * dx + (pz - g.az) * dz) / L2)); if (Math.hypot(g.ax + dx * u - px, g.az + dz * u - pz) > g.w + 0.4) continue;
+      const y = deckY(g.r.p, g.r.c, g.s0 + u * Math.sqrt(L2)); if (prev == null ? y < 1.8 : Math.abs(y - prev) < 1.2) { if (best == null || Math.abs(y - (prev || 0)) < Math.abs(best - (prev || 0))) best = y; } }
+    return best;
+  }
+  function w3ground(px, pz, prev) {
+    { const dk = deckUnder(px, pz, prev); if (dk != null) return dk; }
     { const g = bldgHere(px, pz); if (g) return bldgFloor(g, px, pz); }
     const i = Math.floor(px / T), j = Math.floor(pz / T), t = at(i, j); if (t === BRIDGE) return 0.46; if (t !== ROAD) return 0.07;
     const u = px - i * T, v = pz - j * T, rd = (a, b) => at(a, b) === ROAD || at(a, b) === BRIDGE, pv = 1.6;
@@ -7487,7 +7507,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     let n = 0; for (const c of WC.m.values()) if (c.ok) n++; if (TR.graph && TR.n === n) return TR.graph; TR.n = n;
     const roads = [], nodes = new Map(), seen = new Set(), key = (x2, z2) => Math.round(x2 * 2) + ',' + Math.round(z2 * 2);
     for (const c of WC.m.values()) if (c.ok) for (const r of c.r) { if (r.br && r.c > 3) continue; const id = r.p.slice(0, 4).join(','); if (seen.has(id) || r.p.length < 4) continue; seen.add(id);
-      const rd = { p: r.p, c: r.c, w: REAL.widths[r.c] / 2, n: r.p.length / 2 }; roads.push(rd);
+      const rd = { p: r.p, c: r.c, w: REAL.widths[r.c] / 2, n: r.p.length / 2, br: !!r.br }; roads.push(rd);
       for (const [end, k] of [[0, 0], [1, r.p.length - 2]]) { const kk = key(r.p[k], r.p[k + 1]); (nodes.get(kk) || nodes.set(kk, []).get(kk)).push({ rd, end }); } }
     // traffic lights: where three or more streets meet and at least one is a main road (no expressway: those have
     // interchanges). Each arm knows its direction out of the junction; arms run in two groups by their axis. One group is
@@ -7562,6 +7582,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
           if (opts.length) { const o = opts[Math.floor(Math.random() * opts.length)]; q.rd = o.rd; q.dir = o.end === 0 ? 1 : -1; q.k = q.dir > 0 ? 0 : o.rd.n - 2; } else q.dir = -q.dir; } // (a dead end: it turns round)
         [ax, az, bx, bz] = trSeg(q); L = Math.hypot(bx - ax, bz - az) || 1; ux = (bx - ax) / L; uz = (bz - az) / L; }
       const off = q.rd.w * q.lane, px = ax + ux * q.u - uz * off, pz = az + uz * q.u + ux * off; // (on the right of its way)
+      if (q.rd.br) { const cum = deckCum(q.rd.p); q.bh = deckY(q.rd.p, q.rd.c, q.dir > 0 ? cum[q.k] + q.u : cum[q.k + 1] - q.u); } else q.bh = null; // (on a bridge: up on its deck)
       q.cx += (px - q.cx) * Math.min(1, dt * 8); q.cz += (pz - q.cz) * Math.min(1, dt * 8); const want2 = Math.atan2(uz, ux); let da = want2 - q.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); q.ang += da * Math.min(1, dt * 5);
     }
   }
@@ -7622,7 +7643,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     if (!ch.ready) job.partial = true;
     const mesh = (pos, col, mat, flag) => { if (!pos.length) return; const g = new T3.BufferGeometry(); g.setAttribute('position', new T3.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new T3.Float32BufferAttribute(col, 3)); g.computeVertexNormals(); const m = new T3.Mesh(g, mat); m.receiveShadow = true; m.castShadow = !!flag; grp.add(m); return m; };
     { const pave = [], ash = [], line = [], pc = [], ac = [], lc = [], kerb = [], kc = [], seen = new Set(), PV = rgb('#C9CED6'), AS = rgb('#4B535E'), WL = rgb('#F1F5F9'), YL = rgb('#F2C230'), KB = rgb('#DADDE2'), BR = rgb('#BDB8AE'), gantries = [], zebras = [];
-      const quad = (arr, cs, c3, ax, az, bx, bz, w, y) => { const L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L * w, nz = (bx - ax) / L * w; arr.push(ax + nx, y, az + nz, bx + nx, y, bz + nz, bx - nx, y, bz - nz, ax + nx, y, az + nz, bx - nx, y, bz - nz, ax - nx, y, az - nz); for (let k = 0; k < 6; k++) cs.push(...c3); };
+      const quad = (arr, cs, c3, ax, az, bx, bz, w, y, y2 = y) => { const L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L * w, nz = (bx - ax) / L * w; arr.push(ax + nx, y, az + nz, bx + nx, y2, bz + nz, bx - nx, y2, bz - nz, ax + nx, y, az + nz, bx - nx, y2, bz - nz, ax - nx, y, az - nz); for (let k = 0; k < 6; k++) cs.push(...c3); };
       const disc = (arr, cs, c3, cx, cz, w, y) => { for (let k = 0; k < 10; k++) { const a0 = k / 10 * Math.PI * 2, a1 = (k + 1) / 10 * Math.PI * 2; arr.push(cx, y, cz, cx + Math.cos(a1) * w, y, cz + Math.sin(a1) * w, cx + Math.cos(a0) * w, y, cz + Math.sin(a0) * w); for (let m = 0; m < 3; m++) cs.push(...c3); } };
       const deg = new Map(), wAt = new Map(), vk = (x2, z2) => Math.round(x2 * 2) + ',' + Math.round(z2 * 2), roadsSeen = new Set();
       for (const c of ch) for (const r of c.r) { const id = r.p.slice(0, 4).join(','); if (roadsSeen.has(id)) continue; roadsSeen.add(id); const w = REAL.widths[r.c] / 2;
@@ -7630,20 +7651,28 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       const jw = (x2, z2) => (deg.get(vk(x2, z2)) || 0) >= 3 ? (wAt.get(vk(x2, z2)) || 0) + 1.4 : 0; // (a junction: how far back from it the kerbs and markings stop)
       // the kerbs and barriers as Lagos paints them: black and white blocks, one after the other
       const KBk = rgb('#1F2023'), KWh = rgb('#E9E7E1'), zebra = (arr, cs, x0, z0, x1, z1, y0, y1, seg) => { const L2 = Math.hypot(x1 - x0, z1 - z0), n = Math.max(1, Math.round(L2 / seg)); for (let k = 0; k < n; k++) { const a0 = k / n, a1 = (k + 1) / n; wall(arr, cs, k % 2 ? KBk : KWh, x0 + (x1 - x0) * a0, z0 + (z1 - z0) * a0, x0 + (x1 - x0) * a1, z0 + (z1 - z0) * a1, y0, y1); } };
+      const CONC = rgb('#A39E92'), CONCd = rgb('#77736A'), piers = [];
+      const arr4 = (arr, cs, c3, x0, z0, x1, z1, ya, yb, h) => { arr.push(x0, ya, z0, x1, yb, z1, x1, yb + h, z1, x0, ya, z0, x1, yb + h, z1, x0, ya + h, z0); for (let m = 0; m < 6; m++) cs.push(...c3); }; // (a wall whose foot follows a slope)
       const wall = (arr, cs, c3, x0, z0, x1, z1, y0, y1) => { arr.push(x0, y0, z0, x1, y0, z1, x1, y1, z1, x0, y0, z0, x1, y1, z1, x0, y1, z0); for (let m = 0; m < 6; m++) cs.push(...c3); };
       let gAcc = 0;
       for (const c of ch) for (const r of c.r) { const w = REAL.widths[r.c] / 2, y = r.br ? 0.5 : 0.07, p2 = r.p;
         for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], key = Math.round(ax * 10) + ',' + Math.round(az * 10) + ',' + Math.round(bx * 10) + ',' + Math.round(bz * 10); if (seen.has(key) || !inC((ax + bx) / 2, (az + bz) / 2)) continue; seen.add(key);
-          quad(pave, pc, PV, ax, az, bx, bz, w + 0.8, y - 0.02); quad(ash, ac, AS, ax, az, bx, bz, w, y); disc(pave, pc, PV, bx, bz, w + 0.8, y - 0.021); disc(ash, ac, AS, bx, bz, w, y + 0.001); if (k === 0) { disc(pave, pc, PV, ax, az, w + 0.8, y - 0.021); disc(ash, ac, AS, ax, az, w, y + 0.001); }
+          const cum = r.br ? deckCum(p2) : null, y0 = r.br ? deckY(p2, r.c, cum[k / 2]) : y, y1 = r.br ? deckY(p2, r.c, cum[k / 2 + 1]) : y; // (a bridge's deck, up its ramps)
+          quad(pave, pc, PV, ax, az, bx, bz, w + 0.8, y0 - 0.02, y1 - 0.02); quad(ash, ac, AS, ax, az, bx, bz, w, y0, y1); disc(pave, pc, PV, bx, bz, w + 0.8, y1 - 0.021); disc(ash, ac, AS, bx, bz, w, y1 + 0.001); if (k === 0) { disc(pave, pc, PV, ax, az, w + 0.8, y0 - 0.021); disc(ash, ac, AS, ax, az, w, y0 + 0.001); }
           const L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L, nx = -uz, nz = ux, jA = Math.min(L / 2, jw(ax, az)), jB = Math.min(L / 2, jw(bx, bz));
           const at2 = (u, off) => [ax + ux * u + nx * off, az + uz * u + nz * off];
-          const strip = (off, half, u0, u1, yy, col, arr = line, cs = lc) => { if (u1 - u0 < 0.15) return; const [sx, sz] = at2(u0, off), [ex, ez] = at2(u1, off); quad(arr, cs, col, sx, sz, ex, ez, half, yy); };
+          const yAt = (u) => y0 + (y1 - y0) * u / L;
+          const strip = (off, half, u0, u1, yy, col, arr = line, cs = lc) => { if (u1 - u0 < 0.15) return; const [sx, sz] = at2(u0, off), [ex, ez] = at2(u1, off); quad(arr, cs, col, sx, sz, ex, ez, half, yAt(u0) + yy - y, yAt(u1) + yy - y); };
+          const zebraS = (off, h, seg) => { const n = Math.max(1, Math.round(L / seg)); for (let q2 = 0; q2 < n; q2++) { const u0 = L * q2 / n, u1 = L * (q2 + 1) / n, [x0, z0] = at2(u0, off), [x1, z1] = at2(u1, off), ya = yAt(u0), yb = yAt(u1); arr4(kerb, kc, q2 % 2 ? KBk : KWh, x0, z0, x1, z1, ya, yb, h); } };
+          if (r.br) { for (const sd of [-1, 1]) zebraS(sd * (w + 0.75), 0.9, 1.6); // (the deck's parapets, black and white like the barriers on the Lagos flyovers)
+            if (Math.max(y0, y1) > 1.6) { for (const sd of [-1, 1]) { const [x0, z0] = at2(0, sd * (w + 0.9)), [x1, z1] = at2(L, sd * (w + 0.9)); arr4(kerb, kc, CONC, x0, z0, x1, z1, y0 - 1.1, y1 - 1.1, 1.1); } quad(kerb, kc, CONCd, ax, az, bx, bz, w + 0.9, y0 - 1.1, y1 - 1.1); // (the slab's edge, and its underside)
+              for (let u = (cum[k / 2] % 16 === 0 ? 0 : 16 - (cum[k / 2] % 16)); u < L; u += 16) { const yy2 = yAt(u); if (yy2 < 2.2) continue; for (const of2 of (w > 6 ? [-w * 0.55, w * 0.55] : [0])) { const [px2, pz2] = at2(u, of2); if (inC(px2, pz2)) piers.push([px2, pz2, yy2 - 1.1, Math.atan2(uz, ux)]); } } } } // (a pier every 16 units, two under a wide deck)
           const dashes = (off) => { for (let u = Math.max(1, jA); u + 3 < L - jB; u += 9) strip(off, 0.075, u, u + 3, y + 0.012, WL); }; // (3 on, 6 off)
           if (!r.br && L - jA - jB > 0.3) for (const sd of [-1, 1]) { // the kerb and the pavement, a step up from the road, stopping at junctions so the crossing road runs through
             strip(sd * (w + 0.9), 0.9, jA, L - jB, y + 0.18, PV, kerb, kc); const [k0x, k0z] = at2(jA, sd * w), [k1x, k1z] = at2(L - jB, sd * w); zebra(kerb, kc, k0x, k0z, k1x, k1z, y, y + 0.18, 1.0); }
           if (r.c <= 1) { // an expressway: a concrete barrier down the middle, a broken line between lanes, solid white by the barrier, solid yellow at the edge
             const lanes = Math.max(2, Math.round((w - 0.6) / 2.8)), lw = (w - 0.6) / lanes;
-            strip(0, 0.3, 0, L, y + 0.85, BR, kerb, kc); for (const sd of [-1, 1]) { const [b0x, b0z] = at2(0, sd * 0.3), [b1x, b1z] = at2(L, sd * 0.3); zebra(kerb, kc, b0x, b0z, b1x, b1z, y, y + 0.85, 1.6); }
+            strip(0, 0.3, 0, L, y + 0.85, BR, kerb, kc); for (const sd of [-1, 1]) zebraS(sd * 0.3, 0.85, 1.6);
             for (let k2 = 1; k2 < lanes; k2++) for (const sd of [-1, 1]) dashes(sd * (0.6 + k2 * lw));
             for (const sd of [-1, 1]) { strip(sd * (w - 0.35), 0.1, 0, L, y + 0.012, YL); strip(sd * 0.55, 0.075, 0, L, y + 0.012, WL); }
             gAcc += L; if (gAcc > 420 && !r.br) { gAcc = 0; const [gx, gz] = at2(L / 2, 0); if (inC(gx, gz)) gantries.push([gx, gz, Math.atan2(uz, ux), w]); } }
@@ -7675,6 +7704,9 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       mesh(pave, pc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, side: T3.DoubleSide }));
       mesh(ash, ac, am); mesh(line, lc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: T3.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 }));
       mesh(kerb, kc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: T3.DoubleSide }), true); // the kerbs, pavements and the expressways' barriers
+      if (piers.length) { const o3 = new T3.Object3D(), im = new T3.InstancedMesh(new T3.BoxGeometry(1.5, 1, 1.5), new T3.MeshStandardMaterial({ color: 0x9E998D, roughness: 0.95 }), piers.length); // the flyovers' concrete piers, with a cap under the deck
+        piers.forEach(([px2, pz2, h, a], k) => { o3.position.set(px2, h / 2, pz2); o3.rotation.set(0, -a, 0); o3.scale.set(1, h, 1); o3.updateMatrix(); im.setMatrixAt(k, o3.matrix); }); im.castShadow = !MOBILE; im.receiveShadow = true; grp.add(im);
+        const cap = new T3.InstancedMesh(new T3.BoxGeometry(2.6, 0.6, 1.9), new T3.MeshStandardMaterial({ color: 0x8F8A7F, roughness: 0.95 }), piers.length); piers.forEach(([px2, pz2, h, a], k) => { o3.position.set(px2, h - 0.3, pz2); o3.rotation.set(0, -a, 0); o3.scale.set(1, 1, 1); o3.updateMatrix(); cap.setMatrixAt(k, o3.matrix); }); grp.add(cap); }
       if (gantries.length) { const steel = new T3.MeshStandardMaterial({ color: 0x9AA1A9, metalness: 0.7, roughness: 0.4 }), sign = new T3.MeshStandardMaterial({ color: 0x0F6B3A, roughness: 0.5 }), rim = new T3.MeshStandardMaterial({ color: 0xF1F5F9, roughness: 0.5 });
         for (const [gx, gz, a, w] of gantries) { const g = new T3.Group(); g.position.set(gx, 0, gz); g.rotation.y = -a; grp.add(g); const add = (geo, mat, x2, y2, z2) => { const m = new T3.Mesh(geo, mat); m.position.set(x2, y2, z2); m.castShadow = true; g.add(m); };
           for (const sd of [-1, 1]) add(new T3.CylinderGeometry(0.25, 0.3, 7.6, 10), steel, 0, 3.8, sd * (w + 1.2)); add(new T3.BoxGeometry(0.5, 0.6, 2 * w + 2.4), steel, 0, 7.4, 0); // (two posts, the beam)
