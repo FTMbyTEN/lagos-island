@@ -7322,15 +7322,24 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   //   behind it.
   // Built once as a handful of instanced meshes (a few draw calls for the whole street), shown when you're near. The
   // people are drawn only near you (8 at most), and far ones step at a third of the rate, so it all keeps to 60 fps.
-  const SF = { built: false, stops: [], kiosks: [], g: null };
+  // the real street furniture (tools/street_features.py, from OpenStreetMap): traffic signals, crossings, bus stops, kiosks.
+  // Nothing of these is placed by rule: each stands where it stands in Lagos
+  const FEAT = { ok: false, signals: [], crossings: [], stops: [], kiosks: [] };
+  fetch((location.pathname.startsWith('/lagos-island') ? '/lagos-island/' : '') + 'map/features.json').then((r) => r.json()).then((d) => { Object.assign(FEAT, d, { ok: true }); TR.graph = null; SF.n = -1;
+    if (V3.cells) for (const [k, c] of V3.cells) { V3.groups.remove(c.grp); c.grp.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); V3.cells.delete(k); } }) /* (any street drawn before the crossings came is drawn again, with them) */.catch(() => {});
+  // the bus stops and kiosks, at the kerb of the street each real one stands by, facing it; built again as more of the city loads
+  const SF = { n: -1, stops: [], kiosks: [], g: null };
+  function sfNearRoad(x, z) { let best = null, bd = 18; for (const c of wchunksOver(x - 20, z - 20, x + 20, z + 20)) for (const r of c.r) { if (r.br) continue; const w = REAL.widths[r.c] / 2;
+      for (let k = 0; k + 3 < r.p.length; k += 2) { const ax = r.p[k], az = r.p[k + 1], bx = r.p[k + 2], bz = r.p[k + 3], dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)), d = Math.hypot(ax + dx * u - x, az + dz * u - z);
+        if (d < bd) { bd = d; const L = Math.sqrt(L2), ux = dx / L, uz = dz / L, side = ((x - ax) * -uz + (z - az) * ux) >= 0 ? 1 : -1; best = { cx: ax + dx * u, cz: az + dz * u, ux, uz, rx: -uz * side, rz: ux * side, w }; } } }
+    return best; }
   function sfBuild() {
-    if (SF.built || !G3.ok || !REAL || !REAL.streetGeo) return; SF.built = true;
-    for (const ways of Object.values(REAL.streetGeo)) for (const w of ways) {
-      const hw = w[0], p2 = w.slice(1); let acc = 60, acc2 = 25;
-      for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az); if (L < 0.5) continue; const ux = (bx - ax) / L, uz = (bz - az) / L, rx = -uz, rz = ux, ang = Math.atan2(uz, ux);
-        for (let u = 0; u < L; u += 1) { acc += 1; acc2 += 1; const x0 = ax + ux * u, z0 = az + uz * u;
-          if (acc >= 180) { acc = 0; acc2 = Math.min(acc2, 40); SF.stops.push({ x: x0 + rx * (hw + 1.6), z: z0 + rz * (hw + 1.6), ang, rx, rz, rd: { x: x0 + rx * (hw - 1.4), z: z0 + rz * (hw - 1.4) }, n: SF.stops.length }); }
-          else if (acc2 >= 55 && acc > 20 && acc < 160) { acc2 = 0; SF.kiosks.push({ x: x0 + rx * (hw + 2.2), z: z0 + rz * (hw + 2.2), ang, rx, rz, col: ['#E63946', '#2A9D8F', '#F4A261', '#457B9D', '#E9C46A', '#8E44AD'][SF.kiosks.length % 6], n: SF.kiosks.length }); } } } }
+    if (!G3.ok || !REAL || !FEAT.ok) return; let n = 0; for (const c of WC.m.values()) if (c.ok) n++; if (n === SF.n) return; SF.n = n;
+    if (SF.g) { G3.scene.remove(SF.g); SF.g.traverse((o2) => { if (o2.geometry) o2.geometry.dispose(); }); SF.g = null; }
+    SF.stops = []; SF.kiosks = [];
+    FEAT.stops.forEach(([x, z, name], k) => { const R0 = sfNearRoad(x, z); if (!R0) return; const off = R0.w + 1.6, ang = Math.atan2(R0.uz, R0.ux); SF.stops.push({ x: R0.cx + R0.rx * off, z: R0.cz + R0.rz * off, ang, rx: R0.rx, rz: R0.rz, rd: { x: R0.cx + R0.rx * (R0.w - 1.4), z: R0.cz + R0.rz * (R0.w - 1.4) }, n: k, name }); });
+    FEAT.kiosks.forEach(([x, z], k) => { const R0 = sfNearRoad(x, z); if (!R0) return; const off = R0.w + 2.2; SF.kiosks.push({ x: R0.cx + R0.rx * off, z: R0.cz + R0.rz * off, ang: Math.atan2(R0.uz, R0.ux), rx: R0.rx, rz: R0.rz, col: ['#E63946', '#2A9D8F', '#F4A261', '#457B9D', '#E9C46A', '#8E44AD'][k % 6], n: k }); });
+    if (!SF.stops.length && !SF.kiosks.length) return;
     const T3 = G3.T, g = SF.g = new T3.Group(), o = new T3.Object3D(), nt = night > 0.5;
     const inst = (geo, mat, list, place) => { if (!list.length) return; const m = new T3.InstancedMesh(geo, mat, list.length); list.forEach((v, k) => { o.position.set(0, 0, 0); o.rotation.set(0, 0, 0); o.scale.set(1, 1, 1); place(v, k); o.updateMatrix(); m.setMatrixAt(k, o.matrix); }); m.castShadow = !MOBILE; m.receiveShadow = true; g.add(m); return m; };
     const at = (s0, along, out, y) => { const fx = Math.cos(s0.ang), fz = Math.sin(s0.ang); o.position.set(s0.x + fx * along + s0.rx * out, y, s0.z + fz * along + s0.rz * out); o.rotation.set(0, -s0.ang, 0); };
@@ -7351,19 +7360,6 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     const um = inst(new T3.ConeGeometry(1.5, 0.6, 8, 1, true), M(0xffffff, { side: T3.DoubleSide, roughness: 0.8 }), SF.kiosks, (s0) => at(s0, 0, 0.2, 2.5));
     if (um) { SF.kiosks.forEach((s0, k) => um.setColorAt(k, new T3.Color(s0.col))); um.instanceColor.needsUpdate = true; }
     inst(new T3.SphereGeometry(0.12, 8, 6), M(0xFFF3C4, { emissive: 0xFFD89A, emissiveIntensity: nt ? 2.2 : 0.1 }), SF.kiosks, (s0) => at(s0, 0, 0.2, 2.1));
-    // a keke park behind each bus stop: three yellow tricycles nose to tail on the kerb, black canopies, waiting for fares
-    const kk = SF.stops.flatMap((s0) => [-6.5, -9.3, -12.1].map((al, n) => ({ s0, al, n })));
-    const kat = (v, dx, dy, dz) => at(v.s0, v.al + dx, -2.9 + dz, dy);
-    inst(new T3.BoxGeometry(2.0, 1.0, 1.15), yel, kk, (v) => kat(v, 0, 0.85, 0));
-    inst(new T3.BoxGeometry(0.5, 0.75, 0.7), yel, kk, (v) => kat(v, 1.15, 0.7, 0));
-    inst(new T3.BoxGeometry(2.2, 0.08, 1.3), M(0x15161A), kk, (v) => kat(v, -0.05, 1.75, 0));
-    inst(new T3.BoxGeometry(0.06, 0.55, 1.1), glass, kk, (v) => kat(v, 0.95, 1.4, 0));
-    for (const [wx, wz] of [[1.1, 0], [-0.75, -0.55], [-0.75, 0.55]]) inst(new T3.CylinderGeometry(0.28, 0.28, 0.16, 10).rotateX(Math.PI / 2), M(0x1A1A1A, { roughness: 0.9 }), kk, (v) => kat(v, wx, 0.3, wz));
-    // billboards on tall steel legs, set back from the kerb beside every second stop
-    const bb = SF.stops.filter((s0) => s0.n % 2 === 0), bbMat = M(0xffffff, { emissive: nt ? 0xFFFFFF : 0x000000, emissiveIntensity: nt ? 0.5 : 0, map: (() => { const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128; const c = cv.getContext('2d'); const gr = c.createLinearGradient(0, 0, 256, 0); gr.addColorStop(0, '#0F0F12'); gr.addColorStop(1, '#2A2A30'); c.fillStyle = gr; c.fillRect(0, 0, 256, 128); c.fillStyle = '#F7C81E'; c.font = 'bold 44px Impact, Arial Black, sans-serif'; c.fillText('LAGOS', 16, 58); c.fillStyle = '#fff'; c.fillText('ISLAND', 16, 106); c.fillStyle = '#22C55E'; c.font = 'bold 18px Arial, sans-serif'; c.fillText('Your city.', 168, 50); c.fillText('Your game.', 166, 74); const t2 = new T3.CanvasTexture(cv); t2.colorSpace = T3.SRGBColorSpace; return t2; })() });
-    for (const al of [-2.4, 2.4]) inst(new T3.CylinderGeometry(0.18, 0.22, 7.5, 8), steel, bb, (s0) => at(s0, 14 + al, 6.5, 3.75));
-    inst(new T3.BoxGeometry(6.6, 3.4, 0.25), steel, bb, (s0) => at(s0, 14, 6.6, 8.6));
-    inst(new T3.BoxGeometry(6.3, 3.1, 0.05), bbMat, bb, (s0) => at(s0, 14, 6.45, 8.6));
     G3.scene.add(g);
   }
   function sfStep(now) {
@@ -7540,6 +7536,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     for (const [kk, list] of arms) { if (list.length < 3 || list.some((m) => m.rd.c <= 1) || !list.some((m) => m.rd.c <= 4)) continue;
       const a0 = list[0].a; for (const m of list) { const d = Math.abs(Math.atan2(Math.sin(2 * (m.a - a0)), Math.cos(2 * (m.a - a0)))); m.grp = d < Math.PI / 2 ? 0 : 1; }
       lights.set(kk, { x: list[0].x, z: list[0].z, arms: list, r: Math.max(...list.map((m) => m.w)) + 2.5, off: (Math.abs(Math.round(list[0].x * 13 + list[0].z * 7)) % 34) }); }
+    if (FEAT.ok) for (const [kk, L] of [...lights]) if (!FEAT.signals.some(([sx, sz]) => Math.hypot(sx - L.x, sz - L.z) < 25)) lights.delete(kk); // (only the junctions with real traffic signals)
     return (TR.graph = { roads, nodes, key, lights });
   }
   // the posts at the lights near you: one on the near-side corner of each arm, facing the traffic coming in, red over
@@ -7759,9 +7756,10 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
             gAcc += L; if (gAcc > 420 && !r.br) { gAcc = 0; const [gx, gz] = at2(L / 2, 0); if (inC(gx, gz)) gantries.push([gx, gz, Math.atan2(uz, ux), w]); } }
           else if (r.c <= 3) { dashes(0); for (const sd of [-1, 1]) strip(sd * (w - 0.3), 0.075, jA, L - jB, y + 0.012, WL); } // (a main road: a broken centre line, solid edges)
           else if (r.c === 4) dashes(0); // (a tertiary: just the centre line; the side streets have none, as in Lagos)
-          if (!r.br && r.c >= 2) for (const [jj, fromA] of [[jA, true], [jB, false]]) if (jj > 0) { // a zebra crossing before the junction
-            const u0 = fromA ? jj - 2.6 : L - jj + 0.4, u1 = u0 + 2.2; if (u0 < 0 || u1 > L) continue; const [zx, zz] = at2((u0 + u1) / 2, 0); if (zebras.some(([x2, z2, r2]) => Math.hypot(x2 - zx, z2 - zz) < r2 + w)) continue; zebras.push([zx, zz, w]); // (one clean crossing to an arm: none where another arm's already lies)
-            for (let o2 = -w + 0.55; o2 < w - 0.4; o2 += 1) strip(o2, 0.25, u0, u1, y + 0.014, WL); } } }
+          if (!r.br && FEAT.ok) for (const [cx2, cz2] of FEAT.crossings) { // a zebra crossing only where Lagos has one (the real crossings, from OpenStreetMap)
+            const u = (cx2 - ax) * ux + (cz2 - az) * uz, d = Math.abs((cx2 - ax) * nx + (cz2 - az) * nz); if (u < 1.1 || u > L - 1.1 || d > w + 2.5) continue;
+            const [zx, zz] = at2(u, 0); if (zebras.some(([x2, z2]) => Math.hypot(x2 - zx, z2 - zz) < 4)) continue; zebras.push([zx, zz, w]);
+            for (let o2 = -w + 0.55; o2 < w - 0.4; o2 += 1) strip(o2, 0.25, u - 1.1, u + 1.1, y + 0.014, WL); } } }
       { const lamps = []; for (const c of ch) for (const r of c.r) { if (r.br) { // a long bridge (the Third Mainland, the Eko, the Carter): its tall lamps every 40 units down the median side, standing on the deck
             if (r.c > 1) continue; const cum = deckCum(r.p), Lt = cum[cum.length - 1]; if (Lt < 600) continue; const w2 = REAL.widths[r.c] / 2 + 0.75, p3 = r.p;
             for (let k = 0; k + 3 < p3.length; k += 2) { const ax = p3[k], az = p3[k + 1], bx = p3[k + 2], bz = p3[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L;
@@ -12045,7 +12043,7 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     // the city's own DJ, DJ Eko Nights, mixing live: the newest Afro releases (Deezer's New Afro) and Nigeria's chart right
     // now, newest first, on two decks. Each song comes in on a filter sweep with its bass cut and takes over, the last one
     // sweeps out on an echo; now and then a riser builds into the drop and an airhorn goes off. Clubs keep their own sound inside.
-    CITY.mix = liveMix(c);
+    CITY.mix = null; // (no club music out on the street: the clubs are heard inside them, the island outside is its own sound, see AMB)
     if (CITY.pendingDecks) cityDecks(CITY.pendingDecks);
   }
   // ---- the DJ's brain: DJ Eko Nights is an agent of its own that keeps learning, every night, on every device it plays on.
@@ -12286,7 +12284,7 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   function djChip() {
     if (RADIO.on) return radioChip(); // the radio has the chip while it plays
     const el = document.getElementById('tDj'); if (!el) return;
-    const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, s = club || (!inside && night >= 0.2 ? CITY.mix : null);
+    const club = inside && inside.kind === 'club' ? clubSrc(inside.key) : null, s = club;
     const on = !!(CITY.on && s && s.now && !s.a.paused);
     el.classList.toggle('on', on); if (!on) return;
     const dj = s.now.dj || s.spot.dj, title = s.now.title || '';
@@ -12305,6 +12303,7 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   function djNext() { if (!MP.q.length) return; MP.i = (MP.i + 1) % MP.q.length; djSpin(MP.q[MP.i]); }
   function djLeave() { const room = CITY.dj; CITY.dj = null; if (!room) return; call('spin', { id, club: room, url: '', title: '', artist: '', art: '', key: ikey }).catch(() => {}); const s = clubSrc(room); if (s) residentSet(s).then((set) => deckPlay(s, set)); }
   setInterval(() => {
+    ambStep(); // (the island's own sound, by day and by night)
     if (CITY.dj && (!inside || inside.key !== CITY.dj)) djLeave(); // you walked out: the resident takes over
     const inClub = inside && inside.kind === 'club';
     if (CITY.on && AX.ctx && !CITY.master) cityStart(); // ready before you reach a door
@@ -12318,18 +12317,18 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
       s.g.gain.value += (vol - s.g.gain.value) * 0.3; s.muff.frequency.value = here ? 16000 : 600; if (s.pan) s.pan.pan.value = 0;
       if (vol > 0.01 && s.a.paused && s.a.src) s.a.play().catch(() => {}); if (vol <= 0.01 && !s.a.paused && s.g.gain.value < 0.01) s.a.pause();
     }
-    if (CITY.mix) { const M = CITY.mix, vol = !inside && night >= 0.2 ? 0.6 : 0; M.out.gain.value += (vol - M.out.gain.value) * 0.25; if (vol > 0.01) M.play(); else if (M.out.gain.value < 0.01) M.pause(); } // the city DJ's live set
+    if (CITY.mix) { const M = CITY.mix, vol = 0; M.out.gain.value += (vol - M.out.gain.value) * 0.25; if (vol > 0.01) M.play(); else if (M.out.gain.value < 0.01) M.pause(); } // the city DJ's live set
     djChip();
   }, 250);
   { const tc = document.getElementById('tCity'), tm = document.getElementById('tMusic');
-    document.body.append(tc); tc.classList.add('sideSnd'); // the speaker lives under the phone now, not in the bar
+    tc.remove(); // (no speaker button: the city sound is always on, in the control centre if you want it off)
     tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tm.innerHTML = ico('music');
     tc.onclick = () => { CITY.on = !CITY.on; store.set('li.city', CITY.on ? '1' : '0'); tc.classList.toggle('off', !CITY.on); tc.innerHTML = ico(CITY.on ? 'sound' : 'mute'); tickerSay(CITY.on ? 'City sound on: the clubs carry at night' : 'City sound off', 'music'); };
     tm.onclick = () => openPhone('music', MP.q.length ? { tab: 'now' } : undefined);
     document.getElementById('tDj').onclick = () => openPhone('music'); // see who's playing, take the decks inside a club
     document.getElementById('tDjX').onclick = (e) => { // quit the music right from the chip: the city sound goes off (turn it back on with the speaker)
-      e.stopPropagation(); if (RADIO.on) { radioStop(); tickerSay('Radio off', 'music'); return; } CITY.on = false; store.set('li.city', '0'); tc.classList.add('off'); tc.innerHTML = ico('mute'); if (!MP.a.paused) MP.a.pause();
-      document.getElementById('tDj').classList.remove('on'); tickerSay('Music off. Tap the speaker to bring the city sound back', 'music');
+      e.stopPropagation(); if (RADIO.on) { radioStop(); tickerSay('Radio off', 'music'); return; } if (!MP.a.paused) MP.a.pause();
+      document.getElementById('tDj').classList.remove('on'); tickerSay('Music off', 'music');
     };
     for (const ev of ['play', 'pause']) MP.a.addEventListener(ev, () => tm.classList.toggle('playing', !MP.a.paused)); }
   // Link: the last message seen in each conversation (kept on this device), and a short time for the list
@@ -12546,6 +12545,37 @@ float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     const echo = c.createDelay(1); echo.delayTime.value = 0.23 + Math.random() * 0.15; const fb = c.createGain(); fb.gain.value = 0.32; const ef = c.createBiquadFilter(); ef.type = 'lowpass'; ef.frequency.value = 400;
     src.connect(f); f.connect(g); g.connect(c.destination); g.connect(echo); echo.connect(ef); ef.connect(fb); fb.connect(echo); ef.connect(c.destination);
     src.start(); src.onended = () => { try { fb.gain.value = 0; } catch {} };
+  }
+  // the island's own sound, made here, day and night: the traffic's rumble (louder near a main road, with the cars around
+  // you), the city's wash, a horn now and then from somewhere (a lot of them by day, as in Lagos; a few at night), and at
+  // night the generators humming behind the walls and the crickets. Through a wall it's low and muffled; inside a club
+  // only the club. The control centre's City sound turns it off
+  const AMB = { on: false, hornAt: 0 };
+  function ambStep() {
+    const c = AX.ctx; if (!c) return;
+    if (!AMB.on) { AMB.on = true;
+      const loop = (buf) => { const s2 = c.createBufferSource(); s2.buffer = buf; s2.loop = true; s2.start(0, Math.random() * buf.duration); return s2; };
+      AMB.out = c.createBiquadFilter(); AMB.out.type = 'lowpass'; AMB.out.frequency.value = 7000; AMB.bus = c.createGain(); AMB.bus.gain.value = 0; AMB.out.connect(AMB.bus); AMB.bus.connect(c.destination);
+      AMB.rumble = c.createGain(); AMB.rumble.gain.value = 0; { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 260; loop(noiseBuffer(c, 4, 'brown')).connect(f); f.connect(AMB.rumble); AMB.rumble.connect(AMB.out); }
+      AMB.wash = c.createGain(); AMB.wash.gain.value = 0; { const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = 0.5; loop(noiseBuffer(c, 4, 'pink')).connect(f); f.connect(AMB.wash); AMB.wash.connect(AMB.out); }
+      AMB.gen = c.createGain(); AMB.gen.gain.value = 0; { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 320; for (const [hz, v] of [[50, 0.5], [100, 0.35], [150, 0.15], [101.5, 0.2]]) { const o = c.createOscillator(), g = c.createGain(); o.type = 'sawtooth'; o.frequency.value = hz; g.gain.value = v; o.connect(g); g.connect(f); o.start(); }
+        const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 0.31; lg.gain.value = 0.25; lfo.connect(lg); lg.connect(AMB.gen.gain); lfo.start(); f.connect(AMB.gen); AMB.gen.connect(AMB.out); } // (a far-off generator or two: a 50-cycle buzz that swells and fades)
+      AMB.crick = c.createGain(); AMB.crick.gain.value = 0; { const o = c.createOscillator(), am = c.createGain(), pulse = c.createOscillator(), pg = c.createGain(); o.frequency.value = 4400; pulse.type = 'square'; pulse.frequency.value = 14; pg.gain.value = 0.5; am.gain.value = 0.5; pulse.connect(pg); pg.connect(am.gain); o.connect(am); am.connect(AMB.crick);
+        const chirp = c.createOscillator(), cg = c.createGain(), mix = c.createGain(); chirp.type = 'square'; chirp.frequency.value = 0.9; cg.gain.value = 0.5; mix.gain.value = 0.5; chirp.connect(cg); cg.connect(mix.gain); AMB.crick.connect(mix); mix.connect(AMB.out); o.start(); pulse.start(); chirp.start(); } }
+    const inClub = inside && inside.kind === 'club', on = CITY.on && !inClub, dayF = 1 - Math.min(1, night), k = 0.2, set = (g, v) => { g.gain.value += (v - g.gain.value) * k; };
+    set(AMB.bus, on ? (inside ? 0.35 : 1) : 0); AMB.out.frequency.value += ((inside ? 420 : 7000) - AMB.out.frequency.value) * 0.3;
+    if (!on) return;
+    let cars = 0; for (const q of TR.cars) { const d = Math.hypot(q.cx - me.x, q.cz - me.z); if (d < 90) cars += 1 - d / 90; }
+    const busy = Math.min(1, 0.25 + cars / 6) * (0.45 + 0.55 * dayF);
+    set(AMB.rumble, 0.16 + 0.34 * busy); set(AMB.wash, 0.012 + 0.03 * busy); set(AMB.gen, 0.018 * night); set(AMB.crick, 0.006 * Math.max(0, night - 0.3) * (inside ? 0 : 1));
+    const now = performance.now(); if (now > AMB.hornAt) { AMB.hornAt = now + (2500 + Math.random() * 9000) / (0.25 + busy * 1.4); if (!inside || Math.random() < 0.3) ambHorn(c, 0.15 + Math.random() * 0.6); }
+  }
+  function ambHorn(c, dist) { // (a car horn somewhere around you: one or two blasts, two notes beating, off to a side, quieter and duller the further it is)
+    const t0 = c.currentTime + 0.02, f0 = 380 + Math.random() * 160, g = c.createGain(), bp = c.createBiquadFilter(), pan = c.createStereoPanner ? c.createStereoPanner() : null; bp.type = 'bandpass'; bp.frequency.value = 900 + (1 - dist) * 900; bp.Q.value = 0.8;
+    const blasts = Math.random() < 0.4 ? 2 : 1; let t = t0; g.gain.value = 0;
+    for (let b = 0; b < blasts; b++) { const len = 0.12 + Math.random() * (b ? 0.18 : 0.45); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05 * (1 - dist * 0.8), t + 0.015); g.gain.setValueAtTime(0.05 * (1 - dist * 0.8), t + len); g.gain.linearRampToValueAtTime(0, t + len + 0.03); t += len + 0.1; }
+    for (const hz of [f0, f0 * 1.26]) { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.value = hz; o.connect(bp); o.start(t0); o.stop(t + 0.05); }
+    bp.connect(g); if (pan) { pan.pan.value = Math.random() * 1.6 - 0.8; g.connect(pan); pan.connect(AMB.out); } else g.connect(AMB.out);
   }
   // the weather for the phone: the real one (see WX)
   function lagosWeather() { return { temp: WX.temp ?? '–', icon: ico({ storm: 'storm', rain: 'rain', drizzle: 'rain', fog: 'fog', haze: 'fog', overcast: 'cloud', cloudy: 'cloud', partly: WX.isDay !== 0 ? 'partly' : 'moon', clear: WX.isDay !== 0 ? 'sun' : 'moon' }[WX.kind] || 'sun', 'wxic'), text: WX.text }; }
