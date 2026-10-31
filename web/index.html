@@ -4628,14 +4628,15 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     const loader = new GLTFLoader(); if (T.MeshoptDecoder) loader.setMeshoptDecoder(T.MeshoptDecoder); G3.loader = loader; G3.loading = {}; // the models are meshopt-compressed
     // the cars and the jet: each model loads the first time one is on screen (the drawn shape stands in until then)
     G3.vehicle = (model) => {
-      if (model === 'danfo' && !G3.protos.danfo) { const T3 = THREE, g = new T3.Group(), M = (c, r = 0.6, m = 0) => new T3.MeshStandardMaterial({ color: c, roughness: r, metalness: m }), add = (w, h, d, mat, x, y, z) => { const b = new T3.Mesh(new T3.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.castShadow = true; g.add(b); };
-        const yel = M(0xF2B705, 0.45), blk = M(0x15161A, 0.5), gls = M(0x1C2A36, 0.15, 0.4), chr = M(0xB8BCC2, 0.3, 0.8);
+      if ((model === 'danfo' || model === 'danfo_b') && !G3.protos[model]) { const blue = model === 'danfo_b'; const T3 = THREE, g = new T3.Group(), M = (c, r = 0.6, m = 0) => new T3.MeshStandardMaterial({ color: c, roughness: r, metalness: m }), add = (w, h, d, mat, x, y, z) => { const b = new T3.Mesh(new T3.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.castShadow = true; g.add(b); };
+        const yel = M(blue ? 0x2F8FD8 : 0xF2B705, 0.45), blk = M(blue ? 0xF2F4F7 : 0x15161A, 0.5), // (blue danfos: blue above, a white band, as on Lagos Island now)
+         _u = 0, gls = M(0x1C2A36, 0.15, 0.4), chr = M(0xB8BCC2, 0.3, 0.8);
         add(4.6, 1.55, 1.86, yel, 0, 1.12, 0); add(0.5, 1.1, 1.8, yel, 2.45, 0.9, 0); // the body, the short nose
         for (const yy of [0.62, 0.78]) add(4.62, 0.07, 1.88, blk, 0, yy, 0); // the two black stripes
         add(3.4, 0.5, 1.88, gls, -0.35, 1.6, 0); add(0.06, 0.6, 1.7, gls, 2.32, 1.55, 0); add(0.06, 0.5, 1.7, gls, -2.32, 1.55, 0); // side windows, windscreen, back window
-        add(0.9, 1.0, 0.04, M(0xD9A400, 0.5), 0.6, 1.0, 0.94); add(4.4, 0.12, 1.5, blk, -0.2, 1.97, 0); for (const xx of [-1.6, -0.4, 0.8]) add(0.08, 0.18, 1.5, blk, xx, 2.06, 0); // the sliding door, the roof rack
+        add(0.9, 1.0, 0.04, M(blue ? 0x2479BD : 0xD9A400, 0.5), 0.6, 1.0, 0.94); add(4.4, 0.12, 1.5, blk, -0.2, 1.97, 0); for (const xx of [-1.6, -0.4, 0.8]) add(0.08, 0.18, 1.5, blk, xx, 2.06, 0); // the sliding door, the roof rack
         add(0.12, 0.25, 1.9, chr, 2.72, 0.5, 0); add(0.12, 0.25, 1.9, chr, -2.33, 0.5, 0); // bumpers
-        const norm = new T3.Group(); norm.add(g); g.position.y = 0; G3.protos.danfo = norm; G3.pool.danfo = []; return; }
+        if (blue) add(4.62, 0.5, 1.88, M(0xF2F4F7, 0.5), 0, 0.62, 0); /* (the white lower half) */ const norm = new T3.Group(); norm.add(g); g.position.y = 0; G3.protos[model] = norm; G3.pool[model] = []; return; }
       if (G3.protos[model] || G3.loading[model]) return; const jet = model === 'jet', file = jet ? 'jet' : GLB_FOR[model]; if (!file) return; G3.loading[model] = 1;
       loader.load((jet ? JET_BASE : CAR_BASE) + file + '.glb', (gltf) => {
         // on the ground, centred, its length along x; a car scaled to the real car's length in metres, the jet to one unit
@@ -7311,6 +7312,19 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     const um = inst(new T3.ConeGeometry(1.5, 0.6, 8, 1, true), M(0xffffff, { side: T3.DoubleSide, roughness: 0.8 }), SF.kiosks, (s0) => at(s0, 0, 0.2, 2.5));
     if (um) { SF.kiosks.forEach((s0, k) => um.setColorAt(k, new T3.Color(s0.col))); um.instanceColor.needsUpdate = true; }
     inst(new T3.SphereGeometry(0.12, 8, 6), M(0xFFF3C4, { emissive: 0xFFD89A, emissiveIntensity: nt ? 2.2 : 0.1 }), SF.kiosks, (s0) => at(s0, 0, 0.2, 2.1));
+    // a keke park behind each bus stop: three yellow tricycles nose to tail on the kerb, black canopies, waiting for fares
+    const kk = SF.stops.flatMap((s0) => [-6.5, -9.3, -12.1].map((al, n) => ({ s0, al, n })));
+    const kat = (v, dx, dy, dz) => at(v.s0, v.al + dx, -2.9 + dz, dy);
+    inst(new T3.BoxGeometry(2.0, 1.0, 1.15), yel, kk, (v) => kat(v, 0, 0.85, 0));
+    inst(new T3.BoxGeometry(0.5, 0.75, 0.7), yel, kk, (v) => kat(v, 1.15, 0.7, 0));
+    inst(new T3.BoxGeometry(2.2, 0.08, 1.3), M(0x15161A), kk, (v) => kat(v, -0.05, 1.75, 0));
+    inst(new T3.BoxGeometry(0.06, 0.55, 1.1), glass, kk, (v) => kat(v, 0.95, 1.4, 0));
+    for (const [wx, wz] of [[1.1, 0], [-0.75, -0.55], [-0.75, 0.55]]) inst(new T3.CylinderGeometry(0.28, 0.28, 0.16, 10).rotateX(Math.PI / 2), M(0x1A1A1A, { roughness: 0.9 }), kk, (v) => kat(v, wx, 0.3, wz));
+    // billboards on tall steel legs, set back from the kerb beside every second stop
+    const bb = SF.stops.filter((s0) => s0.n % 2 === 0), bbMat = M(0xffffff, { emissive: nt ? 0xFFFFFF : 0x000000, emissiveIntensity: nt ? 0.5 : 0, map: (() => { const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128; const c = cv.getContext('2d'); const gr = c.createLinearGradient(0, 0, 256, 0); gr.addColorStop(0, '#0F0F12'); gr.addColorStop(1, '#2A2A30'); c.fillStyle = gr; c.fillRect(0, 0, 256, 128); c.fillStyle = '#F7C81E'; c.font = 'bold 44px Impact, Arial Black, sans-serif'; c.fillText('LAGOS', 16, 58); c.fillStyle = '#fff'; c.fillText('ISLAND', 16, 106); c.fillStyle = '#22C55E'; c.font = 'bold 18px Arial, sans-serif'; c.fillText('Your city.', 168, 50); c.fillText('Your game.', 166, 74); const t2 = new T3.CanvasTexture(cv); t2.colorSpace = T3.SRGBColorSpace; return t2; })() });
+    for (const al of [-2.4, 2.4]) inst(new T3.CylinderGeometry(0.18, 0.22, 7.5, 8), steel, bb, (s0) => at(s0, 14 + al, 6.5, 3.75));
+    inst(new T3.BoxGeometry(6.6, 3.4, 0.25), steel, bb, (s0) => at(s0, 14, 6.6, 8.6));
+    inst(new T3.BoxGeometry(6.3, 3.1, 0.05), bbMat, bb, (s0) => at(s0, 14, 6.45, 8.6));
     G3.scene.add(g);
   }
   function sfStep(now) {
@@ -7518,11 +7532,11 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       else if (L.t > 8 && ((w[other] > 0 && (w[L.g] === 0 || L.t > 24)) || L.t > 40)) L.amber = 3;
       L.wait = [0, 0]; } // (counted again this frame, by the cars stopped at it)
   }
-  const TR_MODELS = ['danfo', 'danfo', 'danfo', 'corolla', 'corolla', 'camry', 'highlander', 'landcruiser', 'rangerover'];
+  const TR_MODELS = ['danfo', 'danfo_b', 'danfo_b', 'corolla', 'corolla', 'camry', 'highlander', 'landcruiser', 'rangerover'];
   function trSpawn(G) {
     for (let tries = 0; tries < 40; tries++) { const rd = G.roads[Math.floor(Math.random() * G.roads.length)]; if (rd.c > 5) continue; const k = Math.floor(Math.random() * (rd.n - 1)), x0 = rd.p[2 * k], z0 = rd.p[2 * k + 1], d = Math.hypot(x0 - me.x, z0 - me.z); if (d < 60 || d > 200 || !V3.cells.has(Math.floor(x0 / W3.CS) + ',' + Math.floor(z0 / W3.CS))) continue; // (out of the way, but soon in sight, on a street that's built)
       const model = TR_MODELS[Math.floor(Math.random() * TR_MODELS.length)]; if (!G3.protos[model]) G3.vehicle(model);
-      const q = { rd, k, u: 0, dir: Math.random() < 0.5 ? 1 : -1, v: 0, lane: rd.c <= 1 ? (Math.random() < 0.5 ? 0.3 : 0.7) : 0.5, model, sc: 0.95, tint: model === 'danfo' ? null : W3_CAR_COLS[Math.floor(Math.random() * W3_CAR_COLS.length)], traffic: true, cx: x0, cz: z0, ang: 0 };
+      const q = { rd, k, u: 0, dir: Math.random() < 0.5 ? 1 : -1, v: 0, lane: rd.c <= 1 ? (Math.random() < 0.5 ? 0.3 : 0.7) : 0.5, model, sc: 0.95, tint: model === 'danfo' || model === 'danfo_b' ? null : W3_CAR_COLS[Math.floor(Math.random() * W3_CAR_COLS.length)], traffic: true, cx: x0, cz: z0, ang: 0 };
       if (q.dir < 0) { q.k = Math.min(rd.n - 2, k); q.u = 0; } TR.cars.push(q); return; }
   }
   function trSeg(q) { const p2 = q.rd.p, a = q.dir > 0 ? q.k : q.k + 1, b = q.dir > 0 ? q.k + 1 : q.k; return [p2[2 * a], p2[2 * a + 1], p2[2 * b], p2[2 * b + 1]]; }
@@ -7536,7 +7550,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       let [ax, az, bx, bz] = trSeg(q); let L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L;
       const top = q.rd.c <= 1 ? 7.8 : q.rd.c <= 3 ? 5.5 : 3.6; let block = false; // (what's ahead: you, your car, another car in the same direction)
       const ahead = (x2, z2, r) => { const dx = x2 - q.cx, dz = z2 - q.cz, f = dx * ux + dz * uz, s2 = Math.abs(-dx * uz + dz * ux); return f > 0 && f < r && s2 < 2.4; };
-      if (q.model === 'danfo' && SF.stops.length) { const nowS = performance.now(); if (q.hold > nowS) block = true; else for (const st of SF.stops) { if (st.n !== q.lastStop && Math.abs(st.rd.x - q.cx) < 5 && Math.abs(st.rd.z - q.cz) < 5) { q.lastStop = st.n; q.hold = nowS + 3500 + (st.n % 3) * 1200; block = true; break; } } } // (a danfo stops at the bus stop: passengers on and off)
+      if ((q.model === 'danfo' || q.model === 'danfo_b') && SF.stops.length) { const nowS = performance.now(); if (q.hold > nowS) block = true; else for (const st of SF.stops) { if (st.n !== q.lastStop && Math.abs(st.rd.x - q.cx) < 5 && Math.abs(st.rd.z - q.cz) < 5) { q.lastStop = st.n; q.hold = nowS + 3500 + (st.n % 3) * 1200; block = true; break; } } } // (a danfo stops at the bus stop: passengers on and off)
       if (ahead(me.x, me.z, 11)) block = true; for (const o of TR.cars) if (o !== q && ahead(o.cx, o.cz, 10)) { block = true; break; }
       if (!block && G.lights) { const nk = q.dir > 0 ? q.k + 1 : q.k, ex = q.rd.p[2 * nk], ez = q.rd.p[2 * nk + 1], Lj = G.lights.get(G.key(ex, ez)); // (the point this stretch leads to: a junction with lights?)
         if (Lj) { const back = Math.atan2(q.cz - ez, q.cx - ex); let arm = null, bd = 9; for (const m of Lj.arms) { const d = Math.abs(Math.atan2(Math.sin(m.a - back), Math.cos(m.a - back))); if (m.rd === q.rd && d < bd) { bd = d; arm = m; } } // (the arm it's coming in on)
@@ -7591,6 +7605,18 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       c.fillStyle = night2 ? '#000' : '#202830'; c.fillRect(31, y + 8, 2, 48); } // (a mullion down the middle)
     const t2 = new T3.CanvasTexture(cv); t2.wrapS = t2.wrapT = T3.RepeatWrapping; t2.colorSpace = T3.SRGBColorSpace; t2.repeat.set(1, 0.5); t2.anisotropy = 4; return (winTex.c[k] = t2);
   }
+  // a road sign's face: Lagos green, a white rim, the place in white capitals, NEXT EXIT and an arrow (as on the Third
+  // Mainland and the Marina flyovers)
+  function signFace(name, flip) {
+    const k = name + (flip ? '|f' : ''); signFace.c = signFace.c || new Map(); if (signFace.c.has(k)) return signFace.c.get(k);
+    const T3 = G3.T, cv = document.createElement('canvas'); cv.width = 256; cv.height = 128; const c = cv.getContext('2d');
+    c.fillStyle = '#0B7A43'; c.fillRect(0, 0, 256, 128); c.strokeStyle = '#F8FAFC'; c.lineWidth = 6; c.strokeRect(5, 5, 246, 118);
+    c.fillStyle = '#F8FAFC'; c.textAlign = 'center'; let fs = 30; c.font = `bold ${fs}px Arial, sans-serif`; const t = name.toUpperCase(); while (c.measureText(t).width > 230 && fs > 14) { fs -= 2; c.font = `bold ${fs}px Arial, sans-serif`; }
+    c.fillText(t, 128, 54); c.font = 'bold 22px Arial, sans-serif'; c.fillText('NEXT EXIT', 116, 96); c.beginPath(); c.moveTo(196, 80); c.lineTo(212, 102); c.lineTo(180, 102); c.closePath(); c.fill(); c.fillRect(193, 102, 6, 10);
+    const t2 = new T3.CanvasTexture(cv); t2.colorSpace = T3.SRGBColorSpace; t2.anisotropy = 4;
+    const face = new T3.MeshStandardMaterial({ map: t2, roughness: 0.5 }), side = new T3.MeshStandardMaterial({ color: 0x0B7A43, roughness: 0.5 });
+    const mats = [face, face, side, side, side, side]; if (signFace.c.size > 60) signFace.c.clear(); signFace.c.set(k, mats); return mats; // (the box's two big faces carry the sign)
+  }
   function w3real(job, grp) {
     const T3 = G3.T, [cx0, cz0, cx1, cz1] = job.R.clip, ch = wchunksOver(cx0, cz0, cx1, cz1), inC = (x2, z2) => x2 >= cx0 && x2 < cx1 && z2 >= cz0 && z2 < cz1, rgb = (hex) => { const n2 = parseInt(hex.slice(1), 16); return [(n2 >> 16) / 255, ((n2 >> 8) & 255) / 255, (n2 & 255) / 255]; };
     if (!ch.ready) job.partial = true;
@@ -7634,6 +7660,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
           const pole = new T3.MeshStandardMaterial({ color: 0x3A3F47, metalness: 0.6, roughness: 0.45 }), head = new T3.MeshStandardMaterial({ color: 0xF1F5F9, emissive: 0xFFD89A, emissiveIntensity: night > 0.5 ? 1.6 : 0 });
           mk(new T3.CylinderGeometry(0.09, 0.13, 6.2, 8), pole, ([lx, lz]) => { o3.position.set(lx, 3.1, lz); o3.rotation.set(0, 0, 0); });
           mk(new T3.BoxGeometry(1.5, 0.12, 0.12), pole, ([lx, lz, a]) => { o3.position.set(lx + Math.cos(a) * 0.7, 6.1, lz + Math.sin(a) * 0.7); o3.rotation.set(0, -a, 0); });
+          mk(new T3.BoxGeometry(1.4, 0.06, 0.8), new T3.MeshStandardMaterial({ color: 0x1E3A5F, metalness: 0.5, roughness: 0.25 }), ([lx, lz, a]) => { o3.position.set(lx, 6.45, lz); o3.rotation.set(0.35, -a, 0); }); // (the solar panel on top, tilted to the sun, as on every new Lagos lamp)
           mk(new T3.BoxGeometry(0.55, 0.16, 0.3), head, ([lx, lz, a]) => { o3.position.set(lx + Math.cos(a) * 1.35, 6.0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, -a, 0); }); } }
       { const trees = []; for (const c of ch) for (const r of c.r) { if (r.br || r.c < 3) continue; const w = REAL.widths[r.c] / 2 + 1.45, p2 = r.p; let acc = (Math.abs(p2[0] * 5 + p2[1] * 11) % 19) + 6, side = -1; // (trees along the side streets' pavements, about every 19 units, between the lamps, clear of the junctions)
           for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L, jA = jw(ax, az) + 3, jB = jw(bx, bz) + 3;
@@ -7651,7 +7678,8 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       if (gantries.length) { const steel = new T3.MeshStandardMaterial({ color: 0x9AA1A9, metalness: 0.7, roughness: 0.4 }), sign = new T3.MeshStandardMaterial({ color: 0x0F6B3A, roughness: 0.5 }), rim = new T3.MeshStandardMaterial({ color: 0xF1F5F9, roughness: 0.5 });
         for (const [gx, gz, a, w] of gantries) { const g = new T3.Group(); g.position.set(gx, 0, gz); g.rotation.y = -a; grp.add(g); const add = (geo, mat, x2, y2, z2) => { const m = new T3.Mesh(geo, mat); m.position.set(x2, y2, z2); m.castShadow = true; g.add(m); };
           for (const sd of [-1, 1]) add(new T3.CylinderGeometry(0.25, 0.3, 7.6, 10), steel, 0, 3.8, sd * (w + 1.2)); add(new T3.BoxGeometry(0.5, 0.6, 2 * w + 2.4), steel, 0, 7.4, 0); // (two posts, the beam)
-          for (const sd of [-1, 1]) { add(new T3.BoxGeometry(0.2, 2.4, w * 0.75), rim, 0.12, 6.0, sd * w * 0.5); add(new T3.BoxGeometry(0.24, 2.2, w * 0.71), sign, 0.14, 6.0, sd * w * 0.5); } } } } // (the green direction signs, white-edged, one over each carriageway)
+          for (const sd of [-1, 1]) { const fx = Math.cos(a), fz = Math.sin(a); let best = null, bd = 1e9; for (const p of PLACES) { const px = (p[1] + p[3] / 2) * T, pz = (p[2] + p[4] / 2) * T, ahead = (px - gx) * fx * sd + (pz - gz) * fz * sd, d = Math.hypot(px - gx, pz - gz); if (ahead > 40 && d < bd && d < 900) { bd = d; best = p; } } // (the nearest real place ahead of this carriageway)
+            add(new T3.BoxGeometry(0.2, 2.4, w * 0.75), rim, 0.12, 6.0, sd * w * 0.5); add(new T3.BoxGeometry(0.24, 2.2, w * 0.71), signFace(best ? best[5].replace(/ \(.*\)$/, '').replace(/ · .*$/, '') : 'Lagos Island', sd < 0), 0.14, 6.0, sd * w * 0.5); } } } } // (the green direction signs, white-edged, one over each carriageway: NEXT EXIT and where it goes)
     { const wp = [], wc = [], gp2 = [], gc = [], gu = [], rp = [], rc = [], FL = 3.2, GL = rgb(night > 0.5 ? '#FFFFFF' : '#FFFFFF'); // (a storey is 3.2 m; the glass takes its colour from the window picture)
       for (const c of ch) for (const b of c.b) { if (!inC(b.cx, b.cz)) continue; const p2 = b.p, n2 = p2.length / 2, lk = realLook(b), WCc = rgb(lk.wall), RC = rgb(lk.roof); let sa = 0; for (let k = 0; k < n2; k++) { const k2 = (k + 1) % n2; sa += p2[2 * k] * p2[2 * k2 + 1] - p2[2 * k2] * p2[2 * k + 1]; }
         for (let k = 0; k < n2; k++) { const k2 = (k + 1) % n2, ax = p2[2 * k], az = p2[2 * k + 1], bx = p2[2 * k2], bz = p2[2 * k2 + 1], L = Math.hypot(bx - ax, bz - az); if (L < 0.05) continue; const [nx, nz] = outN(p2, ax, az, bx, bz, L);
