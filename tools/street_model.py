@@ -101,7 +101,7 @@ def clean():
     for fn in files:
         for r in json.load(open(os.path.join(cdir, fn), encoding='utf-8'))['r']:
             cls, br, pts = r[0], r[1], [v / 10 for v in r[2:]]
-            if br: continue  # (a bridge passes over)
+            # (bridges count too: a building has no place under a flyover's deck or in a bridge's way)
             hw = widths[cls] / 2 + 1.0
             for k in range(0, len(pts) - 3, 2):
                 ax, az, bx, bz = pts[k], pts[k + 1], pts[k + 2], pts[k + 3]

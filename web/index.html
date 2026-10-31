@@ -5017,7 +5017,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     const want = p.lie > 0.04 ? (p.lie < 0.55 ? 'Sitting_Idle_Loop' : 'Idle_Loop') : pose === 'sit' ? 'Sitting_Idle_Loop' : inWater ? (speed > 1 ? 'Swim_Fwd_Loop' : 'Swim_Idle_Loop') : sn > 18 ? 'Sprint_Loop' : sn > 13 ? 'Jog_Fwd_Loop' : sn > 1.2 ? 'Walk_Loop' : partying && pose === 'dance' ? 'Dance_Loop' : 'Idle_Loop';
     if (p.cur !== want && p.acts[want]) { const next = p.acts[want].reset().play(); if (p.cur && p.acts[p.cur]) p.acts[p.cur].crossFadeTo(next, 0.25, false); p.cur = want; }
     if (p.acts[p.cur]) p.acts[p.cur].timeScale = p.cur === 'Walk_Loop' ? Math.max(0.6, Math.min(1.4, sn / 10)) : p.cur === 'Sprint_Loop' ? Math.max(0.8, Math.min(1.3, sn / 24)) : p.cur === 'Jog_Fwd_Loop' ? Math.max(0.8, Math.min(1.3, sn / 15)) : 1; // feet that keep up with the ground
-    { const far = Math.hypot(px - me.x, pz - me.z) > (MOBILE ? 45 : 80); p.acc = (p.acc || 0) + dt; p.fc = (p.fc || 0) + 1; if (!far || p.fc % 3 === 0) { p.mixer.update(p.acc); p.acc = 0; } } // (far off, a step every third frame: no one can tell, and phones keep up)
+    { const cp3 = V3_LIVE && V3.cam ? V3.cam.position : null, ws3 = V3.ws || 1, far = cp3 ? Math.hypot(px - cp3.x / ws3, pz - cp3.z / ws3) > (MOBILE ? 70 : 120) : Math.hypot(px - me.x, pz - me.z) > (MOBILE ? 45 : 80); /* (far from the camera, not from you: zoomed out, the people in front of you keep moving smoothly) */ p.acc = (p.acc || 0) + dt; p.fc = (p.fc || 0) + 1; if (!far || p.fc % 3 === 0) { p.mixer.update(p.acc); p.acc = 0; } } // (far off, a step every third frame: no one can tell, and phones keep up)
     if (p.lie > 0.004) { // in bed: sit on the edge, then lie back, head on the pillow; a slow breath while asleep
       const e = p.lie * p.lie * (3 - 2 * p.lie), yaw = lieRot ? Math.PI / 2 : 0, off = 3.3 * e, by = (seatY || 2.6) - 0.2;
       if (p.lx == null || pose !== 'sleep' && p.lie > 0.98) { p.lx = px; p.lz = pz; } p.lx += (px - p.lx) * Math.min(1, dt * 4); p.lz += (pz - p.lz) * Math.min(1, dt * 4);
@@ -5684,6 +5684,12 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     return BRG.cells; }
   // standing on a bridge deck: only from somewhere near its height (walking up its ramp), never jumped onto from the
   // street under a flyover. prev: where this person or car stood last frame
+  // a lot that a bridge passes over (its centre within the deck's width and a margin): left open
+  const LUB = { n: -1, m: new Map() };
+  function lotUnderBridge(i, j) { bridgeIndex(); if (LUB.n !== BRG.n) { LUB.n = BRG.n; LUB.m.clear(); } const k = j * 4096 + i; let v = LUB.m.get(k); if (v != null) return v;
+    const px = (i + 0.5) * T, pz = (j + 0.5) * T, list = BRG.cells.get(Math.floor(px / 30) + ',' + Math.floor(pz / 30)) || []; v = false;
+    for (const g of list) { const dx = g.bx - g.ax, dz = g.bz - g.az, L2 = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((px - g.ax) * dx + (pz - g.az) * dz) / L2)); if (Math.hypot(g.ax + dx * u - px, g.az + dz * u - pz) < g.w + T * 0.75) { v = true; break; } }
+    LUB.m.set(k, v); return v; }
   function deckUnder(px, pz, prev) {
     if (!REAL) return null; const list = bridgeIndex().get(Math.floor(px / 30) + ',' + Math.floor(pz / 30)); if (!list) return null; let best = null;
     for (const g of list) { const dx = g.bx - g.ax, dz = g.bz - g.az, L2 = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((px - g.ax) * dx + (pz - g.az) * dz) / L2)); if (Math.hypot(g.ax + dx * u - px, g.az + dz * u - pz) > g.w + 0.4) continue;
@@ -7388,7 +7394,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     const st = { wp: null, big: false, zoom: 1, D: D0 };
     const layout = () => {
       const D = st.D = st.big ? Math.round(Math.min(innerWidth, innerHeight) * 0.86) : D0; el.width = el.height = Math.round(D * dpr);
-      el.style.cssText = `position:fixed;${st.big ? `left:50%;top:50%;right:auto;bottom:auto;margin:${-D / 2}px 0 0 ${-D / 2}px;z-index:59;` : small + 'z-index:25;'}width:${D}px;height:${D}px;border-radius:50%;box-shadow:0 0 0 2px #22D3EE,0 0 14px rgba(34,211,238,.7),0 0 0 5px rgba(2,6,12,.85),0 6px 16px rgba(0,0,0,.5);cursor:pointer;touch-action:none`; // (the hologram's glowing rim)
+      el.style.cssText = `position:fixed;${st.big ? `left:50%;top:50%;right:auto;bottom:auto;margin:${-D / 2}px 0 0 ${-D / 2}px;z-index:59;` : small + 'z-index:25;'}width:${D}px;height:${D}px;border-radius:50%;box-shadow:0 0 0 2px #8FA845,0 0 12px rgba(143,168,69,.55),0 0 0 5px rgba(12,16,8,.88),0 6px 16px rgba(0,0,0,.5);cursor:pointer;touch-action:none`; // (the hologram's glowing rim)
       lab.style.cssText = `position:fixed;${st.big ? `left:50%;top:calc(50% + ${D / 2 + 8}px);margin-left:${-D / 2}px;z-index:59;font-size:13px;` : TOUCH ? `right:calc(12px + env(safe-area-inset-right));top:calc(${210 + D + 5}px + env(safe-area-inset-top));z-index:25;font-size:10px;` : 'left:12px;bottom:64px;z-index:25;font-size:11px;'}width:${D}px;text-align:center;font-weight:800;font-family:'Plus Jakarta Sans',system-ui;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis`;
       veil.style.display = st.big ? 'block' : 'none';
     };
@@ -7401,6 +7407,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     // a tap picks the nearest place under it as your route (tap it again, or empty map, to clear it); two taps quickly open or close the big map
     let lastTap = 0;
     el.addEventListener('click', (e) => {
+      if (!st.big) { setBig(true); lastTap = 0; return; } // (one tap: the whole island map; there, tap a place for its route, tap twice or outside to close)
       const now = performance.now(); if (now - lastTap < 450) { lastTap = 0; setBig(!st.big); return; } lastTap = now;
       const r = el.getBoundingClientRect(), mx = e.clientX - r.left - st.D / 2, my = e.clientY - r.top - st.D / 2, ps = yawNow(), k = kNow(), c2 = Math.cos(ps), s2 = Math.sin(ps), wx = me.x + (mx * c2 + my * s2) / k, wz = me.z + (-mx * s2 + my * c2) / k;
       let best = null, bd = 16 / k; for (const p2 of PLACES) { const d2 = Math.hypot((p2[1] + p2[3] / 2) * T - wx, (p2[2] + p2[4] / 2) * T - wz); if (d2 < bd) { bd = d2; best = p2; } }
@@ -7414,14 +7421,10 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       { const phoneOn = (document.getElementById('phone') || {}).style?.display === 'block'; document.body.classList.toggle('phoneOn', phoneOn); if (phoneOn && st.big) setBig(false); } // (the HUD and the map step away while the phone is out)
       const off = inside || !playing; el.style.display = lab.style.display = off ? 'none' : 'block'; if (off) { if (st.big) setBig(false); return; }
       const D = st.D, ps = yawNow(), k = kNow(), R2 = D / 2; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, D, D); g.save(); g.beginPath(); g.arc(R2, R2, R2, 0, Math.PI * 2); g.clip();
-      // the map as a hologram: the city drawn dark and grey, then tinted cyan (the roads glow, the land and water sink), a fine
-      // grid, range rings, and a radar sweep turning once every four seconds
-      g.fillStyle = '#02060C'; g.fillRect(0, 0, D, D); g.save(); g.translate(R2, R2); g.rotate(ps); g.scale(k * T / S, k * T / S); g.imageSmoothingEnabled = true; g.filter = 'grayscale(1) brightness(0.62) contrast(1.7)'; g.drawImage(base, -me.x * S / T, -me.z * S / T); g.filter = 'none'; g.restore();
-      g.save(); g.globalCompositeOperation = 'color'; g.fillStyle = '#00D9FF'; g.fillRect(0, 0, D, D); g.restore();
-      g.save(); g.strokeStyle = 'rgba(34,211,238,.10)'; g.lineWidth = 1; const gs2 = Math.max(10, D / 9); for (let gx = (R2 % gs2); gx < D; gx += gs2) { g.beginPath(); g.moveTo(gx, 0); g.lineTo(gx, D); g.stroke(); g.beginPath(); g.moveTo(0, gx); g.lineTo(D, gx); g.stroke(); }
-        g.strokeStyle = 'rgba(34,211,238,.28)'; for (const rr of [0.33, 0.66]) { g.beginPath(); g.arc(R2, R2, R2 * rr, 0, Math.PI * 2); g.stroke(); }
-        const sw = (performance.now() / 4000 % 1) * Math.PI * 2, sg = g.createConicGradient ? g.createConicGradient(sw, R2, R2) : null; if (sg) { sg.addColorStop(0, 'rgba(34,211,238,.32)'); sg.addColorStop(0.12, 'rgba(34,211,238,0)'); sg.addColorStop(1, 'rgba(34,211,238,0)'); g.fillStyle = sg; g.fillRect(0, 0, D, D); }
-        g.restore();
+      // the map in army green: the city drawn dark and grey, then tinted olive (the roads stand out bright), a faint grid
+      g.fillStyle = '#0B0F07'; g.fillRect(0, 0, D, D); g.save(); g.translate(R2, R2); g.rotate(ps); g.scale(k * T / S, k * T / S); g.imageSmoothingEnabled = true; g.filter = 'grayscale(1) brightness(0.62) contrast(1.7)'; g.drawImage(base, -me.x * S / T, -me.z * S / T); g.filter = 'none'; g.restore();
+      g.save(); g.globalCompositeOperation = 'color'; g.fillStyle = '#7F9A3A'; g.fillRect(0, 0, D, D); g.restore();
+      g.save(); g.strokeStyle = 'rgba(176,200,110,.10)'; g.lineWidth = 1; const gs2 = Math.max(10, D / 9); for (let gx = (R2 % gs2); gx < D; gx += gs2) { g.beginPath(); g.moveTo(gx, 0); g.lineTo(gx, D); g.stroke(); g.beginPath(); g.moveTo(0, gx); g.lineTo(D, gx); g.stroke(); } g.restore(); // (a faint grid, army green)
       const gl = goal();
       if (gl) { const path = typeof GPS !== 'undefined' && GPS.path && GPS.path.length >= 4 ? GPS.path : [me.x, me.z, gl.x, gl.z]; g.save(); g.lineCap = g.lineJoin = 'round'; g.beginPath(); for (let i = 0; i + 1 < path.length; i += 2) { const [mx, my] = toMap(path[i], path[i + 1], ps, k); if (i) g.lineTo(R2 + mx, R2 + my); else g.moveTo(R2 + mx, R2 + my); }
         g.strokeStyle = 'rgba(34,211,238,.35)'; g.lineWidth = 6; g.stroke(); g.shadowColor = '#22D3EE'; g.shadowBlur = 8; g.strokeStyle = '#A5F3FC'; g.lineWidth = 2.4; g.setLineDash([5, 4]); g.lineDashOffset = -performance.now() / 60; g.stroke(); g.restore(); } // (the way to it along the streets, glowing and streaming)
@@ -7619,12 +7622,14 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       let [ax, az, bx, bz] = trSeg(q); let L = Math.hypot(bx - ax, bz - az) || 1, ux = (bx - ax) / L, uz = (bz - az) / L;
       const top = q.rd.c <= 1 ? 7.8 : q.rd.c <= 3 ? 5.5 : 3.6; let block = false; // (what's ahead: you, your car, another car in the same direction)
       const ahead = (x2, z2, r) => { const dx = x2 - q.cx, dz = z2 - q.cz, f = dx * ux + dz * uz, s2 = Math.abs(-dx * uz + dz * ux); return f > 0 && f < r && s2 < 2.4; };
-      if ((q.model === 'danfo' || q.model === 'danfo_b') && SF.stops.length) { const nowS = performance.now(); if (q.hold > nowS) block = true; else for (const st of SF.stops) { if (st.n !== q.lastStop && Math.abs(st.rd.x - q.cx) < 5 && Math.abs(st.rd.z - q.cz) < 5) { q.lastStop = st.n; q.hold = nowS + 3500 + (st.n % 3) * 1200; block = true; break; } } } // (a danfo stops at the bus stop: passengers on and off)
+      if ((q.model === 'danfo' || q.model === 'danfo_b') && SF.stops.length) { const nowS = performance.now(); if (q.hold > nowS) block = true; else for (const st of SF.stops) { if (st.n !== q.lastStop && Math.abs(st.rd.x - q.cx) < 5 && Math.abs(st.rd.z - q.cz) < 5) { q.lastStop = st.n; q.hold = nowS + 2200 + (st.n % 3) * 600; block = true; break; } } } // (a danfo stops at the bus stop: passengers on and off)
       if (ahead(me.x, me.z, 11)) block = true; for (const o of TR.cars) if (o !== q && ahead(o.cx, o.cz, 10)) { block = true; break; }
       if (!block && G.lights) { const nk = q.dir > 0 ? q.k + 1 : q.k, ex = q.rd.p[2 * nk], ez = q.rd.p[2 * nk + 1], Lj = G.lights.get(G.key(ex, ez)); // (the point this stretch leads to: a junction with lights?)
         if (Lj) { const back = Math.atan2(q.cz - ez, q.cx - ex); let arm = null, bd = 9; for (const m of Lj.arms) { const d = Math.abs(Math.atan2(Math.sin(m.a - back), Math.cos(m.a - back))); if (m.rd === q.rd && d < bd) { bd = d; arm = m; } } // (the arm it's coming in on)
           const st = arm ? tlState(Lj, arm.grp) : 'g', toLine = Math.hypot(ex - q.cx, ez - q.cz) - Lj.r;
-          if (st !== 'g' && toLine > (st === 'a' ? 6 : -1) && toLine < 26) { block = toLine < 3.5 || q.v * q.v / 9 > toLine - 1; if (arm && Lj.wait && toLine < 30) Lj.wait[arm.grp]++; } } } // (red: stop at the line, and WYRD counts you in the queue; amber: stop if there's room to)
+          if (st !== 'g' && toLine > (st === 'a' ? 6 : -1) && toLine < 26) { block = toLine < 3.5 || q.v * q.v / 9 > toLine - 1; if (block) q.red = true; if (arm && Lj.wait && toLine < 30) Lj.wait[arm.grp]++; } } } // (red: stop at the line, and WYRD counts you in the queue; amber: stop if there's room to)
+      if (block && !q.red) { q.stuck = (q.stuck || 0) + dt; if (q.stuck > 6) block = false; } else q.stuck = 0; // (held up for long by anything but a red light: it eases round and goes on, as Lagos drivers do)
+      q.red = false;
       q.v += ((block ? 0 : top) - q.v) * Math.min(1, dt * (block ? 3 : 0.8)); q.u += q.v * dt;
       while (q.u > L) { q.u -= L; const nk = q.k + q.dir; if (q.dir > 0 ? nk + 1 < q.rd.n : nk >= 0) q.k = nk;
         else { const endX = q.dir > 0 ? q.rd.p[q.rd.p.length - 2] : q.rd.p[0], endZ = q.dir > 0 ? q.rd.p[q.rd.p.length - 1] : q.rd.p[1], opts = (G.nodes.get(G.key(endX, endZ)) || []).filter((o) => o.rd !== q.rd && o.rd.c <= 5);
@@ -7687,6 +7692,24 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     const face = new T3.MeshStandardMaterial({ map: t2, roughness: 0.5 }), side = new T3.MeshStandardMaterial({ color: 0x0B7A43, roughness: 0.5 });
     const mats = [face, face, side, side, side, side]; if (signFace.c.size > 60) signFace.c.clear(); signFace.c.set(k, mats); return mats; // (the box's two big faces carry the sign)
   }
+  // walls that have stood in the Lagos weather, not plastic: the paint varies in soft patches, it's darker in a band at
+  // street level (splashes, dust, hands), and rain streaks run down from the windows; all in the shader, no extra geometry
+  function weatherWall(m) {
+    m.onBeforeCompile = (sh) => {
+      sh.vertexShader = `varying vec3 vWp;
+` + sh.vertexShader.replace('#include <worldpos_vertex>', `#include <worldpos_vertex>
+ vWp = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
+      sh.fragmentShader = `varying vec3 vWp;
+float hh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float nn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(hh(i), hh(i + vec2(1, 0)), f.x), mix(hh(i + vec2(0, 1)), hh(i + vec2(1, 1)), f.x), f.y); }
+` + sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+        { float along = vWp.x + vWp.z; float patchy = 0.9 + 0.12 * nn(vec2(along, vWp.y) * 0.35) + 0.05 * nn(vec2(along, vWp.y) * 2.1);
+          float ground = smoothstep(4.0, 0.0, vWp.y) * 0.22;
+          float streak = smoothstep(0.62, 1.0, nn(vec2(along * 1.7, 0.0))) * (0.5 + 0.5 * nn(vec2(along * 1.7, vWp.y * 0.08))) * 0.16;
+          diffuseColor.rgb *= patchy * (1.0 - ground - streak); }`);
+    };
+    return m;
+  }
   function w3real(job, grp) {
     const T3 = G3.T, [cx0, cz0, cx1, cz1] = job.R.clip, ch = wchunksOver(cx0, cz0, cx1, cz1), inC = (x2, z2) => x2 >= cx0 && x2 < cx1 && z2 >= cz0 && z2 < cz1, rgb = (hex) => { const n2 = parseInt(hex.slice(1), 16); return [(n2 >> 16) / 255, ((n2 >> 8) & 255) / 255, (n2 & 255) / 255]; };
     if (!ch.ready) job.partial = true;
@@ -7740,11 +7763,15 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
             for (let u = 26 - acc; u < L; u += 26) { const lx = ax + (bx - ax) * u / L + nx * w * side, lz = az + (bz - az) * u / L + nz * w * side; if (inC(lx, lz)) lamps.push([lx, lz, Math.atan2(-nz * side, -nx * side)]); side = -side; }
             acc = (acc + L) % 26; } }
         if (lamps.length) { const o3 = new T3.Object3D(), mk = (geo, mat, f) => { const m = new T3.InstancedMesh(geo, mat, lamps.length); lamps.forEach((l, k) => { f(l); o3.updateMatrix(); m.setMatrixAt(k, o3.matrix); }); m.castShadow = !MOBILE; grp.add(m); };
-          const pole = new T3.MeshStandardMaterial({ color: 0x3A3F47, metalness: 0.6, roughness: 0.45 }), head = new T3.MeshStandardMaterial({ color: 0xF1F5F9, emissive: 0xFFD89A, emissiveIntensity: night > 0.5 ? 1.6 : 0 });
+          const pole = new T3.MeshStandardMaterial({ color: 0x9AA1A9, metalness: 0.5, roughness: 0.45 }), head = new T3.MeshStandardMaterial({ color: 0xE5E7EB, emissive: 0xFFF1D0, emissiveIntensity: night > 0.5 ? 3.2 : 0 }); // (galvanised poles, as on the new Lagos lamps; the LED head blazes at night)
           mk(new T3.CylinderGeometry(0.09, 0.13, 6.2, 8), pole, ([lx, lz, , b0 = 0]) => { o3.position.set(lx, 3.1 + b0, lz); o3.rotation.set(0, 0, 0); });
           mk(new T3.BoxGeometry(1.5, 0.12, 0.12), pole, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 0.7, 6.1 + b0, lz + Math.sin(a) * 0.7); o3.rotation.set(0, -a, 0); });
           mk(new T3.BoxGeometry(1.4, 0.06, 0.8), new T3.MeshStandardMaterial({ color: 0x1E3A5F, metalness: 0.5, roughness: 0.25 }), ([lx, lz, a, b0 = 0]) => { o3.position.set(lx, 6.45 + b0, lz); o3.rotation.set(0.35, -a, 0); }); // (the solar panel on top, tilted to the sun, as on every new Lagos lamp)
-          mk(new T3.BoxGeometry(0.55, 0.16, 0.3), head, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 6.0 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, -a, 0); }); } }
+          mk(new T3.BoxGeometry(0.7, 0.1, 0.32), head, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 6.0 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, -a, 0); }); // (the slim LED head)
+          if (night > 0.5) { // at night the lamps are on: a soft beam under each head, and a warm pool of light on the road
+            const beam = new T3.MeshBasicMaterial({ color: 0xFFE2A0, transparent: true, opacity: 0.07, depthWrite: false, blending: T3.AdditiveBlending, side: T3.DoubleSide }), pool = new T3.MeshBasicMaterial({ color: 0xFFD27A, transparent: true, opacity: 0.32, depthWrite: false, blending: T3.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -3 });
+            mk(new T3.ConeGeometry(2.6, 5.8, 16, 1, true), beam, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 3.05 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, 0, 0); });
+            const pg = new T3.CircleGeometry(3.2, 20); pg.rotateX(-Math.PI / 2); mk(pg, pool, ([lx, lz, a, b0 = 0]) => { o3.position.set(lx + Math.cos(a) * 1.35, 0.14 + b0, lz + Math.sin(a) * 1.35); o3.rotation.set(0, 0, 0); }); } } }
       { const trees = []; for (const c of ch) for (const r of c.r) { if (r.br || r.c < 3) continue; const w = REAL.widths[r.c] / 2 + 1.45, p2 = r.p; let acc = (Math.abs(p2[0] * 5 + p2[1] * 11) % 19) + 6, side = -1; // (trees along the side streets' pavements, about every 19 units, between the lamps, clear of the junctions)
           for (let k = 0; k + 3 < p2.length; k += 2) { const ax = p2[k], az = p2[k + 1], bx = p2[k + 2], bz = p2[k + 3], L = Math.hypot(bx - ax, bz - az) || 1, nx = -(bz - az) / L, nz = (bx - ax) / L, jA = jw(ax, az) + 3, jB = jw(bx, bz) + 3;
             for (let u = 19 - acc; u < L; u += 19) { if (u > jA && u < L - jB) { const tx = ax + (bx - ax) * u / L + nx * w * side, tz = az + (bz - az) * u / L + nz * w * side; if (inC(tx, tz)) trees.push([tx, tz, 0.8 + ((Math.abs(Math.round(tx * 3 + tz))) % 5) * 0.1]); } side = -side; }
@@ -7789,7 +7816,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
             if ((b.look === 'office' || b.look === 'bank') && b.h > 12) for (let u = 1.2; u < L - 0.5; u += 2.4) fins.push([ax + (bx - ax) * u / L + nx * 0.18, az + (bz - az) * u / L + nz * 0.18, b.h, ang]); // (vertical fins down the face)
             else if (b.h < 30) for (let f = 1; f * FL < b.h - 1; f += 2) if (R3() < 0.35) { const u = 0.8 + R3() * (L - 1.6); acs.push([ax + (bx - ax) * u / L + nx * 0.3, f * FL + 0.4, az + (bz - az) * u / L + nz * 0.3, ang]); } } } // (air conditioners, here and there)
         const sol = [b.bb[0], b.bb[1], b.bb[2], b.bb[3]]; sol.poly = p2; job.solids.push(sol); }
-      mesh(wp, wc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, side: T3.DoubleSide }), true);
+      mesh(wp, wc, weatherWall(new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0, envMapIntensity: 0.45, side: T3.DoubleSide })), true);
       { const wm = mesh(gp2, gc, new T3.MeshStandardMaterial({ vertexColors: true, map: winTex(false), roughness: 0.22, metalness: 0.35, side: T3.DoubleSide, emissiveMap: night > 0.5 ? winTex(true) : null, emissive: night > 0.5 ? 0xFFE2A8 : 0x000000, emissiveIntensity: night > 0.5 ? 1.1 : 0 }));
         if (wm) wm.geometry.setAttribute('uv', new T3.Float32BufferAttribute(gu, 2)); } // (the windows: panes in frames by day; at night, a scatter of lit rooms)
       mesh(rp, rc, new T3.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, side: T3.DoubleSide }), true);
@@ -7982,6 +8009,7 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
     if (REAL && !(REC && REC.clip)) for (const b of realBuildingsIn(VT)) items.push({ d: P(b.cx, 0, b.cz)[2], f: () => drawRealBuilding(b) }); // (in 3D the cell carries them as one mesh)
     for (const l of (REAL ? lotsIn(VT) : lots)) {
       if (!visible(l.i, l.j) && !(l.w && visible(l.i + 1, l.j))) continue;
+      if (REAL && lotUnderBridge(l.i, l.j)) continue; // (nothing stands where a bridge or flyover passes)
       const a = l.i * T, b = l.j * T, c = a + T, d = b + T, R = rnd(l.i * 53 + l.j * 89);
       const f = l.kind === 'rtall' ? (() => { let first = true; const R2 = () => { if (first) { first = false; return l.t === 2 ? 0.12 : 0.45; } return R(); }; return () => cityLot(a, b, c, d, R2); })() // (a real tower or block: the city's modelled tower or office block)
         : l.kind === 'plot' ? (REC && REC.clip ? () => w3plot(a, b, c, d, R, l) : REAL ? () => flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.grassLot) : () => flat(a + 1, b + 1, c - 1, d - 1, 0.04, C.plot, C.plotEdge))
