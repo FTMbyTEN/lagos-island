@@ -7108,13 +7108,13 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
   const RB_WALL = ['#EFE6D2', '#F4F1EA', '#E6D5B5', '#EBC9A8', '#D9D4C7', '#E9D58F', '#C9A27E', '#BFC3C7', '#F2E2C4', '#E7B9A2', '#B8D3C5', '#A9C4DA', '#F3D48B', '#D6C2E0', '#FFFFFF', '#CFC6B6'], RB_ROOF_LOW = ['#8A5A3C', '#7D8288', '#9C4A2F', '#6B6F75'], RB_ROOF_HI = ['#B9B4AA', '#A8A39A', '#C7C2B8'];
   // a modelled street's buildings, by kind: the glass-and-concrete offices and banks of Marina, cream-walled churches with
   // red roofs, white mosques, painted shop houses; the rest as before. win: how much of each storey is window
-  const LOOKS = { office: { walls: ['#8FA3B5', '#B9C3CC', '#6F8597', '#C9CDD2', '#A7B4BF'], roofs: ['#4B5563', '#6B7280'], win: 0.8 },
-    bank: { walls: ['#D8D4C8', '#C8C2B4', '#E2DED4', '#9AA8B5'], roofs: ['#52525B', '#3F3F46'], win: 0.7 },
-    church: { walls: ['#EFE6D2', '#E7DCC4'], roofs: ['#8B3A2E', '#7A2E25'], win: 0.25 },
+  const LOOKS = { office: { walls: ['#C9B79A', '#B8A68A', '#3A3F45', '#D4C7AE', '#8C7A62', '#2F343B', '#BFB3A0'], roofs: ['#5A5550', '#6B655E'], win: 0.75 },
+    bank: { walls: ['#2B2F35', '#C6B896', '#D6CBB4', '#353A41'], roofs: ['#3F3F46', '#52525B'], win: 0.8 },
+    church: { walls: ['#4A4E57', '#555963'], roofs: ['#3A3D44', '#43464E'], win: 0.3 },
     mosque: { walls: ['#F3EBDD', '#EDE4D3'], roofs: ['#2E7D32', '#E5E7EB'], win: 0.25 },
     shop: { walls: ['#E9C46A', '#F4A261', '#A8DADC', '#F1FAEE', '#E76F51', '#90BE6D'], roofs: ['#9CA3AF', '#78716C'], win: 0.45 },
-    block: { walls: ['#E5DED3', '#D6CFC2', '#F0E9DC', '#CBD5E1', '#E8D9C5'], roofs: ['#A8A29E', '#78716C', '#9CA3AF'], win: 0.45 } };
-  const realLook = (b) => { if (b.look && LOOKS[b.look]) { const L2 = LOOKS[b.look], R = rnd(b.seed * 7919 + 17); return { wall: L2.walls[Math.floor(R() * L2.walls.length)], roof: L2.roofs[Math.floor(R() * L2.roofs.length)], win: L2.win }; } const R = rnd(b.seed * 7919 + 17); R(); R(); return { wall: RB_WALL[Math.floor(R() * RB_WALL.length)], roof: b.h < 2.4 ? RB_ROOF_LOW[Math.floor(R() * RB_ROOF_LOW.length)] : RB_ROOF_HI[Math.floor(R() * RB_ROOF_HI.length)] }; };
+    block: { walls: ['#D9CBB2', '#C7B497', '#E3D6BF', '#B9A88E', '#CFC3AE', '#A89983', '#E8DCC6'], roofs: ['#8A4B32', '#6E5A4A', '#9C6B4E', '#7A7570'], win: 0.45 } }; // (weathered buff and beige concrete, rusty and brown roofs: Lagos Island from the train)
+  const realLook = (b) => { if (b.look && LOOKS[b.look]) { const L2 = LOOKS[b.look], R = rnd(b.seed * 7919 + 17); if (/union bank/i.test(b.name || '')) return { wall: '#1F2328', roof: '#2A2E34', win: 0.9 }; /* (the black glass tower over Marina) */ return { wall: L2.walls[Math.floor(R() * L2.walls.length)], roof: L2.roofs[Math.floor(R() * L2.roofs.length)], win: L2.win }; } const R = rnd(b.seed * 7919 + 17); R(); R(); return { wall: RB_WALL[Math.floor(R() * RB_WALL.length)], roof: b.h < 2.4 ? RB_ROOF_LOW[Math.floor(R() * RB_ROOF_LOW.length)] : RB_ROOF_HI[Math.floor(R() * RB_ROOF_HI.length)] }; };
   const outN = (p2, ax, az, bx, bz, L) => { const nx = -(bz - az) / L, nz = (bx - ax) / L, mx = (ax + bx) / 2, mz = (az + bz) / 2; return inPoly(p2, mx + nx * 0.05, mz + nz * 0.05) ? [-nx, -nz] : [nx, nz]; }; // (a wall's outward face)
   function drawRealBuilding(b) { // (the flat view: the walls that face you, the roof on top)
     const p2 = b.p, n2 = p2.length / 2, lk = realLook(b); let sa = 0; for (let k = 0; k < n2; k++) { const k2 = (k + 1) % n2; sa += p2[2 * k] * p2[2 * k2 + 1] - p2[2 * k2] * p2[2 * k + 1]; }
@@ -7602,6 +7602,8 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
       for (const c of ch) for (const r of c.r) { const id = r.p.slice(0, 4).join(','); if (roadsSeen.has(id)) continue; roadsSeen.add(id); const w = REAL.widths[r.c] / 2;
         for (let k = 0; k + 1 < r.p.length; k += 2) { const kk = vk(r.p[k], r.p[k + 1]), end = k === 0 || k + 2 >= r.p.length; deg.set(kk, (deg.get(kk) || 0) + (end ? 1 : 2)); wAt.set(kk, Math.max(wAt.get(kk) || 0, w)); } }
       const jw = (x2, z2) => (deg.get(vk(x2, z2)) || 0) >= 3 ? (wAt.get(vk(x2, z2)) || 0) + 1.4 : 0; // (a junction: how far back from it the kerbs and markings stop)
+      // the kerbs and barriers as Lagos paints them: black and white blocks, one after the other
+      const KBk = rgb('#1F2023'), KWh = rgb('#E9E7E1'), zebra = (arr, cs, x0, z0, x1, z1, y0, y1, seg) => { const L2 = Math.hypot(x1 - x0, z1 - z0), n = Math.max(1, Math.round(L2 / seg)); for (let k = 0; k < n; k++) { const a0 = k / n, a1 = (k + 1) / n; wall(arr, cs, k % 2 ? KBk : KWh, x0 + (x1 - x0) * a0, z0 + (z1 - z0) * a0, x0 + (x1 - x0) * a1, z0 + (z1 - z0) * a1, y0, y1); } };
       const wall = (arr, cs, c3, x0, z0, x1, z1, y0, y1) => { arr.push(x0, y0, z0, x1, y0, z1, x1, y1, z1, x0, y0, z0, x1, y1, z1, x0, y1, z0); for (let m = 0; m < 6; m++) cs.push(...c3); };
       let gAcc = 0;
       for (const c of ch) for (const r of c.r) { const w = REAL.widths[r.c] / 2, y = r.br ? 0.5 : 0.07, p2 = r.p;
@@ -7612,10 +7614,10 @@ html body #coach.cjobs .cbtns { margin-top: 6px; } html body #coach.cjobs .cbtns
           const strip = (off, half, u0, u1, yy, col, arr = line, cs = lc) => { if (u1 - u0 < 0.15) return; const [sx, sz] = at2(u0, off), [ex, ez] = at2(u1, off); quad(arr, cs, col, sx, sz, ex, ez, half, yy); };
           const dashes = (off) => { for (let u = Math.max(1, jA); u + 3 < L - jB; u += 9) strip(off, 0.075, u, u + 3, y + 0.012, WL); }; // (3 on, 6 off)
           if (!r.br && L - jA - jB > 0.3) for (const sd of [-1, 1]) { // the kerb and the pavement, a step up from the road, stopping at junctions so the crossing road runs through
-            strip(sd * (w + 0.9), 0.9, jA, L - jB, y + 0.18, PV, kerb, kc); const [k0x, k0z] = at2(jA, sd * w), [k1x, k1z] = at2(L - jB, sd * w); wall(kerb, kc, KB, k0x, k0z, k1x, k1z, y, y + 0.18); }
+            strip(sd * (w + 0.9), 0.9, jA, L - jB, y + 0.18, PV, kerb, kc); const [k0x, k0z] = at2(jA, sd * w), [k1x, k1z] = at2(L - jB, sd * w); zebra(kerb, kc, k0x, k0z, k1x, k1z, y, y + 0.18, 1.0); }
           if (r.c <= 1) { // an expressway: a concrete barrier down the middle, a broken line between lanes, solid white by the barrier, solid yellow at the edge
             const lanes = Math.max(2, Math.round((w - 0.6) / 2.8)), lw = (w - 0.6) / lanes;
-            strip(0, 0.3, 0, L, y + 0.85, BR, kerb, kc); for (const sd of [-1, 1]) { const [b0x, b0z] = at2(0, sd * 0.3), [b1x, b1z] = at2(L, sd * 0.3); wall(kerb, kc, BR, b0x, b0z, b1x, b1z, y, y + 0.85); }
+            strip(0, 0.3, 0, L, y + 0.85, BR, kerb, kc); for (const sd of [-1, 1]) { const [b0x, b0z] = at2(0, sd * 0.3), [b1x, b1z] = at2(L, sd * 0.3); zebra(kerb, kc, b0x, b0z, b1x, b1z, y, y + 0.85, 1.6); }
             for (let k2 = 1; k2 < lanes; k2++) for (const sd of [-1, 1]) dashes(sd * (0.6 + k2 * lw));
             for (const sd of [-1, 1]) { strip(sd * (w - 0.35), 0.1, 0, L, y + 0.012, YL); strip(sd * 0.55, 0.075, 0, L, y + 0.012, WL); }
             gAcc += L; if (gAcc > 420 && !r.br) { gAcc = 0; const [gx, gz] = at2(L / 2, 0); if (inC(gx, gz)) gantries.push([gx, gz, Math.atan2(uz, ux), w]); } }
